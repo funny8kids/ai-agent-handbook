@@ -2,19 +2,28 @@
 
 本页记录手册的结构调整与重要内容更新。
 
-## 2026-09-10（第 4 次）内容质量修订
+## 2026-09-10（第 5 次）内容质量修订与全书扩写
 
-针对「模板化、emoji 泛滥、原理不深、引用单一」四类问题做系统性修订：
+针对「模板化、emoji 泛滥、原理不深、引用单一」四类问题做系统性修订，并扩写全书 49 篇偏薄页面：
 
-- 重写 [风格指南](../14-templates/style-guide.md)：改为**按体裁分型**（原理型/概念型/实战型/资源卡片），去掉「每篇必须一句话+图+类比+误区」的硬性模板；新增 emoji 硬预算、公式与出处要求、案例配给（单一项目 ≤10 篇）、发布字数门槛
-- 全局清理 emoji：剥离 137 篇的标题 emoji 与星级难度标记（emoji 从 1370 降至 319，其余为 ❌✅⚠️💡 语义标记）
-- 事实核查（经本地代理联网）：逐条验证 157 个外链；修复 5 处断链（含 `humanlayer/12-factor-agents`、`Awesome-RAG`、MCP Discussions 地址）
-- **Pi 仓库已迁移**：`badlogic/pi-mono` → `earendil-works/pi`，全库 26 处更新；移除已无法核实的「vLLM pods」等表述
-- **DeepSeek Harness 引用经核实为真实**（`packages/core/agent-loop`、`packages/plan`、`packages/preset/agent-presets` 等路径均存在），删除 5 处与主题弱相关的凑数引用
-- 21 篇核心原理页补齐公式与论文引用：Transformer 注意力、Embedding 相似度、RLHF/DPO、预训练与 LoRA、量化与推理、Token 与上下文预算、RAG 指标、ToT 搜索、评估指标、基准协议、结构化输出（约束解码）、幻觉检测、CoT（串行计算量/自一致性）、GoT（聚合算子）、Reflexion（记忆更新式）、Self-Refine（不动点迭代）、知识图谱（多跳连接/PageRank/模块度）、上下文工程（预算优化）、记忆压缩（压缩比/淘汰判据）、提示注入（ASR/纵深防御乘法模型）、越狱（对抗后缀优化/误拒率）
-- 2 个不足 150 字的资源卡片由 `published` 降为 `draft`（按新发布门槛）
-- 新增 7 张自绘 SVG 插图（学习路线、Agent 循环、注意力计算、Function Calling、RAG 管线、多智能体、评估四层），接入对应章节
-- 新增 [开源项目索引](../13-resources/projects/README.md)：329 个项目、11 个分类，star/许可/语言为 2026-09 实测值，由 `scripts/gen-projects.py` 生成可复现
+- 重写 [风格指南](../14-templates/style-guide.md)：按**体裁分型**（原理型/概念型/实战型/资源卡片），去掉单一模板；新增 emoji 硬预算、公式与出处要求、案例配给、发布字数门槛；并入 16/17 章的 SVG（SMIL）动图规范
+- 全局清理 emoji：剥离标题 emoji 与星级难度标记（emoji 从 1370 降至数百，其余为 ❌✅⚠️💡 语义标记）
+- 事实核查（经本地代理联网）：逐条验证外链；修复断链（`humanlayer/12-factor-agents`、`Awesome-RAG`、MCP Discussions 地址等）
+- **Pi 仓库已迁移**：`badlogic/pi-mono` → `earendil-works/pi`，全库更新；移除已无法核实的「vLLM pods」等表述
+- **DeepSeek Harness 引用经核实为真实**（包路径均存在），删除与主题弱相关的凑数引用
+- 约 50 篇原理/概念/实战页补齐公式与论文引用：注意力、Embedding、RLHF/DPO、预训练与 LoRA、量化推理、Token 与上下文预算、RAG 指标、CoT/ToT/GoT/Reflexion/Self-Refine、知识图谱、上下文工程、记忆压缩、幻觉、提示注入/越狱，以及规划 5 篇、多智能体 6 篇、框架 8 篇
+- 2 个不足 150 字的资源卡片由 `published` 降为 `draft`
+- 新增 7 张自绘 SVG 插图并接入对应章节
+- 新增 [开源项目索引](../13-resources/projects/README.md)：329 个项目、11 个分类，star/许可为 2026-09 实测值，由 `scripts/gen-projects.py` 生成
+- 新增 `scripts/verify-docs.py` 验收脚本（标题 emoji / 断链 / 字数 / 公式 / frontmatter）
+
+## 2026-09-10（第 4 次）新增 16 AI 基础设施与 17 具身智能
+
+- 新增 **16 AI 基础设施**（11 页）：推理服务化（连续批处理 / PagedAttention / TTFT-TPOT）、前缀缓存与上下文工程、GPU 调度与多租户、训练与微调基础设施、沙箱与执行环境、模型网关与路由、持久化执行与运行时、数据与检索基础设施、可观测性与评估平台、推理经济学与部署形态
+- 新增 **17 具身智能**（13 页）：具身闭环定义、机器人基础模型谱系（RT-2 → OpenVLA → π0 → GR00T/Helix/GO-1）、VLA 架构与动作头、动作表示与分层控制、数据引擎、仿真与 Sim-to-Real、世界模型与视频预训练、灵巧操作、人形与腿足运动、评估与基准、硬件实时与安全、Agent ⇄ 机器人桥接（含代码）
+- 新增 6 张**可动画的 SVG 图示**（SMIL，GitHub/GitBook 中可直接播放）：连续批处理、前缀缓存、沙箱分层、VLA 循环、动作分块、Sim-to-Real 域随机化
+- 双向链接补齐：16/17 ⇄ 03、05、06、10、11、12、13 各相关页；新增 `infrastructure`、`embodied-ai`、`data`、`cost` 四个标签
+- 导航同步：`SUMMARY.md`、`docs/README.md`、学习路线（新增「平台/Infra」与「具身方向」两条路线）、术语表新增两组共 29 条
 
 ## 2026-09-10（第 3 次） 全书完成
 

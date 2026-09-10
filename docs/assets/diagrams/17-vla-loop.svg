@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 430" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="VLA 双系统感知决策行动回路动画">
+  <rect x="0" y="0" width="980" height="430" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="20" y="26" font-size="16" font-weight="700" fill="#0f172a">具身闭环：两条时钟（慢脑 5–10Hz / 快脑 50–200Hz）如何对齐</text>
+
+  <!-- world -->
+  <rect x="20" y="56" width="150" height="150" rx="10" fill="#eef2ff" stroke="#818cf8"/>
+  <text x="34" y="78" fill="#312e81" font-weight="700">物理世界</text>
+  <rect x="40" y="150" width="110" height="8" rx="2" fill="#c7d2fe"/>
+  <!-- cup moving -->
+  <g>
+    <rect x="60" y="120" width="26" height="30" rx="4" fill="#38bdf8" stroke="#0284c7"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0 0; 40 0; 40 0; 0 0" keyTimes="0;0.35;0.7;1" dur="6s" repeatCount="indefinite"/>
+  </g>
+  <text x="34" y="196" fill="#4338ca" font-size="11">物体会动、会被挡、有摩擦</text>
+
+  <!-- cameras -->
+  <rect x="196" y="56" width="130" height="150" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="210" y="78" fill="#334155" font-weight="700">感知</text>
+  <text x="210" y="96" fill="#64748b" font-size="11">RGB-D 30fps</text>
+  <text x="210" y="112" fill="#64748b" font-size="11">本体感受 500Hz</text>
+  <text x="210" y="128" fill="#64748b" font-size="11">力 / 触觉</text>
+  <!-- frame dots -->
+  <circle cx="260" cy="160" r="5" fill="#0ea5e9">
+    <animate attributeName="cy" values="150;196;150" dur="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.8;1" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="282" cy="160" r="5" fill="#0ea5e9">
+    <animate attributeName="cy" values="150;196;150" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.8;1" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- slow system -->
+  <rect x="352" y="56" width="190" height="70" rx="10" fill="#fef3c7" stroke="#d97706"/>
+  <text x="366" y="78" fill="#92400e" font-weight="700">慢系统 · VLM 骨干</text>
+  <text x="366" y="96" fill="#a16207" font-size="11">读指令 + 看场景 → 出子目标/隐条件</text>
+  <text x="366" y="112" fill="#b45309" font-size="11" font-weight="700">5–10 Hz · 几十 B–几 B 参数</text>
+  <rect x="352" y="56" width="190" height="70" rx="10" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.2">
+    <animate attributeName="opacity" values="0.15;0.9;0.15" dur="1.05s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- fast system -->
+  <rect x="352" y="138" width="190" height="68" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="366" y="160" fill="#14532d" font-weight="700">快系统 · 动作专家</text>
+  <text x="366" y="178" fill="#15803d" font-size="11">flow / diffusion 头 → 动作块</text>
+  <text x="366" y="194" fill="#166534" font-size="11" font-weight="700">50–200 Hz · 几十 M–300M</text>
+  <rect x="352" y="138" width="190" height="68" rx="10" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.2">
+    <animate attributeName="opacity" values="0.1;0.85;0.1;0.85;0.1" dur="0.36s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- safety -->
+  <rect x="566" y="138" width="120" height="68" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="578" y="160" fill="#7f1d1d" font-weight="700">安全层</text>
+  <text x="578" y="178" fill="#b91c1c" font-size="11">限幅 · 软限位</text>
+  <text x="578" y="194" fill="#b91c1c" font-size="11">急停 · 力上限</text>
+
+  <!-- controller + motors -->
+  <rect x="710" y="138" width="120" height="68" rx="10" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="722" y="160" fill="#312e81" font-weight="700">伺服 / WBC</text>
+  <text x="722" y="178" fill="#4338ca" font-size="11">500Hz–1kHz</text>
+  <text x="722" y="194" fill="#4338ca" font-size="11">电流环 kHz</text>
+
+  <!-- robot arm glyph -->
+  <g transform="translate(856,120)" stroke="#334155" stroke-width="9" fill="none" stroke-linecap="round">
+    <line x1="20" y1="86" x2="20" y2="52"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 20 52; -22 20 52; -6 20 52; -22 20 52; 0 20 52" keyTimes="0;0.3;0.55;0.8;1" dur="6s" repeatCount="indefinite"/>
+      <line x1="20" y1="52" x2="60" y2="26"/>
+      <circle cx="64" cy="24" r="8" fill="#0f172a" stroke="none"/>
+    </g>
+  </g>
+  <rect x="856" y="212" width="80" height="14" rx="4" fill="#94a3b8"/>
+
+  <!-- action chunk buffer -->
+  <rect x="566" y="56" width="264" height="66" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="578" y="76" fill="#334155" font-weight="700">动作块缓冲（滚动重规划）</text>
+  <g>
+    <rect x="578" y="86" width="22" height="24" rx="3" fill="#86efac"><animate attributeName="opacity" values="1;0.25;1" dur="2.1s" repeatCount="indefinite"/></rect>
+    <rect x="604" y="86" width="22" height="24" rx="3" fill="#86efac"><animate attributeName="opacity" values="1;1;0.25;1" keyTimes="0;0.3;0.6;1" dur="2.1s" repeatCount="indefinite"/></rect>
+    <rect x="630" y="86" width="22" height="24" rx="3" fill="#86efac"><animate attributeName="opacity" values="1;1;0.25;1" keyTimes="0;0.3;0.6;1" dur="2.1s" begin="0.2s" repeatCount="indefinite"/></rect>
+    <rect x="656" y="86" width="22" height="24" rx="3" fill="#bbf7d0"><animate attributeName="opacity" values="1;1;0.3;1" keyTimes="0;0.3;0.6;1" dur="2.1s" begin="0.4s" repeatCount="indefinite"/></rect>
+    <rect x="682" y="86" width="22" height="24" rx="3" fill="#bbf7d0"><animate attributeName="opacity" values="1;1;0.3;1" keyTimes="0;0.3;0.6;1" dur="2.1s" begin="0.6s" repeatCount="indefinite"/></rect>
+    <rect x="708" y="86" width="22" height="24" rx="3" fill="#dcfce7"/>
+    <rect x="734" y="86" width="22" height="24" rx="3" fill="#dcfce7"/>
+    <rect x="760" y="86" width="22" height="24" rx="3" fill="#dcfce7"/>
+    <rect x="786" y="86" width="22" height="24" rx="3" fill="#dcfce7"/>
+  </g>
+  <text x="700" y="145" fill="#15803d" font-size="11">← 已执行的淡出，新的补进来（越靠右越旧）</text>
+
+  <!-- arrows -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M170 130 H194"/>
+    <path d="M326 100 H350"/>
+    <path d="M447 126 V136"/>
+    <path d="M542 172 H564"/>
+    <path d="M686 172 H708"/>
+    <path d="M686 138 V124"/>
+    <path d="M542 172 C600 172 600 124 600 124"/>
+    <path d="M830 172 C900 172 900 60 300 40 L240 54"/>
+  </g>
+  <g fill="#94a3b8">
+    <polygon points="194,125 204,130 194,135"/>
+    <polygon points="350,95 360,100 350,105"/>
+    <polygon points="564,167 574,172 564,177"/>
+    <polygon points="708,167 718,172 708,177"/>
+  </g>
+
+  <!-- feedback loop label -->
+  <text x="20" y="240" fill="#475569" font-weight="700">一次「抓杯子」的时间线</text>
+  <g>
+    <line x1="20" y1="300" x2="960" y2="300" stroke="#cbd5e1"/>
+    <text x="20" y="270" fill="#0284c7">t=0ms 观测帧</text>
+    <text x="170" y="270" fill="#b45309">t=140ms 慢系统给子目标「先移到杯子正上方」</text>
+    <text x="600" y="270" fill="#15803d">t=150ms 快系统出 50 步动作块</text>
+    <text x="820" y="270" fill="#334155">t=1150ms 重规划</text>
+    <circle r="7" fill="#0f172a">
+      <animate attributeName="cx" values="30;940;30" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="300;300;300" dur="6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <rect x="20" y="322" width="940" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="34" y="344" fill="#1e3a8a" font-weight="700">要点</text>
+  <text x="72" y="344" fill="#1e40af">慢系统只提供「意图/条件」，不负责逐帧控制；快系统持续被最新观测修正，否则就是「闭眼执行 1 秒前的计划」。</text>
+  <text x="34" y="366" fill="#1e40af">失败常来自三处错位：① 观测与动作时间戳没对齐；② 推理延迟没在训练里建模；③ chunk 执行完才重算（迟钝）或每步都重算（抖）。</text>
+  <text x="34" y="388" fill="#1e40af">工程解法：异步推理 + temporal ensembling + 触发式提前重算（力超限/物体大幅位移 → 丢剩余块重规划）。</text>
+</svg>

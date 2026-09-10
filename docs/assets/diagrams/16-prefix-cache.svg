@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="前缀缓存命中与整段失效对比动画">
+  <rect x="0" y="0" width="960" height="430" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="20" y="26" font-size="16" font-weight="700" fill="#0f172a">前缀缓存（prefix / prompt caching）：谁能复用，谁被白算</text>
+
+  <!-- ============ case A: stable prefix ============ -->
+  <text x="20" y="60" fill="#475569" font-weight="700">A. 稳定前缀 + 只追加尾部 → 命中</text>
+  <g>
+    <!-- cached blocks -->
+    <rect x="20" y="80" width="150" height="46" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="100" fill="#14532d">system prompt</text>
+    <text x="34" y="117" fill="#15803d" font-size="11">2.4k tok · KV 已缓存</text>
+
+    <rect x="176" y="80" width="150" height="46" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="190" y="100" fill="#14532d">工具 schema ×12</text>
+    <text x="190" y="117" fill="#15803d" font-size="11">1.1k tok · 稳定排序</text>
+
+    <rect x="332" y="80" width="150" height="46" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="346" y="100" fill="#14532d">历史消息（追加）</text>
+    <text x="346" y="117" fill="#15803d" font-size="11">8.9k tok · 未改写</text>
+
+    <rect x="488" y="80" width="150" height="46" rx="6" fill="#fef9c3" stroke="#ca8a04"/>
+    <text x="502" y="100" fill="#713f12">RAG 片段</text>
+    <text x="502" y="117" fill="#a16207" font-size="11">排序不稳定 → 半命中</text>
+
+    <rect x="644" y="80" width="150" height="46" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="658" y="100" fill="#7c2d12">本轮新内容</text>
+    <text x="658" y="117" fill="#9a3412" font-size="11">用户输入 + 工具返回</text>
+
+    <!-- recompute wave on new blocks only -->
+    <rect x="644" y="80" width="150" height="46" rx="6" fill="#fb923c" opacity="0">
+      <animate attributeName="opacity" values="0;0.55;0" dur="3s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- hit sweep over cached region -->
+    <rect x="20" y="76" width="120" height="54" rx="6" fill="#3b82f6" opacity="0.16">
+      <animate attributeName="x" values="20;522;20" keyTimes="0;0.55;1" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.28;0.28;0;0" keyTimes="0;0.1;0.5;0.6;1" dur="6s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <text x="20" y="150" fill="#475569">本轮需真正 prefill 的 token</text>
+  <rect x="210" y="138" width="700" height="16" rx="8" fill="#e2e8f0"/>
+  <rect x="210" y="138" width="700" height="16" rx="8" fill="#16a34a">
+    <animate attributeName="width" values="140;150;140" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <text x="370" y="151" fill="#065f46" font-size="12">≈ 2.4k / 13.5k · 命中率高 → 便宜且首字快</text>
+
+  <!-- ============ case B: polluted prefix ============ -->
+  <text x="20" y="212" fill="#475569" font-weight="700">B. 前缀被污染（system 里加了时间戳 / 工具顺序变了 / 历史被改写）→ 整段失效</text>
+  <g>
+    <rect x="20" y="232" width="150" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="252" fill="#7f1d1d">system + 时间戳</text>
+    <text x="34" y="269" fill="#b91c1c" font-size="11">第 1 个 token 之后全变</text>
+
+    <rect x="176" y="232" width="150" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="190" y="252" fill="#7f1d1d">工具 schema ×12</text>
+    <text x="190" y="269" fill="#b91c1c" font-size="11">顺序按连接先后拼 → 抖动</text>
+
+    <rect x="332" y="232" width="150" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="346" y="252" fill="#7f1d1d">历史被摘要重写</text>
+    <text x="346" y="269" fill="#b91c1c" font-size="11">改写 = 失效</text>
+
+    <rect x="488" y="232" width="150" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="502" y="252" fill="#7f1d1d">RAG 片段</text>
+    <text x="502" y="269" fill="#b91c1c" font-size="11">连带失效</text>
+
+    <rect x="644" y="232" width="150" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="658" y="252" fill="#7f1d1d">本轮新内容</text>
+    <text x="658" y="269" fill="#b91c1c" font-size="11">一起重算</text>
+
+    <!-- whole-row recompute wave -->
+    <rect x="20" y="232" width="774" height="46" rx="6" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;0.4;0.05;0.4;0" dur="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <text x="20" y="302" fill="#475569">本轮需真正 prefill 的 token</text>
+  <rect x="210" y="290" width="700" height="16" rx="8" fill="#e2e8f0"/>
+  <rect x="210" y="290" width="700" height="16" rx="8" fill="#dc2626">
+    <animate attributeName="width" values="690;700;690" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <text x="420" y="303" fill="#7f1d1d" font-size="12">≈ 13.5k / 13.5k · 每轮全量重算</text>
+
+  <!-- ============ takeaway ============ -->
+  <rect x="20" y="330" width="920" height="80" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="34" y="352" fill="#1e3a8a" font-weight="700">结论</text>
+  <text x="78" y="352" fill="#1e40af">缓存是「前缀逐 token 相同」的复用，不是「内容差不多」的复用。</text>
+  <text x="34" y="374" fill="#1e40af">纪律：① 不变的东西放前面，且真的别动它；② 会变的（时间、ID、AB 标记）一律追加到尾部；</text>
+  <text x="34" y="394" fill="#1e40af">③ 历史只追加、要瘦身就追加摘要；④ 把 cached_tokens 命中率做成看板指标，稳态目标 70% 以上。</text>
+</svg>

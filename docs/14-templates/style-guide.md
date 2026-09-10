@@ -151,6 +151,21 @@ updated: 2026-09-10
 
 > **提示**：图片文件名用「章节-主题」英文小写，如 `02-agent-loop.svg`；不要用 `截图1.png`、`image.png`。
 
+### 需要「会动」的图：用 SVG（SMIL）
+
+流程/时序/对比类图示，可写成自带动画的 SVG（读者一眼就能看出「谁在等谁」），同样放 `docs/assets/diagrams/`：
+
+- **格式**：手写或从 Excalidraw/Figma 导出后用编辑器补 SMIL 标签；用 `<animate>`、`<animateTransform>`、`<animateMotion>`，`repeatCount="indefinite"`
+- **为什么用 SMIL 而不是 CSS/GIF**：SVG 以 `<img>` 方式引用时，CSS 与 SMIL 动画仍会播放（脚本被禁用）；GIF 体积大且不清晰
+- **可维护性**：纯矢量、可用文本 diff；改一个 `dur` 就能调速
+- **深浅色适配**：自己画背景（如 `<rect fill="#f8fafc">`）与文字色，不要依赖页面背景；`viewBox` 固定
+- **必须带 `role="img"` + `aria-label`**，并在正文补一段文字结论——动画只是辅助，静态阅读也要能懂
+- **别滥用**：一篇最多 1 张动图，动画时长 3–6 秒一轮，只让「正在发生的事」动，静态结构不要闪
+
+参考实现：`docs/assets/diagrams/16-continuous-batching.svg`、`16-prefix-cache.svg`、`17-action-chunking.svg`。
+
+> **注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../assets/diagrams/xxx.svg)` 引用独立文件，才能保留动画。
+
 ## 七、案例配给：防止单一项目刷屏
 
 初版把 DeepSeek Harness / Pi / Claude Code 三个案例塞进了大量页面，`DeepSeek Harness` 出现在 **71/144** 个文件里，很多页面（如"向量数据库"）本身和它关系很弱，属于模板凑数。本版规定：

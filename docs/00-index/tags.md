@@ -27,6 +27,10 @@ updated: 2026-09-10
 | `evaluation` | 评估与基准 | [SWE-bench](../13-resources/benchmarks/swe-bench.md) |
 | `safety` | 安全与对齐 | [提示注入](../10-evaluation-safety/prompt-injection.md) |
 | `engineering` | 工程化与可观测 | [缓存与成本优化](../11-engineering/caching-cost-optimization.md) |
+| `infrastructure` | AI 基础设施（推理/沙箱/网关/运行时） | [推理服务化](../16-ai-infrastructure/inference-serving.md) |
+| `embodied-ai` | 具身智能与机器人 | [VLA 模型架构](../17-embodied-ai/vla-models.md) |
+| `data` | 数据采集与治理 | [数据引擎](../17-embodied-ai/data-engine.md) |
+| `cost` | 成本与容量 | [推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md) |
 | `application` | 应用案例 | [编程 Agent](../12-applications/coding-agent.md) |
 | `resource` | 资源收录 | [资源库说明](../13-resources/README.md) |
 | `beginner` | 入门难度 | [AI、ML、DL 的关系](../01-ai-basics/ai-ml-dl.md) |
