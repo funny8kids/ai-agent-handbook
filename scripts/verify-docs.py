@@ -17,16 +17,21 @@ PICTO = re.compile('[\U0001F000-\U0001FAFF\u2600-\u26FF\u2700-\u27BF\u2B00-\u2BF
 EMOJI_OK_BODY = set('❌✅⚠💡\u26a0')  # 允许在正文中作语义标记
 
 # 风格指南门槛（按 type/difficulty 粗分）
-def genre_limit(fm, path):
+def genre_limit(fm, path, full=""):
     typ = (re.search(r'type:\s*(\w+)', fm) or [None, 'knowledge'])[1]
     if typ == 'index':
         return 0
     if typ == 'resource':
         return 150
-    diff = '高级' if '难度**：高级' in fm else ('进阶' if '难度**：进阶' in fm else '入门')
     if '14-templates' in path:
         return 0
-    if diff in ('进阶', '高级'):
+    # 难度写在正文的引用行里（不在 frontmatter），精确匹配「**难度**：X」
+    probe = full or fm
+    m = re.search(r'\*\*难度\*\*：\s*(入门|进阶|高级)', probe)
+    diff = m.group(1) if m else '入门'
+    if diff == '高级':
+        return 1200
+    if diff == '进阶':
         return 900
     return 600
 
@@ -67,7 +72,7 @@ def main():
                     bad_fm.append((rel, k))
             status_ct[(re.search(r'status:\s*(\w+)', fm) or [None, '?'])[1]] += 1
             n = han(body_of(t))
-            lim = genre_limit(fm, f)
+            lim = genre_limit(fm, f, full=t)
             if lim and n < lim:
                 under.append((n, lim, rel))
         if re.search(r'\$\$?\S', t):
