@@ -121,7 +121,7 @@ $$
 N_{\text{seq}}\approx\frac{\text{显存}_{\text{可用}}-\text{权重字节}}{\text{单序列 KV 字节}}
 $$
 
-其中单序列 KV 字节 $=2\times L\times H_{kv}\times d_{head}\times S\times\dfrac{\text{bits}}{8}$（见 [注意力与 KV 缓存](../03-llm/transformer-attention.md) 的推导）。两个结论：一是**长上下文直接压低单副本并发**，二是 GQA/MQA/MLA 这类结构改进之所以重要，正是因为它们缩小了分母。
+其中单序列 KV 字节 $$=2\times L\times H_{kv}\times d_{head}\times S\times\dfrac{\text{bits}}{8}$$（见 [注意力与 KV 缓存](../03-llm/transformer-attention.md) 的推导）。两个结论：一是**长上下文直接压低单副本并发**，二是 GQA/MQA/MLA 这类结构改进之所以重要，正是因为它们缩小了分母。
 
 按 token 计的吞吐成本则可写成：
 

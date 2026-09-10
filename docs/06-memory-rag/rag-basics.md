@@ -43,7 +43,7 @@ $$
 
 RAGAS 提出的两个无参考指标可直接评估生成侧。
 
-**忠实度（Faithfulness）**：把答案拆成若干陈述 $S$，统计其中能被检索上下文 $c$ 支持的比例：
+**忠实度（Faithfulness）**：把答案拆成若干陈述 $$S$$，统计其中能被检索上下文 $$c$$ 支持的比例：
 
 $$
 \text{Faithfulness}=\frac{\big|\{s\in S:\;s\ \text{被}\ c\ \text{支持}\}\big|}{|S|}
@@ -51,7 +51,7 @@ $$
 
 它直接度量「有没有编」——幻觉的答案忠实度低。
 
-**答案相关性（Answer Relevance）**：让模型根据答案反推可能的问题 $\{q_1,\dots,q_N\}$，再算它们与原问题的平均余弦相似度：
+**答案相关性（Answer Relevance）**：让模型根据答案反推可能的问题 $$\{q_1,\dots,q_N\}$$，再算它们与原问题的平均余弦相似度：
 
 $$
 \text{Answer Relevance}=\frac{1}{N}\sum_{i=1}^{N}\cos\!\big(\mathbf{q},\,\mathbf{q}_i\big)

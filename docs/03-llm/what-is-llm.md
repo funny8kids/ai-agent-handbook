@@ -27,13 +27,13 @@ $$
 P(x_1,x_2,\dots,x_T)=\prod_{t=1}^{T}P_\theta\big(x_t\mid x_{<t}\big)
 $$
 
-这就是为什么生成必须**一个 token 一个 token 地来**：第 $t$ 步的输入包含了前 $t-1$ 步的全部输出。每一步的分布由最后一层 logits 经 softmax 得到：
+这就是为什么生成必须**一个 token 一个 token 地来**：第 $$t$$ 步的输入包含了前 $$t-1$$ 步的全部输出。每一步的分布由最后一层 logits 经 softmax 得到：
 
 $$
 P_\theta(x_t=v\mid x_{<t})=\frac{\exp(z_v/\tau)}{\sum_{v'}\exp(z_{v'}/\tau)}
 $$
 
-$\tau$ 是**温度**：$\tau\to 0$ 趋向确定性的「选最大」（greedy），$\tau$ 变大则分布更平坦、输出更多样。工程上还常用 top-k / top-p 截断，把低概率的长尾裁掉，避免采样到离谱的 token。
+$$\tau$$ 是**温度**：$$\tau\to 0$$ 趋向确定性的「选最大」（greedy），$$\tau$$ 变大则分布更平坦、输出更多样。工程上还常用 top-k / top-p 截断，把低概率的长尾裁掉，避免采样到离谱的 token。
 
 ### 2. 训练目标
 

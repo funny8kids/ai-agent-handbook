@@ -21,7 +21,7 @@ updated: 2026-09-10
 
 ### 1. 星型拓扑把通信从 O(n²) 降到 O(n)
 
-$n$ 个 Worker 若两两通信，边数是 $\binom{n}{2}=O(n^2)$；星型拓扑下每个 Worker 只与 Supervisor 通信：
+$$n$$ 个 Worker 若两两通信，边数是 $$\binom{n}{2}=O(n^2)$$；星型拓扑下每个 Worker 只与 Supervisor 通信：
 
 $$
 \text{边数}=n=O(n)
@@ -37,7 +37,7 @@ $$
 |\text{ctx}_{\text{sup}}|\;\approx\;|\text{task}|+\sum_{i=1}^{n}|\text{report}_i|
 $$
 
-若每个 Worker 回传完整对话，$n$ 一多就必然爆上下文。因此工程上的硬规则是——**Worker 只回「结论 + 引用 + 指针」**，不回过程：
+若每个 Worker 回传完整对话，$$n$$ 一多就必然爆上下文。因此工程上的硬规则是——**Worker 只回「结论 + 引用 + 指针」**，不回过程：
 
 $$
 |\text{report}_i|\;\ll\;|\text{worker context}_i|

@@ -20,14 +20,14 @@ updated: 2026-09-10
 
 ### 1. 统一的方式：把图像「变成 token」
 
-文本进模型靠 tokenizer 切词；图像进模型靠**切块（patch）**。以 ViT 为例，把图像切成 $P\times P$ 的块，每块拉平后经线性投影得到一个向量：
+文本进模型靠 tokenizer 切词；图像进模型靠**切块（patch）**。以 ViT 为例，把图像切成 $$P\times P$$ 的块，每块拉平后经线性投影得到一个向量：
 
 $$
 \mathbf{z}_i = E\,\mathbf{x}_i^{patch},\qquad
 N=\frac{H}{P}\times\frac{W}{P}
 $$
 
-$N$ 就是这张图贡献的 token 数。**这条式子解释了视觉成本**：分辨率翻倍，token 数变成 4 倍。一张 1024×1024、patch=16 的图会产生 $64\times64=4096$ 个 token——远超一段同字数的文字。所以「截图循环」很快就会吃满窗口、推高成本。
+$$N$$ 就是这张图贡献的 token 数。**这条式子解释了视觉成本**：分辨率翻倍，token 数变成 4 倍。一张 1024×1024、patch=16 的图会产生 $$64\times64=4096$$ 个 token——远超一段同字数的文字。所以「截图循环」很快就会吃满窗口、推高成本。
 
 ### 2. 为什么图文能「对齐」：对比学习
 
@@ -39,7 +39,7 @@ $$
 {\sum_{j=1}^{N}\exp(\mathbf{v}_i\cdot\mathbf{t}_j/\tau)}
 $$
 
-$\mathbf{v}_i$、$\mathbf{t}_i$ 分别是第 $i$ 张图和对应文本的向量，$\tau$ 是温度。训练后图像与文本落在同一向量空间，才谈得上「跨模态检索」与「看图说话」。这也是 [Embedding 与相似度检索](../06-memory-rag/embedding-similarity.md) 的跨模态版本。
+$$\mathbf{v}_i$$、$$\mathbf{t}_i$$ 分别是第 $$i$$ 张图和对应文本的向量，$$\tau$$ 是温度。训练后图像与文本落在同一向量空间，才谈得上「跨模态检索」与「看图说话」。这也是 [Embedding 与相似度检索](../06-memory-rag/embedding-similarity.md) 的跨模态版本。
 
 ### 3. 三种接入方式
 

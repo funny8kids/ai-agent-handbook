@@ -26,7 +26,7 @@ $$
 t_{\text{decode}}\approx\frac{\underbrace{P\cdot \tfrac{\text{bits}}{8}}_{\text{权重字节}}+\underbrace{\text{KV bytes}}_{\text{缓存字节}}}{BW}
 $$
 
-$P$ 是参数量，$BW$ 是显存带宽。这条式子解释了量化的价值：**decode 阶段读的字节数几乎和权重精度成正比，砍精度就直接砍延迟**。
+$$P$$ 是参数量，$$BW$$ 是显存带宽。这条式子解释了量化的价值：**decode 阶段读的字节数几乎和权重精度成正比，砍精度就直接砍延迟**。
 
 ### 2. KV 缓存有多大
 
@@ -36,11 +36,11 @@ $$
 \text{KV bytes}=2\times L\times H_{kv}\times d_{head}\times S\times B\times \frac{\text{bits}}{8}
 $$
 
-$L$ 层数、$H_{kv}$ 是 KV 头数、$d_{head}$ 头维度、$S$ 序列长度、$B$ 批大小。注意 $H_{kv}$：GQA/MQA 通过让多个查询头共享 KV 头来缩小这个因子；MLA 则把 KV 压到更低维的潜在空间。**Agent 的长系统提示与工具 schema 会常驻 KV，这一项直接决定每轮成本**。
+$$L$$ 层数、$$H_{kv}$$ 是 KV 头数、$$d_{head}$$ 头维度、$$S$$ 序列长度、$$B$$ 批大小。注意 $$H_{kv}$$：GQA/MQA 通过让多个查询头共享 KV 头来缩小这个因子；MLA 则把 KV 压到更低维的潜在空间。**Agent 的长系统提示与工具 schema 会常驻 KV，这一项直接决定每轮成本**。
 
 ### 3. 量化：仿射映射
 
-把浮点权重压到 $b$ 位整数，最常用的是仿射（affine）量化：
+把浮点权重压到 $$b$$ 位整数，最常用的是仿射（affine）量化：
 
 $$
 s=\frac{x_{\max}-x_{\min}}{2^{b}-1},\qquad z=\mathrm{round}\!\left(-\frac{x_{\min}}{s}\right)
@@ -50,7 +50,7 @@ $$
 q=\mathrm{clamp}\!\left(\mathrm{round}\!\left(\frac{x}{s}\right)+z,\;0,\;2^{b}-1\right),\qquad \hat{x}=s\,(q-z)
 $$
 
-$s$ 是缩放因子（scale），$z$ 是零点（zero-point），$\hat{x}$ 是反量化后的近似值。误差来自 $\mathrm{round}$，随 $b$ 减小而增大。
+$$s$$ 是缩放因子（scale），$$z$$ 是零点（zero-point），$$\hat{x}$$ 是反量化后的近似值。误差来自 $$\mathrm{round}$$，随 $$b$$ 减小而增大。
 
 模型体积的直接估算：
 
@@ -58,7 +58,7 @@ $$
 \text{model bytes}\approx P\times\frac{b}{8}
 $$
 
-7B 模型：FP16（$b=16$）约 14 GB，INT8 约 7 GB，INT4 约 3.5 GB。这就是为什么单卡能跑起量化后的 7B–32B 模型。
+7B 模型：FP16（$$b=16$$）约 14 GB，INT8 约 7 GB，INT4 约 3.5 GB。这就是为什么单卡能跑起量化后的 7B–32B 模型。
 
 ### 4. Prompt 缓存能省多少
 
@@ -68,7 +68,7 @@ $$
 \text{cost}=c_{\text{in}}\cdot T_{\text{in}}+c_{\text{out}}\cdot T_{\text{out}}
 $$
 
-开启缓存后，命中的输入部分按更低单价（常见为 $c_{\text{in}}/\alpha$，$\alpha\approx10$）计：
+开启缓存后，命中的输入部分按更低单价（常见为 $$c_{\text{in}}/\alpha$$，$$\alpha\approx10$$）计：
 
 $$
 \text{cost}'=c_{\text{in}}\cdot\Big(T_{\text{cached}}/\alpha+T_{\text{uncached}}\Big)+c_{\text{out}}\cdot T_{\text{out}}

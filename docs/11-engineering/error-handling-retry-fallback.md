@@ -71,7 +71,7 @@ $$
 t_n=\operatorname{rand}\!\Big(0,\;\min\big(t_{\max},\;t_0\cdot 2^{\,n-1}\big)\Big)
 $$
 
-- $t_0$：基准延迟，$t_{\max}$：上限，$\operatorname{rand}(0,\cdot)$：full jitter
+- $$t_0$$：基准延迟，$$t_{\max}$$：上限，$$\operatorname{rand}(0,\cdot)$$：full jitter
 - 不加抖动时，失败的下游会在同一时刻被再次打满——这是「重试风暴」的成因
 
 重试必须有**三重天花板**，缺一就会无限循环：

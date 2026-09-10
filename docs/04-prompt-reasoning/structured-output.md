@@ -17,7 +17,7 @@ updated: 2026-09-10
 
 ### 1. 约束解码：为什么能做到 100% 合法
 
-普通采样从整个词表 $V$ 里按概率取 token：
+普通采样从整个词表 $$V$$ 里按概率取 token：
 
 $$
 x_t\sim p(x_t\mid x_{<t})
@@ -31,7 +31,7 @@ p'(x_t\mid x_{<t})=
 {\sum_{v\in V}p(v\mid x_{<t})\cdot\mathbb{1}\big[\,x_{<t}\oplus v\ \text{是合法前缀}\,\big]}
 $$
 
-$\mathbb{1}[\cdot]$ 是指示函数：当前缀违反了 schema（如该出 `,` 却出了字母），该 token 直接被排除。这样生成的序列**在语法层面必然合法**——这就是 outlines / xgrammar 一类工具能做到「100% 合法 JSON」的原理。
+$$\mathbb{1}[\cdot]$$ 是指示函数：当前缀违反了 schema（如该出 `,` 却出了字母），该 token 直接被排除。这样生成的序列**在语法层面必然合法**——这就是 outlines / xgrammar 一类工具能做到「100% 合法 JSON」的原理。
 
 代价是：每步要算一次「哪些 token 允许」，实现上通常把 schema 编译成有限状态机或下推自动机，再对词表建索引加速。
 

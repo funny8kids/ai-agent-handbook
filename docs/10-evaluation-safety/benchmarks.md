@@ -45,7 +45,7 @@ $$
 \text{pass@}k=\mathbb{E}_{\text{problems}}\left[1-\frac{\dbinom{n-c}{k}}{\dbinom{n}{k}}\right]
 $$
 
-**LLM 评分**：用于开放式任务（GAIA 的部分题、对话质量），必须报告与人类的一致度（Cohen's $\kappa$），否则分数不可信。
+**LLM 评分**：用于开放式任务（GAIA 的部分题、对话质量），必须报告与人类的一致度（Cohen's $$\kappa$$），否则分数不可信。
 
 ### 3. 为什么「分数不可比」
 
@@ -83,7 +83,7 @@ $$
 
 - ❌ 刷榜即能力：SWE-bench 高分模型在你的私有代码库上可能水土不服（上下文构造、内部工具链差异）
 - ❌ 忽略 harness 差异：同一模型不同 harness 成绩可差 20%+，**模型 + harness = Agent**
-- ❌ 只看一个数字：pass@1、pass@10、Resolved Rate 不是一回事，跨报告比较要看清 $k$ 与预算
+- ❌ 只看一个数字：pass@1、pass@10、Resolved Rate 不是一回事，跨报告比较要看清 $$k$$ 与预算
 - ❌ 忽略成本：达到同样分数，token/时延差一个数量级的方案在生产上不是「同一水平」
 
 ## 参考资料

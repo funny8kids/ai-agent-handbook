@@ -33,7 +33,7 @@ $$
 \qquad \alpha\approx10
 $$
 
-**关键推论**：Agent 每轮都要重发 system prompt 与工具 schema，$T_{\text{cached}}$ 占比极高，因此缓存对 Agent 的收益远大于单轮聊天。但前提是前缀**字节级一致**——一个时间戳就能让整段缓存失效。
+**关键推论**：Agent 每轮都要重发 system prompt 与工具 schema，$$T_{\text{cached}}$$ 占比极高，因此缓存对 Agent 的收益远大于单轮聊天。但前提是前缀**字节级一致**——一个时间戳就能让整段缓存失效。
 
 ### 2. 为什么"看起来一样的 prompt"经常 miss
 

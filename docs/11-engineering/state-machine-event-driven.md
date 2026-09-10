@@ -27,12 +27,12 @@ $$
 M=(S,\;\Sigma,\;\delta,\;s_0)
 $$
 
-- $S$：状态集合（如 $\{\text{idle},\text{running},\text{maintenance}\}$）
-- $\Sigma$：输入事件集合（用户输入、工具结果、超时、取消）
-- $\delta: S\times\Sigma\to S$：转移函数
-- $s_0$：初始状态
+- $$S$$：状态集合（如 $$\{\text{idle},\text{running},\text{maintenance}\}$$）
+- $$\Sigma$$：输入事件集合（用户输入、工具结果、超时、取消）
+- $$\delta: S\times\Sigma\to S$$：转移函数
+- $$s_0$$：初始状态
 
-**显式化的价值在于边角情形**：例如「正在取消的 Agent 收到新输入」——如果不显式定义 $\delta(\text{running},\text{user\_input})$，实现里就会出现竞态。显式状态机强迫你在设计阶段回答这个转移该往哪走。
+**显式化的价值在于边角情形**：例如「正在取消的 Agent 收到新输入」——如果不显式定义 $$\delta(\text{running},\text{user\_input})$$，实现里就会出现竞态。显式状态机强迫你在设计阶段回答这个转移该往哪走。
 
 ### 2. 事件溯源：状态是事件的折叠
 
@@ -42,7 +42,7 @@ $$
 \text{State}_t=\mathrm{fold}\big(e_1,e_2,\dots,e_t\big)
 $$
 
-其中 $\mathrm{fold}$ 是纯函数（reducer / projection）。这条式子是全部收益的来源：
+其中 $$\mathrm{fold}$$ 是纯函数（reducer / projection）。这条式子是全部收益的来源：
 
 | 需求 | 为什么免费获得 |
 |---|---|
@@ -62,7 +62,7 @@ $$
 \text{快照 + 尾部重放}=O(1)+O(k)
 $$
 
-做法是定期把折叠结果存成**快照**，恢复时从最近快照开始、只重放其后的 $k$ 个事件。这是把「事件溯源」用于生产必须补的一环（LangGraph 的 checkpoint 本质就是快照）。
+做法是定期把折叠结果存成**快照**，恢复时从最近快照开始、只重放其后的 $$k$$ 个事件。这是把「事件溯源」用于生产必须补的一环（LangGraph 的 checkpoint 本质就是快照）。
 
 ### 4. 投影要幂等
 
