@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="紫罗兰图标（带底色，适合 favicon）">
+  <defs>
+    <linearGradient id="bBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="55%" stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="bPetalTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <linearGradient id="bPetalSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#EDE9FE"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
+    </linearGradient>
+    <linearGradient id="bLip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#DDD6FE"/>
+    </linearGradient>
+    <radialGradient id="bCentre" cx="44%" cy="38%" r="64%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="50%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+    <path id="bPetalPath" d="M0,0 C-48,-36 -64,-96 0,-152 C64,-96 48,-36 0,0 Z"/>
+  </defs>
+
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bBg)"/>
+
+  <!-- 花体：与 violet-icon.svg 同几何，缩放到 0.8 -->
+  <g transform="translate(256 268) scale(0.8) translate(-256 -268)">
+    <g>
+      <g transform="translate(256 264) rotate(-33) scale(0.78)">
+        <use href="#bPetalPath" fill="url(#bPetalTop)"/>
+      </g>
+      <g transform="translate(256 264) rotate(33) scale(0.78)">
+        <use href="#bPetalPath" fill="url(#bPetalTop)"/>
+      </g>
+      <g transform="translate(256 264) rotate(-76) scale(1.03)">
+        <use href="#bPetalPath" fill="url(#bPetalSide)"/>
+      </g>
+      <g transform="translate(256 264) rotate(76) scale(1.03)">
+        <use href="#bPetalPath" fill="url(#bPetalSide)"/>
+      </g>
+      <g transform="translate(256 264) rotate(180) scale(1.1)">
+        <use href="#bPetalPath" fill="url(#bLip)"/>
+      </g>
+    </g>
+
+    <g fill="none" stroke="#7C3AED" stroke-opacity="0.3" stroke-width="3.2" stroke-linecap="round">
+      <path d="M256 264 C246 224 226 202 202 190"/>
+      <path d="M256 264 C266 224 286 202 310 190"/>
+      <path d="M256 264 C238 228 214 210 186 202"/>
+      <path d="M256 264 C274 228 298 210 326 202"/>
+    </g>
+
+    <g fill="none" stroke="#7C3AED" stroke-opacity="0.4" stroke-width="3" stroke-linecap="round">
+      <path d="M256 298 C249 316 243 334 239 350"/>
+      <path d="M256 298 C256 318 256 336 256 354"/>
+      <path d="M256 298 C263 316 269 334 273 350"/>
+    </g>
+
+    <circle cx="256" cy="264" r="36" fill="url(#bCentre)"/>
+    <g fill="#FFFBEB">
+      <circle cx="256" cy="240" r="7"/>
+      <circle cx="235" cy="254" r="6"/>
+      <circle cx="277" cy="254" r="6"/>
+      <circle cx="243" cy="278" r="6"/>
+      <circle cx="269" cy="278" r="6"/>
+    </g>
+    <g fill="#B45309" fill-opacity="0.7">
+      <circle cx="256" cy="238" r="3.2"/>
+      <circle cx="234" cy="253" r="2.8"/>
+      <circle cx="278" cy="253" r="2.8"/>
+      <circle cx="242" cy="279" r="2.8"/>
+      <circle cx="270" cy="279" r="2.8"/>
+    </g>
+  </g>
+</svg>

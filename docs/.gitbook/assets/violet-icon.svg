@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="紫罗兰图标">
+  <defs>
+    <linearGradient id="vPetalTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#5B21B6"/>
+    </linearGradient>
+    <linearGradient id="vPetalSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="55%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+    <linearGradient id="vLip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EDE9FE"/>
+      <stop offset="30%" stop-color="#C4B5FD"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <radialGradient id="vCentre" cx="44%" cy="38%" r="64%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="48%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+    <radialGradient id="vGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C4B5FD" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#C4B5FD" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="vShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="7" stdDeviation="11" flood-color="#4C1D95" flood-opacity="0.26"/>
+    </filter>
+    <path id="vPetalPath" d="M0,0 C-48,-36 -64,-96 0,-152 C64,-96 48,-36 0,0 Z"/>
+  </defs>
+
+  <circle cx="256" cy="268" r="205" fill="url(#vGlow)"/>
+
+  <g filter="url(#vShadow)">
+    <!-- 上瓣（较小，深紫） -->
+    <g transform="translate(256 264) rotate(-33) scale(0.78)">
+      <use href="#vPetalPath" fill="url(#vPetalTop)"/>
+    </g>
+    <g transform="translate(256 264) rotate(33) scale(0.78)">
+      <use href="#vPetalPath" fill="url(#vPetalTop)"/>
+    </g>
+
+    <!-- 侧瓣（最大） -->
+    <g transform="translate(256 264) rotate(-76) scale(1.03)">
+      <use href="#vPetalPath" fill="url(#vPetalSide)"/>
+    </g>
+    <g transform="translate(256 264) rotate(76) scale(1.03)">
+      <use href="#vPetalPath" fill="url(#vPetalSide)"/>
+    </g>
+
+    <!-- 下唇瓣 -->
+    <g transform="translate(256 264) rotate(180) scale(1.1)">
+      <use href="#vPetalPath" fill="url(#vLip)"/>
+    </g>
+  </g>
+
+  <!-- 花瓣脉络 -->
+  <g fill="none" stroke="#4C1D95" stroke-opacity="0.28" stroke-width="3.2" stroke-linecap="round">
+    <path d="M256 264 C246 224 226 202 202 190"/>
+    <path d="M256 264 C266 224 286 202 310 190"/>
+    <path d="M256 264 C238 228 214 210 186 202"/>
+    <path d="M256 264 C274 228 298 210 326 202"/>
+  </g>
+
+  <!-- 下唇瓣：浅色喉部由渐变自然呈现，叠加紫色引导脉 -->
+  <g fill="none" stroke="#7C3AED" stroke-opacity="0.42" stroke-width="3" stroke-linecap="round">
+    <path d="M256 298 C249 316 243 334 239 350"/>
+    <path d="M256 298 C256 318 256 336 256 354"/>
+    <path d="M256 298 C263 316 269 334 273 350"/>
+  </g>
+
+  <!-- 花心 -->
+  <circle cx="256" cy="264" r="36" fill="url(#vCentre)"/>
+  <g stroke="#B45309" stroke-opacity="0.5" stroke-width="2.8" stroke-linecap="round">
+    <path d="M256 252 L256 276"/>
+    <path d="M247 256 L265 272"/>
+    <path d="M265 256 L247 272"/>
+  </g>
+
+  <!-- 花蕊 -->
+  <g fill="#FFFBEB">
+    <circle cx="256" cy="240" r="7"/>
+    <circle cx="235" cy="254" r="6"/>
+    <circle cx="277" cy="254" r="6"/>
+    <circle cx="243" cy="278" r="6"/>
+    <circle cx="269" cy="278" r="6"/>
+  </g>
+  <g fill="#FDE68A">
+    <circle cx="256" cy="238" r="3.2"/>
+    <circle cx="234" cy="253" r="2.8"/>
+    <circle cx="278" cy="253" r="2.8"/>
+    <circle cx="242" cy="279" r="2.8"/>
+    <circle cx="270" cy="279" r="2.8"/>
+  </g>
+</svg>
