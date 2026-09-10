@@ -1,0 +1,7 @@
+# GitBook 配置：内容根目录设为 docs/
+# 目录文件：docs/SUMMARY.md；首页：docs/README.md
+root: ./docs/
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md

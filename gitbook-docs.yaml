@@ -4,8 +4,8 @@ site:
   structure:
     - type: space
       key: space-1
-      title: New Book
-      path: new-book
+      title: AI Agent Handbook
+      path: docs
       default: true
       content:
-        directory: ./new-book
+        directory: ./docs
