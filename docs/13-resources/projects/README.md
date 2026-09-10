@@ -7,7 +7,7 @@ updated: 2026-09-10
 
 # 开源项目索引
 
-> **一句话**：AI Agent 相关开源项目总览，按 11 类整理，收录 329 个；star 数与许可为 **2026-09** 观测值。
+> **一句话**：AI Agent 相关开源项目总览，按 11 类整理，收录 323 个；star 数与许可为 **2026-09** 观测值。
 
 > **提示**：star 数只反映关注度，不反映质量与适配度；选型请结合活跃度与你的场景实测。数据由 `scripts/gen-projects.py` 从 GitHub API 生成，可重新运行更新。
 
@@ -108,7 +108,6 @@ updated: 2026-09-10
 | [SolaceLabs/solace-agent-mesh](https://github.com/SolaceLabs/solace-agent-mesh) | 4,933 | Apache-2.0 | Python | An event-driven framework designed to build and orchestrate multi-agent AI systems. It enables seamless inte… |
 | [LantaoYu/MARL-Papers](https://github.com/LantaoYu/MARL-Papers) | 4,878 | NOASSERTION | — | Paper list of multi-agent reinforcement learning (MARL) |
 | [VRSEN/agency-swarm](https://github.com/VRSEN/agency-swarm) | 4,555 | MIT | Python | Reliable Multi-Agent Orchestration Framework |
-| [nextlevelbuilder/goclaw](https://github.com/nextlevelbuilder/goclaw) | 3,599 | NOASSERTION | Go | GoClaw - GoClaw is OpenClaw rebuilt in Go — with multi-tenant isolation, 5-layer security, and native concur… |
 | [SkyworkAI/DeepResearchAgent](https://github.com/SkyworkAI/DeepResearchAgent) | 3,536 | MIT | Python | DeepResearchAgent is a hierarchical multi-agent system designed not only for deep research tasks but also fo… |
 | [Farama-Foundation/PettingZoo](https://github.com/Farama-Foundation/PettingZoo) | 3,512 | MIT | Python | A standard API for multi-agent reinforcement learning environments, with popular reference environments and … |
 | [neomjs/neo](https://github.com/neomjs/neo) | 3,271 | MIT | JavaScript | Neo.mjs is a self-evolving software organism: a professional end-to-end AI engineering team whose cross-mode… |
@@ -215,13 +214,10 @@ updated: 2026-09-10
 | [browser-use/browser-use](https://github.com/browser-use/browser-use) | 11.4 万 | MIT | Python | Agents that use the browser. |
 | [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | 3.7 万 | Apache-2.0 | TypeScript | Playwright MCP server |
 | [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk) | 3.0 万 | MIT | Python | Open-source AI browser agent for web automation: a web browsing agent and computer-use agent in plain Englis… |
-| [h4ckf0r0day/obscura](https://github.com/h4ckf0r0day/obscura) | 2.7 万 | Apache-2.0 | Rust | The headless browser for AI agents and web scraping |
 | [browserbase/stagehand](https://github.com/browserbase/stagehand) | 2.4 万 | MIT | TypeScript | The SDK For Browser Agents |
 | [nanobrowser/nanobrowser](https://github.com/nanobrowser/nanobrowser) | 1.4 万 | Apache-2.0 | TypeScript | Open-Source Chrome extension for AI-powered web automation. Run multi-agent workflows using your own LLM API… |
-| [jo-inc/camofox-browser](https://github.com/jo-inc/camofox-browser) | 1.1 万 | MIT | JavaScript | Stealth headless browser for AI agents — bypass Cloudflare, bot detection, and anti-scraping. Drop-in Puppet… |
 | [magnitudedev/browser-agent](https://github.com/magnitudedev/browser-agent) | 4,128 | Apache-2.0 | TypeScript | Open-source, vision-first browser agent |
 | [showlab/ShowUI](https://github.com/showlab/ShowUI) | 1,898 | Apache-2.0 | Python | [CVPR 2025] Open-source, End-to-end, Vision-Language-Action model for GUI Agent & Computer Use. |
-| [lexmount/moli](https://github.com/lexmount/moli) | 1,870 | Apache-2.0 | Rust | Best headless browser for AI agents. Lite, Fast, High-Compatibility. Built in Rust |
 | [mediar-ai/terminator](https://github.com/mediar-ai/terminator) | 1,634 | MIT | Rust | playwright for windows computer use |
 | [hyperbrowserai/HyperAgent](https://github.com/hyperbrowserai/HyperAgent) | 1,560 | NOASSERTION | TypeScript | AI Browser Automation |
 | [AIPexStudio/AIPex](https://github.com/AIPexStudio/AIPex) | 1,250 | MIT | TypeScript | AIPex: AI browser automation assistant, no migration and privacy first. Alternative to Manus Browser Operato… |
@@ -240,9 +236,6 @@ updated: 2026-09-10
 | [promptfoo/promptfoo](https://github.com/promptfoo/promptfoo) | 2.5 万 | MIT | TypeScript | Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare performan… |
 | [comet-ml/opik](https://github.com/comet-ml/opik) | 2.2 万 | Apache-2.0 | Python | Debug, evaluate, and monitor your LLM applications, RAG systems, and agentic workflows with comprehensive tr… |
 | [openobserve/openobserve](https://github.com/openobserve/openobserve) | 2.2 万 | AGPL-3.0 | TypeScript | Open source observability platform for logs, metrics, traces, RUM, Session replay, pipelines, SLO and LLM ob… |
-| [raga-ai-hub/RagaAI-Catalyst](https://github.com/raga-ai-hub/RagaAI-Catalyst) | 1.6 万 | Apache-2.0 | Python | Python SDK for Agent AI Observability, Monitoring and Evaluation Framework. Includes features like agent, ll… |
-| [open-metadata/OpenMetadata](https://github.com/open-metadata/OpenMetadata) | 1.5 万 | Apache-2.0 | TypeScript | The Open Context Layer for Data and AI ,  OpenMetadata is the open platform for building trusted data contex… |
-| [ifixai-ai/iFixAi](https://github.com/ifixai-ai/iFixAi) | 1.4 万 | Apache-2.0 | Python | Independent Auditing of AI Agents. Run by human or the agent itself, to answer the most crucial question in … |
 | [Arize-ai/phoenix](https://github.com/Arize-ai/phoenix) | 1.1 万 | NOASSERTION | Python | AI Observability & Evaluation |
 | [maximhq/bifrost](https://github.com/maximhq/bifrost) | 7,946 | Apache-2.0 | Go | Fastest enterprise AI gateway (50x faster than LiteLLM) with adaptive load balancer, cluster mode, guardrail… |
 | [evidentlyai/evidently](https://github.com/evidentlyai/evidently) | 7,903 | Apache-2.0 | Jupyter Notebook | Evidently is ​​an open-source ML and LLM observability framework. Evaluate, test, and monitor any AI-powered… |
@@ -268,6 +261,9 @@ updated: 2026-09-10
 | [openlit/openlit](https://github.com/openlit/openlit) | 2,752 | Apache-2.0 | TypeScript | Open-source observability & evaluation platform for AI agents and coding agents. Trace LLMs, tools, prompts,… |
 | [yaojingang/yao-meta-skill](https://github.com/yaojingang/yao-meta-skill) | 2,608 | MIT | Python | YAO = Yielding AI Outcomes. A rigorous engineering, evaluation, governance, and portability system for reusa… |
 | [FailproofAI/failproofai](https://github.com/FailproofAI/failproofai) | 2,604 | NOASSERTION | MDX | Observability and enforcement for AI agent harnesses. Capture every run and runtime reliability with policy … |
+| [Armur-Ai/Pentest-Swarm-AI](https://github.com/Armur-Ai/Pentest-Swarm-AI) | 2,484 | AGPL-3.0 | Go | Autonomous penetration testing using a swarm of AI agents. Orchestrates recon, classification, exploitation,… |
+| [uptrain-ai/uptrain](https://github.com/uptrain-ai/uptrain) | 2,365 | Apache-2.0 | Python | UpTrain is an open-source unified platform to evaluate and improve Generative AI applications. We provide gr… |
+| [MCPJam/inspector](https://github.com/MCPJam/inspector) | 2,195 | NOASSERTION | TypeScript | Testing and evaluation platform to chat, inspect, and debug MCP servers, MCP apps, and ChatGPT apps. |
 
 ## 推理与部署
 
@@ -275,7 +271,6 @@ updated: 2026-09-10
 |---|---|---|---|---|
 | [ollama/ollama](https://github.com/ollama/ollama) | 18.1 万 | MIT | Go | Get up and running with Kimi-K2.6, GLM-5.2, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models. |
 | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | 12.8 万 | MIT | C++ | LLM inference in C/C++ |
-| [karpathy/autoresearch](https://github.com/karpathy/autoresearch) | 9.6 万 | NOASSERTION | Python | AI agents running research on single-GPU nanochat training automatically |
 | [vllm-project/vllm](https://github.com/vllm-project/vllm) | 9.1 万 | Apache-2.0 | Python | A high-throughput and memory-efficient inference and serving engine for LLMs |
 | [unslothai/unsloth](https://github.com/unslothai/unsloth) | 7.6 万 | Apache-2.0 | Python | Local UI to run and train LLMs and diffusion models. Supports GGUF, MLX, Qwen3.8, DeepSeek-V4, MiniMax-H3, G… |
 | [hiyouga/LlamaFactory](https://github.com/hiyouga/LlamaFactory) | 7.5 万 | Apache-2.0 | Python | Unified Efficient Fine-Tuning of 100+ LLMs & VLMs (ACL 2024) |
@@ -307,6 +302,7 @@ updated: 2026-09-10
 | [pegainfer-project/pegainfer](https://github.com/pegainfer-project/pegainfer) | 679 | Apache-2.0 | Rust | Pure Rust + CUDA LLM inference engine — no PyTorch, OpenAI-compatible, serves Qwen3 to Kimi-K2 |
 | [GURPREETKAURJETHRA/END-TO-END-GENERATIVE-AI-PROJECTS](https://github.com/GURPREETKAURJETHRA/END-TO-END-GENERATIVE-AI-PROJECTS) | 633 | MIT | — | End to End Generative AI Industry Projects on LLM Models with Deployment_Awesome LLM Projects |
 | [warpfront/hipfire](https://github.com/warpfront/hipfire) | 618 | NOASSERTION | Rust | RDNA-native LLM inference engine in Rust. |
+| [yassa9/qwen600](https://github.com/yassa9/qwen600) | 560 | MIT | Cuda | Static suckless single batch CUDA-only qwen3-0.6B mini inference engine |
 
 ## 沙箱与运行时
 
@@ -316,12 +312,10 @@ updated: 2026-09-10
 | [trycua/cua](https://github.com/trycua/cua) | 2.2 万 | MIT | HTML | Scale computer-use 2.0 with open-source drivers, cross-OS fleets, and benchmarks for training, evaluation, a… |
 | [e2b-dev/E2B](https://github.com/e2b-dev/E2B) | 1.4 万 | Apache-2.0 | Python | Open-source, secure environment with real-world tools for enterprise-grade agents. |
 | [agent-infra/sandbox](https://github.com/agent-infra/sandbox) | 5,883 | Apache-2.0 | Python | All-in-One Sandbox for AI Agents that combines Browser, Shell, File, MCP and VSCode Server in a single Docke… |
-| [standardagents/arrow-js](https://github.com/standardagents/arrow-js) | 3,752 | MIT | TypeScript | The first UI framework for the agentic era — tiny, performant, with WASM sandboxes for safe code execution. |
 | [e2b-dev/open-computer-use](https://github.com/e2b-dev/open-computer-use) | 2,249 | Apache-2.0 | Python | AI computer use powered by open source LLMs and E2B Desktop Sandbox |
 | [abshkbh/arrakis](https://github.com/abshkbh/arrakis) | 871 | AGPL-3.0 | Go | A fully customizable and self-hosted sandboxing solution for AI agent code execution and computer use. It fe… |
 | [e2b-dev/surf](https://github.com/e2b-dev/surf) | 863 | Apache-2.0 | TypeScript | Surf is a computer use AI agent powered by OpenAI that interacts with a E2B's virtual desktop environment th… |
 | [open-gitagent/clawless](https://github.com/open-gitagent/clawless) | 534 | MIT | TypeScript | ClawLess — A serverless browser-based runtime for Claw AI Agents powered by WebContainers |
-| [Th0rgal/sandboxed.sh](https://github.com/Th0rgal/sandboxed.sh) | 507 | NOASSERTION | Rust | Safe runtime for autonomous on-chain AI agents: isolated sandboxes, Library skills, encrypted secrets. |
 
 ## 基准、数据集与论文
 
@@ -329,7 +323,6 @@ updated: 2026-09-10
 |---|---|---|---|---|
 | [OpenBMB/ToolBench](https://github.com/OpenBMB/ToolBench) | 5,736 | Apache-2.0 | Python | [ICLR'24 spotlight] An open platform for training, serving, and evaluating large language model for tool lea… |
 | [THUDM/AgentBench](https://github.com/THUDM/AgentBench) | 3,722 | Apache-2.0 | Python | A Comprehensive Benchmark to Evaluate LLMs as Agents (ICLR'24) |
-| [NAalytics/Assemblies-of-putative-SARS-CoV2-spike-encoding-mRNA-sequences-for-vaccines-BNT-162b2-and-mRNA-1273](https://github.com/NAalytics/Assemblies-of-putative-SARS-CoV2-spike-encoding-mRNA-sequences-for-vaccines-BNT-162b2-and-mRNA-1273) | 3,352 | NOASSERTION | — | RNA vaccines have become a key tool in moving forward through the challenges raised both in the current pand… |
 | [Meirtz/Awesome-Context-Engineering](https://github.com/Meirtz/Awesome-Context-Engineering) | 3,299 | MIT | — | 🔥 Comprehensive survey on Context Engineering: from prompt engineering to production-grade AI systems. hundr… |
 | [blazickjp/arxiv-mcp-server](https://github.com/blazickjp/arxiv-mcp-server) | 3,127 | Apache-2.0 | Python | A local MCP server for agent literature work. Original-LaTeX section reads, BibTeX from arXiv metadata, and … |
 | [yilewang/llm-for-zotero](https://github.com/yilewang/llm-for-zotero) | 2,940 | AGPL-3.0 | TypeScript | An open-source research agent system for your Zotero library. |
@@ -361,6 +354,7 @@ updated: 2026-09-10
 | [HKUSTDial/awesome-data-agents](https://github.com/HKUSTDial/awesome-data-agents) | 736 | NOASSERTION | Python | Continuously updated paper list on advancements in Data Agents. Companion repo to our paper "A Survey of Dat… |
 | [TIGER-AI-Lab/ClawBench](https://github.com/TIGER-AI-Lab/ClawBench) | 704 | Apache-2.0 | Python | Open-source benchmark for browser AI agents on daily tasks. |
 | [YennNing/Awesome-Code-as-Agent-Harness-Papers](https://github.com/YennNing/Awesome-Code-as-Agent-Harness-Papers) | 681 | MIT | — | A curated list of papers and resources based on the survey "Code as Agent Harness" |
+| [facebookresearch/BenchMARL](https://github.com/facebookresearch/BenchMARL) | 659 | MIT | Python | BenchMARL is a library for benchmarking Multi-Agent Reinforcement Learning (MARL). BenchMARL allows to quick… |
 
 ## 学习资源与 Awesome
 
@@ -374,8 +368,6 @@ updated: 2026-09-10
 | [patchy631/ai-engineering-hub](https://github.com/patchy631/ai-engineering-hub) | 3.7 万 | MIT | Jupyter Notebook | In-depth tutorials on LLMs, RAGs and real-world AI agent applications. |
 | [e2b-dev/awesome-ai-agents](https://github.com/e2b-dev/awesome-ai-agents) | 3.0 万 | NOASSERTION | — | A list of AI autonomous agents |
 | [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) | 2.6 万 | NOASSERTION | TypeScript | What are the principles we can use to build LLM-powered software that is actually good enough to put in the … |
-| [AccumulateMore/CV](https://github.com/AccumulateMore/CV) | 2.4 万 | NOASSERTION | Jupyter Notebook | ✅（已完结）超级全面的 深度学习 笔记【土堆 Pytorch】【李沐 动手学深度学习】【吴恩达 深度学习】【大飞 大模型Agent】 |
-| [mikeroyal/Self-Hosting-Guide](https://github.com/mikeroyal/Self-Hosting-Guide) | 2.3 万 | NOASSERTION | Dockerfile | Self-Hosting Guide. Learn all about  locally hosting (on premises & private web servers) and managing softwa… |
 | [datawhalechina/easy-vibe](https://github.com/datawhalechina/easy-vibe) | 1.9 万 | NOASSERTION | JavaScript | 💻  vibe coding 101｜The first course for AI-native product builders. |
 | [awesome-opencode/awesome-opencode](https://github.com/awesome-opencode/awesome-opencode) | 1.0 万 | CC0-1.0 | JavaScript | A curated list of awesome plugins, themes, agents, projects, and resources for https://opencode.ai |
 | [WangRongsheng/awesome-LLM-resources](https://github.com/WangRongsheng/awesome-LLM-resources) | 8,945 | Apache-2.0 | — | 🧑‍🚀 全世界最好的LLM资料总结（多模态生成、Agent、辅助编程、AI审稿、数据处理、模型训练、模型推理、o1 模型、MCP、小语言模型、视觉语言模型） / Summary of the world's best… |
@@ -400,6 +392,8 @@ updated: 2026-09-10
 | [showlab/Awesome-GUI-Agent](https://github.com/showlab/Awesome-GUI-Agent) | 1,216 | NOASSERTION | — | 💻 A curated list of papers and resources for multi-modal Graphical User Interface (GUI) agents. |
 | [dariubs/awesome-workflow-automation](https://github.com/dariubs/awesome-workflow-automation) | 1,214 | MIT | — | A curated list of Workflow Automation  Software, Engines and Tools |
 | [scadastrangelove/awesome-ai-security-tools](https://github.com/scadastrangelove/awesome-ai-security-tools) | 1,114 | NOASSERTION | Python | A curated list of public-source, research, and commercial tools for AI security and AI-assisted cybersecurit… |
+| [fancyboi999/ai-engineering-from-scratch-zh](https://github.com/fancyboi999/ai-engineering-from-scratch-zh) | 1,052 | MIT | Python | Agent工程师最全学习路径 · 从零精通 AI 工程 · 20 阶段 503 课 · 中文全量翻译 + 配套站点 + 动画讲解视频 · 如何成为 AI Agent 工程师的修成指南 |
+| [RUC-NLPIR/Awesome-Long-Horizon-Agents](https://github.com/RUC-NLPIR/Awesome-Long-Horizon-Agents) | 1,012 | MIT | — | The roadmap of long-horizon agents |
 
 ## 相关知识点
 

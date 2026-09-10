@@ -81,6 +81,18 @@ SEED = {
 
 MIN_STARS = 400
 PER_CAT = 34
+# 明确跑题或质量不匹配的条目：人工拉黑，避免污染索引
+BLOCK = {
+    'naalytics/assemblies-of-putative-sars-cov2-spike-encoding-mrna-sequences-for-vaccines-bnt-162b2-and-mrna-1273',
+    'mikeroyal/self-hosting-guide', 'accumulatemore/cv', 'open-metadata/openmetadata',
+    'standardagents/arrow-js', 'th0rgal/sandboxed.sh', 'nextlevelbuilder/goclaw',
+    'jo-inc/camofox-browser', 'h4ckf0r0day/obscura', 'lexmount/moli',
+    'ifixai-ai/ifixai', 'raga-ai-hub/ragaai-catalyst', 'karpathy/autoresearch',
+}
+# 必须命中「Agent 相关」强信号，避免只靠泛 AI 词混进来
+STRONG = ['agent', 'llm', 'rag', 'mcp', 'prompt', 'langchain', 'langgraph', 'gpt',
+          'embedding', 'vector', 'retrieval', 'fine-tun', 'transformer', 'llmops',
+          'multi-agent', 'tool call', 'tool-call', 'hallucination', '智能体']
 # 全局相关性闸门：必须命中其一，避免把泛 AI 项目混进来
 GATE = ['ai', 'llm', 'agent', 'gpt', 'model', 'rag', 'mcp', 'prompt', 'neural',
         'transformer', 'embedding', 'machine learning', 'deep learning', 'genai', 'copilot']
@@ -143,13 +155,15 @@ def main():
 
     # 2) 自动分类填充
     for real, v in cache.items():
-        if real.lower() in used or v.get('archived'):
+        if real.lower() in used or v.get('archived') or real.lower() in BLOCK:
             continue
         stars = v.get('stars') or 0
         if stars < MIN_STARS or not passes_gate(v):
             continue
         blob = (v.get('full_name', '') + ' ' + (v.get('description') or '') + ' ' + topics_of(v)).lower()
         if any(n in blob for n in NEG):
+            continue
+        if not any(s in blob for s in STRONG):   # 必须命中 Agent 强信号
             continue
         best, bs = None, 0
         for name, kws in CATS:

@@ -6,7 +6,7 @@
     <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-7C3AED?style=flat-square"></a>
     <img alt="Pages" src="https://img.shields.io/badge/pages-170-8B5CF6?style=flat-square">
     <img alt="Chapters" src="https://img.shields.io/badge/chapters-17-6D28D9?style=flat-square">
-    <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-329-4C1D95?style=flat-square">
+    <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-323-4C1D95?style=flat-square">
     <img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-93-A78BFA?style=flat-square">
   </p>
 </div>
@@ -215,7 +215,7 @@
 - **170 页 / 17 章**，全部达到体裁字数门槛（原理型 ≥1200 字、实战型 ≥900、概念型 ≥600）
 - **93 页含数学公式**（KaTeX）：注意力机制、Embedding 与相似度、RLHF/DPO、LoRA、量化、KV 缓存、RAG 指标、ToT 搜索、评估指标、约束解码、幻觉检测、事件溯源、容量规划、提示注入与越狱的风险模型……
 - **每篇底部有「参考资料」**，数字与结论都能点回一手来源
-- **329 个开源项目索引**（带实测 star 与许可）：[完整索引](docs/13-resources/projects/README.md)
+- **323 个开源项目索引**（带实测 star 与许可）：[完整索引](docs/13-resources/projects/README.md)
 - **17 张自绘 SVG 图示**（部分带 SMIL 动画）：Agent 循环、注意力计算、RAG 管线、多智能体、评估四层、连续批处理、前缀缓存、VLA 回路……
 - 全书写作规范见 [风格指南](docs/14-templates/style-guide.md)（emoji 硬预算、公式与出处要求、图片必须放 `docs/.gitbook/assets/`）
 
