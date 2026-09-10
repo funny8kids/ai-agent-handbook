@@ -19,7 +19,7 @@ updated: 2026-09-10
 
 ## 路线图
 
-![学习路线：四个阶段](../assets/diagrams/00-learning-path.svg)
+![学习路线：四个阶段](../.gitbook/assets/00-learning-path.svg)
 
 ```mermaid
 flowchart LR

@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：本章回答最核心的问题：Agent 是什么、由什么组成、怎么循环、自主到什么程度、状态放在哪、人什么时候介入。
 
-![Agent 核心循环](../assets/diagrams/02-agent-loop.svg)
+![Agent 核心循环](../.gitbook/assets/02-agent-loop.svg)
 
 ## 你将学到
 

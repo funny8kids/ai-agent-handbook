@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：Agent 不评估 = 裸奔上线；不设防 = 等着被提示注入。本章覆盖评估指标、基准测试、幻觉治理、攻击面防御与对齐安全。
 
-![Agent 评估四层指标](../assets/diagrams/10-eval-layers.svg)
+![Agent 评估四层指标](../.gitbook/assets/10-eval-layers.svg)
 
 ## 你将学到
 

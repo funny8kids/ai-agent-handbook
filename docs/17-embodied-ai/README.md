@@ -38,9 +38,9 @@ updated: 2026-09-10
 
 | 图示 | 说明 |
 |---|---|
-| [VLA 感知—决策—行动回路](../assets/diagrams/17-vla-loop.svg) | 帧进入、慢系统出意图、快系统出动作块，两条时钟怎么对齐 |
-| [Action Chunking 与异步执行](../assets/diagrams/17-action-chunking.svg) | 5Hz 推理为什么能驱动 50Hz 控制：滚动地「预取」未来动作 |
-| [域随机化与 Sim-to-Real](../assets/diagrams/17-sim2real-domain-randomization.svg) | 随机化「训练时的分布」而不是「调一个最像真的场景」 |
+| [VLA 感知—决策—行动回路](../.gitbook/assets/17-vla-loop.svg) | 帧进入、慢系统出意图、快系统出动作块，两条时钟怎么对齐 |
+| [Action Chunking 与异步执行](../.gitbook/assets/17-action-chunking.svg) | 5Hz 推理为什么能驱动 50Hz 控制：滚动地「预取」未来动作 |
+| [域随机化与 Sim-to-Real](../.gitbook/assets/17-sim2real-domain-randomization.svg) | 随机化「训练时的分布」而不是「调一个最像真的场景」 |
 
 ## 阅读建议
 

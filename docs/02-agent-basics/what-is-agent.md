@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：Agent（智能体）是能自己规划、调用工具、根据结果调整行动，最终完成目标的 AI 系统。
 
-![Agent 核心循环](../assets/diagrams/02-agent-loop.svg)
+![Agent 核心循环](../.gitbook/assets/02-agent-loop.svg)
 
 ## 先看结论
 

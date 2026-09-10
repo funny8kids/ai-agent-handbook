@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：Transformer 用「注意力机制」让每个词直接看到所有其他词，可完全并行训练——这是 LLM 时代的架构基石。
 
-![缩放点积注意力计算流程](../assets/diagrams/03-attention.svg)
+![缩放点积注意力计算流程](../.gitbook/assets/03-attention.svg)
 
 ## 问题动机
 

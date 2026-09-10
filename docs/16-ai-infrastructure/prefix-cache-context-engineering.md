@@ -33,7 +33,7 @@ flowchart LR
 
 ## 哪些 token 能省、哪些不能
 
-![前缀缓存命中与重算范围（动画）](../assets/diagrams/16-prefix-cache.svg)
+![前缀缓存命中与重算范围（动画）](../.gitbook/assets/16-prefix-cache.svg)
 
 | 前缀片段 | 能否命中 | 为什么失效 |
 |---|---|---|

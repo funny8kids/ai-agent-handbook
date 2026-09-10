@@ -33,7 +33,7 @@ updated: 2026-09-10
 
 ## 分层控制与频率对齐
 
-![慢脑—快脑—伺服的时钟关系](../assets/diagrams/17-action-chunking.svg)
+![慢脑—快脑—伺服的时钟关系](../.gitbook/assets/17-action-chunking.svg)
 
 ```text
 任务层   1–10Hz   「先去水槽那边，再抓蓝色杯子」        ← LLM/VLM、行为树、状态机

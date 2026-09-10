@@ -38,7 +38,7 @@ flowchart LR
   end
 ```
 
-![连续批处理与静态批处理对比（动画）](../assets/diagrams/16-continuous-batching.svg)
+![连续批处理与静态批处理对比（动画）](../.gitbook/assets/16-continuous-batching.svg)
 
 > 💡 **提示**：Agent 负载天生「长输入 + 中等输出 + 高频短请求」，且每轮重复发送同一前缀——所以引擎的前缀缓存能力对 Agent 场景比对聊天更重要。
 

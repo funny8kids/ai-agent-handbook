@@ -16,7 +16,7 @@
    - 资源页面 → [资源模板](../14-templates/resource-template.md)
    - 行文风格（emoji、图示、类比、提示块）→ [风格指南](../14-templates/style-guide.md)
 3. **目录登记**：新增页面必须在 `docs/SUMMARY.md` 中登记，否则不会出现在 GitBook 目录
-4. **图片**：自制图表统一放 `docs/assets/`（`diagrams/`、`screenshots/`、`covers/`、`icons/` 四类），命名用 `章节-主题.png`（如 `02-agent-basics-agent-loop.png`），先压缩（TinyPNG/Squoosh）再提交；GitBook 编辑器上传的图片默认存放在 `docs/.gitbook/assets/`；自制矢量图（含动画）用 `.svg` 放 `docs/assets/diagrams/`，命名 `章节-主题.svg`（如 `16-continuous-batching.svg`），写法与限制见 [风格指南 · 需要「会动」的图用 SVG](../14-templates/style-guide.md)
+4. **图片**：**所有图片统一放 `docs/.gitbook/assets/`**——这是 GitBook 的资源目录，只有放在这里的图片才会被 GitBook 导入并提供访问；放在其他目录（如自建的 `docs/assets/`）在 GitBook 上会加载失败。命名用 `章节-主题.svg`（如 `16-continuous-batching.svg`）或 `章节-主题.png`，截图先压缩（TinyPNG/Squoosh）再提交；矢量图（含动画）写法与限制见 [风格指南 · 需要「会动」的图用 SVG](../14-templates/style-guide.md)
 5. **链接**：站内链接用相对路径（`../06-memory-rag/rag-basics.md`）；知识点页与资源页保持双向链接
 
 ## 提交流程

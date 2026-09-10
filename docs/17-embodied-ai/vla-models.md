@@ -33,7 +33,7 @@ flowchart LR
   CHUNK --> CTRL[安全层 + 插值 + 伺服]
 ```
 
-![VLA 双系统频率回路（动画）](../assets/diagrams/17-vla-loop.svg)
+![VLA 双系统频率回路（动画）](../.gitbook/assets/17-vla-loop.svg)
 
 ## 各部件的设计选择
 
@@ -96,7 +96,7 @@ def sample(h_cond, steps=10, dt=0.1):           # 欧拉积分，从噪声走到
 ## 工程现场笔记
 
 - **快慢分频是硬需求**：双系统（慢 VLM 出隐条件、快动作专家出动作）几乎是当前产业共识：慢系统 7–10Hz、快系统 100–200Hz、底层伺服 kHz 级。参考 [动作表示与分层控制](action-representation-control.md)。
-- **推理必须流式/分块**：`VLM 前向 → 条件缓存 → 动作专家多次小步去噪`，后者与执行重叠（边执行当前块边算下一块），这是延迟能做到可感知的关键，见 [Action Chunking 动画](../assets/diagrams/17-action-chunking.svg)。
+- **推理必须流式/分块**：`VLM 前向 → 条件缓存 → 动作专家多次小步去噪`，后者与执行重叠（边执行当前块边算下一块），这是延迟能做到可感知的关键，见 [Action Chunking 动画](../.gitbook/assets/17-action-chunking.svg)。
 - **视觉 tokenizer 换不得**：底座 VLM 的图片预处理（分辨率、patch 数、归一化）与训练时不一致，策略会「安静地坏掉」——分数下降不明显但在你的场景里就是不行。把它写进配置校验。
 - **语言头输出子目标（hierarchical reasoning）在长时序任务上收益大**：π0.5、GR00T 一类都在往「先说下一步做什么，再做」的方向靠，便于人接管与调试。
 - **和 LLM 侧共用的基建**：量化与 KV 缓存同样适用；机器人板载算力下，FP8/INT4 化的 VLM 骨干常常是从「不可用」到「可用」的那一步（→ [推理服务化](../16-ai-infrastructure/inference-serving.md)）。

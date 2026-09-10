@@ -21,7 +21,7 @@ updated: 2026-09-10
 
 ## 一次工具调用穿过什么
 
-![沙箱分层与出口闸门（动画）](../assets/diagrams/16-sandbox-layers.svg)
+![沙箱分层与出口闸门（动画）](../.gitbook/assets/16-sandbox-layers.svg)
 
 | 隔离层 | 原理 | 强度 | 启动开销 | 典型用途 |
 |---|---|---|---|---|

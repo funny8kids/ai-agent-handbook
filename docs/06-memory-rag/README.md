@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：上下文窗口是 Agent 唯一的工作记忆。本章讲「记什么、怎么存、怎么找、怎么省」：记忆分类、上下文工程、向量检索、RAG 管线与图谱增强。
 
-![RAG 管线：索引侧 + 查询侧](../assets/diagrams/06-rag-pipeline.svg)
+![RAG 管线：索引侧 + 查询侧](../.gitbook/assets/06-rag-pipeline.svg)
 
 ## 你将学到
 

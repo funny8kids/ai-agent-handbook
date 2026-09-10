@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：工具是 Agent 的手脚，协议是手脚的接法。本章从 Function Calling 原理讲到 MCP/A2A 两大协议，再到权限、沙箱与 Computer Use。
 
-![Function Calling 完整链路](../assets/diagrams/05-tool-calling.svg)
+![Function Calling 完整链路](../.gitbook/assets/05-tool-calling.svg)
 
 ## 你将学到
 

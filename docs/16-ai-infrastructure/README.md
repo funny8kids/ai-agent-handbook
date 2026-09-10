@@ -34,13 +34,13 @@ updated: 2026-09-10
 
 ## 动态图示
 
-本章配了三张可动的 SVG（点开页面即可看到动画，仓库文件：`docs/assets/diagrams/`）：
+本章配了三张可动的 SVG（点开页面即可看到动画，仓库文件：`docs/.gitbook/assets/`）：
 
 | 图示 | 说明 |
 |---|---|
-| [连续批处理 vs 静态批处理](../assets/diagrams/16-continuous-batching.svg) | 为什么 decode 阶段 GPU 会被「等最长的那条」拖空 |
-| [前缀缓存命中与重算范围](../assets/diagrams/16-prefix-cache.svg) | Agent 多轮对话里，缓存能省掉哪一段、什么改动会让它整段失效 |
-| [沙箱分层与出口闸门](../assets/diagrams/16-sandbox-layers.svg) | 一次工具调用穿过 runc / gVisor / microVM 与网络白名单的过程 |
+| [连续批处理 vs 静态批处理](../.gitbook/assets/16-continuous-batching.svg) | 为什么 decode 阶段 GPU 会被「等最长的那条」拖空 |
+| [前缀缓存命中与重算范围](../.gitbook/assets/16-prefix-cache.svg) | Agent 多轮对话里，缓存能省掉哪一段、什么改动会让它整段失效 |
+| [沙箱分层与出口闸门](../.gitbook/assets/16-sandbox-layers.svg) | 一次工具调用穿过 runc / gVisor / microVM 与网络白名单的过程 |
 
 ## 阅读建议
 

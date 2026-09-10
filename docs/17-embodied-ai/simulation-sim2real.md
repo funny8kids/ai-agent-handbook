@@ -21,7 +21,7 @@ updated: 2026-09-10
 
 ## 迁移路径
 
-![域随机化与 Sim-to-Real（动画）](../assets/diagrams/17-sim2real-domain-randomization.svg)
+![域随机化与 Sim-to-Real（动画）](../.gitbook/assets/17-sim2real-domain-randomization.svg)
 
 ```mermaid
 flowchart LR

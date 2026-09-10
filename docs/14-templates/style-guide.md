@@ -137,8 +137,8 @@ updated: 2026-09-10
 图片的目的是**降低理解成本**，不是装饰。优先级从高到低：
 
 1. **能自己画就自己画**：结构图、流程图、时序图、状态机用 Mermaid（GitHub 与 GitBook 原生渲染，可版本管理）。这类图改起来方便，永远和正文同步。
-2. **概念插图用自绘 SVG**：需要"形象生动"的直觉图（如 Agent 循环、RAG 检索、记忆分层、多智能体协作）放在 `docs/assets/diagrams/`，用 SVG（矢量、体积小、缩放不糊）。**自绘 = 无版权风险**。
-3. **真实截图/照片**：仅在必须展示真实界面时使用，必须确认许可并注明来源，放 `docs/assets/screenshots/`。
+2. **概念插图用自绘 SVG**：需要"形象生动"的直觉图（如 Agent 循环、RAG 检索、记忆分层、多智能体协作）放在 `docs/.gitbook/assets/`，用 SVG（矢量、体积小、缩放不糊）。**自绘 = 无版权风险**。
+3. **真实截图/照片**：仅在必须展示真实界面时使用，必须确认许可并注明来源，同样放 `docs/.gitbook/assets/`。
 4. **不要**使用来源不明的网图、带水印的图，或用装饰性 emoji 拼贴冒充配图。
 
 数量：原理型 1–3 张（其中至少 1 张 Mermaid），概念型至少 1 张。**图要准，不要多。**
@@ -146,14 +146,14 @@ updated: 2026-09-10
 引用方式（相对路径）：
 
 ```markdown
-![Agent 感知—规划—行动循环](../assets/diagrams/02-agent-loop.svg)
+![Agent 感知—规划—行动循环](../.gitbook/assets/02-agent-loop.svg)
 ```
 
 > **提示**：图片文件名用「章节-主题」英文小写，如 `02-agent-loop.svg`；不要用 `截图1.png`、`image.png`。
 
 ### 需要「会动」的图：用 SVG（SMIL）
 
-流程/时序/对比类图示，可写成自带动画的 SVG（读者一眼就能看出「谁在等谁」），同样放 `docs/assets/diagrams/`：
+流程/时序/对比类图示，可写成自带动画的 SVG（读者一眼就能看出「谁在等谁」），同样放 `docs/.gitbook/assets/`：
 
 - **格式**：手写或从 Excalidraw/Figma 导出后用编辑器补 SMIL 标签；用 `<animate>`、`<animateTransform>`、`<animateMotion>`，`repeatCount="indefinite"`
 - **为什么用 SMIL 而不是 CSS/GIF**：SVG 以 `<img>` 方式引用时，CSS 与 SMIL 动画仍会播放（脚本被禁用）；GIF 体积大且不清晰
@@ -162,9 +162,9 @@ updated: 2026-09-10
 - **必须带 `role="img"` + `aria-label`**，并在正文补一段文字结论——动画只是辅助，静态阅读也要能懂
 - **别滥用**：一篇最多 1 张动图，动画时长 3–6 秒一轮，只让「正在发生的事」动，静态结构不要闪
 
-参考实现：`docs/assets/diagrams/16-continuous-batching.svg`、`16-prefix-cache.svg`、`17-action-chunking.svg`。
+参考实现：`docs/.gitbook/assets/16-continuous-batching.svg`、`16-prefix-cache.svg`、`17-action-chunking.svg`。
 
-> **注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../assets/diagrams/xxx.svg)` 引用独立文件，才能保留动画。
+> **注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../.gitbook/assets/xxx.svg)` 引用独立文件，才能保留动画。
 
 ## 七、案例配给：防止单一项目刷屏
 

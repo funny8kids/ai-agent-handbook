@@ -40,7 +40,7 @@ updated: 2026-09-10
 
 ## 闭环（动态）
 
-![VLA 感知—决策—行动回路（动画）](../assets/diagrams/17-vla-loop.svg)
+![VLA 感知—决策—行动回路（动画）](../.gitbook/assets/17-vla-loop.svg)
 
 ## 生活类比
 

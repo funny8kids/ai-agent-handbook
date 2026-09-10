@@ -9,7 +9,7 @@ updated: 2026-09-10
 
 > **一句话**：多个 Agent 协作能换來更强的能力面与并行度，代价是通信成本、错误传播与调试复杂度——本章讲清协作模式与治理方法。
 
-![Supervisor–Worker 协作](../assets/diagrams/08-multi-agent.svg)
+![Supervisor–Worker 协作](../.gitbook/assets/08-multi-agent.svg)
 
 ## 你将学到
 
