@@ -4,8 +4,8 @@ site:
   structure:
     - type: space
       key: space-1
-      title: Copy of Android大全
-      path: copy-of-android-da-quan
+      title: New Book
+      path: new-book
       default: true
       content:
-        directory: ./copy-of-android-da-quan
+        directory: ./new-book
