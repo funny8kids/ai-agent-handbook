@@ -83,6 +83,16 @@ flowchart LR
 - ❌ 全自动无验证：至少配 CI 测试 + diff review；高危动作（部署、迁移）永远人批
 - ❌ 忽视仓库「文档即上下文」：CLAUDE.md/AGENTS.md 类项目记忆文件能显著提升跨会话表现
 
+## 度量一次修复的成本
+
+编程 Agent 的优劣不能只看「修好了没有」，还要看代价：
+
+$$
+\text{单次修复成本}=\underbrace{\text{步数}\times\overline{\text{单步 token}}}_{\text{模型调用}}+\underbrace{\text{失败重试成本}}_{\text{走弯路}}+\underbrace{\text{沙箱/CI 算力}}_{\text{测试执行}}
+$$
+
+同一模型换 harness，步数与重试次数常差出一倍以上——这正是 [SWE-bench](../13-resources/benchmarks/swe-bench.md) 强调「模型 + harness」的原因。选型时应固定模型、横评 harness，比较成功率、平均步数与单任务成本三个指标。
+
 ## 小练习
 
 用 Pi 或 OpenHands 在真实 issue 上跑一次修复全程：记录步数、token、失败重试次数；对照本章的「通用模式」找出它哪一步最弱。

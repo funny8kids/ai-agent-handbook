@@ -113,6 +113,24 @@ asyncio.run(main())
 - ❌ 上来就搞分离式部署：几十卡以下收益抵不上运维复杂度，先把连续批处理与前缀缓存用满
 - ❌ 忽略冷启动：模型权重加载到显存要几十秒到几分钟，autoscale 到 0 要接受首请求慢，或者留最小副本
 
+## 容量粗算：一个副本能扛多少并发
+
+并发上限由显存与 KV 缓存共同决定，近似为：
+
+$$
+N_{\text{seq}}\approx\frac{\text{显存}_{\text{可用}}-\text{权重字节}}{\text{单序列 KV 字节}}
+$$
+
+其中单序列 KV 字节 $=2\times L\times H_{kv}\times d_{head}\times S\times\dfrac{\text{bits}}{8}$（见 [注意力与 KV 缓存](../03-llm/transformer-attention.md) 的推导）。两个结论：一是**长上下文直接压低单副本并发**，二是 GQA/MQA/MLA 这类结构改进之所以重要，正是因为它们缩小了分母。
+
+按 token 计的吞吐成本则可写成：
+
+$$
+\text{成本}/10^6\,\text{tokens}=\frac{\text{副本时价}\times 3600}{\text{tokens per second}\times 10^{6}}
+$$
+
+**优化方向因此很明确**：提高批处理效率（连续批处理、PagedAttention）比换更快的单卡更划算，因为它同时改善分母。
+
 ## 小练习
 
 用上面脚本对同一模型分别测 `max_tokens=1`（纯 prefill）、`max_tokens=300`（prefill+decode）、并发 1 / 8 / 32 三档，画出 TTFT 与 TPOT 随并发的曲线，判断你的瓶颈落在哪一档并发。

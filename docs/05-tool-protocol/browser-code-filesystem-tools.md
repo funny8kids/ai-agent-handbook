@@ -45,6 +45,24 @@ def edit_file(path, old_text, new_text):
 - **DeepSeek Harness 的沙箱执行**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：代码执行默认进 landlock-run 沙箱，网络与文件访问按 profile 配置——「执行类工具默认危险」是架构级共识
 - **浏览器工具生态**：[Playwright MCP](https://github.com/microsoft/playwright-mcp)（微软官方，结构化 DOM 快照而非截图，token 省 10 倍+）、[browser-use](https://github.com/browser-use/browser-use)（视觉+DOM 混合，开源 GUI 自动化标配）
 
+## 核心机制：三类工具的共性约束
+
+浏览器、代码执行、文件系统看起来差异很大，但它们共享同一组设计约束，因为它们都是**「有副作用、结果不可完全预测」的工具**：
+
+| 约束 | 浏览器 | 代码执行 | 文件系统 |
+|---|---|---|---|
+| 幂等/可回滚 | 关键提交前截图与断言 | 沙箱内可丢弃 | **先 diff 后写**，可回滚 |
+| 最小权限 | 限定域名与登录态范围 | 默认无网络、限定目录 | 路径白名单 |
+| 输出可控 | 只回结构化元素/摘要 | 截断 stdout | 只回 diff 或摘要 |
+
+核心公式可以概括为：
+
+$$
+\text{安全写}=\underbrace{\text{先读后写}}_{\text{了解现状}}+\underbrace{\text{diff 审阅}}_{\text{可验证变更}}+\underbrace{\text{可回滚}}_{\text{失败可撤}}
+$$
+
+**为什么强调「先读后写」**：模型凭记忆改文件是幻觉的高发区（它「以为」文件里有某段代码）。强制读取后再改，把幻觉挡在落盘之前——这也是主流编码 Agent 系统提示里的硬性规则。
+
 ## 常见误区
 
 - ❌ 浏览器工具 = Playwright 全家桶搬进来：GUI 操作贵且脆，能用 API/fetch 解决的别点鼠标
