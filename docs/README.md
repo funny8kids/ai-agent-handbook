@@ -19,7 +19,7 @@
 | [11 工程化与可观测性](11-engineering/README.md) | 工作流编排、日志追踪、错误处理、部署、成本优化 |
 | [12 应用案例](12-applications/README.md) | 编程、数据分析、客服、研究、行业 Agent 实战 |
 | [13 资源库](13-resources/README.md) | 论文、课程、开源项目、工具、数据集、基准、社区 |
-| [14 模板](14-templates/README.md) | 知识点卡片、资源卡片写作模板 |
+| [14 模板](14-templates/knowledge-template.md) | 知识点卡片、资源卡片写作模板 |
 | [15 术语表](15-glossary/README.md) | 中英文术语对照与解释 |
 | [99 关于](99-about/contributing.md) | 贡献指南、许可证 |
 
