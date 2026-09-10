@@ -78,32 +78,51 @@ def to_tool_schema(specs):                 # 暴露成 function calling 的 tool
 ```python
 # ros2_bridge.py —— Agent 的一次调用 = 一个 ROS 2 Action（可取消、带反馈）
 import rclpy
+import json
 from rclpy.node import Node
-from example_interfaces.action import Fibonacci as SkillAction   # 实际换成自定义 action 类型
+from rclpy.action import ActionClient
+from my_robot_interfaces.action import Skill       # 自定义 action：Goal/Result/Feedback
 
 class SkillRunner(Node):
     def __init__(self):
         super().__init__("agent_skill_runner")
-        self.clients = {}
-    def send(self, skill: SkillSpec, args: dict, run_id: str, on_feedback=None):
+        self.clients, self._inflight = {}, {}
+
+    def _client(self, name):                       # 一个技能 = 一个 ROS 2 action topic
+        return self.clients.setdefault(name, ActionClient(self, Skill, f"/skills/{name}"))
+
+    def _build_goal(self, skill, args, idempotency_key):
+        g = Skill.Goal()
+        g.skill, g.args_json, g.idempotency_key = skill.name, json.dumps(args), idempotency_key
+        g.deadline_s = skill.hard_limits["timeout_s"]      # 控制层也要有超时，别只靠上层
+        return g
+
+    def send(self, skill, args, run_id, on_feedback=None):
         cli = self._client(skill.name)
-        goal = cli.send_goal_async(
-            self._build_goal(skill, args, idempotency_key=f"{run_id}:{skill.name}"),
-            feedback_callback=lambda fb: on_feedback and on_feedback(fb.feedback),
-        )
-        return cli, goal                 # 上层用 await + 超时，取消时 cli.cancel_goal_async()
+        gh = cli.send_goal_async(self._build_goal(skill, args, f"{run_id}:{skill.name}"),
+                                 feedback_callback=lambda fb: on_feedback and on_feedback(fb.feedback))
+        return cli, gh                              # 上层 await + 超时；取消走 gh.cancel_goal_async()
+
+    def cancel(self, run_id):                       # 取消必须真的传到控制层
+        if gh := self._inflight.get(run_id):
+            gh.cancel_goal_async()
 
 async def execute_skill(runner, spec, args, run_id):
+    cli, goal_future = runner.send(spec, args, run_id)
+    gh = await goal_future
+    runner._inflight[run_id] = gh
+    if not gh.accepted:                                  # 控制器拒绝（前提条件不满足/已急停）
+        return SkillResult(False, "rejected_by_controller")
     try:
         async with asyncio.timeout(spec.hard_limits["timeout_s"]):
-            result = await runner.send(spec, args, run_id)
-            return SkillResult(ok=result.status == 4,        # SUCCEEDED
-                               reason=result.message or "",
-                               evidence={"peak_force_n": result.peak_force,
-                                         "ms": result.elapsed_ms,
-                                         "frames": result.snapshot_urls})
+            res = (await gh.get_result_async()).result    # 异步等待，不忙轮询
+            return SkillResult(ok=res.status == 4,        # SUCCEEDED
+                               reason=res.message or "",
+                               evidence={"peak_force_n": res.peak_force,
+                                         "ms": res.elapsed_ms,
+                                         "frames": res.snapshot_urls})
     except TimeoutError:
-        await runner.cancel(spec, run_id)                     # 取消要真的传到控制层！
+        runner.cancel(run_id)                       # 取消要真的传到控制层！
         return SkillResult(False, "timeout")
 ```
 
