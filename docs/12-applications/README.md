@@ -1,30 +1,31 @@
 ---
-tags: []
-type: knowledge
-status: draft
+tags: [application]
+type: index
+status: published
 updated: 2026-09-10
 ---
 
-# 💼 本章导读
+# 💼 12 应用案例
 
-> 🚧 本页编写中。动手前请先读 [风格指南](../14-templates/style-guide.md) 与 [知识点模板](../14-templates/knowledge-template.md)，完成后将 `status` 改为 `published`。
+> **一句话**：Agent 落地的难度排序大致是：编程 < 数据分析 < 客服 < 研究 < 行业关键业务——验证手段越客观，Agent 越早可用。本章逐场景拆解模式、代表项目与落地要点。
 
-## 📌 先看结论
+## 📌 场景地图
 
-- （待补充：一句话结论）
+| 场景 | 成熟度 | 客观验证 | 代表项目/案例 |
+|---|---|---|---|
+| [编程 Agent](coding-agent.md) | 🟢 高 | 测试通过 | Claude Code、Pi、DeepSeek Harness、OpenHands |
+| [数据分析](data-analysis-agent.md) | 🟢 高 | SQL/图表正确性 | 各家 Notebook Agent |
+| [浏览器自动化](browser-automation.md) | 🟡 中 | 任务状态 | Playwright MCP、browser-use |
+| [客服 Agent](customer-service-agent.md) | 🟡 中 | 解决率人工评 | 分诊+知识库模式 |
+| [企业知识库](enterprise-knowledge-base.md) | 🟢 高 | 引用准确率 | RAG 全家桶 |
+| [研究 Agent](research-agent.md) | 🟡 中 | 事实核查 | Anthropic 多 Agent 研究系统 |
+| [个人助理](personal-assistant.md) | 🟡 中 | 用户满意度 | 各家语音助手 |
+| [RPA](rpa.md) | 🟡 中 | 流程完成率 | UI 自动化 + LLM |
+| [教育 Agent](education-agent.md) | 🟡 中 | 学习效果评估 | 苏格拉底式辅导 |
+| [游戏 Agent](game-agent.md) | 🟠 早期 | 胜率/行为分 | NPC、自对弈 |
+| [行业 Agent](industry-agents.md) | 🟠 早期 | 合规+准确率 | 医疗/金融/法律 |
 
-## 🖼️ 图示
+## 🧭 阅读建议
 
-（可选：1–3 张 Mermaid 图或对比表格）
-
-## ⚠️ 常见误区
-
-- ❌ （待补充）
-
-## 🔗 相关资源
-
-- （待补充）
-
-## 📚 相关知识点
-
-- （待补充）
+- 找「我能抄的作业」：每个场景页都有「可复用的模式」小节
+- 编程 Agent 页是全书案例密度最高的一页：**Claude Code、Pi、DeepSeek Harness 三大 harness 的横向深拆**，读懂它就读懂了 Agent 工程的当前形态
