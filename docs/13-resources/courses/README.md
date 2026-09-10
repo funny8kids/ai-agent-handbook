@@ -1,24 +1,25 @@
 ---
-tags: []
-type: resource
-status: draft
+tags: [resource]
+type: index
+status: published
 updated: 2026-09-10
 ---
 
 # 🔗 课程
 
-> 🚧 资源页编写中。添加资源请使用 [资源卡片模板](../../14-templates/resource-template.md)，风格遵循 [风格指南](../../14-templates/style-guide.md)。
+> 系统化的免费课程精选。入门首选微软的 AI Agents for Beginners；深入工程后以官方文档与源码为主。
 
-| 属性 | 内容 |
-|---|---|
-| 类型 | 论文 / 课程 / 开源项目 / 工具 / 数据集 / 基准测试 / 博客 / 社区 |
-| 链接 | （待补充） |
-| 标签 | |
+## 收录列表
 
-## 🌟 推荐理由
+| 课程 | 出品方 | 卡片 |
+|---|---|---|
+| AI Agents for Beginners | Microsoft | [ai-agents-for-beginners.md](ai-agents-for-beginners.md) |
 
-- （待补充）
+## 延伸推荐（未建卡）
 
-## 📚 相关知识点
-
-- （反向链接：哪些知识点页面引用了这个资源）
+| 课程 | 说明 | 链接 |
+|---|---|---|
+| LangChain Academy | LangGraph 官方免费课（含 Deep Research 实现课） | <https://academy.langchain.com> |
+| DeepLearning.AI 短课 | Agents/LangGraph/RAG 系列短课 | <https://www.deeplearning.ai/courses/> |
+| Hugging Face Agents Course | 开源 Agent 认证课程 | <https://huggingface.co/learn/agents-course> |
+| MCP 官方文档教程 | 协议与 SDK 上手 | <https://modelcontextprotocol.io> |

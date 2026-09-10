@@ -1,24 +1,35 @@
 ---
-tags: []
+tags: [framework, resource]
 type: resource
-status: draft
+status: published
 updated: 2026-09-10
 ---
 
 # 🔗 LangChain
 
-> 🚧 资源页编写中。添加资源请使用 [资源卡片模板](../../14-templates/resource-template.md)，风格遵循 [风格指南](../../14-templates/style-guide.md)。
+> **一句话**：最流行的 LLM 应用开发框架：数百个集成 + 统一抽象，生态最大的「全家桶」。
 
 | 属性 | 内容 |
 |---|---|
-| 类型 | 论文 / 课程 / 开源项目 / 工具 / 数据集 / 基准测试 / 博客 / 社区 |
-| 链接 | （待补充） |
-| 标签 | |
+| 类型 | 开源项目（框架） |
+| 链接 | <https://github.com/langchain-ai/langchain> · [文档](https://python.langchain.com) |
+| 来源 | LangChain Inc. |
+| 协议 | MIT |
+| 难度 | ⭐️ |
+| 标签 | `#framework` |
 
 ## 🌟 推荐理由
 
-- （待补充）
+- 集成生态最大：模型、向量库、加载器应有尽有，原型速度极快
+- LCEL 管道语法简洁；与 LangSmith/LangGraph 构成完整工具链
+- 中文教程与社区资源最丰富
+
+## 🧭 上手建议
+
+- 复杂编排分流给 LangGraph；LangChain 用作「集成层」
+- 对照 [LangChain 知识点](../../09-frameworks/langchain.md) 理解适用边界
 
 ## 📚 相关知识点
 
-- （反向链接：哪些知识点页面引用了这个资源）
+- [LangChain](../../09-frameworks/langchain.md)
+- [LangGraph](langgraph.md)

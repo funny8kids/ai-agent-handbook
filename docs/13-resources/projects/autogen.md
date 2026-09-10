@@ -1,24 +1,35 @@
 ---
-tags: []
+tags: [framework, multi-agent, resource]
 type: resource
-status: draft
+status: published
 updated: 2026-09-10
 ---
 
-# 🔗 AutoGen
+# 🔗 AutoGen / Microsoft Agent Framework
 
-> 🚧 资源页编写中。添加资源请使用 [资源卡片模板](../../14-templates/resource-template.md)，风格遵循 [风格指南](../../14-templates/style-guide.md)。
+> **一句话**：微软多智能体框架：GroupChat 对话协作的开创者；现与 Semantic Kernel 合流为 Agent Framework，事件驱动架构支撑生产。
 
 | 属性 | 内容 |
 |---|---|
-| 类型 | 论文 / 课程 / 开源项目 / 工具 / 数据集 / 基准测试 / 博客 / 社区 |
-| 链接 | （待补充） |
-| 标签 | |
+| 类型 | 开源项目（框架） |
+| 链接 | <https://github.com/microsoft/autogen>（思想与历史）· <https://github.com/microsoft/agent-framework>（合流新版） |
+| 来源 | Microsoft Research / Microsoft |
+| 协议 | MIT |
+| 难度 | ⭐️⭐️ |
+| 标签 | `#framework` `#multi-agent` |
 
 ## 🌟 推荐理由
 
-- （待补充）
+- 多 Agent 对话范式的学术与工程双料源头（论文 [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)）
+- v0.4 的 actor 模型重构是多 Agent 框架工程化的代表
+- 内嵌代码执行沙箱，「写代码-执行-修正」闭环的开箱实现
+
+## 🧭 上手建议
+
+- 学习思想读 autogen 仓库与论文；新项目用 agent-framework
+- GroupChatManager 的发言选择实现值得精读（→ [群聊模式](../../08-multi-agent/group-chat.md)）
 
 ## 📚 相关知识点
 
-- （反向链接：哪些知识点页面引用了这个资源）
+- [AutoGen](../../09-frameworks/autogen.md)
+- [群聊模式](../../08-multi-agent/group-chat.md)
