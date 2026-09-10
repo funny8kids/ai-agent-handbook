@@ -35,6 +35,8 @@ ai-agent-handbook/
    ├─ 13-resources/         # 资源库（论文/课程/项目/工具…）
    ├─ 14-templates/         # 写作模板
    ├─ 15-glossary/          # 术语表
+   ├─ 16-ai-infrastructure/ # AI 基础设施（推理/缓存/GPU/沙箱/网关/运行时）
+   ├─ 17-embodied-ai/       # 具身智能（VLA/数据/仿真/操作/人形/硬件安全）
    └─ 99-about/             # 贡献指南、许可证
 ```
 
