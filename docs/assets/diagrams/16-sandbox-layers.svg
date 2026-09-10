@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="Agent 工具调用穿过沙箱分层与出口白名单的动画">
+  <rect x="0" y="0" width="960" height="470" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="20" y="26" font-size="16" font-weight="700" fill="#0f172a">一次「执行代码」的工具调用，穿过了哪些闸门</text>
+
+  <!-- Agent -->
+  <rect x="20" y="70" width="130" height="60" rx="8" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="38" y="95" fill="#312e81" font-weight="700">Agent</text>
+  <text x="38" y="114" fill="#4338ca" font-size="11">想跑 python 脚本</text>
+
+  <!-- policy pipeline -->
+  <rect x="180" y="60" width="150" height="80" rx="8" fill="#fef3c7" stroke="#d97706"/>
+  <text x="196" y="82" fill="#92400e" font-weight="700">权限管道</text>
+  <text x="196" y="100" fill="#a16207" font-size="11">风险级 · 审批 · 超时</text>
+  <text x="196" y="116" fill="#a16207" font-size="11">预算 · 幂等键</text>
+
+  <!-- sandbox tiers -->
+  <g>
+    <rect x="360" y="48" width="440" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+    <text x="376" y="70" fill="#334155" font-weight="700">隔离层（按威胁模型选档）</text>
+
+    <rect x="376" y="82" width="126" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="388" y="102" fill="#14532d" font-weight="700" font-size="12">加固容器</text>
+    <text x="388" y="119" fill="#15803d" font-size="10">namespace/cgroup/seccomp</text>
+    <text x="388" y="132" fill="#15803d" font-size="10">landlock · 只读根</text>
+
+    <rect x="514" y="82" width="126" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="526" y="102" fill="#1e3a8a" font-weight="700" font-size="12">gVisor</text>
+    <text x="526" y="119" fill="#1d4ed8" font-size="10">用户态内核拦截 syscall</text>
+    <text x="526" y="132" fill="#1d4ed8" font-size="10">兼容性好，性能有起伏</text>
+
+    <rect x="652" y="82" width="132" height="56" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="664" y="102" fill="#4c1d95" font-weight="700" font-size="12">microVM</text>
+    <text x="664" y="119" fill="#6d28d9" font-size="10">Firecracker · 快照恢复</text>
+    <text x="664" y="132" fill="#6d28d9" font-size="10">多租户任意代码</text>
+  </g>
+
+  <!-- egress gate -->
+  <rect x="830" y="60" width="110" height="80" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="843" y="82" fill="#7f1d1d" font-weight="700">出口闸门</text>
+  <text x="843" y="100" fill="#b91c1c" font-size="11">allow:</text>
+  <text x="843" y="115" fill="#b91c1c" font-size="11">pypi, github</text>
+  <text x="843" y="130" fill="#b91c1c" font-size="11">其余 deny</text>
+
+  <!-- outside world -->
+  <rect x="700" y="176" width="240" height="52" rx="8" fill="#f8fafc" stroke="#dc2626" stroke-dasharray="4 4"/>
+  <text x="716" y="198" fill="#b91c1c" font-weight="700">外部网络 / 元数据服务</text>
+  <text x="716" y="215" fill="#dc2626" font-size="11">169.254.169.254 · 内网 10.0.0.x</text>
+
+  <!-- sandbox internals -->
+  <rect x="360" y="176" width="300" height="52" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="376" y="198" fill="#334155" font-weight="700">沙箱内：一次性会话</text>
+  <text x="376" y="215" fill="#64748b" font-size="11">无密钥 env · tmpfs 可写 · TTL 60s</text>
+
+  <!-- result -->
+  <rect x="20" y="176" width="130" height="52" rx="8" fill="#ecfdf5" stroke="#059669"/>
+  <text x="34" y="198" fill="#065f46" font-weight="700">结果回流</text>
+  <text x="34" y="215" fill="#047857" font-size="11">截断 + 脱敏 + 审计</text>
+
+  <!-- arrows -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M150 100 H178"/><path d="M330 100 H358"/>
+    <path d="M800 100 H828"/><path d="M660 202 H698"/>
+    <path d="M360 202 H152"/>
+  </g>
+  <g fill="#94a3b8">
+    <polygon points="178,95 188,100 178,105"/><polygon points="358,95 368,100 358,105"/>
+    <polygon points="828,95 838,100 828,105"/><polygon points="698,197 708,202 698,207"/>
+    <polygon points="152,197 142,202 152,207"/>
+  </g>
+
+  <!-- moving packet: allowed path -->
+  <circle r="6" fill="#16a34a">
+    <animateMotion path="M150 100 H820" dur="2.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;1;1;0;0" keyTimes="0;0.6;0.8;0.85;1" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="5" fill="#7c3aed">
+    <animateMotion dur="2.6s" begin="1.3s" repeatCount="indefinite"
+      path="M660 202 H360 L360 202"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="2.6s" begin="1.3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- blocked packet -->
+  <circle r="6" fill="#dc2626">
+    <animateMotion path="M660 202 H806" dur="2.6s" begin="0.4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.05;0.55;0.6;1" dur="2.6s" begin="0.4s" repeatCount="indefinite"/>
+  </circle>
+  <g>
+    <text x="812" y="208" fill="#dc2626" font-weight="700" font-size="16">✕</text>
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.3s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- audit strip -->
+  <rect x="20" y="252" width="920" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="34" y="274" fill="#334155">审计事件流（append-only）：run_id · 代码哈希 · 申请的 capability · 出口目标 · 退出码 · 输出字节数 · 墙钟耗时</text>
+
+  <!-- comparison table -->
+  <g>
+    <text x="20" y="318" fill="#475569" font-weight="700">档位速查</text>
+    <rect x="20" y="328" width="920" height="118" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+    <line x1="20" y1="352" x2="940" y2="352" stroke="#e2e8f0"/>
+    <line x1="240" y1="328" x2="240" y2="446" stroke="#e2e8f0"/>
+    <line x1="520" y1="328" x2="520" y2="446" stroke="#e2e8f0"/>
+    <text x="34" y="346" fill="#0f172a" font-weight="700">层</text>
+    <text x="254" y="346" fill="#0f172a" font-weight="700">启动 / 成本</text>
+    <text x="534" y="346" fill="#0f172a" font-weight="700">适用</text>
+
+    <text x="34" y="372" fill="#15803d">加固容器（+landlock/seccomp）</text>
+    <text x="254" y="372" fill="#334155">十毫秒级，最省</text>
+    <text x="534" y="372" fill="#334155">跑自己写的工具代码、CI 型任务、内部脚本</text>
+
+    <text x="34" y="398" fill="#1d4ed8">gVisor</text>
+    <text x="254" y="398" fill="#334155">亚秒，syscall 有损耗</text>
+    <text x="534" y="398" fill="#334155">不可信代码但需完整用户态（pip、测试框架）</text>
+
+    <text x="34" y="424" fill="#6d28d9">microVM（Firecracker + 快照）</text>
+    <text x="254" y="424" fill="#334155">快照后百毫秒级，运维最重</text>
+    <text x="534" y="424" fill="#334155">多租户、任意代码、长会话、Computer Use</text>
+  </g>
+</svg>

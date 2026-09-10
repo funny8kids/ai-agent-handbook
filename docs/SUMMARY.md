@@ -174,6 +174,34 @@
 ## 📖 15 术语表
 * [术语表](15-glossary/README.md)
 
+## 🏗️ 16 AI 基础设施
+* [本章导读](16-ai-infrastructure/README.md)
+* [推理服务化：引擎、批处理与延迟指标](16-ai-infrastructure/inference-serving.md)
+* [前缀缓存与上下文工程](16-ai-infrastructure/prefix-cache-context-engineering.md)
+* [GPU 调度与多租户](16-ai-infrastructure/gpu-scheduling-multitenancy.md)
+* [训练与微调基础设施](16-ai-infrastructure/training-finetune-infra.md)
+* [沙箱与执行环境](16-ai-infrastructure/sandbox-execution-environments.md)
+* [模型网关与路由](16-ai-infrastructure/model-gateway.md)
+* [持久化执行与 Agent 运行时](16-ai-infrastructure/agent-runtime-durable-execution.md)
+* [数据与检索基础设施](16-ai-infrastructure/data-vector-storage.md)
+* [可观测性与评估平台](16-ai-infrastructure/llm-observability-eval-platform.md)
+* [推理经济学与部署形态](16-ai-infrastructure/inference-economics-deployment.md)
+
+## 🦾 17 具身智能
+* [本章导读](17-embodied-ai/README.md)
+* [什么是具身智能](17-embodied-ai/what-is-embodied-ai.md)
+* [机器人基础模型谱系](17-embodied-ai/robot-foundation-models.md)
+* [VLA 模型架构](17-embodied-ai/vla-models.md)
+* [动作表示与分层控制](17-embodied-ai/action-representation-control.md)
+* [数据引擎：机器人数据从哪来](17-embodied-ai/data-engine.md)
+* [仿真与 Sim-to-Real](17-embodied-ai/simulation-sim2real.md)
+* [世界模型与视频预训练](17-embodied-ai/world-models-video.md)
+* [灵巧操作：抓取、接触与触觉](17-embodied-ai/manipulation.md)
+* [人形与腿足运动](17-embodied-ai/humanoid-locomotion.md)
+* [评估与基准](17-embodied-ai/evaluation-benchmarks.md)
+* [硬件、实时与安全](17-embodied-ai/hardware-realtime-safety.md)
+* [把 Agent 接进机器人](17-embodied-ai/agent-to-robot-bridge.md)
+
 ## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)
 * [许可证](99-about/license.md)

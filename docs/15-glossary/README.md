@@ -73,3 +73,41 @@ updated: 2026-09-10
 | 可观测性 | Observability | 日志、追踪、监控构成的系统透明度 |
 | 规范博弈 | Reward Hacking | 钻奖励定义空子达成字面目标 |
 | 基准测试 | Benchmark | 标准化的能力评估任务集 |
+
+## 基础设施与部署
+
+| 术语 | 英文 | 一句话解释 |
+|---|---|---|
+| 预填充 / 解码 | Prefill / Decode | 推理的两个阶段：算 prompt（算力瓶颈）与逐 token 生成（带宽瓶颈） |
+| 连续批处理 | Continuous Batching | 请求完成即退出、新请求随时补位，把 decode 阶段的 GPU 填满 |
+| 分页注意力 | PagedAttention | 像虚拟内存分页那样管理 KV 缓存，减少显存碎片 |
+| 前缀缓存 | Prefix / Prompt Caching | 复用逐 token 相同前缀的 KV 计算，省钱又降 TTFT |
+| 首 token 延迟 | TTFT（Time To First Token） | 从发出请求到看到第一个字的等待时间 |
+| 每 token 间隔 | TPOT / ITL | 流式输出时相邻 token 的时间差，决定「卡不卡」 |
+| 有效吞吐 | Goodput | 只有满足 SLO 的请求才算数的吞吐量 |
+| 分离式服务 | Disaggregated Serving | 把 prefill 与 decode 放到不同 GPU 池各自扩缩 |
+| 投机解码 | Speculative Decoding | 小模型草稿 + 大模型批量验证，加速解码 |
+| 持久化执行 | Durable Execution | 每步状态自动落盘，进程重启后从断点继续 |
+| 幂等键 | Idempotency Key | 保证重试不会重复执行副作用的唯一标识 |
+| microVM | Micro VM | 极简设备模型的轻量虚拟机，兼顾隔离与启动速度 |
+
+## 具身智能
+
+| 术语 | 英文 | 一句话解释 |
+|---|---|---|
+| 具身智能 | Embodied AI | 通过身体与环境的感知—动作闭环中学习智能 |
+| 视觉-语言-动作模型 | VLA（Vision-Language-Action） | 输入图像与指令、直接输出机器人动作序列的模型 |
+| 视觉-语言模型 | VLM（Vision-Language Model） | 看图说话的多模态模型，常作 VLA 的骨干 |
+| 机器人基础模型 | Robot Foundation Model | 跨任务、跨机型预训练后可微调适配的通用策略模型 |
+| 动作分块 | Action Chunking | 一次推理输出一段未来动作，用低频率模型驱动高频率控制 |
+| 时间集成 | Temporal Ensembling | 相邻动作块重叠段加权平均，消除块边界跳变 |
+| 扩散策略 | Diffusion Policy | 用去噪生成模型表达多峰动作分布 |
+| 流匹配 | Flow Matching | 学习从噪声到动作的速度场，训练稳定、少步可采样 |
+| 模仿学习 | Imitation Learning（IL） | 从人类演示学习策略，机器人最主流的数据范式 |
+| 遥操作 | Teleoperation | 人远程操控机器人采集高质量轨迹 |
+| 域随机化 | Domain Randomization | 训练时随机化物理与视觉参数，让策略在一个分布上收敛 |
+| 仿真到真机 | Sim-to-Real | 把仿真中训练的策略迁移到真实机器人上的技术与差距 |
+| 全身控制 | WBC（Whole-Body Control） | 用优先级/二次规划把平衡、接触与任务统一求解 |
+| 逆运动学 | IK（Inverse Kinematics） | 由末端位姿反解各关节角度 |
+| 阻抗控制 | Impedance Control | 控制「力与位移的关系」而非硬性位置，接触任务更稳 |
+| 功率与力限制 | PFL（Power and Force Limiting） | 协作机器人按接触力/功率设限的安全模式 |

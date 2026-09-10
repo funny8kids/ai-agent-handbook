@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 440" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="域随机化与 sim-to-real 迁移动画">
+  <rect x="0" y="0" width="980" height="440" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="20" y="26" font-size="16" font-weight="700" fill="#0f172a">Sim-to-Real：随机化「训练分布」，而不是调一个「最像真的场景」</text>
+
+  <!-- sim grid -->
+  <text x="20" y="58" fill="#475569" font-weight="700">仿真：一个 episode 固定一组域参数，跨 episode 大幅变化</text>
+  <g>
+    <!-- 12 randomized cells -->
+    <g transform="translate(20,70)">
+      <rect x="0" y="0" width="120" height="80" rx="6" fill="#fde68a"><animate attributeName="fill" values="#fde68a;#bfdbfe;#fde68a" dur="3s" repeatCount="indefinite"/></rect>
+      <rect x="30" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.15"/>
+      <rect x="38" y="30" width="18" height="22" rx="4" fill="#0ea5e9"/>
+
+      <rect x="130" y="0" width="120" height="80" rx="6" fill="#e9d5ff"><animate attributeName="fill" values="#e9d5ff;#dcfce7;#e9d5ff" dur="3.6s" repeatCount="indefinite"/></rect>
+      <rect x="160" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.25"/>
+      <rect x="168" y="30" width="18" height="22" rx="4" fill="#f97316"/>
+
+      <rect x="260" y="0" width="120" height="80" rx="6" fill="#bae6fd"><animate attributeName="fill" values="#bae6fd;#fde68a;#bae6fd" dur="2.4s" repeatCount="indefinite"/></rect>
+      <rect x="290" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.08"/>
+      <rect x="298" y="30" width="18" height="22" rx="4" fill="#e11d48"/>
+
+      <rect x="390" y="0" width="120" height="80" rx="6" fill="#dcfce7"><animate attributeName="fill" values="#dcfce7;#f1f5f9;#dcfce7" dur="4.2s" repeatCount="indefinite"/></rect>
+      <rect x="420" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.35"/>
+      <rect x="428" y="30" width="18" height="22" rx="4" fill="#a855f7"/>
+
+      <rect x="0" y="90" width="120" height="80" rx="6" fill="#fef3c7"/>
+      <rect x="30" y="136" width="40" height="24" rx="3" fill="#0f172a" opacity="0.2"/>
+      <rect x="38" y="120" width="18" height="22" rx="4" fill="#22c55e"/>
+
+      <rect x="130" y="90" width="120" height="80" rx="6" fill="#e2e8f0"/>
+      <rect x="160" y="136" width="40" height="24" rx="3" fill="#0f172a" opacity="0.12"/>
+      <rect x="168" y="120" width="18" height="22" rx="4" fill="#0284c7"/>
+
+      <rect x="260" y="90" width="120" height="80" rx="6" fill="#fecdd3"/>
+      <rect x="290" y="136" width="40" height="24" rx="3" fill="#0f172a" opacity="0.3"/>
+      <rect x="298" y="120" width="18" height="22" rx="4" fill="#eab308"/>
+
+      <rect x="390" y="90" width="120" height="80" rx="6" fill="#c7d2fe"/>
+      <rect x="420" y="136" width="40" height="24" rx="3" fill="#0f172a" opacity="0.22"/>
+      <rect x="428" y="120" width="18" height="22" rx="4" fill="#ef4444"/>
+    </g>
+    <!-- light sweep across grid -->
+    <rect x="20" y="70" width="140" height="170" fill="#ffffff" opacity="0.35">
+      <animate attributeName="x" values="20;480;20" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.45;0" dur="5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <text x="20" y="266" fill="#64748b" font-size="12">同时随机化：摩擦 · 质量 · 阻尼 · 延迟(20–200ms) · 相机内外参 · 光照 · 噪声 · 丢帧 · 未建模负载</text>
+
+  <!-- arrow -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M560 156 H640"/>
+  </g>
+  <polygon points="640,151 650,156 640,161" fill="#94a3b8"/>
+  <text x="566" y="146" fill="#475569" font-size="12">zero-shot 或<br/>少量真机微调</text>
+
+  <!-- real -->
+  <rect x="660" y="70" width="300" height="170" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="676" y="94" fill="#334155" font-weight="700">真实世界</text>
+  <rect x="676" y="196" width="268" height="10" rx="3" fill="#cbd5e1"/>
+  <rect x="740" y="164" width="46" height="32" rx="5" fill="#38bdf8" stroke="#0284c7"/>
+  <text x="676" y="126" fill="#64748b" font-size="11">磨损、反光、透明、标定漂移、</text>
+  <text x="676" y="142" fill="#64748b" font-size="11">他人碰走物体、线缆拉扯、发热降频</text>
+  <text x="676" y="228" fill="#475569" font-size="11">唯一能作为验收依据的地方</text>
+
+  <!-- gap meter -->
+  <text x="20" y="300" fill="#475569" font-weight="700">典型差距（示意量级，务必以自己的真机评测为准）</text>
+  <g>
+    <rect x="20" y="312" width="940" height="20" rx="10" fill="#e2e8f0"/>
+    <rect x="20" y="312" width="820" height="20" rx="10" fill="#22c55e"/>
+    <text x="34" y="327" fill="#052e16" font-size="11">无随机化：仿真 95% → 真机 35%（策略利用了仿真的「完美」）</text>
+  </g>
+  <g>
+    <rect x="20" y="340" width="940" height="20" rx="10" fill="#e2e8f0"/>
+    <rect x="20" y="340" width="700" height="20" rx="10" fill="#38bdf8"/>
+    <text x="34" y="355" fill="#082f49" font-size="11">仅视觉随机化：仿真 88% → 真机 52%（动力学仍失配）</text>
+  </g>
+  <g>
+    <rect x="20" y="368" width="940" height="20" rx="10" fill="#e2e8f0"/>
+    <rect x="20" y="368" width="600" height="20" rx="10" fill="#a78bfa"/>
+    <text x="34" y="383" fill="#2e1065" font-size="11">视觉 + 动力学 + 延迟随机化，且 obs 不含仿真真值：仿真 74% → 真机 63%（可部署，仍建议少量真机微调）</text>
+  </g>
+  <rect x="20" y="398" width="940" height="30" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
+  <text x="34" y="418" fill="#7f1d1d">红线：不要用仿真分数当验收；要用「留出物体/场景/光照/视角」四个维度的真机衰减率来判断泛化。</text>
+</svg>

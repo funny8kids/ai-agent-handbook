@@ -23,6 +23,11 @@
 - [11 工程化与可观测性](../11-engineering/README.md) — 编排、追踪、部署、成本
 - [12 应用案例](../12-applications/README.md) — 编程、客服、研究、行业 Agent
 
+## 平台与前沿篇
+
+- [16 AI 基础设施](../16-ai-infrastructure/README.md) — 推理引擎、缓存、GPU 调度、沙箱、网关、持久化运行时
+- [17 具身智能](../17-embodied-ai/README.md) — VLA 模型、数据引擎、仿真与 Sim-to-Real、操作与人形、硬件安全
+
 ## 资料篇
 
 - [13 资源库](../13-resources/README.md) — 论文、课程、项目、工具、数据集

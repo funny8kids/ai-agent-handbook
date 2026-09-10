@@ -25,6 +25,7 @@ Emoji 只做视觉锚点，不要每行都加：
 | 工具 / 协议 | 🔌 | 资源 | 🔗 |
 | 记忆 / RAG | 📚 | 模板 | 🧩 |
 | 规划 | 🗺️ | 术语 | 📖 |
+| AI 基础设施 | 🏗️ | 具身智能 | 🦾 |
 
 > ⚠️ **注意**：文件名不要带 emoji，保持英文小写 + 连字符（如 `what-is-agent.md`）；emoji 只出现在标题和 SUMMARY 中。
 
@@ -67,14 +68,30 @@ docs/assets/
 
 > 💡 **提示**：文章在 `docs/02-agent-basics/`，图片在 `docs/assets/`，跨目录引用要写 `../assets/...`。GitBook 编辑器上传的图片默认存放在 `docs/.gitbook/assets/`，自制图表统一放 `docs/assets/`。
 
-### 3. 截图规范
+### 3. 需要「会动」的图用 SVG（SMIL）
+
+流程/时序/对比类图示，优先写成自带动画的 SVG（读者一眼就能看出「谁在等谁」），文件同样放 `docs/assets/diagrams/`：
+
+- **格式**：手写或从 Excalidraw/Figma 导出后用编辑器补 SMIL 标签；用 `<animate>`、`<animateTransform>`、`<animateMotion>`，`repeatCount="indefinite"`
+- **为什么是 SMIL 而不是 CSS/GIF**：SVG 以 `<img>` 方式引用时，CSS 与 SMIL 动画仍会播放（脚本被禁用）；GIF 体积大且不清晰
+- **可维护性**：纯矢量、可用文本 diff；改一个 `dur` 就能调速
+- **深浅色适配**：自己画背景（`<rect fill="#f8fafc">`）与文字色，不要依赖页面背景；`viewBox` 固定、不写死 width/height 单位以外的样式
+- **必须带 `role="img"` + `aria-label`**，并在正文补一段文字结论——动画只是辅助，静态阅读也要能懂
+- **别滥用**：一篇最多 1 张动图，动画时长 3–6 秒一轮，只让「正在发生的事」动，静态结构不要闪
+
+参考实现：`16-continuous-batching.svg`（批次尾部塌陷）、`16-prefix-cache.svg`（命中区间扫描）、`17-action-chunking.svg`（低频推理驱动高频控制）。
+
+> ⚠️ **注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../assets/diagrams/xxx.svg)` 引用独立文件，才能保留动画。
+
+
+### 4. 截图规范
 
 - 工具：Snipaste、Flameshot
 - 压缩：TinyPNG、Squoosh（先压缩再提交）
 - 命名：`章节-主题.png`，如 `02-agent-basics-agent-loop.png`
 - ❌ 不要用 `截图1.png`、`image.png`
 
-### 4. 多用表格对比
+### 5. 多用表格对比
 
 表格最适合表达「区别」和「对比」：
 
@@ -86,7 +103,7 @@ docs/assets/
 | Agent | 是 | 是 | 编程 Agent |
 ```
 
-### 5. 善用提示块
+### 6. 善用提示块
 
 ```markdown
 > 💡 **提示**：先理解 ReAct，再看 LangGraph。
@@ -94,7 +111,7 @@ docs/assets/
 > ✅ **最佳实践**：工具返回结果要做校验。
 ```
 
-### 6. 图的数量
+### 7. 图的数量
 
 每篇 1～3 张图。入门文章 800～1200 字，核心文章 1500–2500 字。图不要多，要准。
 
