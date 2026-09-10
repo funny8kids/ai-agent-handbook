@@ -5,23 +5,23 @@ status: published
 updated: 2026-09-10
 ---
 
-# 💼 编程 Agent
+# 编程 Agent
 
 > **一句话**：编程是 Agent 第一落地场景——验证客观（测试）、反馈明确（报错）、语料丰富（GitHub），本章深拆三大代表性 harness：Claude Code、Pi、DeepSeek Harness。
-> **难度**：⭐️⭐️ 进阶
+> **难度**：进阶
 > **标签**：`#application` `#agent`
 
-## 📌 先看结论
+## 先看结论
 
 - 编程 Agent = 模型 + harness；同一模型换 harness 成绩可差 20%+（SWE-bench 实证）
 - 三条产品路线：闭源标杆（Claude Code）、极简开源（Pi）、平台化插件（DeepSeek Harness）
 - 成功要素高度一致：小而正交的工具集、上下文精细管理、错误驱动修正、人审高危动作
 
-## 🏗️ 三大 Harness 横向深拆
+## 三大 Harness 横向深拆
 
-| 维度 | Claude Code | Pi（pi-mono） | DeepSeek Harness |
+| 维度 | Claude Code | Pi（原 Pi） | DeepSeek Harness |
 |---|---|---|---|
-| 开源情况 | 闭源（社区逆向分析） | MIT 开源，~40K★ | MIT 开源（2026.08 v0.1） |
+| 开源情况 | 闭源（社区逆向分析） | MIT 开源，~40K | MIT 开源（2026.08 v0.1） |
 | 技术栈 | TypeScript（Node） | TypeScript monorepo | TypeScript + Cordis 插件框架 |
 | 工具哲学 | ~27 个内置工具 + MCP 扩展 | **4 个原子工具**（read/write/edit/bash） | 插件化工具面，标准/极简/PTC/创造四模式 |
 | System Prompt | 模块化注册、五级优先级、三层组装 | <1000 token 极简 | 分区组装，每步动态生成 |
@@ -40,7 +40,7 @@ updated: 2026-09-10
 - 子 Agent 隔离设计：全新消息列表、克隆文件缓存、独立磁盘转写、可选 git worktree
 - 教训：它的强大来自「prompt 组装 + 工具治理 + 权限 + 压缩」的**系统工程**，不是某个神秘 prompt
 
-**Pi——「少即是多」的活证明**（[badlogic/pi-mono](https://github.com/badlogic/pi-mono)，libGDX 作者 Mario Zechner 作品）
+**Pi——「少即是多」的活证明**（[earendil-works/pi](https://github.com/earendil-works/pi)，libGDX 作者 Mario Zechner 作品）
 
 - 四个原子工具覆盖 90% 编码工作；扩展由 Agent 自己写自己装（热加载）
 - ~300 行核心循环 + 25+ Hooks：每读一遍都会刷新对「Agent 本质」的认识
@@ -53,7 +53,7 @@ updated: 2026-09-10
 - PTC 模式（程序化工具调用）预示方向：模型写代码组合多轮工具调用，省 token 且确定性强
 - 读源码路线：`docs/architecture.md` → `packages/core/agent-loop/src/agent.ts` → `packages/core/session` → `packages/core/tools`
 
-## 🧩 编程 Agent 的通用模式
+## 编程 Agent 的通用模式
 
 ```mermaid
 flowchart LR
@@ -77,22 +77,22 @@ flowchart LR
 | Gemini CLI | Google 开源终端 Agent | [GitHub](https://github.com/google-gemini/gemini-cli) |
 | block/goose | Block（Square）开源的可扩展 Agent | [GitHub](https://github.com/block/goose) |
 
-## ⚠️ 落地误区
+## 落地误区
 
 - ❌ 用 IDE 补全的心态用 Agent：给足上下文（issue、约束、验收标准），任务描述质量决定产出
 - ❌ 全自动无验证：至少配 CI 测试 + diff review；高危动作（部署、迁移）永远人批
 - ❌ 忽视仓库「文档即上下文」：CLAUDE.md/AGENTS.md 类项目记忆文件能显著提升跨会话表现
 
-## 🧪 小练习
+## 小练习
 
 用 Pi 或 OpenHands 在真实 issue 上跑一次修复全程：记录步数、token、失败重试次数；对照本章的「通用模式」找出它哪一步最弱。
 
-## 🔗 相关资源
+## 相关资源
 
 - [SWE-bench](../13-resources/benchmarks/swe-bench.md)
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)
 
-## 📚 相关知识点
+## 相关知识点
 
 - [感知—规划—行动循环](../02-agent-basics/perception-planning-action.md)
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)

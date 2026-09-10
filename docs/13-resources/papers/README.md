@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🔗 论文
+# 论文
 
 > Agent 领域的奠基性论文精选。建议按「ReAct → Toolformer → Reflexion」的顺序读——分别对应 Agent 的循环、工具、自我改进三大支柱。
 

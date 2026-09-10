@@ -5,11 +5,11 @@ status: published
 updated: 2026-09-10
 ---
 
-# 💬 04 Prompt 与推理
+# 04 Prompt 与推理
 
 > **一句话**：本章讲「怎么把 LLM 用聪明」：从 prompt 工程的基本功，到 CoT/ToT 等推理模式，再到 Agent 循环的灵魂 ReAct 与自我改进三兄弟。
 
-## 📌 你将学到
+## 你将学到
 
 - Prompt Engineering 的工程化写法（角色、约束、示例、输出格式）
 - 结构化输出：JSON Mode / Schema 约束，Agent 稳定性的基石

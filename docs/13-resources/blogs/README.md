@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🔗 博客
+# 博客
 
 > 一手工程经验的第一来源。Agent 领域变化快，博客比论文与教材更「新鲜」。
 
@@ -20,7 +20,7 @@ updated: 2026-09-10
 | [Lilian Weng 的博客](https://lilianweng.github.io/) | Lilian Weng | 「LLM Powered Autonomous Agents」是 Agent 综述经典 |
 | [Chip Huyen 的博客](https://huyenchip.com/blog/) | Chip Huyen | AI 工程化视角的系统分析 |
 | [DeepSeek Harness 发布解读（InfoQ）](https://www.sohu.com/a/1062640652_122014422) | InfoQ | 一切皆插件架构的中文深度报道 |
-| [Mario Zechner 的博客](https://mariozechner.at/) | badlogic | pi-mono 背后的 harness 设计哲学系列 |
+| [Mario Zechner 的博客](https://mariozechner.at/) | badlogic | Pi 背后的 harness 设计哲学系列 |
 
 ## 阅读方法
 

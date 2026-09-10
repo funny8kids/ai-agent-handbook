@@ -5,11 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🔌 05 工具调用与协议
+# 05 工具调用与协议
 
 > **一句话**：工具是 Agent 的手脚，协议是手脚的接法。本章从 Function Calling 原理讲到 MCP/A2A 两大协议，再到权限、沙箱与 Computer Use。
 
-## 📌 你将学到
+![Function Calling 完整链路](../assets/diagrams/05-tool-calling.svg)
+
+## 你将学到
 
 - Function Calling 的完整链路：schema 注册 → 模型决策 → 参数解析 → 执行回填
 - MCP 为什么被称为「AI 的 USB-C」，以及 Server/Client 架构

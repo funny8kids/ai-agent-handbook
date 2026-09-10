@@ -5,11 +5,11 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🚀 11 工程化与可观测性
+# 11 工程化与可观测性
 
 > **一句话**：从 Demo 到生产隔着一条工程鸿沟：编排、状态机、工具注册、追踪监控、错误处理、部署扩容、成本优化、持续评估——本章就是过桥的图纸。
 
-## 📌 你将学到
+## 你将学到
 
 - Agent 生产架构的参考分层与模式选择
 - 状态机与事件驱动：为什么「append-only 事件流」正在成为主流
@@ -30,7 +30,7 @@ flowchart TB
   ORCH --> S[(状态存储<br/>事件流)]
 ```
 
-## 📖 延伸必读
+## 延伸必读
 
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)——Agent 工程化的 12 条原则，本章多个小节与之呼应
 - [Anthropic: Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)——编排模式的工程共识

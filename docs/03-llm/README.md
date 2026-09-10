@@ -5,11 +5,11 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🧠 03 LLM 基础
+# 03 LLM 基础
 
 > **一句话**：LLM 是 Agent 的大脑。本章讲清它是什么、怎么被训练出来、怎么被压缩部署——以及这些特性如何约束 Agent 的设计。
 
-## 📌 你将学到
+## 你将学到
 
 - LLM 的本质：下一个 token 预测器
 - Transformer 与 Attention 的直觉理解（不推公式）

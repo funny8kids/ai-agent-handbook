@@ -5,17 +5,19 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🧭 学习路线
+# 学习路线
 
 > **一句话**：按「基础 → Agent 核心 → 工程实践 → 应用」四阶段走，每阶段都有明确的目标和检验标准。
 
-## 📌 先看结论
+## 先看结论
 
 - 零基础：01 → 02 → 03，约 2–4 周
 - 有开发经验：直取 02 → 05 → 09，边读边写代码
 - 目标是做产品：09 → 11 → 12 优先，案例驱动
 
-## 🗺️ 路线图
+## 路线图
+
+![学习路线：四个阶段](../assets/diagrams/00-learning-path.svg)
 
 ```mermaid
 flowchart LR
@@ -36,24 +38,24 @@ flowchart LR
 
 | 路线 | 适合谁 | 顺序 | 检验标准 |
 |---|---|---|---|
-| 🌱 入门 | 只会用 ChatGPT 的新手 | 01 → 02 → 03 → 04 | 能向别人讲清「Agent 和 Chatbot 的区别」 |
-| 🛠️ 开发者 | 会 Python/TS 的工程师 | 02 → 05 → 06 → 09 → 11 | 能用框架写出一个会调工具、能恢复错误的 Agent |
-| 🔬 研究者 | 关注前沿与论文 | 04 → 08 → 10 + [13 资源库论文区](../13-resources/papers/README.md) | 能读懂 ReAct 并复现其核心循环 |
+| 入门 | 只会用 ChatGPT 的新手 | 01 → 02 → 03 → 04 | 能向别人讲清「Agent 和 Chatbot 的区别」 |
+| 开发者 | 会 Python/TS 的工程师 | 02 → 05 → 06 → 09 → 11 | 能用框架写出一个会调工具、能恢复错误的 Agent |
+| 研究者 | 关注前沿与论文 | 04 → 08 → 10 + [13 资源库论文区](../13-resources/papers/README.md) | 能读懂 ReAct 并复现其核心循环 |
 
-## 💡 怎么用这本手册学
+## 怎么用这本手册学
 
-1. 每篇先看「📌 先看结论」，有需要再细读
+1. 每篇先看「先看结论」，有需要再细读
 2. 遇到术语卡住，查 [术语表](../15-glossary/README.md)
-3. 每读完一章，做章内「🧪 小练习」
+3. 每读完一章，做章内「小练习」
 4. 读核心章节时对照真实源码：[Pi Agent](../13-resources/projects/README.md)、[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)、[Claude Code 案例拆解](../12-applications/coding-agent.md)
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 从第 1 页顺序精读到最后一页：手册是用来「扫」的，先建立地图再深入
 - ❌ 不写代码只收藏：Agent 是动手学科，跑通一个 50 行的循环胜过读十篇文章
 - ❌ 一开始就钻研框架源码：先懂 [02 Agent 基础](../02-agent-basics/README.md) 的原理，框架只是这些原理的工程化
 
-## 📚 相关知识点
+## 相关知识点
 
 - [总导航](README.md)
 - [资源总表](resources-index.md)

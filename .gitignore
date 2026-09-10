@@ -1,0 +1,5 @@
+# 构建产物与临时数据
+.tmp-projects/
+__pycache__/
+*.pyc
+.DS_Store

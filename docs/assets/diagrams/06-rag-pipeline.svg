@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="RAG 检索增强生成管线图">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#ECFEFF"/>
+    </linearGradient>
+    <linearGradient id="gIdx" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38BDF8"/><stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="gQry" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="gGen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <filter id="sh2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arr2" markerWidth="10" markerHeight="10" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="540" rx="20" fill="url(#bg2)"/>
+  <text x="48" y="62" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="30" font-weight="700" fill="#0F172A">RAG 管线：索引侧 + 查询侧</text>
+  <text x="48" y="92" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#64748B">先离线把知识建成可检索索引，在线时检索、重排、再生成</text>
+
+  <!-- 索引侧 -->
+  <rect x="48" y="130" width="864" height="150" rx="18" fill="#FFFFFF" filter="url(#sh2)"/>
+  <rect x="48" y="130" width="6" height="150" rx="3" fill="#0284C7"/>
+  <text x="72" y="162" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#0369A1">索引侧（离线）</text>
+
+  <g filter="url(#sh2)">
+    <rect x="72" y="184" width="150" height="72" rx="14" fill="url(#gIdx)"/>
+    <rect x="252" y="184" width="150" height="72" rx="14" fill="url(#gIdx)"/>
+    <rect x="432" y="184" width="150" height="72" rx="14" fill="url(#gIdx)"/>
+  </g>
+  <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle" fill="#FFFFFF">
+    <text x="147" y="215" font-size="17" font-weight="700">文档</text>
+    <text x="147" y="237" font-size="12" opacity="0.9">PDF / Wiki / 工单</text>
+    <text x="327" y="215" font-size="17" font-weight="700">切块</text>
+    <text x="327" y="237" font-size="12" opacity="0.9">Chunking</text>
+    <text x="507" y="215" font-size="17" font-weight="700">向量化</text>
+    <text x="507" y="237" font-size="12" opacity="0.9">Embedding</text>
+  </g>
+  <path d="M222 220 L250 220" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <path d="M402 220 L430 220" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <path d="M582 220 L636 220" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+
+  <!-- 向量库圆柱 -->
+  <g filter="url(#sh2)">
+    <path d="M648 184 h150 a12 12 0 0 1 12 12 v48 a12 12 0 0 1 -12 12 h-150 a12 12 0 0 1 -12 -12 v-48 a12 12 0 0 1 12 -12 z" fill="#1E293B"/>
+    <ellipse cx="723" cy="196" rx="75" ry="13" fill="#334155"/>
+    <ellipse cx="723" cy="196" rx="75" ry="13" fill="none" stroke="#475569" stroke-width="2"/>
+  </g>
+  <text x="723" y="228" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" font-weight="700" fill="#E2E8F0">向量索引</text>
+  <text x="723" y="248" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11.5" fill="#94A3B8">HNSW / IVF</text>
+
+  <!-- 查询侧 -->
+  <rect x="48" y="304" width="864" height="196" rx="18" fill="#FFFFFF" filter="url(#sh2)"/>
+  <rect x="48" y="304" width="6" height="196" rx="3" fill="#059669"/>
+  <text x="72" y="336" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#047857">查询侧（在线）</text>
+
+  <g filter="url(#sh2)">
+    <rect x="72" y="358" width="140" height="76" rx="14" fill="url(#gQry)"/>
+    <rect x="242" y="358" width="140" height="76" rx="14" fill="url(#gQry)"/>
+    <rect x="412" y="358" width="140" height="76" rx="14" fill="url(#gQry)"/>
+    <rect x="582" y="358" width="140" height="76" rx="14" fill="url(#gGen)"/>
+    <rect x="752" y="358" width="140" height="76" rx="14" fill="url(#gGen)"/>
+  </g>
+  <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle" fill="#FFFFFF">
+    <text x="142" y="390" font-size="16" font-weight="700">用户问题</text>
+    <text x="142" y="412" font-size="11.5" opacity="0.9">Query</text>
+    <text x="312" y="390" font-size="16" font-weight="700">查询改写</text>
+    <text x="312" y="412" font-size="11.5" opacity="0.9">Rewrite</text>
+    <text x="482" y="390" font-size="16" font-weight="700">混合检索</text>
+    <text x="482" y="412" font-size="11.5" opacity="0.9">向量 + BM25</text>
+    <text x="652" y="390" font-size="16" font-weight="700">重排</text>
+    <text x="652" y="412" font-size="11.5" opacity="0.9">Rerank</text>
+    <text x="822" y="390" font-size="16" font-weight="700">生成 + 引用</text>
+    <text x="822" y="412" font-size="11.5" opacity="0.9">Generate</text>
+  </g>
+  <path d="M212 396 L240 396" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <path d="M382 396 L410 396" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <path d="M552 396 L580 396" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+  <path d="M722 396 L750 396" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr2)"/>
+
+  <!-- 向量库 -> 混合检索 -->
+  <path d="M723 268 L723 312 L482 312 L482 356" fill="none" stroke="#0EA5E9" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arr2)"/>
+  <text x="600" y="306" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#0369A1">检索 Top-K 候选（如 50）</text>
+
+  <!-- 底部提示 -->
+  <text x="482" y="486" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#64748B">关键：检索与生成分开评估；重排后只把 3–5 个高相关块交给模型</text>
+</svg>

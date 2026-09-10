@@ -5,11 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 📊 10 评估、安全与对齐
+# 10 评估、安全与对齐
 
 > **一句话**：Agent 不评估 = 裸奔上线；不设防 = 等着被提示注入。本章覆盖评估指标、基准测试、幻觉治理、攻击面防御与对齐安全。
 
-## 📌 你将学到
+![Agent 评估四层指标](../assets/diagrams/10-eval-layers.svg)
+
+## 你将学到
 
 - Agent 评估的分层指标：任务成功率、轨迹质量、成本延迟
 - 主流基准怎么读：SWE-bench / GAIA / WebArena / AgentBench / ToolBench
@@ -25,7 +27,7 @@ flowchart LR
   C[治理] --> C1[权限沙箱] --> C2[隐私] --> C3[对齐] --> C4[可解释]
 ```
 
-## 🚦 一条主线
+## 一条主线
 
 评估驱动一切：**没有评估集，安全加固、prompt 优化、模型选型全靠感觉**。建议任何 Agent 项目第一周就建 20 个测试用例（→ [持续评估](../11-engineering/continuous-evaluation.md)）。
 

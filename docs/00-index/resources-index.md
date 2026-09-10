@@ -5,17 +5,17 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🧭 资源总表
+# 资源总表
 
 > **一句话**：全书推荐资源的平铺总表，按「必读 → 进阶 → 参考」分级，方便快速定位。
 
-## 🌟 精选 Top 10
+## 精选 Top 10
 
 | # | 资源 | 类型 | 为什么必读 |
 |---|---|---|---|
 | 1 | [ReAct 论文](../13-resources/papers/react.md) | 论文 | Agent 循环的思想源头 |
 | 2 | [Anthropic: Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) | 博客 | 工作流 vs Agent 的工程判断 |
-| 3 | [Pi Agent (pi-mono)](https://github.com/badlogic/pi-mono) | 开源项目 | 极简 harness 的活教材 |
+| 3 | [Pi Agent（原 Pi）](https://github.com/earendil-works/pi) | 开源项目 | 极简 harness 的活教材 |
 | 4 | [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) | 开源项目 | 「一切皆插件」的生产级架构 |
 | 5 | [MCP 官方文档](https://modelcontextprotocol.io) | 文档 | 工具生态的事实标准 |
 | 6 | [LangGraph](../13-resources/projects/langgraph.md) | 开源项目 | 图编排的主流选择 |
@@ -38,7 +38,7 @@ updated: 2026-09-10
 | 社区 | 提问与讨论 | [13-resources/communities](../13-resources/communities/README.md) |
 | Awesome 列表 | 持续更新的资源合集 | [13-resources/awesome-lists](../13-resources/awesome-lists/README.md) |
 
-## 📚 相关知识点
+## 相关知识点
 
 - [标签索引](tags.md)
 - [学习路线](learning-path.md)

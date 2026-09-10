@@ -5,13 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 📊 AgentBench、WebArena、SWE-bench、GAIA、ToolBench
+# AgentBench、WebArena、SWE-bench、GAIA、ToolBench
 
 > **一句话**：五大基准各考一面：SWE-bench 考修真代码、WebArena 考逛真网站、GAIA 考通用助理、AgentBench 考综合、ToolBench 考调工具——合起来是 Agent 能力的全景图。
-> **难度**：⭐️⭐️ 进阶
+> **难度**：进阶
 > **标签**：`#evaluation`
 
-## 🧩 五基准精读
+## 五基准精读
 
 ### 1. SWE-bench（编程 Agent 的黄金标准）
 
@@ -59,25 +59,25 @@ updated: 2026-09-10
 |---|---|
 | 任务 | ToolBench：1.6 万真实 API 上规划调用链；BFCL（Berkeley Function-Calling Leaderboard）：函数选择+参数填空 |
 | 评分 | 调用链可行性、参数准确率 |
-| 关键资源 | [ToolLLM 论文](https://arxiv.org/abs/2307.16789) · [BFCL](https://gorilla.cs.berkeley.edu/leaderboard.html) |
+| 关键资源 | [ToolLLM 论文](https://arxiv.org/abs/2307.16789) · [BFCL](https://gorilla.cs.berkeley.edu/leaderboard) |
 
 读法：选模型时 BFCL 成绩与「Function Calling 可靠性」直接相关；但要注意 API 数量级——真实业务工具面小得多，高分不自动迁移。
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 混用成绩比较 harness：模型榜单、harness 榜单要分开看，SWE-bench 上「Claude Code 式系统」与「裸 API」不是一类参赛者
 - ❌ 全信 pass@1：部分基准允许重试/多采样，确认协议再比较
 - ❌ 忽略成本维度：同等成功率下 token 成本差 10 倍很常见，效率是第二指标
 
-## 🧪 小练习
+## 小练习
 
 你的场景是「浏览器自动化处理内部审批流」。哪个基准的协议最值得借鉴？模仿它设计 20 个带程序化验证的任务。
 
-## 🔗 相关资源
+## 相关资源
 
 - [基准测试资源汇总](../13-resources/benchmarks/README.md)
 
-## 📚 相关知识点
+## 相关知识点
 
 - [基准测试总览](benchmarks.md)
 - [编程 Agent](../12-applications/coding-agent.md)

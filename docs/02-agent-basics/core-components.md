@@ -5,19 +5,19 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🤖 Agent 核心组件
+# Agent 核心组件
 
 > **一句话**：Agent = 大脑（LLM）+ 记忆 + 工具 + 规划 + 执行循环，五个组件任何一项缺失都会让系统退化。
-> **难度**：⭐️ 入门
+> **难度**：入门
 > **标签**：`#agent` `#basics`
 
-## 📌 先看结论
+## 先看结论
 
 - 最小可用 Agent 只需要三样：LLM、一组工具、一个 while 循环——Pi 用 ~300 行证明了这点
 - 其余组件（记忆系统、规划器、审批层）都是在最小内核上加「治理」
 - 组件间靠「上下文」连接：谁能看到什么，决定了行为
 
-## 🧩 五大组件
+## 五大组件
 
 | 组件 | 作用 | 类比 | 深入阅读 |
 |---|---|---|---|
@@ -27,7 +27,7 @@ updated: 2026-09-10
 | 规划 | 拆解目标为步骤 | 待办清单 | [任务分解](../07-planning/task-decomposition.md) |
 | 执行循环 | 观察→思考→行动的引擎 | 心跳 | [感知—规划—行动循环](perception-planning-action.md) |
 
-## 🖼️ 架构图
+## 架构图
 
 ```mermaid
 flowchart TB
@@ -43,9 +43,9 @@ flowchart TB
   O --> R[结果]
 ```
 
-## 📦 源码案例
+## 源码案例
 
-**Pi（pi-mono）的极简内核**（[GitHub](https://github.com/badlogic/pi-mono)）：
+**Pi（原 Pi）的极简内核**（[GitHub](https://github.com/earendil-works/pi)）：
 
 - `@mariozechner/pi-agent-core` 只封装 agentLoop + 工具执行 + 状态管理三件事
 - 只内置 `read / write / edit / bash` 四个原子工具，其余能力靠组合与扩展（Unix 哲学）
@@ -60,17 +60,17 @@ flowchart TB
 
 - 在同样五组件之上叠加：权限管道（每个工具调用过审批）、Hooks（生命周期拦截）、子 Agent 隔离（独立上下文与转写文件）
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 工具越多能力越强：工具过多稀释选择准确率，Claude Code 甚至用「先列工具名、按需加载 schema」来控制工具面（详见 [工具选择与路由](../07-planning/tool-selection-routing.md)）
 - ❌ 记忆 = 对话历史全量塞上下文：会爆窗口且降智，需要压缩与检索（见 [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)）
 - ❌ 规划必须独立模块：小任务里 LLM「边想边做」即可，别过度设计
 
-## 🧪 小练习
+## 小练习
 
 去掉「记忆」组件，Pi 式 Agent 还能跑吗？会退化成什么形态？（提示：想想多轮对话）
 
-## 📚 相关知识点
+## 相关知识点
 
 - [感知—规划—行动循环](perception-planning-action.md)
 - [Agent 状态管理](state-management.md)

@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🔗 课程
+# 课程
 
 > 系统化的免费课程精选。入门首选微软的 AI Agents for Beginners；深入工程后以官方文档与源码为主。
 

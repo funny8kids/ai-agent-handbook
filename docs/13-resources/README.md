@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🔗 13 资源库
+# 13 资源库
 
 > **一句话**：全书推荐资源的分类收藏地：论文、课程、开源项目、工具、数据集、基准测试、博客、社区、Awesome 列表——每个资源一张卡片页，双向链接回知识点。
 
@@ -22,7 +22,7 @@ updated: 2026-09-10
 |---|---|---|
 | 论文 | ReAct、Toolformer、Reflexion 等奠基工作 | [papers](papers/README.md) |
 | 课程 | 系统化免费课程 | [courses](courses/README.md) |
-| 开源项目 | harness、框架、编程 Agent | [projects](projects/README.md) |
+| 开源项目 | harness、框架、编程 Agent；完整项目索引（329 个，11 类） | [projects](projects/README.md) |
 | 工具 | MCP Servers、可观测工具 | [tools](tools/README.md) |
 | 数据集 | 训练与评估数据 | [datasets](datasets/README.md) |
 | 基准测试 | SWE-bench、GAIA、WebArena | [benchmarks](benchmarks/README.md) |

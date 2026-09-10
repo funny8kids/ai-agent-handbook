@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="Agent 感知—规划—行动—观察循环图">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EEF2FF"/>
+    </linearGradient>
+    <linearGradient id="gPerceive" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="gPlan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="gAct" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="gObs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="540" rx="20" fill="url(#bg)"/>
+  <text x="48" y="62" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="30" font-weight="700" fill="#0F172A">Agent 核心循环</text>
+  <text x="48" y="92" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#64748B">感知 → 规划 → 行动 → 观察，循环直到目标达成</text>
+
+  <!-- 中央目标 -->
+  <circle cx="330" cy="300" r="62" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" filter="url(#sh)"/>
+  <text x="330" y="292" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="700" fill="#334155">目标</text>
+  <text x="330" y="316" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#94A3B8">Goal</text>
+
+  <!-- 环形箭头 -->
+  <path d="M330 178 A 122 122 0 0 1 452 300" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr)" stroke-dasharray="1 0"/>
+  <path d="M452 300 A 122 122 0 0 1 330 422" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M330 422 A 122 122 0 0 1 208 300" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M208 300 A 122 122 0 0 1 330 178" fill="none" stroke="#94A3B8" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- 四个节点 -->
+  <g filter="url(#sh)">
+    <rect x="255" y="118" width="150" height="66" rx="16" fill="url(#gPerceive)"/>
+    <rect x="412" y="267" width="150" height="66" rx="16" fill="url(#gPlan)"/>
+    <rect x="255" y="416" width="150" height="66" rx="16" fill="url(#gAct)"/>
+    <rect x="98" y="267" width="150" height="66" rx="16" fill="url(#gObs)"/>
+  </g>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle" fill="#FFFFFF">
+    <text x="330" y="147" font-size="19" font-weight="700">感知</text>
+    <text x="330" y="169" font-size="12.5" opacity="0.92">Perceive</text>
+    <text x="487" y="296" font-size="19" font-weight="700">规划</text>
+    <text x="487" y="318" font-size="12.5" opacity="0.92">Plan</text>
+    <text x="330" y="445" font-size="19" font-weight="700">行动</text>
+    <text x="330" y="467" font-size="12.5" opacity="0.92">Act</text>
+    <text x="173" y="296" font-size="19" font-weight="700">观察</text>
+    <text x="173" y="318" font-size="12.5" opacity="0.92">Observe</text>
+  </g>
+
+  <!-- 右侧能力面板 -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="640" y="140" font-size="15" font-weight="700" fill="#475569">循环的支撑能力</text>
+
+    <g filter="url(#sh)">
+      <rect x="640" y="160" width="272" height="74" rx="14" fill="#FFFFFF"/>
+      <rect x="640" y="252" width="272" height="74" rx="14" fill="#FFFFFF"/>
+      <rect x="640" y="344" width="272" height="74" rx="14" fill="#FFFFFF"/>
+    </g>
+    <circle cx="678" cy="197" r="18" fill="#E0E7FF"/>
+    <path transform="translate(678,197)" d="M0,-7 L1.8,-1.8 L7,0 L1.8,1.8 L0,7 L-1.8,1.8 L-7,0 L-1.8,-1.8 Z" fill="#4F46E5"/>
+    <text x="708" y="192" font-size="15" font-weight="700" fill="#1E293B">LLM 推理</text>
+    <text x="708" y="214" font-size="12.5" fill="#64748B">决策下一步：思考 / 调工具 / 收尾</text>
+
+    <circle cx="678" cy="289" r="18" fill="#DCFCE7"/>
+    <path transform="translate(678,289)" d="M-2.4,-7 L2.4,-7 L7,-2.4 L7,2.4 L2.4,7 L-2.4,7 L-7,2.4 L-7,-2.4 Z" fill="#16A34A"/>
+    <text x="708" y="284" font-size="15" font-weight="700" fill="#1E293B">工具</text>
+    <text x="708" y="306" font-size="12.5" fill="#64748B">搜索、代码、文件、API 调用</text>
+
+    <circle cx="678" cy="381" r="18" fill="#FEF3C7"/>
+    <g transform="translate(678,381)" fill="#D97706">
+      <rect x="-7" y="-7" width="14" height="3.4" rx="1.7"/>
+      <rect x="-7" y="-1.7" width="14" height="3.4" rx="1.7"/>
+      <rect x="-7" y="3.6" width="14" height="3.4" rx="1.7"/>
+    </g>
+    <text x="708" y="376" font-size="15" font-weight="700" fill="#1E293B">记忆</text>
+    <text x="708" y="398" font-size="12.5" fill="#64748B">保存历史、压缩上下文</text>
+  </g>
+
+  <!-- 连接线 -->
+  <path d="M562 300 L628 300" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="5 5"/>
+  <path d="M562 300 L640 300" stroke="none"/>
+  <path d="M562 300 C 600 300, 600 197, 638 197" fill="none" stroke="#CBD5E1" stroke-width="1.6" stroke-dasharray="5 5"/>
+  <path d="M562 300 C 600 300, 600 381, 638 381" fill="none" stroke="#CBD5E1" stroke-width="1.6" stroke-dasharray="5 5"/>
+</svg>

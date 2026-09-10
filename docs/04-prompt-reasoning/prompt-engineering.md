@@ -5,20 +5,20 @@ status: published
 updated: 2026-09-10
 ---
 
-# 💬 Prompt Engineering
+# Prompt Engineering
 
 > **一句话**：Prompt Engineering 是给「概率机器」写需求文档——角色、任务、约束、示例、输出格式五要素写清楚，输出质量立竿见影。
-> **难度**：⭐️ 入门
+> **难度**：入门
 > **标签**：`#prompt`
 
-## 📌 先看结论
+## 先看结论
 
 - 五要素：角色（你是谁）、任务（做什么）、约束（不许做什么）、示例（照这个样子）、格式（输出长什么样）
 - 指令放前、参考材料放中、指令尾部重申一次（对抗 lost-in-the-middle）
 - 与其堆技巧，不如给例子：2–5 个 few-shot 示例是最稳的杠杆
 - Prompt 是代码：要版本管理、要测试、要回归
 
-## 🧩 五要素模板
+## 五要素模板
 
 ```markdown
 # 角色
@@ -39,7 +39,7 @@ updated: 2026-09-10
 {diff}
 ```
 
-## 📦 源码案例
+## 源码案例
 
 **Claude Code 的系统提示词就是最好的教材**（逆向全集：[Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts)）：
 
@@ -50,23 +50,23 @@ updated: 2026-09-10
 
 **Pi 的极简哲学**：system prompt 全部压在 1000 token 内，把「行为规范」交给工具描述与扩展机制——证明 prompt 不是越长越好，越明确越好。
 
-## ✅ 最佳实践
+## 最佳实践
 
 - 用 Git 管理 prompt，改动跑回归集（一批固定输入 → 期望输出的用例）
 - 让模型先复述任务再执行，可发现理解偏差
 - 负面指令改成正面指令：「不要啰嗦」→「每个要点一句话」
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 迷信咒语（"thinking step by step" 万能）：对不同模型效果差异大，实测为准
 - ❌ 一个 prompt 打天下：主任务、总结、改写应分开，pipeline 化（→ [工作流编排](../07-planning/workflow-orchestration.md)）
 - ❌ 忽略工具描述：对 Agent 来说，工具的 description 就是最重要的 prompt（见 [Function Calling](../05-tool-protocol/function-calling.md)）
 
-## 🧪 小练习
+## 小练习
 
 把「帮我写周报」改写成五要素齐全的 prompt，并设计 3 个回归测试用例。
 
-## 📚 相关知识点
+## 相关知识点
 
 - [结构化输出](structured-output.md)
 - [上下文工程](../06-memory-rag/context-engineering.md)
