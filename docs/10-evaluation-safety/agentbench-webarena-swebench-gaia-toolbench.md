@@ -1,30 +1,83 @@
 ---
-tags: []
+tags: [evaluation, advanced]
 type: knowledge
-status: draft
+status: published
 updated: 2026-09-10
 ---
 
 # 📊 AgentBench、WebArena、SWE-bench、GAIA、ToolBench
 
-> 🚧 本页编写中。动手前请先读 [风格指南](../14-templates/style-guide.md) 与 [知识点模板](../14-templates/knowledge-template.md)，完成后将 `status` 改为 `published`。
+> **一句话**：五大基准各考一面：SWE-bench 考修真代码、WebArena 考逛真网站、GAIA 考通用助理、AgentBench 考综合、ToolBench 考调工具——合起来是 Agent 能力的全景图。
+> **难度**：⭐️⭐️ 进阶
+> **标签**：`#evaluation`
 
-## 📌 先看结论
+## 🧩 五基准精读
 
-- （待补充：一句话结论）
+### 1. SWE-bench（编程 Agent 的黄金标准）
 
-## 🖼️ 图示
+| 属性 | 内容 |
+|---|---|
+| 任务 | 2294 个真实 GitHub issue（Python 仓库），需产出通过测试的 patch |
+| 评分 | Fail-to-Pass 测试通过率；Verified 子集经人工核验（500 题） |
+| 关键资源 | [官网](https://www.swebench.com/) · [仓库](https://github.com/princeton-nlp/SWE-bench) · SWE-agent（[GitHub](https://github.com/SWE-agent/SWE-agent)） |
 
-（可选：1–3 张 Mermaid 图或对比表格）
+读法：对比各系统成绩时必须看 harness——同一模型在 SWE-agent、OpenHands、Claude Code 式 scaffold 下成绩差异巨大；任务描述（issue 文本）也常随 harness 增强（给 Agent 更多测试线索）。
+
+### 2. WebArena（真实网站长程任务）
+
+| 属性 | 内容 |
+|---|---|
+| 任务 | 812 个任务：购物、论坛、CMS、GitLab 四个自托管真实网站 |
+| 评分 | 程序化验证最终环境状态（订单存在/页面状态正确） |
+| 关键资源 | [官网](https://webarena.dev/) · [论文](https://arxiv.org/abs/2307.13854) |
+
+读法：长程任务成功率至今不过半，暴露「多步规划 + 状态跟踪」仍是短板；网站 DOM 结构是它的输入假设，迁移到内网系统要重建观测层。
+
+### 3. GAIA（通用助理基准）
+
+| 属性 | 内容 |
+|---|---|
+| 任务 | 466 个人类几天能做对、AI 难做的题：多步推理、浏览、读文件、算术 |
+| 评分 | 精确答案匹配；分 Level 1–3 难度 |
+| 关键资源 | [论文](https://arxiv.org/abs/2311.12983) · [仓库](https://huggingface.co/spaces/gaia-benchmark/leaderboard) |
+
+读法：设计哲学「人类容易 AI 难」；Anthropic 的多 Agent 研究系统正是靠「Lead + 并行 Worker + 工具增强」在 GAIA 类任务上拉开差距（[工程博客](https://www.anthropic.com/engineering/built-multi-agent-research-system)）。
+
+### 4. AgentBench（综合能力体检）
+
+| 属性 | 内容 |
+|---|---|
+| 任务 | 8 个环境：操作系统、数据库、知识图谱、网页浏览、数字游戏等 |
+| 评分 | 各环境专用成功率，汇总多维报告 |
+| 关键资源 | [论文](https://arxiv.org/abs/2308.03688) · [仓库](https://github.com/THUDM/AgentBench) |
+
+读法：像「体检报告」——能看到某模型「数据库强、网页弱」这样的结构化短板，适合模型选型初筛。
+
+### 5. ToolBench / BFCL（工具调用专精）
+
+| 属性 | 内容 |
+|---|---|
+| 任务 | ToolBench：1.6 万真实 API 上规划调用链；BFCL（Berkeley Function-Calling Leaderboard）：函数选择+参数填空 |
+| 评分 | 调用链可行性、参数准确率 |
+| 关键资源 | [ToolLLM 论文](https://arxiv.org/abs/2307.16789) · [BFCL](https://gorilla.cs.berkeley.edu/leaderboard.html) |
+
+读法：选模型时 BFCL 成绩与「Function Calling 可靠性」直接相关；但要注意 API 数量级——真实业务工具面小得多，高分不自动迁移。
 
 ## ⚠️ 常见误区
 
-- ❌ （待补充）
+- ❌ 混用成绩比较 harness：模型榜单、harness 榜单要分开看，SWE-bench 上「Claude Code 式系统」与「裸 API」不是一类参赛者
+- ❌ 全信 pass@1：部分基准允许重试/多采样，确认协议再比较
+- ❌ 忽略成本维度：同等成功率下 token 成本差 10 倍很常见，效率是第二指标
+
+## 🧪 小练习
+
+你的场景是「浏览器自动化处理内部审批流」。哪个基准的协议最值得借鉴？模仿它设计 20 个带程序化验证的任务。
 
 ## 🔗 相关资源
 
-- （待补充）
+- [基准测试资源汇总](../13-resources/benchmarks/README.md)
 
 ## 📚 相关知识点
 
-- （待补充）
+- [基准测试总览](benchmarks.md)
+- [编程 Agent](../12-applications/coding-agent.md)
