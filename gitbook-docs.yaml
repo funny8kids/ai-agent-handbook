@@ -1,0 +1,12 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: VioletNotes Docs
+  structure:
+    - type: space
+      key: space-1
+      title: Android大全
+      path: product-docs
+      default: true
+      content:
+        directory: ./product-docs
+        language: en
