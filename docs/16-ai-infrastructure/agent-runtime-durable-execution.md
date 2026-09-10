@@ -5,13 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🏗️ 持久化执行与 Agent 运行时
+# 持久化执行与 Agent 运行时
 
 > **一句话**：长任务的可靠性不靠「写得仔细」，靠「运行时能重放」——把每一步的输入输出作为事实落盘，崩溃后从最后一个确定的状态继续，而不是从头再烧 40 分钟 token。
-> **难度**：⭐️⭐️⭐️ 高级
+> **难度**： 高级
 > **标签**：`#infrastructure` `#engineering` `#agent`
 
-## 📌 先看结论
+## 先看结论
 
 - **Agent = 状态机 + 副作用**：LLM 决策是纯计算（可重放），工具调用是副作用（不可重放）。运行时设计的核心就是「把不可重放的东西单独记账」。
 - **三种持久化强度**：只存会话消息（能续聊，不能续跑）→ 存检查点（能恢复到最后一步）→ 事件溯源（能重放、能审计、能时间旅行）。选哪档取决于任务时长与合规要求。
@@ -19,7 +19,7 @@ updated: 2026-09-10
 - **Durable execution 不是框架广告词**：Temporal、Restate 这类引擎把「代码即状态机」变成现实（函数里 await 的每个步骤自动落盘），代价是必须遵守确定性约束（不能在 workflow 代码里读时间/随机数）。
 - **并发要有闸**：子 Agent 并行 50 个很酷，直到它们同时打满模型池配额并互相写同一份文件。运行时负责信号量、租约与冲突隔离。
 
-## 🖼️ 事件溯源的 Agent 状态
+## 事件溯源的 Agent 状态
 
 ```mermaid
 stateDiagram-v2
@@ -37,7 +37,7 @@ stateDiagram-v2
 
 **关键**：`llm_output` 与 `tool_result` 是两条独立事件。恢复时：若已有 `llm_output` 但没有 `tool_result` → 只重放工具调用；两者都有 → 直接进下一步。**这就是崩溃后不重复烧 token 的原理。**
 
-## 🧩 运行时职责边界
+## 运行时职责边界
 
 | 关注点 | 归运行时 | 归业务/Agent 代码 |
 |---|---|---|
@@ -47,10 +47,10 @@ stateDiagram-v2
 | 并发与配额 | ✅ 信号量、租户配额、公平调度 | 决定哪些步骤可并行 |
 | 取消与超时 | ✅ 取消传播、硬超时 | 处理 `CancelledError`，做清理 |
 | 可观测 | ✅ span 关联、重放接口 | 打语义化属性（任务 id、工具名） |
-| 上下文管理 | ⚠️ 共同 | 压缩策略属语义，落盘格式属运行时 |
+| 上下文管理 | ⚠ 共同 | 压缩策略属语义，落盘格式属运行时 |
 | 沙箱生命周期 | ✅ 与运行时同库存活 | 只申请「我需要 shell + 60 分钟」 |
 
-## 💻 两种实现路线
+## 两种实现路线
 
 **路线 A：自己写一个最小「append-only 事实表」（推荐先做这个）**
 
@@ -105,7 +105,7 @@ async def run(goal: str, run_id: str | None = None):
 
 > 💡 **提示**：判断标准很简单——**任务时长 × 单价 > 一次重启的损失，就上 durable**。5 秒的请求不需要，50 分钟的批量重构任务几乎必须。
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 把 LLM 调用当纯函数重放：模型输出会变。恢复策略应是「已有结果直接复用」，不是「重新调用一遍」（要重现就破坏语义，也要破坏缓存经济性）
 - ❌ workflow 代码里写 `datetime.now()` / `random()`：非确定操作会让 durable 引擎重放错位（Temporal 会直接报错，自研的会静默腐坏）
@@ -114,17 +114,17 @@ async def run(goal: str, run_id: str | None = None):
 - ❌ 无取消传播：用户点了停止，但沙箱里那条 `while true` 还在跑，钱和 CPU 都在流
 - ❌ 「加个 retry 就容错了」：没有幂等键的重试是放大故障的开关
 
-## 🧪 小练习
+## 小练习
 
 给你的 Agent 做一次「随手中断测试」：跑一个 15 步的任务，在第 3、7、11 步分别 `kill -9` 进程，然后重启。检查三件事：① 是否从断点继续（没有重跑已完成的工具）；② 有没有重复副作用（发重复消息/重复提交）；③ 审计表能否解释「发生了什么」。三条都过，才算有运行时。
 
-## 🔗 相关资源
+## 相关资源
 
 - [Temporal](https://temporal.io/)、[Restate](https://restate.dev/)、[Inngest](https://www.inngest.com/)
 - [LangGraph 持久化文档](https://langchain-ai.github.io/langgraph/concepts/persistence/)
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)
 
-## 📚 相关知识点
+## 相关知识点
 
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
 - [Agent 状态管理](../02-agent-basics/state-management.md)

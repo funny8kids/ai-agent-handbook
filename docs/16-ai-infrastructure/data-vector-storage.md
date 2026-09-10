@@ -5,13 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🏗️ 数据与检索基础设施
+# 数据与检索基础设施
 
 > **一句话**：RAG 的效果上限由数据基础设施决定——语料怎么进（采集/清洗/切块）、怎么放（索引/分片/元数据）、怎么新（增量更新与失效）、怎么评（检索质量与端到端归因），四件事缺一件，换多贵的模型都救不回来。
-> **难度**：⭐️⭐️ 进阶
+> **难度**： 进阶
 > **标签**：`#infrastructure` `#rag`
 
-## 📌 先看结论
+## 先看结论
 
 - **向量库不是数据库的替代品，是它的一个索引**：生产形态通常是「主库（Postgres + pgvector）+ 可选的专用向量索引（Qdrant/Milvus/pgvectorscale 等）+ 对象存储放原文 + 全文检索（BM25/tsvector）做混合召回」。
 - **切块与元数据比 embedding 模型更影响效果**：结构化文档按语义边界切、带上来源/时间/权限标签，收益通常大于换 embedding 模型。
@@ -19,7 +19,7 @@ updated: 2026-09-10
 - **索引新鲜度要有 SLA**：知识库里最危险的错误不是「答得不像」，是「引用了昨天的过期政策」。删除/更新必须传播到向量索引与图索引。
 - **权限必须在检索层过滤**：文档 ACL 要写进元数据并在查询时强制过滤，绝不能在 prompt 里写「只参考有权限的文档」。
 
-## 🖼️ 数据管线全景
+## 数据管线全景
 
 ```mermaid
 flowchart LR
@@ -36,7 +36,7 @@ flowchart LR
   IDX -. 增量更新/删除 .-> Q
 ```
 
-## 🧩 选型对照
+## 选型对照
 
 | 组件 | 常见选择 | 什么时候需要它 | 别在这里翻车 |
 |---|---|---|---|
@@ -49,7 +49,7 @@ flowchart LR
 
 > 💡 **提示**：先跑「无 RAG 基线」和「只有关键词检索基线」，再上向量与重排——很多团队发现自己缺的是**清洗**，不是**模型**。
 
-## ⚙️ 工程要点清单
+## 工程要点清单
 
 **切块（chunking）**
 
@@ -91,7 +91,7 @@ flowchart LR
 - 热集合常驻内存、冷集合放盘（HNSW + DiskANN 混合）；按租户分片可避免「大租户饿死小租户」
 - Embedding 批处理 + 缓存（同一文本哈希只算一次），重跑管线的成本差距很大
 
-## 💻 一个能上线的最小检索栈
+## 一个能上线的最小检索栈
 
 ```python
 # Postgres 单栈起步：pgvector + tsvector 混合 + RRF 融合，够撑到千万级
@@ -124,14 +124,14 @@ with psycopg.connect(DSN) as conn:
 
 **为什么用 RRF（倒数排名融合）**：稠密与稀疏分数不可比，用名次而不是分数融合，一行公式解决「权重调参地狱」（`k=60` 是常用平滑值）。
 
-## 📦 工程现场笔记
+## 工程现场笔记
 
 - **代码检索的特殊性**：AST 级切块 + 标识符归一化 + 符号图（call graph）比通用文本 RAG 效果好一截；纯 embedding 检索代码库经常被同名函数与复制粘贴污染（→ [编程 Agent](../12-applications/coding-agent.md)）。
 - **GraphRAG 的成本现实**：构图与社区摘要是离线 LLM 密集任务，索引一版可能比 embedding 贵 1–2 个数量级。适合「多跳 + 全局问答」，不适合「找那条配置说明」。
 - **飞轮闭环**：线上失败样本（用户追问「没找到」）→ 标注 → 进评估集 → 反哺切块与索引策略。没有这条回路，RAG 会长期停在「演示能用」。
 - **可观测**：检索侧必须留 `query → 召回列表 → 重排后 → 实际进入 prompt 的片段 → 模型引用`，否则「模型幻觉」和「检索没召回」永远分不清（→ [可观测性与评估平台](llm-observability-eval-platform.md)）。
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 上向量库当第一动作：先做数据清洗与切块，收益往往更大且免费
 - ❌ top-k 越大越好：k 增大引入噪声，模型「被拽偏」，一般 3–8 段足够，配合 rerank
@@ -139,16 +139,16 @@ with psycopg.connect(DSN) as conn:
 - ❌ 忽略「检索为空」这条路径：没召回就该明确说「没找到」，而不是让模型硬答（→ [幻觉](../10-evaluation-safety/hallucination.md)）
 - ❌ 离线评估只看 recall@k：用户看到的是端到端答案质量，必须同时测「引用正确率 / 时效性 / 拒答正确率」
 
-## 🧪 小练习
+## 小练习
 
 准备 30 个真实问答（含 5 个「知识库里确实没有答案」的陷阱题），对比三套配置：① 纯向量 top-5；② 混合 + RRF top-8 + rerank top-3；③ 配置 ② + 父块扩展。统计端到端正确率与「空手乱答率」——第二项通常掉得最狠，也最影响信任。
 
-## 🔗 相关资源
+## 相关资源
 
 - [pgvector](https://github.com/pgvector/pgvector)、[Qdrant](https://github.com/qdrant/qdrant)、[Milvus](https://github.com/milvus-io/milvus)、[LanceDB](https://github.com/lancedb/lancedb)
 - 原理：[向量数据库](../06-memory-rag/vector-database.md)、[Embedding 与相似度](../06-memory-rag/embedding-similarity.md)、[GraphRAG](../06-memory-rag/graphrag.md)
 
-## 📚 相关知识点
+## 相关知识点
 
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [上下文工程](../06-memory-rag/context-engineering.md)

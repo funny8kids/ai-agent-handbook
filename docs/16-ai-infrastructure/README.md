@@ -5,11 +5,11 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🏗️ 16 AI 基础设施
+# 16 AI 基础设施
 
 > **一句话**：Agent 产品的体验上限，往往不在 prompt，而在基础设施——推理引擎决定「多快多贵」，缓存决定「上下文能做多长」，沙箱决定「你敢让 Agent 干什么」，网关与运行时决定「崩了能不能救回来」。
 
-## 📌 先看结论
+## 先看结论
 
 - **一次 LLM 调用 = 两个瓶颈相反的阶段**：prefill（算力瓶颈，决定 TTFT）与 decode（显存带宽瓶颈，决定 TPOT）。所有推理优化都在对付这两件事，选型前先问自己卡在哪个。
 - **缓存是 Agent 的隐形成本杠杆**：Agent 每轮都重发同一份长前缀（system + 工具 + 历史），前缀缓存命中率能把输入成本砍掉一半以上——所以「稳定前缀 + 只追加尾部」是工程纪律，不是微优化。
@@ -17,7 +17,7 @@ updated: 2026-09-10
 - **长任务需要 durable 运行时**：一次跑 40 分钟的 Agent，用「进程内存里 for 循环」必然被一次重启全量报废。checkpoint / 事件重放 / 幂等工具调用是运行时的事，不是业务代码的事。
 - **本章面向「要上线的人」**：每页都有选型表 + 可跑的验收动作（压测脚本、命中率观测、故障演练）。
 
-## 🏔️ 技术栈分层地图
+## 技术栈分层地图
 
 | 层 | 解决什么 | 代表方案 | 页面 |
 |---|---|---|---|
@@ -32,7 +32,7 @@ updated: 2026-09-10
 | ⑨ 可观测与评估 | 知道慢在哪、错在哪 | OTel GenAI、Langfuse、离线评估集、回放 | [可观测性与评估平台](llm-observability-eval-platform.md) |
 | ⑩ 成本与形态 | 自研还是买 API | token 经济学、端侧/本地、量化蒸馏 | [推理经济学与部署形态](inference-economics-deployment.md) |
 
-## 🖼️ 动态图示
+## 动态图示
 
 本章配了三张可动的 SVG（点开页面即可看到动画，仓库文件：`docs/assets/diagrams/`）：
 
@@ -42,14 +42,14 @@ updated: 2026-09-10
 | [前缀缓存命中与重算范围](../assets/diagrams/16-prefix-cache.svg) | Agent 多轮对话里，缓存能省掉哪一段、什么改动会让它整段失效 |
 | [沙箱分层与出口闸门](../assets/diagrams/16-sandbox-layers.svg) | 一次工具调用穿过 runc / gVisor / microVM 与网络白名单的过程 |
 
-## 🧭 阅读建议
+## 阅读建议
 
 - **只想跑起来**：[模型网关](model-gateway.md) → [沙箱](sandbox-execution-environments.md) → [可观测](llm-observability-eval-platform.md)
 - **自建推理 / 私有化**：[推理服务化](inference-serving.md) → [GPU 调度](gpu-scheduling-multitenancy.md) → [推理经济学](inference-economics-deployment.md)
 - **做平台给别人的 Agent 用**：全部，重点 [持久化执行](agent-runtime-durable-execution.md)
 - 与 [11 工程化与可观测性](../11-engineering/README.md) 的分工：11 章讲「应用侧怎么写」，本章讲「下面的平台怎么搭」
 
-## 📚 相关知识点
+## 相关知识点
 
 - [缓存与成本优化](../11-engineering/caching-cost-optimization.md)
 - [部署与弹性伸缩](../11-engineering/deployment-scaling.md)

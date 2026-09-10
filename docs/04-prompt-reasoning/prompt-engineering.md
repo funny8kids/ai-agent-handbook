@@ -41,7 +41,7 @@ $$
 \big[\text{角色与任务}\big]\;\big[\text{参考材料（长）}\big]\;\big[\text{任务重申 + 输出格式}\big]
 $$
 
-把关键指令放在首尾各一次，是低成本且有效的工程手段（原理见 [Transformer 与 Attention](transformer-attention.md) 与 [上下文工程](../06-memory-rag/context-engineering.md)）。
+把关键指令放在首尾各一次，是低成本且有效的工程手段（原理见 [Transformer 与 Attention](../03-llm/transformer-attention.md) 与 [上下文工程](../06-memory-rag/context-engineering.md)）。
 
 ### 3. 零样本、少样本与分解
 

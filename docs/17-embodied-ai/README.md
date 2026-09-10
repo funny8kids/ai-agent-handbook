@@ -5,11 +5,11 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🦾 17 具身智能
+# 17 具身智能
 
 > **一句话**：具身智能（Embodied AI）是把「会想的大脑」接进「会动的身体」——难点不在让模型说出步骤，而在把 5Hz 的语义决策变成 50–1000Hz 的电机指令，同时还能承受真实世界的噪声、磨损与安全事故。
 
-## 📌 先看结论
+## 先看结论
 
 - **LLM Agent 与机器人 Agent 是同一套循环的两种实现**：感知 → 规划 → 行动 → 观测反馈。差别在于机器人的「工具调用」不可回滚（杯子已经掉了），奖励信号延迟且昂贵，一次失败要人工复位。
 - **控制频率决定架构**：VLM 级推理只有 5–10Hz，电机控制需要 50Hz–1kHz。所以现代方案基本都是**双系统 / 快慢分层**：慢系统给意图，快系统出动作，靠 action chunking 或残差策略把频率断层补上。
@@ -17,7 +17,7 @@ updated: 2026-09-10
 - **仿真解决「量」，真机解决「对不对」**：sim-to-real 的差距来自接触、摩擦、延迟、相机曝光与标定；域随机化能把策略「训 robust」，但无法保证真机指标可外推。
 - **安全是硬件属性，不是软件承诺**：力矩限制、功率与力限制（PFL）、急停回路、速度与安全层（SSL）、工作空间围栏——任何「模型更小心了」都不构成安全论证。
 
-## 🗺️ 本章地图
+## 本章地图
 
 | 页面 | 回答什么问题 |
 |---|---|
@@ -34,7 +34,7 @@ updated: 2026-09-10
 | [硬件、实时与安全](hardware-realtime-safety.md) | 传感器、边缘算力、ROS 2 / EtherCAT、急停与力限制 |
 | [把 Agent 接进机器人](agent-to-robot-bridge.md) | 任务规划层 + 技能库 + ROS 2 桥接，含可跑的最小代码 |
 
-## 🖼️ 动态图示
+## 动态图示
 
 | 图示 | 说明 |
 |---|---|
@@ -42,14 +42,14 @@ updated: 2026-09-10
 | [Action Chunking 与异步执行](../assets/diagrams/17-action-chunking.svg) | 5Hz 推理为什么能驱动 50Hz 控制：滚动地「预取」未来动作 |
 | [域随机化与 Sim-to-Real](../assets/diagrams/17-sim2real-domain-randomization.svg) | 随机化「训练时的分布」而不是「调一个最像真的场景」 |
 
-## 🧭 阅读建议
+## 阅读建议
 
 - **软件工程师转过来**：[什么是具身智能](what-is-embodied-ai.md) → [VLA 模型架构](vla-models.md) → [把 Agent 接进机器人](agent-to-robot-bridge.md)，然后照 [仿真与 Sim-to-Real](simulation-sim2real.md) 装个仿真器跑通一次
 - **算法方向**：[数据引擎](data-engine.md) 与 [世界模型](world-models-video.md) 是当前最活跃的战线
 - **做产品/做集成**：[硬件、实时与安全](hardware-realtime-safety.md) → [评估与基准](evaluation-benchmarks.md)（先定义怎么验收，再谈模型能力）
 - 与 [16 AI 基础设施](../16-ai-infrastructure/README.md) 的连接：机器人是「延迟预算最苛刻的推理客户端」——同一套量化/分层/降级思路，只是单位从「毫秒体验」变成「毫秒不掉杯子」
 
-## 📚 相关知识点
+## 相关知识点
 
 - [多模态模型](../03-llm/multimodal.md)
 - [Agent 核心组件](../02-agent-basics/core-components.md)

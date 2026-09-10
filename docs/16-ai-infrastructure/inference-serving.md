@@ -5,13 +5,13 @@ status: published
 updated: 2026-09-10
 ---
 
-# 🏗️ 推理服务化：引擎、批处理与延迟指标
+# 推理服务化：引擎、批处理与延迟指标
 
 > **一句话**：现代 LLM 推理引擎的核心不是「把模型跑得更快」，而是「让 GPU 在等 token 的时候别闲着」——连续批处理（continuous batching）+ 分页 KV 缓存（PagedAttention）就是这两件事的实现。
-> **难度**：⭐️⭐️⭐️ 高级
+> **难度**： 高级
 > **标签**：`#infrastructure` `#llm`
 
-## 📌 先看结论
+## 先看结论
 
 - **prefill 是算力瓶颈，decode 是显存带宽瓶颈**：同一个请求的两个阶段，瓶颈不同、扩缩容单位也不同。这就是「prefill / decode 分离部署」（disaggregated serving）存在的原因。
 - **连续批处理带来 5–10 倍吞吐**：静态批处理要等批次里最长的那条生成完；连续批处理让先结束的请求立刻退出、新请求立刻插队补位。
@@ -19,7 +19,7 @@ updated: 2026-09-10
 - **必须盯四个指标**：TTFT（首 token 延迟）、TPOT/ITL（每 token 间隔）、吞吐（tok/s）、goodput（满足 SLO 的那部分吞吐）。只看平均延迟会骗人，要看 p95/p99。
 - **选型默认答案**：通用高并发 → vLLM；前缀分支多（Agent、评测、多轮）→ SGLang；只做 NVIDIA 且压榨延迟 → TensorRT-LLM；CPU/端侧 → llama.cpp / MLX。
 
-## 🤔 为什么「引擎」不是可选项？
+## 为什么「引擎」不是可选项？
 
 同一份权重、同一张 H100，裸 `model.generate()` 和调优过的引擎，吞吐可以差一个数量级。原因很朴素：
 
@@ -42,7 +42,7 @@ flowchart LR
 
 > 💡 **提示**：Agent 负载天生「长输入 + 中等输出 + 高频短请求」，且每轮重复发送同一前缀——所以引擎的前缀缓存能力对 Agent 场景比对聊天更重要。
 
-## 🧩 核心机制对照
+## 核心机制对照
 
 | 机制 | 治什么 | 代表实现 | 对 Agent 的意义 |
 |---|---|---|---|
@@ -55,7 +55,7 @@ flowchart LR
 | Prefill / Decode 分离 | 两阶段资源画像冲突 | NVIDIA Dynamo + NIXL、llm-d、SGLang P/D | 大规模部署（几十卡起）才有意义 |
 | 约束解码 / 结构化输出 | JSON 合法率与解析失败重试 | xgrammar、outlines、guided decoding | Agent 工具调用参数不再「偶尔抽风」 |
 
-## 💻 先量一把：TTFT / TPOT 的最小压测脚本
+## 先量一把：TTFT / TPOT 的最小压测脚本
 
 选型之前先有基线，否则所有「优化」都是玄学。
 
@@ -95,7 +95,7 @@ asyncio.run(main())
 
 **读法**：TTFT 高 → prefill 撑不住（开 chunked prefill、缩 prompt、加卡）；TPOT 高 → decode 带宽/并发问题（量化 KV、减并发、上分离部署）；只有 p99 炸 → 排队问题，看调度而不是算力。
 
-## 📦 工程现场笔记
+## 工程现场笔记
 
 - **vLLM**：生态最广（文本 / 视觉 / 音频 / embedding），V1 引擎默认自动前缀缓存，K8s 生产栈与 llm-d（Red Hat、Google Cloud、IBM、NVIDIA 参与）在做 K8s 原生的分离式部署。
 - **SGLang**：RadixAttention 对「共享前缀 + 分支」的负载结构最贴合，Agent 与批量评测常用；约束解码（xgrammar 后端）在开源方案里通常是最快的一档。
@@ -103,9 +103,9 @@ asyncio.run(main())
 - **托管 API**：把上面所有脏活打包给你，换来的是「不可控的前缀缓存策略与限流」——所以仍要做 [模型网关](model-gateway.md) 那一层。
 - **端侧 / 本地**：llama.cpp（GGUF）、MLX（Apple Silicon）——离线、隐私优先场景的唯一现实解，见 [推理经济学](inference-economics-deployment.md)。
 
-> ⚠️ **注意**：厂商/社区的吞吐与延迟数字基本都在「理想 batch、单一模型、短上下文」下测的。要自己复现，用你的真实 prompt 分布（长上下文 + 高并发）压测，差异可以到 3 倍以上。
+> ⚠ **注意**：厂商/社区的吞吐与延迟数字基本都在「理想 batch、单一模型、短上下文」下测的。要自己复现，用你的真实 prompt 分布（长上下文 + 高并发）压测，差异可以到 3 倍以上。
 
-## ⚠️ 常见误区
+## 常见误区
 
 - ❌ 用平均延迟做 SLO：排队抖动全在尾部，p99 才是用户骂你的那个数字
 - ❌ 只看 tok/s 不看 goodput：吞吐再高，超 SLO 的请求都算废品
@@ -113,17 +113,17 @@ asyncio.run(main())
 - ❌ 上来就搞分离式部署：几十卡以下收益抵不上运维复杂度，先把连续批处理与前缀缓存用满
 - ❌ 忽略冷启动：模型权重加载到显存要几十秒到几分钟，autoscale 到 0 要接受首请求慢，或者留最小副本
 
-## 🧪 小练习
+## 小练习
 
 用上面脚本对同一模型分别测 `max_tokens=1`（纯 prefill）、`max_tokens=300`（prefill+decode）、并发 1 / 8 / 32 三档，画出 TTFT 与 TPOT 随并发的曲线，判断你的瓶颈落在哪一档并发。
 
-## 🔗 相关资源
+## 相关资源
 
 - [vLLM](https://github.com/vllm-project/vllm)、[SGLang](https://github.com/sgl-project/sglang)、[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM)
 - [NVIDIA Dynamo](https://github.com/ai-dynamo/dynamo)、[llm-d](https://github.com/llm-d/llm-d)
 - [PagedAttention 论文（vLLM）](https://arxiv.org/abs/2309.06180)、[Orca（连续批处理出处）](https://www.usenix.org/conference/osdi22/presentation/yu)
 
-## 📚 相关知识点
+## 相关知识点
 
 - [前缀缓存与上下文工程](prefix-cache-context-engineering.md)
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
