@@ -105,7 +105,7 @@ def accept(ep, spec):
 
 ## 相关资源
 
-- [Open X-Embodiment](https://arxiv.org/abs/2310.08864)、[DROID](https://droid-dataset.github.io/)、[AgiBot World](https://github.com/OpenDriveLab/AgiBot-World)、[UMI](https://github.com/Real-STANFORD/umi)、[LeRobot 数据集规范](https://github.com/huggingface/lerobot)
+- [Open X-Embodiment](https://arxiv.org/abs/2310.08864)、[DROID](https://droid-dataset.github.io/)、[AgiBot World](https://github.com/OpenDriveLab/AgiBot-World)、[UMI](https://github.com/real-stanford/universal_manipulation_interface)、[LeRobot 数据集规范](https://github.com/huggingface/lerobot)
 - [数据集资源区](../13-resources/datasets/README.md)
 
 ## 相关知识点

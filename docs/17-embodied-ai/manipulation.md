@@ -104,7 +104,7 @@ def grasp_and_insert(obj, target, arm, hand):
 ## 相关资源
 
 - [ALOHA / ACT](https://arxiv.org/abs/2304.13705)、[Mobile ALOHA](https://arxiv.org/abs/2401.02117)、[Diffusion Policy](https://arxiv.org/abs/2303.04137)、[UMI](https://arxiv.org/abs/2402.10329)
-- 抓取方向：[GraspNet](https://graspnet.net/)、[AnyGrasp](https://github.com/grasp-lyrl/AnyGrasp)；OpenAI 手内旋转：[Learning Dexterous In-Hand Manipulation](https://arxiv.org/abs/1808.00177)
+- 抓取方向：[GraspNet](https://graspnet.net/)、[AnyGrasp SDK](https://github.com/graspnet/anygrasp_sdk)；OpenAI 手内旋转：[Learning Dexterous In-Hand Manipulation](https://arxiv.org/abs/1808.00177)
 
 ## 相关知识点
 

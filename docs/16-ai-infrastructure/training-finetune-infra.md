@@ -118,7 +118,7 @@ curl :8000/v1/chat/completions -d '{"model":"agent-v3","messages":[...]}'
 
 ## 相关资源
 
-- [PEFT / LoRA](https://github.com/huggingface/peft)、[DeepSpeed](https://github.com/deepspeedai/DeepSpeed)、[PyTorch FSDP](https://pytorch.org/docs/stable/distributed.fsdp.html)、[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)
+- [PEFT / LoRA](https://github.com/huggingface/peft)、[DeepSpeed](https://github.com/deepspeedai/DeepSpeed)、[PyTorch FSDP](https://pytorch.org/docs/stable/fsdp.html)、[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)
 - [TRL（SFT/DPO/PPO 一体）](https://github.com/huggingface/trl)、[OpenRLHF](https://github.com/OpenRLHF/OpenRLHF)
 - 训练侧原理：[预训练、微调与指令微调](../03-llm/pretraining-finetuning.md)、[RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md)
 

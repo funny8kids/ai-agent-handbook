@@ -109,7 +109,7 @@ class SafetyMonitor:
 
 ## 相关资源
 
-- [ROS 2 实时与控制](https://control.ros.org/)、[EtherCAT](https://www.ethercat.org/)、[Linux PREEMPT_RT](https://docs.kernel.org/trace/rt-trace-howto.html)
+- [ROS 2 实时与控制](https://control.ros.org/)、[EtherCAT](https://www.ethercat.org/)、[Linux PREEMPT_RT](https://wiki.linuxfoundation.org/realtime/start)
 - 安全标准入口：[ISO 10218（工业机器人安全）](https://www.iso.org/)、[ISO/TS 15066（协作机器人）](https://www.iso.org/standard/65457.html)
 - 算力与部署：[推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md)
 
