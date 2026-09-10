@@ -4,18 +4,19 @@
 
 ## 2026-09-10（第 5 次）内容质量修订与全书扩写
 
-针对「模板化、emoji 泛滥、原理不深、引用单一」四类问题做系统性修订，并扩写全书 49 篇偏薄页面：
+针对「模板化、emoji 泛滥、原理不深、引用单一」四类问题做系统性修订，并对全书 70 篇偏薄页面做深度扩写：
 
 - 重写 [风格指南](../14-templates/style-guide.md)：按**体裁分型**（原理型/概念型/实战型/资源卡片），去掉单一模板；新增 emoji 硬预算、公式与出处要求、案例配给、发布字数门槛；并入 16/17 章的 SVG（SMIL）动图规范
-- 全局清理 emoji：剥离标题 emoji 与星级难度标记（emoji 从 1370 降至数百，其余为 ❌✅⚠️💡 语义标记）
+- 全局清理 emoji：剥离标题 emoji 与星级难度标记；第 16/17 章 24 个文件一并去 emoji（627 → 163）
 - 事实核查（经本地代理联网）：逐条验证外链；修复断链（`humanlayer/12-factor-agents`、`Awesome-RAG`、MCP Discussions 地址等）
 - **Pi 仓库已迁移**：`badlogic/pi-mono` → `earendil-works/pi`，全库更新；移除已无法核实的「vLLM pods」等表述
 - **DeepSeek Harness 引用经核实为真实**（包路径均存在），删除与主题弱相关的凑数引用
-- 约 50 篇原理/概念/实战页补齐公式与论文引用：注意力、Embedding、RLHF/DPO、预训练与 LoRA、量化推理、Token 与上下文预算、RAG 指标、CoT/ToT/GoT/Reflexion/Self-Refine、知识图谱、上下文工程、记忆压缩、幻觉、提示注入/越狱，以及规划 5 篇、多智能体 6 篇、框架 8 篇
-- 2 个不足 150 字的资源卡片由 `published` 降为 `draft`
+- 约 70 篇原理/概念/实战页补齐机制、公式与论文引用：注意力、Embedding、RLHF/DPO、预训练与 LoRA、量化推理、Token 与上下文预算、RAG 指标、CoT/ToT/GoT/Reflexion/Self-Refine、知识图谱、上下文工程、记忆压缩、幻觉、提示注入/越狱，规划 5 篇、多智能体 7 篇、框架 8 篇、工程化 10 篇、应用 8 篇，以及可解释性、对齐、行业 Agent 等
+- **全书 170 页全部达到体裁字数门槛**（原理型 1200 / 实战型 900 / 概念型 600 汉字），含公式页面 93 篇
+- 2 个不足 150 字的资源卡片补齐后恢复 `published`
 - 新增 7 张自绘 SVG 插图并接入对应章节
 - 新增 [开源项目索引](../13-resources/projects/README.md)：329 个项目、11 个分类，star/许可为 2026-09 实测值，由 `scripts/gen-projects.py` 生成
-- 新增 `scripts/verify-docs.py` 验收脚本（标题 emoji / 断链 / 字数 / 公式 / frontmatter）
+- 新增 `scripts/verify-docs.py` 验收脚本（标题 emoji / 断链 / 字数门槛 / 公式 / frontmatter）
 
 ## 2026-09-10（第 4 次）新增 16 AI 基础设施与 17 具身智能
 
