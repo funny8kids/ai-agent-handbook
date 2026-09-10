@@ -1,0 +1,36 @@
+---
+tags: [mcp, tooling, resource]
+type: resource
+status: published
+updated: 2026-09-10
+---
+
+# 🔗 MCP Servers
+
+> **一句话**：MCP 工具生态：官方与社区的数百个现成 Server，Agent 工具的「应用商店」。
+
+| 属性 | 内容 |
+|---|---|
+| 类型 | 工具生态 |
+| 链接 | <https://github.com/modelcontextprotocol/servers> · 目录：<https://mcp.so> |
+| 来源 | Anthropic + 社区 |
+| 协议 | MIT（参考实现） |
+| 难度 | ⭐️ |
+| 标签 | `#mcp` `#tooling` |
+
+## 🌟 推荐理由
+
+- filesystem/github/playwright/postgres 等参考实现质量高，源码是学 MCP 的最佳教材
+- 目录站（mcp.so 等）可按场景检索社区 Server
+- 一次接入，所有 MCP 客户端（Claude Code / DeepSeek Harness / Pi / Gemini CLI）通用
+
+## 🧭 上手建议
+
+1. 先读 [MCP 知识点](../../05-tool-protocol/mcp.md) 理解三原语
+2. 接入一个 filesystem Server 跑通
+3. 生产接入前过 [权限与沙箱](../../05-tool-protocol/tool-permission-sandbox.md) 检查单
+
+## 📚 相关知识点
+
+- [MCP](../../05-tool-protocol/mcp.md)
+- [工具选择与路由](../../07-planning/tool-selection-routing.md)

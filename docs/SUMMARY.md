@@ -1,0 +1,179 @@
+# Summary
+
+* [首页](README.md)
+
+## 🧭 导航与索引
+* [总导航](00-index/README.md)
+* [学习路线](00-index/learning-path.md)
+* [标签索引](00-index/tags.md)
+* [资源总表](00-index/resources-index.md)
+* [更新日志](00-index/changelog.md)
+
+## 🌱 01 AI 基础
+* [本章导读](01-ai-basics/README.md)
+* [AI、ML、DL 的关系](01-ai-basics/ai-ml-dl.md)
+* [人工智能发展简史](01-ai-basics/ai-history.md)
+* [机器学习基础](01-ai-basics/machine-learning-basics.md)
+* [深度学习基础](01-ai-basics/deep-learning-basics.md)
+
+## 🤖 02 Agent 基础
+* [本章导读](02-agent-basics/README.md)
+* [什么是 AI Agent](02-agent-basics/what-is-agent.md)
+* [Agent 与 Workflow、Chatbot、Copilot 的区别](02-agent-basics/agent-vs-workflow-chatbot-copilot.md)
+* [Agent 核心组件](02-agent-basics/core-components.md)
+* [感知—规划—行动循环](02-agent-basics/perception-planning-action.md)
+* [自主性等级](02-agent-basics/autonomy-levels.md)
+* [Agent 状态管理](02-agent-basics/state-management.md)
+* [Human-in-the-loop](02-agent-basics/human-in-the-loop.md)
+
+## 🧠 03 LLM 基础
+* [本章导读](03-llm/README.md)
+* [LLM 是什么](03-llm/what-is-llm.md)
+* [Transformer 与 Attention](03-llm/transformer-attention.md)
+* [Token、Embedding、上下文窗口](03-llm/token-embedding-context.md)
+* [预训练、微调与指令微调](03-llm/pretraining-finetuning.md)
+* [RLHF、DPO 与对齐](03-llm/rlhf-dpo-alignment.md)
+* [多模态模型](03-llm/multimodal.md)
+* [推理、量化、蒸馏与部署](03-llm/inference-quantization-deployment.md)
+
+## 💬 04 Prompt 与推理
+* [本章导读](04-prompt-reasoning/README.md)
+* [Prompt Engineering](04-prompt-reasoning/prompt-engineering.md)
+* [结构化输出](04-prompt-reasoning/structured-output.md)
+* [Chain of Thought](04-prompt-reasoning/chain-of-thought.md)
+* [Tree of Thoughts](04-prompt-reasoning/tree-of-thoughts.md)
+* [Graph of Thoughts](04-prompt-reasoning/graph-of-thoughts.md)
+* [ReAct](04-prompt-reasoning/react.md)
+* [Reflexion](04-prompt-reasoning/reflexion.md)
+* [Self-Refine](04-prompt-reasoning/self-refine.md)
+
+## 🔌 05 工具调用与协议
+* [本章导读](05-tool-protocol/README.md)
+* [Function Calling](05-tool-protocol/function-calling.md)
+* [Tool Use](05-tool-protocol/tool-use.md)
+* [MCP：Model Context Protocol](05-tool-protocol/mcp.md)
+* [A2A：Agent-to-Agent](05-tool-protocol/a2a.md)
+* [工具权限与沙箱](05-tool-protocol/tool-permission-sandbox.md)
+* [浏览器、代码、文件系统工具](05-tool-protocol/browser-code-filesystem-tools.md)
+* [Computer Use / Browser Use](05-tool-protocol/computer-use-browser-use.md)
+
+## 📚 06 记忆与 RAG
+* [本章导读](06-memory-rag/README.md)
+* [记忆类型：短期、长期、情景、语义、程序](06-memory-rag/memory-types.md)
+* [上下文工程](06-memory-rag/context-engineering.md)
+* [Embedding 与相似度检索](06-memory-rag/embedding-similarity.md)
+* [向量数据库](06-memory-rag/vector-database.md)
+* [RAG 基础](06-memory-rag/rag-basics.md)
+* [GraphRAG](06-memory-rag/graphrag.md)
+* [知识图谱](06-memory-rag/knowledge-graph.md)
+* [记忆压缩、遗忘与摘要](06-memory-rag/memory-compression-forgetting.md)
+
+## 🗺️ 07 规划与任务执行
+* [本章导读](07-planning/README.md)
+* [任务分解](07-planning/task-decomposition.md)
+* [Plan-and-Execute](07-planning/plan-and-execute.md)
+* [子目标规划](07-planning/subgoal-planning.md)
+* [工具选择与路由](07-planning/tool-selection-routing.md)
+* [错误恢复与重试](07-planning/error-recovery-retry.md)
+* [工作流编排](07-planning/workflow-orchestration.md)
+
+## 👥 08 多智能体
+* [本章导读](08-multi-agent/README.md)
+* [多 Agent 协作](08-multi-agent/multi-agent-collaboration.md)
+* [角色分配](08-multi-agent/role-assignment.md)
+* [通信协议](08-multi-agent/communication-protocol.md)
+* [辩论、共识与投票](08-multi-agent/debate-consensus-voting.md)
+* [监督者模式](08-multi-agent/supervisor-pattern.md)
+* [群聊模式](08-multi-agent/group-chat.md)
+* [Swarm](08-multi-agent/swarm.md)
+* [多 Agent 编排](08-multi-agent/multi-agent-orchestration.md)
+
+## 🧰 09 框架与生态
+* [本章导读](09-frameworks/README.md)
+* [LangChain](09-frameworks/langchain.md)
+* [LangGraph](09-frameworks/langgraph.md)
+* [LlamaIndex](09-frameworks/llamaindex.md)
+* [AutoGen](09-frameworks/autogen.md)
+* [CrewAI](09-frameworks/crewai.md)
+* [Semantic Kernel](09-frameworks/semantic-kernel.md)
+* [OpenAI Agents SDK](09-frameworks/openai-agents-sdk.md)
+* [DSPy](09-frameworks/dspy.md)
+* [MCP Servers](09-frameworks/mcp-servers.md)
+* [向量数据库生态](09-frameworks/vector-databases.md)
+
+## 📊 10 评估、安全与对齐
+* [本章导读](10-evaluation-safety/README.md)
+* [Agent 评估指标](10-evaluation-safety/evaluation-metrics.md)
+* [基准测试总览](10-evaluation-safety/benchmarks.md)
+* [AgentBench、WebArena、SWE-bench、GAIA、ToolBench](10-evaluation-safety/agentbench-webarena-swebench-gaia-toolbench.md)
+* [幻觉问题](10-evaluation-safety/hallucination.md)
+* [提示注入](10-evaluation-safety/prompt-injection.md)
+* [越狱攻击](10-evaluation-safety/jailbreak.md)
+* [权限控制与沙箱隔离](10-evaluation-safety/permission-sandbox.md)
+* [数据隐私](10-evaluation-safety/data-privacy.md)
+* [对齐与安全](10-evaluation-safety/alignment-safety.md)
+* [可解释性](10-evaluation-safety/explainability.md)
+
+## 🚀 11 工程化与可观测性
+* [本章导读](11-engineering/README.md)
+* [Agent 工作流编排](11-engineering/workflow-orchestration.md)
+* [状态机与事件驱动](11-engineering/state-machine-event-driven.md)
+* [工具注册中心](11-engineering/tool-registry.md)
+* [日志、追踪与监控](11-engineering/logging-tracing-monitoring.md)
+* [LangSmith、LangFuse、Phoenix、OpenTelemetry](11-engineering/observability-tools.md)
+* [错误处理、重试与降级](11-engineering/error-handling-retry-fallback.md)
+* [部署与扩缩容](11-engineering/deployment-scaling.md)
+* [缓存与成本优化](11-engineering/caching-cost-optimization.md)
+* [持续评估](11-engineering/continuous-evaluation.md)
+
+## 💼 12 应用案例
+* [本章导读](12-applications/README.md)
+* [编程 Agent](12-applications/coding-agent.md)
+* [数据分析 Agent](12-applications/data-analysis-agent.md)
+* [客服 Agent](12-applications/customer-service-agent.md)
+* [研究 Agent](12-applications/research-agent.md)
+* [浏览器自动化](12-applications/browser-automation.md)
+* [RPA](12-applications/rpa.md)
+* [游戏 Agent](12-applications/game-agent.md)
+* [教育 Agent](12-applications/education-agent.md)
+* [医疗、金融、法律 Agent](12-applications/industry-agents.md)
+* [个人助理](12-applications/personal-assistant.md)
+* [企业知识库](12-applications/enterprise-knowledge-base.md)
+
+## 🔗 13 资源库
+* [资源库说明](13-resources/README.md)
+* [论文](13-resources/papers/README.md)
+  * [ReAct 论文](13-resources/papers/react.md)
+  * [Toolformer 论文](13-resources/papers/toolformer.md)
+  * [Reflexion 论文](13-resources/papers/reflexion.md)
+* [课程](13-resources/courses/README.md)
+  * [AI Agents for Beginners](13-resources/courses/ai-agents-for-beginners.md)
+* [开源项目](13-resources/projects/README.md)
+  * [LangChain](13-resources/projects/langchain.md)
+  * [LangGraph](13-resources/projects/langgraph.md)
+  * [AutoGen](13-resources/projects/autogen.md)
+  * [CrewAI](13-resources/projects/crewai.md)
+  * [OpenHands](13-resources/projects/openhands.md)
+* [工具](13-resources/tools/README.md)
+  * [MCP Servers](13-resources/tools/mcp-servers.md)
+  * [LangFuse](13-resources/tools/langfuse.md)
+* [数据集](13-resources/datasets/README.md)
+* [基准测试](13-resources/benchmarks/README.md)
+  * [SWE-bench](13-resources/benchmarks/swe-bench.md)
+  * [GAIA](13-resources/benchmarks/gaia.md)
+  * [WebArena](13-resources/benchmarks/webarena.md)
+* [博客](13-resources/blogs/README.md)
+* [社区](13-resources/communities/README.md)
+* [Awesome 列表](13-resources/awesome-lists/README.md)
+
+## 🧩 14 模板
+* [风格指南](14-templates/style-guide.md)
+* [知识点模板](14-templates/knowledge-template.md)
+* [资源模板](14-templates/resource-template.md)
+
+## 📖 15 术语表
+* [术语表](15-glossary/README.md)
+
+## 🤝 99 关于
+* [贡献指南](99-about/contributing.md)
+* [许可证](99-about/license.md)
