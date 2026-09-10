@@ -2,21 +2,21 @@
 
 * [首页](README.md)
 
-## 导航与索引
+## 🧭 导航与索引
 * [总导航](00-index/README.md)
 * [学习路线](00-index/learning-path.md)
 * [标签索引](00-index/tags.md)
 * [资源总表](00-index/resources-index.md)
 * [更新日志](00-index/changelog.md)
 
-## 01 AI 基础
+## 🌱 01 AI 基础
 * [本章导读](01-ai-basics/README.md)
 * [AI、ML、DL 的关系](01-ai-basics/ai-ml-dl.md)
 * [人工智能发展简史](01-ai-basics/ai-history.md)
 * [机器学习基础](01-ai-basics/machine-learning-basics.md)
 * [深度学习基础](01-ai-basics/deep-learning-basics.md)
 
-## 02 Agent 基础
+## 🤖 02 Agent 基础
 * [本章导读](02-agent-basics/README.md)
 * [什么是 AI Agent](02-agent-basics/what-is-agent.md)
 * [Agent 与 Workflow、Chatbot、Copilot 的区别](02-agent-basics/agent-vs-workflow-chatbot-copilot.md)
@@ -26,7 +26,7 @@
 * [Agent 状态管理](02-agent-basics/state-management.md)
 * [Human-in-the-loop](02-agent-basics/human-in-the-loop.md)
 
-## 03 LLM 基础
+## 🧠 03 LLM 基础
 * [本章导读](03-llm/README.md)
 * [LLM 是什么](03-llm/what-is-llm.md)
 * [Transformer 与 Attention](03-llm/transformer-attention.md)
@@ -36,7 +36,7 @@
 * [多模态模型](03-llm/multimodal.md)
 * [推理、量化、蒸馏与部署](03-llm/inference-quantization-deployment.md)
 
-## 04 Prompt 与推理
+## 💬 04 Prompt 与推理
 * [本章导读](04-prompt-reasoning/README.md)
 * [Prompt Engineering](04-prompt-reasoning/prompt-engineering.md)
 * [结构化输出](04-prompt-reasoning/structured-output.md)
@@ -47,7 +47,7 @@
 * [Reflexion](04-prompt-reasoning/reflexion.md)
 * [Self-Refine](04-prompt-reasoning/self-refine.md)
 
-## 05 工具调用与协议
+## 🔌 05 工具调用与协议
 * [本章导读](05-tool-protocol/README.md)
 * [Function Calling](05-tool-protocol/function-calling.md)
 * [Tool Use](05-tool-protocol/tool-use.md)
@@ -57,7 +57,7 @@
 * [浏览器、代码、文件系统工具](05-tool-protocol/browser-code-filesystem-tools.md)
 * [Computer Use / Browser Use](05-tool-protocol/computer-use-browser-use.md)
 
-## 06 记忆与 RAG
+## 📚 06 记忆与 RAG
 * [本章导读](06-memory-rag/README.md)
 * [记忆类型：短期、长期、情景、语义、程序](06-memory-rag/memory-types.md)
 * [上下文工程](06-memory-rag/context-engineering.md)
@@ -68,7 +68,7 @@
 * [知识图谱](06-memory-rag/knowledge-graph.md)
 * [记忆压缩、遗忘与摘要](06-memory-rag/memory-compression-forgetting.md)
 
-## 07 规划与任务执行
+## 🗺️ 07 规划与任务执行
 * [本章导读](07-planning/README.md)
 * [任务分解](07-planning/task-decomposition.md)
 * [Plan-and-Execute](07-planning/plan-and-execute.md)
@@ -77,7 +77,7 @@
 * [错误恢复与重试](07-planning/error-recovery-retry.md)
 * [工作流编排](07-planning/workflow-orchestration.md)
 
-## 08 多智能体
+## 👥 08 多智能体
 * [本章导读](08-multi-agent/README.md)
 * [多 Agent 协作](08-multi-agent/multi-agent-collaboration.md)
 * [角色分配](08-multi-agent/role-assignment.md)
@@ -88,7 +88,7 @@
 * [Swarm](08-multi-agent/swarm.md)
 * [多 Agent 编排](08-multi-agent/multi-agent-orchestration.md)
 
-## 09 框架与生态
+## 🧰 09 框架与生态
 * [本章导读](09-frameworks/README.md)
 * [LangChain](09-frameworks/langchain.md)
 * [LangGraph](09-frameworks/langgraph.md)
@@ -101,7 +101,7 @@
 * [MCP Servers](09-frameworks/mcp-servers.md)
 * [向量数据库生态](09-frameworks/vector-databases.md)
 
-## 10 评估、安全与对齐
+## 📊 10 评估、安全与对齐
 * [本章导读](10-evaluation-safety/README.md)
 * [Agent 评估指标](10-evaluation-safety/evaluation-metrics.md)
 * [基准测试总览](10-evaluation-safety/benchmarks.md)
@@ -114,7 +114,7 @@
 * [对齐与安全](10-evaluation-safety/alignment-safety.md)
 * [可解释性](10-evaluation-safety/explainability.md)
 
-## 11 工程化与可观测性
+## 🚀 11 工程化与可观测性
 * [本章导读](11-engineering/README.md)
 * [Agent 工作流编排](11-engineering/workflow-orchestration.md)
 * [状态机与事件驱动](11-engineering/state-machine-event-driven.md)
@@ -126,7 +126,7 @@
 * [缓存与成本优化](11-engineering/caching-cost-optimization.md)
 * [持续评估](11-engineering/continuous-evaluation.md)
 
-## 12 应用案例
+## 💼 12 应用案例
 * [本章导读](12-applications/README.md)
 * [编程 Agent](12-applications/coding-agent.md)
 * [数据分析 Agent](12-applications/data-analysis-agent.md)
@@ -140,7 +140,7 @@
 * [个人助理](12-applications/personal-assistant.md)
 * [企业知识库](12-applications/enterprise-knowledge-base.md)
 
-## 13 资源库
+## 🔗 13 资源库
 * [资源库说明](13-resources/README.md)
 * [论文](13-resources/papers/README.md)
   * [ReAct 论文](13-resources/papers/react.md)
@@ -166,13 +166,14 @@
 * [社区](13-resources/communities/README.md)
 * [Awesome 列表](13-resources/awesome-lists/README.md)
 
-## 14 模板
+## 🧩 14 模板
+* [风格指南](14-templates/style-guide.md)
 * [知识点模板](14-templates/knowledge-template.md)
 * [资源模板](14-templates/resource-template.md)
 
-## 15 术语表
+## 📖 15 术语表
 * [术语表](15-glossary/README.md)
 
-## 99 关于
+## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)
 * [许可证](99-about/license.md)

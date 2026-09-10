@@ -1,11 +1,30 @@
-# AI、ML、DL 的关系
+---
+tags: []
+type: knowledge
+status: draft
+updated: 2026-09-10
+---
 
-> 🚧 本节内容编写中，欢迎补充。
+# 🌱 AI、ML、DL 的关系
 
-## 内容提纲
+> 🚧 本页编写中。动手前请先读 [风格指南](../14-templates/style-guide.md) 与 [知识点模板](../14-templates/knowledge-template.md)，完成后将 `status` 改为 `published`。
+
+## 📌 先看结论
+
+- （待补充：一句话结论）
+
+## 🖼️ 图示
+
+（可选：1–3 张 Mermaid 图或对比表格）
+
+## ⚠️ 常见误区
+
+- ❌ （待补充）
+
+## 🔗 相关资源
 
 - （待补充）
 
-## 参考资料
+## 📚 相关知识点
 
 - （待补充）
