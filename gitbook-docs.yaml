@@ -1,4 +1,11 @@
 $schema: https://api.gitbook.com/gitbook-docs.yaml
 site:
   title: VioletNotes Docs
-  structure: []
+  structure:
+    - type: space
+      key: space-1
+      title: Copy of Android大全
+      path: copy-of-android-da-quan
+      default: true
+      content:
+        directory: ./copy-of-android-da-quan
