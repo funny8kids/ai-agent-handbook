@@ -2,6 +2,14 @@
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-10（第 3 次）🎉 全书完成
+
+- ✅ 全部 16 章、142 页撰写完成（此前为骨架 + 占位页）
+- 📦 案例覆盖三大开源 harness：**Claude Code**（社区逆向：三层 prompt 组装、子 Agent 隔离、三档压缩、权限管道）、**Pi Agent / pi-mono**（极简 harness：4 原子工具、~300 行 agentLoop、JSONL 会话）、**DeepSeek Harness**（一切皆插件：Cordis 框架、turn/step 状态机、append-only 事件流、landlock 沙箱）
+- 🏗️ 新增 12 章编程 Agent 页的「三大 harness 横向深拆」对比表
+- 🔗 全书双向链接（知识点 ⇄ 资源）铺设完成；术语表 60+ 条收录
+- 📊 评估章收录五大基准精读（SWE-bench/GAIA/WebArena/AgentBench/ToolBench）
+
 ## 2026-09-10（第 2 次）
 
 - ✍️ 建立统一写作规范：新增 [风格指南](../14-templates/style-guide.md)（emoji 规范、图文规范、先问题后定义、写作检查清单）
