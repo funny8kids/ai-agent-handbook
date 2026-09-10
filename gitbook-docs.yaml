@@ -2,6 +2,11 @@ $schema: https://api.gitbook.com/gitbook-docs.yaml
 site:
   title: VioletNotes Docs
   structure:
+    - type: section-group
+      key: section-group-1
+      title: Web3 Quant
+      draft: true
+      children: []
     - type: space
       key: space-1
       title: AI Agent Handbook
