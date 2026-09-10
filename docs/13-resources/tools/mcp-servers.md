@@ -1,7 +1,7 @@
 ---
 tags: [mcp, tooling, resource]
 type: resource
-status: published
+status: draft
 updated: 2026-09-10
 ---
 

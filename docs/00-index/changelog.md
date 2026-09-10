@@ -11,7 +11,8 @@
 - 事实核查（经本地代理联网）：逐条验证 157 个外链；修复 5 处断链（含 `humanlayer/12-factor-agents`、`Awesome-RAG`、MCP Discussions 地址）
 - **Pi 仓库已迁移**：`badlogic/pi-mono` → `earendil-works/pi`，全库 26 处更新；移除已无法核实的「vLLM pods」等表述
 - **DeepSeek Harness 引用经核实为真实**（`packages/core/agent-loop`、`packages/plan`、`packages/preset/agent-presets` 等路径均存在），删除 5 处与主题弱相关的凑数引用
-- 12 篇核心原理页补齐公式与论文引用：Transformer 注意力、Embedding 相似度、RLHF/DPO、预训练与 LoRA、量化与推理、Token 与上下文预算、RAG 指标、ToT 搜索、评估指标、基准协议、结构化输出（约束解码）、幻觉检测
+- 21 篇核心原理页补齐公式与论文引用：Transformer 注意力、Embedding 相似度、RLHF/DPO、预训练与 LoRA、量化与推理、Token 与上下文预算、RAG 指标、ToT 搜索、评估指标、基准协议、结构化输出（约束解码）、幻觉检测、CoT（串行计算量/自一致性）、GoT（聚合算子）、Reflexion（记忆更新式）、Self-Refine（不动点迭代）、知识图谱（多跳连接/PageRank/模块度）、上下文工程（预算优化）、记忆压缩（压缩比/淘汰判据）、提示注入（ASR/纵深防御乘法模型）、越狱（对抗后缀优化/误拒率）
+- 2 个不足 150 字的资源卡片由 `published` 降为 `draft`（按新发布门槛）
 - 新增 7 张自绘 SVG 插图（学习路线、Agent 循环、注意力计算、Function Calling、RAG 管线、多智能体、评估四层），接入对应章节
 - 新增 [开源项目索引](../13-resources/projects/README.md)：329 个项目、11 个分类，star/许可/语言为 2026-09 实测值，由 `scripts/gen-projects.py` 生成可复现
 
