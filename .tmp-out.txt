@@ -1,0 +1,110 @@
+Agent 框架与编排	langchain-ai/langchain	14.6 万	MIT	https://github.com/langchain-ai/langchain
+Agent 框架与编排	bytedance/deer-flow	8.2 万	MIT	https://github.com/bytedance/deer-flow
+Agent 框架与编排	Mintplex-Labs/anything-llm	6.6 万	MIT	https://github.com/Mintplex-Labs/anything-llm
+Agent 框架与编排	pathwaycom/llm-app	5.9 万	MIT	https://github.com/pathwaycom/llm-app
+Agent 框架与编排	langchain-ai/langgraph	4.1 万	MIT	https://github.com/langchain-ai/langgraph
+Agent 框架与编排	Yeachan-Heo/oh-my-claudecode	3.9 万	MIT	https://github.com/Yeachan-Heo/oh-my-claudecode
+Agent 框架与编排	stanfordnlp/dspy	3.8 万	MIT	https://github.com/stanfordnlp/dspy
+Agent 框架与编排	conductor-oss/conductor	3.2 万	Apache-2.0	https://github.com/conductor-oss/conductor
+Agent 框架与编排	ComposioHQ/composio	3.0 万	MIT	https://github.com/ComposioHQ/composio
+Agent 框架与编排	simstudioai/sim	3.0 万	Apache-2.0	https://github.com/simstudioai/sim
+编程 Agent 与 Harness	affaan-m/ECC	25.6 万	MIT	https://github.com/affaan-m/ECC
+编程 Agent 与 Harness	deepseek-ai/deepseek-harness	21.9 万	MIT	https://github.com/deepseek-ai/deepseek-harness
+编程 Agent 与 Harness	x1xhlol/system-prompts-and-models-of-ai-tools	14.3 万	GPL-3.0	https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools
+编程 Agent 与 Harness	farion1231/cc-switch	13.2 万	MIT	https://github.com/farion1231/cc-switch
+编程 Agent 与 Harness	openai/codex	12.3 万	Apache-2.0	https://github.com/openai/codex
+编程 Agent 与 Harness	google-gemini/gemini-cli	10.7 万	Apache-2.0	https://github.com/google-gemini/gemini-cli
+编程 Agent 与 Harness	earendil-works/pi	10.4 万	MIT	https://github.com/earendil-works/pi
+编程 Agent 与 Harness	nexu-io/open-design	9.5 万	Apache-2.0	https://github.com/nexu-io/open-design
+编程 Agent 与 Harness	thedotmack/claude-mem	9.4 万	Apache-2.0	https://github.com/thedotmack/claude-mem
+编程 Agent 与 Harness	addyosmani/agent-skills	9.3 万	MIT	https://github.com/addyosmani/agent-skills
+多智能体	TauricResearch/TradingAgents	10.4 万	Apache-2.0	https://github.com/TauricResearch/TradingAgents
+多智能体	FoundationAgents/MetaGPT	7.0 万	MIT	https://github.com/FoundationAgents/MetaGPT
+多智能体	microsoft/autogen	6.1 万	CC-BY-4.0	https://github.com/microsoft/autogen
+多智能体	crewAIInc/crewAI	5.8 万	MIT	https://github.com/crewAIInc/crewAI
+多智能体	OpenBMB/ChatDev	3.4 万	Apache-2.0	https://github.com/OpenBMB/ChatDev
+多智能体	openai/swarm	2.2 万	MIT	https://github.com/openai/swarm
+多智能体	SolaceLabs/solace-agent-mesh	4,933	Apache-2.0	https://github.com/SolaceLabs/solace-agent-mesh
+多智能体	LantaoYu/MARL-Papers	4,878	NOASSERTION	https://github.com/LantaoYu/MARL-Papers
+多智能体	VRSEN/agency-swarm	4,555	MIT	https://github.com/VRSEN/agency-swarm
+多智能体	nextlevelbuilder/goclaw	3,599	NOASSERTION	https://github.com/nextlevelbuilder/goclaw
+记忆与 RAG	langgenius/dify	15.5 万	NOASSERTION	https://github.com/langgenius/dify
+记忆与 RAG	Graphify-Labs/graphify	11.7 万	Apache-2.0	https://github.com/Graphify-Labs/graphify
+记忆与 RAG	infiniflow/ragflow	9.0 万	Apache-2.0	https://github.com/infiniflow/ragflow
+记忆与 RAG	mem0ai/mem0	6.5 万	Apache-2.0	https://github.com/mem0ai/mem0
+记忆与 RAG	run-llama/llama_index	5.2 万	MIT	https://github.com/run-llama/llama_index
+记忆与 RAG	milvus-io/milvus	4.6 万	Apache-2.0	https://github.com/milvus-io/milvus
+记忆与 RAG	facebookresearch/faiss	4.1 万	MIT	https://github.com/facebookresearch/faiss
+记忆与 RAG	HKUDS/LightRAG	4.0 万	MIT	https://github.com/HKUDS/LightRAG
+记忆与 RAG	chatchat-space/Langchain-Chatchat	3.9 万	Apache-2.0	https://github.com/chatchat-space/Langchain-Chatchat
+记忆与 RAG	volcengine/OpenViking	3.6 万	AGPL-3.0	https://github.com/volcengine/OpenViking
+工具与协议	modelcontextprotocol/servers	9.0 万	NOASSERTION	https://github.com/modelcontextprotocol/servers
+工具与协议	modelcontextprotocol/python-sdk	2.4 万	MIT	https://github.com/modelcontextprotocol/python-sdk
+工具与协议	google/adk-python	2.1 万	Apache-2.0	https://github.com/google/adk-python
+工具与协议	QwenLM/Qwen-Agent	1.7 万	Apache-2.0	https://github.com/QwenLM/Qwen-Agent
+工具与协议	modelcontextprotocol/typescript-sdk	1.3 万	NOASSERTION	https://github.com/modelcontextprotocol/typescript-sdk
+工具与协议	hangwin/mcp-chrome	1.2 万	MIT	https://github.com/hangwin/mcp-chrome
+工具与协议	modelcontextprotocol/modelcontextprotocol	9,175	NOASSERTION	https://github.com/modelcontextprotocol/modelcontextprotocol
+工具与协议	google/adk-go	8,764	Apache-2.0	https://github.com/google/adk-go
+工具与协议	modelcontextprotocol/registry	7,234	NOASSERTION	https://github.com/modelcontextprotocol/registry
+工具与协议	mobile-next/mobile-mcp	6,630	Apache-2.0	https://github.com/mobile-next/mobile-mcp
+浏览器与 Computer Use	browser-use/browser-use	11.4 万	MIT	https://github.com/browser-use/browser-use
+浏览器与 Computer Use	microsoft/playwright-mcp	3.7 万	Apache-2.0	https://github.com/microsoft/playwright-mcp
+浏览器与 Computer Use	feder-cr/AIHawk	3.0 万	MIT	https://github.com/feder-cr/AIHawk
+浏览器与 Computer Use	h4ckf0r0day/obscura	2.7 万	Apache-2.0	https://github.com/h4ckf0r0day/obscura
+浏览器与 Computer Use	browserbase/stagehand	2.4 万	MIT	https://github.com/browserbase/stagehand
+浏览器与 Computer Use	nanobrowser/nanobrowser	1.4 万	Apache-2.0	https://github.com/nanobrowser/nanobrowser
+浏览器与 Computer Use	jo-inc/camofox-browser	1.1 万	MIT	https://github.com/jo-inc/camofox-browser
+浏览器与 Computer Use	magnitudedev/browser-agent	4,128	Apache-2.0	https://github.com/magnitudedev/browser-agent
+浏览器与 Computer Use	showlab/ShowUI	1,898	Apache-2.0	https://github.com/showlab/ShowUI
+浏览器与 Computer Use	lexmount/moli	1,870	Apache-2.0	https://github.com/lexmount/moli
+可观测、评估与安全	langfuse/langfuse	3.4 万	NOASSERTION	https://github.com/langfuse/langfuse
+可观测、评估与安全	SigNoz/signoz	3.2 万	NOASSERTION	https://github.com/SigNoz/signoz
+可观测、评估与安全	mlflow/mlflow	2.8 万	Apache-2.0	https://github.com/mlflow/mlflow
+可观测、评估与安全	promptfoo/promptfoo	2.5 万	MIT	https://github.com/promptfoo/promptfoo
+可观测、评估与安全	comet-ml/opik	2.2 万	Apache-2.0	https://github.com/comet-ml/opik
+可观测、评估与安全	openobserve/openobserve	2.2 万	AGPL-3.0	https://github.com/openobserve/openobserve
+可观测、评估与安全	raga-ai-hub/RagaAI-Catalyst	1.6 万	Apache-2.0	https://github.com/raga-ai-hub/RagaAI-Catalyst
+可观测、评估与安全	open-metadata/OpenMetadata	1.5 万	Apache-2.0	https://github.com/open-metadata/OpenMetadata
+可观测、评估与安全	ifixai-ai/iFixAi	1.4 万	Apache-2.0	https://github.com/ifixai-ai/iFixAi
+可观测、评估与安全	Arize-ai/phoenix	1.1 万	NOASSERTION	https://github.com/Arize-ai/phoenix
+推理与部署	ollama/ollama	18.1 万	MIT	https://github.com/ollama/ollama
+推理与部署	ggml-org/llama.cpp	12.8 万	MIT	https://github.com/ggml-org/llama.cpp
+推理与部署	karpathy/autoresearch	9.6 万	NOASSERTION	https://github.com/karpathy/autoresearch
+推理与部署	vllm-project/vllm	9.1 万	Apache-2.0	https://github.com/vllm-project/vllm
+推理与部署	unslothai/unsloth	7.6 万	Apache-2.0	https://github.com/unslothai/unsloth
+推理与部署	hiyouga/LlamaFactory	7.5 万	Apache-2.0	https://github.com/hiyouga/LlamaFactory
+推理与部署	BerriAI/litellm	5.8 万	NOASSERTION	https://github.com/BerriAI/litellm
+推理与部署	liguodongiot/llm-action	2.5 万	Apache-2.0	https://github.com/liguodongiot/llm-action
+推理与部署	huggingface/trl	1.9 万	Apache-2.0	https://github.com/huggingface/trl
+推理与部署	mlc-ai/web-llm	1.9 万	Apache-2.0	https://github.com/mlc-ai/web-llm
+沙箱与运行时	firecracker-microvm/firecracker	3.7 万	Apache-2.0	https://github.com/firecracker-microvm/firecracker
+沙箱与运行时	trycua/cua	2.2 万	MIT	https://github.com/trycua/cua
+沙箱与运行时	e2b-dev/E2B	1.4 万	Apache-2.0	https://github.com/e2b-dev/E2B
+沙箱与运行时	agent-infra/sandbox	5,883	Apache-2.0	https://github.com/agent-infra/sandbox
+沙箱与运行时	standardagents/arrow-js	3,752	MIT	https://github.com/standardagents/arrow-js
+沙箱与运行时	e2b-dev/open-computer-use	2,249	Apache-2.0	https://github.com/e2b-dev/open-computer-use
+沙箱与运行时	abshkbh/arrakis	871	AGPL-3.0	https://github.com/abshkbh/arrakis
+沙箱与运行时	e2b-dev/surf	863	Apache-2.0	https://github.com/e2b-dev/surf
+沙箱与运行时	open-gitagent/clawless	534	MIT	https://github.com/open-gitagent/clawless
+沙箱与运行时	Th0rgal/sandboxed.sh	507	NOASSERTION	https://github.com/Th0rgal/sandboxed.sh
+基准、数据集与论文	OpenBMB/ToolBench	5,736	Apache-2.0	https://github.com/OpenBMB/ToolBench
+基准、数据集与论文	THUDM/AgentBench	3,722	Apache-2.0	https://github.com/THUDM/AgentBench
+基准、数据集与论文	NAalytics/Assemblies-of-putative-SARS-CoV2-spike-encoding-mRNA-sequences-for-vaccines-BNT-162b2-and-mRNA-1273	3,352	NOASSERTION	https://github.com/NAalytics/Assemblies-of-putative-SARS-CoV2-spike-encoding-mRNA-sequences-for-vaccines-BNT-162b2-and-mRNA-1273
+基准、数据集与论文	Meirtz/Awesome-Context-Engineering	3,299	MIT	https://github.com/Meirtz/Awesome-Context-Engineering
+基准、数据集与论文	blazickjp/arxiv-mcp-server	3,127	Apache-2.0	https://github.com/blazickjp/arxiv-mcp-server
+基准、数据集与论文	yilewang/llm-for-zotero	2,940	AGPL-3.0	https://github.com/yilewang/llm-for-zotero
+基准、数据集与论文	luo-junyu/Awesome-Agent-Papers	2,850	NOASSERTION	https://github.com/luo-junyu/Awesome-Agent-Papers
+基准、数据集与论文	Shichun-Liu/Agent-Memory-Paper-List	2,374	MIT	https://github.com/Shichun-Liu/Agent-Memory-Paper-List
+基准、数据集与论文	jmiao24/Paper2Agent	2,353	MIT	https://github.com/jmiao24/Paper2Agent
+基准、数据集与论文	Xnhyacinth/Awesome-LLM-Long-Context-Modeling	2,168	MIT	https://github.com/Xnhyacinth/Awesome-LLM-Long-Context-Modeling
+学习资源与 Awesome	punkpeye/awesome-mcp-servers	9.5 万	MIT	https://github.com/punkpeye/awesome-mcp-servers
+学习资源与 Awesome	dair-ai/Prompt-Engineering-Guide	7.8 万	MIT	https://github.com/dair-ai/Prompt-Engineering-Guide
+学习资源与 Awesome	microsoft/ai-agents-for-beginners	7.4 万	MIT	https://github.com/microsoft/ai-agents-for-beginners
+学习资源与 Awesome	rohitg00/ai-engineering-from-scratch	5.4 万	MIT	https://github.com/rohitg00/ai-engineering-from-scratch
+学习资源与 Awesome	bojieli/ai-agent-book	4.6 万	Apache-2.0	https://github.com/bojieli/ai-agent-book
+学习资源与 Awesome	patchy631/ai-engineering-hub	3.7 万	MIT	https://github.com/patchy631/ai-engineering-hub
+学习资源与 Awesome	e2b-dev/awesome-ai-agents	3.0 万	NOASSERTION	https://github.com/e2b-dev/awesome-ai-agents
+学习资源与 Awesome	humanlayer/12-factor-agents	2.6 万	NOASSERTION	https://github.com/humanlayer/12-factor-agents
+学习资源与 Awesome	AccumulateMore/CV	2.4 万	NOASSERTION	https://github.com/AccumulateMore/CV
+学习资源与 Awesome	mikeroyal/Self-Hosting-Guide	2.3 万	NOASSERTION	https://github.com/mikeroyal/Self-Hosting-Guide

@@ -15,7 +15,7 @@ updated: 2026-09-10
 |---|---|---|---|
 | 1 | [ReAct 论文](../13-resources/papers/react.md) | 论文 | Agent 循环的思想源头 |
 | 2 | [Anthropic: Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) | 博客 | 工作流 vs Agent 的工程判断 |
-| 3 | [Pi Agent（原 Pi）](https://github.com/earendil-works/pi) | 开源项目 | 极简 harness 的活教材 |
+| 3 | [Pi Agent（原 pi-mono）](https://github.com/earendil-works/pi) | 开源项目 | 极简 harness 的活教材 |
 | 4 | [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) | 开源项目 | 「一切皆插件」的生产级架构 |
 | 5 | [MCP 官方文档](https://modelcontextprotocol.io) | 文档 | 工具生态的事实标准 |
 | 6 | [LangGraph](../13-resources/projects/langgraph.md) | 开源项目 | 图编排的主流选择 |

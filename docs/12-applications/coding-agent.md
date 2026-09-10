@@ -19,7 +19,7 @@ updated: 2026-09-10
 
 ## 三大 Harness 横向深拆
 
-| 维度 | Claude Code | Pi（原 Pi） | DeepSeek Harness |
+| 维度 | Claude Code | Pi（原 pi-mono） | DeepSeek Harness |
 |---|---|---|---|
 | 开源情况 | 闭源（社区逆向分析） | MIT 开源，~40K | MIT 开源（2026.08 v0.1） |
 | 技术栈 | TypeScript（Node） | TypeScript monorepo | TypeScript + Cordis 插件框架 |
