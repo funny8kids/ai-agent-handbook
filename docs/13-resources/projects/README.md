@@ -15,7 +15,7 @@ updated: 2026-09-10
 
 下面几个项目在本手册中有单独的深读卡片：
 
-[LangChain](langchain.md) · [LangGraph](langgraph.md) · [AutoGen](autogen.md) · [CrewAI](crewai.md) · [OpenHands](openhands.md)
+[LangChain](langchain.md) · [LangGraph](langgraph.md) · [AutoGen](autogen.md) · [CrewAI](crewai.md) · [OpenHands](openhands.md) · [DeepSeek Harness](deepseek-harness.md) · [Pi Agent](pi.md)
 
 ## Agent 框架与编排
 

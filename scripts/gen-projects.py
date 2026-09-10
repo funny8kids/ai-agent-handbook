@@ -93,6 +93,7 @@ NEG = ['service discovery', 'quant investment', 'video production', 'game engine
 CARDS = [
     ('LangChain', 'langchain.md'), ('LangGraph', 'langgraph.md'),
     ('AutoGen', 'autogen.md'), ('CrewAI', 'crewai.md'), ('OpenHands', 'openhands.md'),
+    ('DeepSeek Harness', 'deepseek-harness.md'), ('Pi Agent', 'pi.md'),
 ]
 
 

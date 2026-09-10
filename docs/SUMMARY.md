@@ -154,6 +154,8 @@
   * [AutoGen](13-resources/projects/autogen.md)
   * [CrewAI](13-resources/projects/crewai.md)
   * [OpenHands](13-resources/projects/openhands.md)
+  * [DeepSeek Harness](13-resources/projects/deepseek-harness.md)
+  * [Pi Agent](13-resources/projects/pi.md)
 * [工具](13-resources/tools/README.md)
   * [MCP Servers](13-resources/tools/mcp-servers.md)
   * [LangFuse](13-resources/tools/langfuse.md)
