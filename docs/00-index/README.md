@@ -27,6 +27,7 @@
 
 - [16 AI 基础设施](../16-ai-infrastructure/README.md) — 推理引擎、缓存、GPU 调度、沙箱、网关、持久化运行时
 - [17 具身智能](../17-embodied-ai/README.md) — VLA 模型、数据引擎、仿真与 Sim-to-Real、操作与人形、硬件安全
+- [18 2026 前沿](../18-frontier-2026/README.md) — GPT-6 Astra、Agents API、Agent SDK、评估与协议栈代际
 
 ## 资料篇
 

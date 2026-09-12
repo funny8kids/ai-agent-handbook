@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="13" role="img" aria-label="2026 Agent 协议栈">
+  <rect width="920" height="420" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="24" y="32" font-size="16" font-weight="700" fill="#0f172a">2026 协议栈：四层各管一段</text>
+  <text x="24" y="54" fill="#64748b" font-size="12">MCP 管工具 · A2A 管互调 · AG-UI 管界面 · Skills/agents.md 管行为</text>
+
+  <rect x="60" y="90" width="800" height="70" rx="10" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="460" y="120" text-anchor="middle" font-weight="700" fill="#312e81">产品 UI / 前端</text>
+  <text x="460" y="142" text-anchor="middle" fill="#4338ca" font-size="12">消息流 · 工具状态 · 人工确认按钮</text>
+
+  <rect x="60" y="180" width="800" height="60" rx="10" fill="#ede9fe" stroke="#8b5cf6"/>
+  <text x="460" y="215" text-anchor="middle" font-weight="700" fill="#4c1d95">AG-UI：Agent 事件 → 界面（流式、HITL 事件）</text>
+
+  <rect x="60" y="260" width="800" height="70" rx="10" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="460" y="290" text-anchor="middle" font-weight="700" fill="#064e3b">Agent 运行时 / Harness</text>
+  <text x="460" y="312" text-anchor="middle" fill="#047857" font-size="12">Agents API · Agent SDK · LangGraph · 自研循环</text>
+
+  <rect x="60" y="350" width="250" height="48" rx="8" fill="#fff" stroke="#34d399"/>
+  <text x="185" y="378" text-anchor="middle" fill="#065f46">MCP · 工具与数据</text>
+
+  <rect x="335" y="350" width="250" height="48" rx="8" fill="#fff" stroke="#fbbf24"/>
+  <text x="460" y="378" text-anchor="middle" fill="#92400e">A2A · Agent 互调</text>
+
+  <rect x="610" y="350" width="250" height="48" rx="8" fill="#fff" stroke="#f472b6"/>
+  <text x="735" y="378" text-anchor="middle" fill="#9d174d">Skills / agents.md</text>
+</svg>

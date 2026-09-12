@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-12
 ---
 
 # OpenAI Agents SDK
@@ -78,6 +78,18 @@ print(result.final_output)
 - **Guardrail 与沙箱分工不同**：guardrail 管「输入输出内容」，管不住工具执行的副作用——两层都要有。
 - **Session 简化但不等于记忆管理**：它维护对话历史，但压缩、检索与遗忘仍需自己设计（见 [记忆压缩](../06-memory-rag/memory-compression-forgetting.md)）。
 
+## 2026 补充：从本地 SDK 到托管 harness
+
+本页讲的是 **进程内 SDK**（你装 `openai-agents-python`，自己管循环与环境）。2026-09 起，OpenAI 与 Anthropic 都把「产品级 harness」变成可采购能力，选型分叉见 [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)：
+
+| 形态 | 谁维护循环/压缩/沙箱 | 代表 | 手册页面 |
+|---|---|---|---|
+| 本地 Agent SDK | 你（库只提供原语） | OpenAI Agents SDK（本页） | — |
+| 托管 REST harness | 厂商 | **OpenAI Agents API**（2026-09-10 公测） | [Agents API](../18-frontier-2026/openai-agents-api.md) |
+| 库内嵌 Claude Code 内核 | 你的进程 + 厂商版本化循环 | **Claude Agent SDK** | [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md) |
+
+含义：handoff / guardrail 仍是正确的概念模型，但 **压缩、tool search、子 Agent 并行、托管沙箱** 正在从「你要自己写」变成运行时开箱能力。新项目应先问「循环是不是差异化」——不是，就优先托管；是，再用本页 SDK 或 LangGraph 细拼。
+
 ## 常见误区
 
 - ❌ Agents SDK = 必须 OpenAI 模型：LiteLLM 桥接后可用任意模型，但原生工具绑定 Responses API
@@ -94,9 +106,11 @@ print(result.final_output)
 - [OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)
 - [openai/swarm（前身，教学用途）](https://github.com/openai/swarm)
 - [OpenAI Agents SDK GitHub](https://github.com/openai/openai-agents-python)
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)（2026-09-10）· [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)
 
 ## 相关知识点
 
 - [Swarm](../08-multi-agent/swarm.md)
 - [Semantic Kernel](semantic-kernel.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
+- [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)

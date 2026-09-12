@@ -20,6 +20,8 @@ updated: 2026-09-10
 | [企业知识库](enterprise-knowledge-base.md) | 高 | 引用准确率 | RAG 全家桶 |
 | [研究 Agent](research-agent.md) | 中 | 事实核查 | Anthropic 多 Agent 研究系统 |
 | [个人助理](personal-assistant.md) | 中 | 用户满意度 | 各家语音助手 |
+| [通用 Agent 产品](general-agent-products.md) | 中高 | 验收清单 | ChatGPT Work / Cowork / 浏览器代办 |
+| [实时语音 Agent](voice-agent.md) | 中 | 听感与打断 | GPT-Live-1 等实时 API |
 | [RPA](rpa.md) | 中 | 流程完成率 | UI 自动化 + LLM |
 | [教育 Agent](education-agent.md) | 中 | 学习效果评估 | 苏格拉底式辅导 |
 | [游戏 Agent](game-agent.md) | 早期 | 胜率/行为分 | NPC、自对弈 |
@@ -29,3 +31,4 @@ updated: 2026-09-10
 
 - 找「我能抄的作业」：每个场景页都有「可复用的模式」小节
 - 编程 Agent 页是全书案例密度最高的一页：**Claude Code、Pi、DeepSeek Harness 三大 harness 的横向深拆**，读懂它就读懂了 Agent 工程的当前形态
+- 2026 产品面看 [通用 Agent 产品](general-agent-products.md) 与 [18 前沿章](../18-frontier-2026/README.md)

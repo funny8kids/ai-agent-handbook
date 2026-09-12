@@ -66,8 +66,12 @@ $$
 | WebArena | 真实网站长程任务 | 自托管网站沙箱 | 程序化状态断言 | 同上 |
 | AgentBench | 八场景综合能力 | 多环境 | 各环境自定 | 同上 |
 | ToolBench / BFCL | 工具调用与选择 | API 沙箱 | 可执行性 + 匹配 | 同上 |
-| Terminal-Bench / OSWorld | 终端/桌面操作 | 真实 OS 环境 | 状态/文件断言 | — |
-| τ-bench | 工具 + 用户模拟 + 策略遵守 | 客服域 | 数据库状态 + 策略 | — |
+| Terminal-Bench 4.0 | 长终端任务（2026 代际） | 真实 OS | 解决率 + 成本 | [评估 2026](../18-frontier-2026/eval-2026.md) |
+| OSWorld 2.0 | 桌面 GUI 长任务 | 真实桌面 | partial / strict | 同上 |
+| τ-bench / τ² | 工具 + 用户模拟 + 策略 | 客服/业务域 | 状态 + 策略 | 同上 |
+| Agents' Last Exam 等 | 真实专业软件任务 | 业务应用 | 专家评分/状态 | 同上 |
+
+> **2026 必读**：[评估 2026：基准代际](../18-frontier-2026/eval-2026.md)——effort 曲线、防护干预、长时程读法。
 
 ## 直觉解释
 
@@ -95,8 +99,12 @@ $$
 - [ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs](https://arxiv.org/abs/2307.16789)（Qin et al., 2023）
 - [OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments](https://arxiv.org/abs/2404.07972)（Xie et al., 2024）
 - [τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains](https://arxiv.org/abs/2406.12045)（Yao et al., 2024）
+- [Terminal-Bench 4.0](https://www.tbench.ai/)（Stanford / Harbor / Laude, 2026）
+- [GPT-6 Astra 多基准对照表](https://openai.com/index/gpt-6-astra/)（OpenAI, 2026-09）
 
 ## 相关知识点
 
 - [Agent 评估指标](evaluation-metrics.md)
+- [评估 2026：基准代际](../18-frontier-2026/eval-2026.md)
+- [2026 安全现实](safety-incidents-2026.md)
 - [基准测试资源](../13-resources/benchmarks/README.md)

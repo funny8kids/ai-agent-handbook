@@ -2,11 +2,11 @@
 
 **从原理到生产**：LLM 与注意力 · Agent 循环 · 工具协议 · 记忆与 RAG · 规划 · 多智能体 · 评估与安全 · 工程化 · AI 基础设施 · 具身智能
 
-**From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI
+**From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · **2026 frontier**
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：170 页 / 17 章，93 页含公式推导，323 个开源项目索引。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：178 页 / 18 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 170 pages across 17 chapters, 93 of them carrying formulas, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 178 pages across 18 chapters, including a 2026 frontier chapter, 93 of them carrying formulas, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
 
 ## 快速开始 · Quick start
 
@@ -17,6 +17,7 @@
 | 关注前沿与论文 · Researcher | 04 → 08 → 10 | 能读懂 ReAct 并复现核心循环 · reproduce the ReAct loop |
 | 要搭团队底座 · Platform / Infra | 03 → 11 → 16 | 能给出 TTFT/TPOT/缓存命中率/成本基线 · set cost & latency baselines |
 | 做机器人或想转具身 · Robotics | 02 → 04 → 17 → 16 | 能跑通「感知→技能→执行」闭环 · close a perceive→skill→act loop |
+| 追前沿与选型 · Frontier / Buyer | 02 → 18 → 10 → 12 | 能读懂 Astra / Agents API / Fable 5.1 对比并做 harness 选型 · pick a 2026 stack |
 
 完整路线、前置知识与自检标准 · Full paths, prerequisites & self-checks：**[学习路线 Learning path](00-index/learning-path.md)**
 
@@ -26,22 +27,24 @@
 
 | 资源 · Resource | 一句话 · In one line |
 |---|---|
+| [2026 前沿模型地图](18-frontier-2026/frontier-models-2026.md) | GPT-6 Astra 与 Claude Fable 5.1 怎么比、怎么买 |
+| [OpenAI Agents API](18-frontier-2026/openai-agents-api.md) | 托管 Codex harness：压缩 / tool search / 子 Agent |
 | [ReAct 论文](13-resources/papers/react.md) | 现代 Agent 循环的思想源头 · the origin of the think-act-observe loop |
 | [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) | 什么时候用工作流、什么时候才该上 Agent · workflow vs agent, and when |
 | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | Transformer 原始论文，一切 LLM 的底座 · the paper every LLM builds on |
 | [DeepSeek-R1](https://arxiv.org/abs/2501.12948) | 用可验证奖励做 RL，训出推理能力 · RL with verifiable rewards |
 | [Pi Agent](https://github.com/earendil-works/pi) | 极简 harness 的活教材 · a minimal harness you can read end to end |
-| [DeepSeek Harness](13-resources/projects/deepseek-harness.md) | 「一切皆插件」的生产级运行时 · a runtime where everything is a plugin |
+| [Claude Agent SDK](18-frontier-2026/claude-agent-sdk.md) | 把 Claude Code 内核嵌进自己进程 |
 | [MCP 官方文档](https://modelcontextprotocol.io/docs/learn/architecture) | 工具接入的事实标准 · the de-facto tool protocol |
 | [AI Agents for Beginners](13-resources/courses/ai-agents-for-beginners.md) | 微软官方免费入门课 · Microsoft's free beginner course |
 | [SWE-bench](13-resources/benchmarks/swe-bench.md) | 编程 Agent 的标准考场 · the standard arena for coding agents |
-| [12-Factor Agents](https://github.com/humanlayer/12-factor-agents) | Agent 工程化的 12 条原则 · 12 principles for production agents |
-| [LangGraph](09-frameworks/langgraph.md) | 用状态图表达 Agent：分支、循环、断点恢复 · agents as stateful graphs |
-| [OpenHands](https://github.com/All-Hands-AI/OpenHands) | 全功能开源编程 Agent · a full-featured open-source coding agent |
+| [评估 2026](18-frontier-2026/eval-2026.md) | Terminal-Bench 4.0 / OSWorld 2.0 读榜纪律 |
 
 ## 按主题挑资源 · Browse by topic
 
-**框架与编排 · Frameworks** · [LangChain](09-frameworks/langchain.md) · [LangGraph](09-frameworks/langgraph.md) · [AutoGen](09-frameworks/autogen.md) · [CrewAI](09-frameworks/crewai.md) · [DSPy](09-frameworks/dspy.md) · [LlamaIndex](09-frameworks/llamaindex.md) · [Semantic Kernel](09-frameworks/semantic-kernel.md) · [OpenAI Agents SDK](09-frameworks/openai-agents-sdk.md) · [完整项目索引 Full index](13-resources/projects/README.md)
+**2026 前沿 · Frontier** · [本章导读](18-frontier-2026/README.md) · [模型地图](18-frontier-2026/frontier-models-2026.md) · [Agents API](18-frontier-2026/openai-agents-api.md) · [Agent SDK](18-frontier-2026/claude-agent-sdk.md) · [Harness 分类学](18-frontier-2026/model-native-vs-harness.md) · [评估 2026](18-frontier-2026/eval-2026.md) · [安全 2026](10-evaluation-safety/safety-incidents-2026.md)
+
+**框架与编排 · Frameworks** · [LangChain](09-frameworks/langchain.md) · [LangGraph](09-frameworks/langgraph.md) · [AutoGen](09-frameworks/autogen.md) · [CrewAI](09-frameworks/crewai.md) · [DSPy](09-frameworks/dspy.md) · [LlamaIndex](09-frameworks/llamaindex.md) · [Semantic Kernel](09-frameworks/semantic-kernel.md) · [OpenAI Agents SDK](09-frameworks/openai-agents-sdk.md) · [Claude Agent SDK](18-frontier-2026/claude-agent-sdk.md) · [完整项目索引 Full index](13-resources/projects/README.md)
 
 **编程 Agent 与 Harness · Coding agents** · [编程 Agent 案例](12-applications/coding-agent.md) · [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) · [Pi](https://github.com/earendil-works/pi) · [Codex](https://github.com/openai/codex) · [Gemini CLI](https://github.com/google-gemini/gemini-cli) · [SWE-agent](https://github.com/SWE-agent/SWE-agent) · [Aider](https://github.com/Aider-AI/aider) · [Claude Code 提示词全集](https://github.com/Piebald-AI/claude-code-system-prompts)
 
@@ -49,9 +52,9 @@
 
 **工具与协议 · Tools & protocols** · [Function Calling](05-tool-protocol/function-calling.md) · [MCP](05-tool-protocol/mcp.md) · [A2A](05-tool-protocol/a2a.md) · [工具权限与沙箱](05-tool-protocol/tool-permission-sandbox.md) · [MCP Servers](https://github.com/modelcontextprotocol/servers) · [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) · [A2A 仓库](https://github.com/a2aproject/A2A)
 
-**浏览器与 Computer Use · Browser & computer use** · [Computer Use / Browser Use](05-tool-protocol/computer-use-browser-use.md) · [browser-use](https://github.com/browser-use/browser-use) · [Playwright MCP](https://github.com/microsoft/playwright-mcp) · [Stagehand](https://github.com/browserbase/stagehand) · [cua](https://github.com/trycua/cua)
+**浏览器与 Computer Use · Browser & computer use** · [Computer Use / Browser Use](05-tool-protocol/computer-use-browser-use.md) · [Computer Use 2026](18-frontier-2026/computer-use-2026.md) · [通用 Agent 产品](12-applications/general-agent-products.md) · [browser-use](https://github.com/browser-use/browser-use) · [Playwright MCP](https://github.com/microsoft/playwright-mcp) · [Stagehand](https://github.com/browserbase/stagehand) · [cua](https://github.com/trycua/cua)
 
-**评估、安全与对齐 · Evaluation & safety** · [Agent 评估指标](10-evaluation-safety/evaluation-metrics.md) · [基准测试总览](10-evaluation-safety/benchmarks.md) · [幻觉问题](10-evaluation-safety/hallucination.md) · [提示注入](10-evaluation-safety/prompt-injection.md) · [越狱攻击](10-evaluation-safety/jailbreak.md) · [权限与沙箱](10-evaluation-safety/permission-sandbox.md) · [LangFuse](https://github.com/langfuse/langfuse) · [Phoenix](https://github.com/Arize-ai/phoenix) · [RAGAS](https://github.com/explodinggradients/ragas) · [promptfoo](https://github.com/promptfoo/promptfoo)
+**评估、安全与对齐 · Evaluation & safety** · [Agent 评估指标](10-evaluation-safety/evaluation-metrics.md) · [基准测试总览](10-evaluation-safety/benchmarks.md) · [评估 2026](18-frontier-2026/eval-2026.md) · [2026 安全现实](10-evaluation-safety/safety-incidents-2026.md) · [幻觉问题](10-evaluation-safety/hallucination.md) · [提示注入](10-evaluation-safety/prompt-injection.md) · [越狱攻击](10-evaluation-safety/jailbreak.md) · [权限与沙箱](10-evaluation-safety/permission-sandbox.md)
 
 **推理与部署 · Inference & deployment** · [推理、量化与部署](03-llm/inference-quantization-deployment.md) · [vLLM](https://github.com/vllm-project/vllm) · [llama.cpp](https://github.com/ggml-org/llama.cpp) · [Ollama](https://github.com/ollama/ollama) · [LiteLLM](https://github.com/BerriAI/litellm) · [unsloth](https://github.com/unslothai/unsloth) · [LlamaFactory](https://github.com/hiyouga/LlamaFactory) · [TRL](https://github.com/huggingface/trl)
 
@@ -65,11 +68,12 @@
 
 ## 关于这本手册 · About this handbook
 
-- **170 页 / 17 章**，全部达到体裁字数门槛 · 170 pages across 17 chapters, all meeting their length bar
-- **93 页含数学公式**（KaTeX）· 93 pages carry formulas
+- **178 页 / 18 章**（含 2026 前沿章）· 178 pages across 18 chapters
+- **93+ 页含数学公式**（KaTeX）· pages carry formulas
 - **每篇底部有「参考资料」**，数字与结论都能点回一手来源 · every page ends with references
 - **323 个项目索引**（实测 star 与许可）· an index of 323 projects with observed stars and licenses
-- **17 张自绘 SVG 图示**（部分带 SMIL 动画）· 17 hand-drawn SVG diagrams
+- **20+ 张自绘 SVG 图示**（部分带 SMIL 动画）· hand-drawn SVG diagrams
+- **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。
 

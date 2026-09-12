@@ -2,13 +2,13 @@
 
 # AI Agent 手册 · AI Agent Handbook
 
-**从原理到生产**：LLM 与注意力 · Agent 循环 · 工具协议 · 记忆与 RAG · 规划 · 多智能体 · 评估与安全 · 工程化 · AI 基础设施 · 具身智能
+**从原理到生产**：LLM 与注意力 · Agent 循环 · 工具协议 · 记忆与 RAG · 规划 · 多智能体 · 评估与安全 · 工程化 · AI 基础设施 · 具身智能 · 2026 前沿
 
-**From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI
+**From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · 2026 frontier
 
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-7C3AED?style=flat-square"></a>
-<img alt="Pages" src="https://img.shields.io/badge/pages-170-8B5CF6?style=flat-square">
-<img alt="Chapters" src="https://img.shields.io/badge/chapters-17-6D28D9?style=flat-square">
+<img alt="Pages" src="https://img.shields.io/badge/pages-178-8B5CF6?style=flat-square">
+<img alt="Chapters" src="https://img.shields.io/badge/chapters-18-6D28D9?style=flat-square">
 <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-323-4C1D95?style=flat-square">
 <img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-93-A78BFA?style=flat-square">
 
@@ -16,11 +16,24 @@
 
 ---
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：170 页 / 17 章。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：178 页 / 18 章。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 170 pages across 17 chapters. Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 178 pages across 18 chapters. Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
 
 在线阅读（GitBook 站点）· Read online on GitBook: **VioletNotes Docs**
+
+---
+
+## 2026 前沿 · Frontier（2026-09）
+
+| 主题 | 页面 |
+|---|---|
+| GPT-6 Astra · Claude Fable 5.1 / Opus 5 | [前沿模型地图](docs/18-frontier-2026/frontier-models-2026.md) |
+| OpenAI Agents API（托管 Codex harness） | [Agents API](docs/18-frontier-2026/openai-agents-api.md) |
+| Claude Agent SDK | [Agent SDK](docs/18-frontier-2026/claude-agent-sdk.md) |
+| 模型原生 harness vs 自建循环 | [分类学](docs/18-frontier-2026/model-native-vs-harness.md) |
+| Terminal-Bench 4.0 · OSWorld 2.0 读法 | [评估 2026](docs/18-frontier-2026/eval-2026.md) |
+| 真实事故与 misalignment monitoring | [安全 2026](docs/10-evaluation-safety/safety-incidents-2026.md) |
 
 ---
 
@@ -33,6 +46,7 @@
 | 关注前沿与论文 · Researcher | 04 → 08 → 10 | 能读懂 ReAct 并复现核心循环 · reproduce the ReAct loop |
 | 要搭团队底座 · Platform / Infra | 03 → 11 → 16 | 能给出 TTFT/TPOT/缓存命中率/成本基线 · set cost & latency baselines |
 | 做机器人或想转具身 · Robotics | 02 → 04 → 17 → 16 | 能跑通「感知→技能→执行」闭环 · close a perceive→skill→act loop |
+| 追前沿与选型 · Frontier / Buyer | 02 → 18 → 10 → 12 | 能读懂 Astra / Agents API / Fable 5.1 对比并做 harness 选型 · pick a 2026 stack |
 
 完整路线与自检标准 · Full paths & self-checks：**[学习路线 Learning path](docs/00-index/learning-path.md)**
 
@@ -231,3 +245,5 @@
 [MIT](LICENSE) © AI Agent Handbook
 
 <sub>本页资源均指向一手来源；star 与许可为 2026-09 观测值，会随时间变化。· All resources link to primary sources; star counts and licenses were observed in 2026-09 and will change over time.</sub>
+
+<sub>前沿事实对齐 2026-09-12：GPT-6 Astra（09-09）、Agents API（09-10）、Claude Fable 5.1（09-01）。</sub>

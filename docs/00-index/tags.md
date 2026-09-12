@@ -2,7 +2,7 @@
 tags: [basics]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-12
 ---
 
 # 标签索引
@@ -32,6 +32,10 @@ updated: 2026-09-10
 | `data` | 数据采集与治理 | [数据引擎](../17-embodied-ai/data-engine.md) |
 | `cost` | 成本与容量 | [推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md) |
 | `application` | 应用案例 | [编程 Agent](../12-applications/coding-agent.md) |
+| `frontier` | 2026 前沿与代际追踪 | [前沿模型地图](../18-frontier-2026/frontier-models-2026.md) |
+| `agents-api` | OpenAI Agents API / 托管 harness | [Agents API](../18-frontier-2026/openai-agents-api.md) |
+| `computer-use` | 桌面/浏览器代办 | [Computer Use 2026](../18-frontier-2026/computer-use-2026.md) |
+| `voice` | 实时语音 Agent | [语音 Agent](../12-applications/voice-agent.md) |
 | `resource` | 资源收录 | [资源库说明](../13-resources/README.md) |
 | `beginner` | 入门难度 | [AI、ML、DL 的关系](../01-ai-basics/ai-ml-dl.md) |
 | `advanced` | 进阶难度 | [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md) |

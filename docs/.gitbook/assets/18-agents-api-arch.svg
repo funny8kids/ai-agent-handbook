@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" font-family="-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif" font-size="13" role="img" aria-label="OpenAI Agents API 架构">
+  <rect width="920" height="460" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="24" y="32" font-size="16" font-weight="700" fill="#0f172a">OpenAI Agents API：托管 harness 架构（2026-09）</text>
+  <text x="24" y="54" fill="#64748b" font-size="12">一次 sessions.create：模型 + 循环 + 压缩 + 子 Agent + 沙箱</text>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6" fill="none" stroke="#475569" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="100" width="160" height="70" rx="10" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="120" y="130" text-anchor="middle" font-weight="700" fill="#312e81">你的应用</text>
+  <text x="120" y="150" text-anchor="middle" fill="#4338ca" font-size="12">任务 · 事件流</text>
+
+  <rect x="280" y="80" width="280" height="280" rx="12" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="420" y="108" text-anchor="middle" font-weight="700" fill="#064e3b">Agents API（托管）</text>
+
+  <rect x="300" y="124" width="240" height="48" rx="8" fill="#fff" stroke="#34d399"/>
+  <text x="420" y="153" text-anchor="middle" fill="#065f46">Codex harness 循环</text>
+
+  <rect x="300" y="186" width="112" height="56" rx="8" fill="#fff" stroke="#6ee7b7"/>
+  <text x="356" y="210" text-anchor="middle" fill="#047857" font-size="12">自动压缩</text>
+  <text x="356" y="228" text-anchor="middle" fill="#047857" font-size="11">compaction</text>
+
+  <rect x="428" y="186" width="112" height="56" rx="8" fill="#fff" stroke="#6ee7b7"/>
+  <text x="484" y="210" text-anchor="middle" fill="#047857" font-size="12">Tool search</text>
+  <text x="484" y="228" text-anchor="middle" fill="#047857" font-size="11">按需加载定义</text>
+
+  <rect x="300" y="256" width="240" height="48" rx="8" fill="#fff" stroke="#a7f3d0"/>
+  <text x="420" y="278" text-anchor="middle" fill="#065f46" font-size="12">子 Agent 并行</text>
+  <text x="420" y="296" text-anchor="middle" fill="#047857" font-size="11">独立上下文 · 主 Agent 汇总</text>
+
+  <rect x="300" y="318" width="240" height="28" rx="6" fill="#d1fae5" stroke="#10b981"/>
+  <text x="420" y="337" text-anchor="middle" fill="#065f46" font-size="11">MCP · 函数 · 内置工具</text>
+
+  <rect x="640" y="100" width="220" height="100" rx="10" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="750" y="132" text-anchor="middle" font-weight="700" fill="#9a3412">沙箱环境</text>
+  <text x="750" y="154" text-anchor="middle" fill="#c2410c" font-size="12">OpenAI hosted</text>
+  <text x="750" y="174" text-anchor="middle" fill="#c2410c" font-size="12">或 E2B/Modal/CF…</text>
+
+  <rect x="640" y="230" width="220" height="80" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="750" y="262" text-anchor="middle" font-weight="700" fill="#334155">产物与中间态</text>
+  <text x="750" y="284" text-anchor="middle" fill="#64748b" font-size="12">/workspace 文件</text>
+
+  <line x1="200" y1="135" x2="280" y2="135" stroke="#475569" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="560" y1="160" x2="640" y2="160" stroke="#475569" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="560" y1="270" x2="640" y2="270" stroke="#475569" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <text x="40" y="400" fill="#475569" font-size="12">关键点：harness 由 OpenAI 版本化维护；你投资工具、知识与验收标准。</text>
+  <text x="40" y="422" fill="#64748b" font-size="11">开源对照：github.com/openai/codex · 发布：2026-09-10 公测</text>
+</svg>

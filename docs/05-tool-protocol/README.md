@@ -18,6 +18,7 @@ updated: 2026-09-10
 - A2A：跨 Agent 的协作协议，与 MCP 如何互补
 - 权限模型与沙箱：DeepSeek Harness 的执行流水线、Claude Code 的审批层
 - Computer Use：截图 → 定位 → 操作的 GUI 自动化循环
+- **2026 协议栈补全**：AG-UI、agents.md / Skills 与 MCP/A2A 的分层，见 [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)
 
 ## 全章地图
 

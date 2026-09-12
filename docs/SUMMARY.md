@@ -113,6 +113,7 @@
 * [数据隐私](10-evaluation-safety/data-privacy.md)
 * [对齐与安全](10-evaluation-safety/alignment-safety.md)
 * [可解释性](10-evaluation-safety/explainability.md)
+* [2026 安全现实](10-evaluation-safety/safety-incidents-2026.md)
 
 ## 🚀 11 工程化与可观测性
 * [本章导读](11-engineering/README.md)
@@ -138,6 +139,8 @@
 * [教育 Agent](12-applications/education-agent.md)
 * [医疗、金融、法律 Agent](12-applications/industry-agents.md)
 * [个人助理](12-applications/personal-assistant.md)
+* [通用 Agent 产品](12-applications/general-agent-products.md)
+* [实时语音 Agent](12-applications/voice-agent.md)
 * [企业知识库](12-applications/enterprise-knowledge-base.md)
 
 ## 🔗 13 资源库
@@ -203,6 +206,16 @@
 * [评估与基准](17-embodied-ai/evaluation-benchmarks.md)
 * [硬件、实时与安全](17-embodied-ai/hardware-realtime-safety.md)
 * [把 Agent 接进机器人](17-embodied-ai/agent-to-robot-bridge.md)
+
+## 🛰️ 18 2026 前沿
+* [本章导读](18-frontier-2026/README.md)
+* [2026 前沿模型地图](18-frontier-2026/frontier-models-2026.md)
+* [OpenAI Agents API](18-frontier-2026/openai-agents-api.md)
+* [Claude Agent SDK](18-frontier-2026/claude-agent-sdk.md)
+* [模型原生 vs 自建 Harness](18-frontier-2026/model-native-vs-harness.md)
+* [Computer Use 2026](18-frontier-2026/computer-use-2026.md)
+* [评估 2026：基准代际](18-frontier-2026/eval-2026.md)
+* [2026 协议栈](18-frontier-2026/protocol-stack-2026.md)
 
 ## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)

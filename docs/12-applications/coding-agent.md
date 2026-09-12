@@ -2,7 +2,7 @@
 tags: [application, agent, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-12
 ---
 
 # 编程 Agent
@@ -93,6 +93,21 @@ $$
 
 同一模型换 harness，步数与重试次数常差出一倍以上——这正是 [SWE-bench](../13-resources/benchmarks/swe-bench.md) 强调「模型 + harness」的原因。选型时应固定模型、横评 harness，比较成功率、平均步数与单任务成本三个指标。
 
+## 2026 补充：第四条线是托管 harness
+
+上表三条是 **自持/产品化开源与闭源 harness**（Claude Code / Pi / DeepSeek Harness）。2026-09 起还要加上 **模型厂商托管 harness** 这条平行路线——你提供工具、知识与验收文件，厂商维护循环、压缩、权限管道与沙箱：
+
+| 路线 | 形态 | 代表 | 何时选 |
+|---|---|---|---|
+| 闭源产品 harness | 终端/IDE 产品 | Claude Code | 个人与团队生产力，不自己魔改 |
+| 极简开源 harness | 库 + 原语 | Pi | 学原理、深度定制 |
+| 平台化插件 harness | 可替换一切的运行时 | DeepSeek Harness | 企业私有化、审计与多租户 |
+| **托管 harness** | 一次 API call | **OpenAI Agents API**（2026-09-10）· **Claude Agent SDK** | 长时程云端任务、不想自运维压缩/子 Agent/沙箱 |
+
+编码能力读数仍是厂商公布量级（非统一 harness 复测）：Terminal-Bench 4.0 上 GPT-6 Astra 约 **57.9%**、Claude Fable 5.1 约 **55.8%**——比较时必须带 effort、防护与任务集版本，读榜纪律见 [评估 2026](../18-frontier-2026/eval-2026.md)，完整对比见 [2026 前沿模型地图](../18-frontier-2026/frontier-models-2026.md)。分叉决策见 [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)。
+
+工程含义：**harness 已是采购项**。无论走哪条线，AGENTS.md / CLAUDE.md 类项目记忆、最小权限、测试门禁仍是你自己的责任。
+
 ## 小练习
 
 用 Pi 或 OpenHands 在真实 issue 上跑一次修复全程：记录步数、token、失败重试次数；对照本章的「通用模式」找出它哪一步最弱。
@@ -101,9 +116,11 @@ $$
 
 - [SWE-bench](../13-resources/benchmarks/swe-bench.md)
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) · [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)
 
 ## 相关知识点
 
 - [感知—规划—行动循环](../02-agent-basics/perception-planning-action.md)
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
+- [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)

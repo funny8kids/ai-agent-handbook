@@ -61,7 +61,10 @@ flowchart LR
 | 2022 | InstructGPT 用 RLHF 让模型学会遵循指令；ChatGPT 发布 | 从「会续写」到「能对话」 |
 | 2024 | OpenAI o1 展示「推理时计算」路线 | 让模型在回答前做长思考 |
 | 2025 | DeepSeek-R1 以开源方式复现推理能力 | 推理模型不再是闭源专属 |
-| 2026 | DeepSeek Harness 等开源 harness 出现 | 竞争焦点从「模型」转向「模型 + 工具 + 循环」的工程系统 |
+| 2025–2026 | Claude Code、Codex、Gemini CLI 等编码 harness 成为主战场 | 竞争从模型扩展到「模型+harness」 |
+| 2026-07 | Claude Opus 5 面向长时程 Agent | Opus 档服务无人值守任务 |
+| 2026-08 | DeepSeek 开源 DeepSeek Harness；Anthropic 预览 Model Hardware Standard | 模型厂商定义 harness；Agent 规范化操作实体设备 |
+| 2026-09 | **GPT-6 Astra**；**OpenAI Agents API** 公测；Claude Fable 5.1 | 托管 harness 商品化；computer use 成为工作型模型标配 |
 
 ## Agent 时代的关键事件（2024–2026）
 
@@ -72,6 +75,10 @@ flowchart LR
 | 2025 | Claude Code、Codex CLI、Gemini CLI 相继发布 | Coding Agent 成为 LLM 第一落地场景 |
 | 2025–2026 | 开源 Coding Agent 井喷：[OpenHands](https://github.com/All-Hands-AI/OpenHands)、Aider、[Pi](https://github.com/earendil-works/pi) | Agent 不再是大厂专属 |
 | 2026.08 | [DeepSeek 开源 DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（MIT） | 模型厂商亲自下场定义 harness：一切皆插件 |
+| 2026.09.01 | [Claude Fable 5.1 / Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) | 编码与知识工作新前沿；cache read 降价重塑 Agent 成本 |
+| 2026.09.09 | [GPT-6 Astra](https://openai.com/index/gpt-6-astra/) | computer use / 科研 / 网安 SOTA；Critical 网络安全阈值 |
+| 2026.09.10 | [OpenAI Agents API](https://openai.com/index/introducing-the-agents-api/) 公测 | Codex harness 托管化：压缩、tool search、子 Agent |
+| 2026.09.10 | GPT-Live-1 API | 实时语音 Agent 运行时进入 API |
 
 ## 直觉解释
 

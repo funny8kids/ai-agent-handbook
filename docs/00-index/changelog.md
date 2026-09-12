@@ -2,6 +2,24 @@
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-12（第 6 次）对齐 2026-09 前沿：新增第 18 章
+
+针对审核发现的「模型面/产品面/评估代际滞后、图片覆盖不足」做系统补强：
+
+- **新增 18 2026 前沿**（8 页）：
+  - [2026 前沿模型地图](../18-frontier-2026/frontier-models-2026.md)：GPT-6 Astra、Claude Fable 5.1 / Mythos 5.1、Opus 5，含 effort × 防护 × cache 读法
+  - [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)：托管 Codex harness、压缩、tool search、子 Agent
+  - [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)：与 CLI / Client SDK / Managed Agents 分界
+  - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)：2026 架构分叉与选型流程
+  - [Computer Use 2026](../18-frontier-2026/computer-use-2026.md)
+  - [评估 2026](../18-frontier-2026/eval-2026.md)：Terminal-Bench 4.0、OSWorld 2.0、τ²、Agents' Last Exam
+  - [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)：MCP + A2A + AG-UI + Skills/agents.md
+- **第 10 章**新增 [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)；[基准测试总览](../10-evaluation-safety/benchmarks.md) 刷新到 2026 代际
+- **第 12 章**新增 [通用 Agent 产品](../12-applications/general-agent-products.md)、[实时语音 Agent](../12-applications/voice-agent.md)
+- **第 01 章** [发展简史](../01-ai-basics/ai-history.md) 时间线补 2026-07～09 事件
+- 新增 5 张自绘 SVG：模型×harness 矩阵、Agents API 架构、协议栈、评估版图、Computer Use 闸门
+- 导航同步：`SUMMARY.md`、总导航、首页必读与主题入口
+
 ## 2026-09-10（第 5 次）内容质量修订与全书扩写
 
 针对「模板化、emoji 泛滥、原理不深、引用单一」四类问题做系统性修订，并对全书 70 篇偏薄页面做深度扩写：
