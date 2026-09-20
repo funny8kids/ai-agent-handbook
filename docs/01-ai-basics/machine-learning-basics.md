@@ -2,12 +2,14 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 机器学习基础
 
-> **一句话**：机器学习就是「从数据里学规律」，三大范式是监督学习、无监督学习和强化学习。
+{% hint style="info" %}
+**一句话**：机器学习就是「从数据里学规律」，三大范式是监督学习、无监督学习和强化学习。
+{% endhint %}
 
 ## 先看结论
 
@@ -131,3 +133,4 @@ flowchart LR
 
 - [深度学习基础](deep-learning-basics.md)
 - [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md)
+

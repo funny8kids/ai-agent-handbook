@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 教育 Agent
 
-> **一句话**：教育 Agent 的最高形态不是「给答案的百科全书」而是「会提问的苏格拉底」：个性化辅导 + 学习路径规划 + 批改反馈，核心挑战是「不剥夺思考」。
-> **难度**：入门
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：教育 Agent 的最高形态不是「给答案的百科全书」而是「会提问的苏格拉底」：个性化辅导 + 学习路径规划 + 批改反馈，核心挑战是「不剥夺思考」。
+  **难度**：入门
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -98,3 +100,4 @@ $$
 - [记忆类型](../06-memory-rag/memory-types.md)
 - [评估 2026](../18-frontier-2026/eval-2026.md)
 - [实时语音 Agent](voice-agent.md)
+

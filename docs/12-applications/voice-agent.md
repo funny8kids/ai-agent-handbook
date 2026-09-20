@@ -2,12 +2,14 @@
 tags: [voice, realtime, multimodal, agents]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 实时语音 Agent
 
-> **一句话**：语音 Agent 的瓶颈不在「会不会说话」，而在 **端到端延迟、打断（barge-in）、工具调用时的听感连续性**——2026 已有专用实时模型 API（如 GPT-Live-1）。
+{% hint style="info" %}
+**一句话**：语音 Agent 的瓶颈不在「会不会说话」，而在 **端到端延迟、打断（barge-in）、工具调用时的听感连续性**——2026 已有专用实时模型 API（如 GPT-Live-1）。
+{% endhint %}
 
 ## 先看结论
 
@@ -90,3 +92,4 @@ session.on("tool_call", async (call) => {
 - [多模态模型](../03-llm/multimodal.md)
 - [通用 Agent 产品](general-agent-products.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
+

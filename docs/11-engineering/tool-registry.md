@@ -2,12 +2,14 @@
 tags: [engineering, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 工具注册中心
 
-> **一句话**：工具注册中心是 Agent 的「能力目录」：统一注册、版本管理、鉴权注入、健康检查与使用统计——工具一多，这里就是治理枢纽。
+{% hint style="info" %}
+**一句话**：工具注册中心是 Agent 的「能力目录」：统一注册、版本管理、鉴权注入、健康检查与使用统计——工具一多，这里就是治理枢纽。
+{% endhint %}
 
 ## 先看结论
 
@@ -120,3 +122,4 @@ async def refund(order_id: str, amount: float):
 - [Tool Use](../05-tool-protocol/tool-use.md)
 - [MCP](../05-tool-protocol/mcp.md)
 - [工具选择与路由](../07-planning/tool-selection-routing.md)
+

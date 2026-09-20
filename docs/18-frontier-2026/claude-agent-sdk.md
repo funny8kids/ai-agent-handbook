@@ -2,12 +2,14 @@
 tags: [claude, agent-sdk, harness, framework]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # Claude Agent SDK
 
-> **一句话**：把 Claude Code 的 agent loop、工具、权限、会话与 Skills 做成 **Python / TypeScript 库**，让你在自己的进程里跑同一套生产级循环。
+{% hint style="info" %}
+**一句话**：把 Claude Code 的 agent loop、工具、权限、会话与 Skills 做成 **Python / TypeScript 库**，让你在自己的进程里跑同一套生产级循环。
+{% endhint %}
 
 ## 先看结论
 
@@ -41,6 +43,26 @@ updated: 2026-09-12
 
 这与 [OpenAI Agents API](openai-agents-api.md) 的差别是部署形态：SDK 默认 **你的进程、你的环境**；Agents API 默认 **OpenAI 托管 harness + 沙箱**。
 
+一次 `query()` 的内部时序（循环、权限判定与 Hooks 全在你的进程里）：
+
+```mermaid
+sequenceDiagram
+  participant App as 你的应用
+  participant Runner as Agent loop(query)
+  participant Perm as Permissions
+  participant Hook as Hooks
+  participant Tool as 工具 / MCP
+  App->>Runner: prompt + options(allowed_tools, cwd, permission_mode)
+  Runner->>Runner: 加载系统提示与 .claude 配置 / Skills
+  Runner->>Perm: 模型产出 tool_use(Edit/Bash), 判权限
+  Perm->>Hook: PreToolUse 回调(需确认或命中规则)
+  Hook->>Hook: lint / 危险命令拦截 / 审计落盘
+  Hook-->>Tool: 放行后执行(受限工作目录)
+  Tool-->>Runner: 工具结果回填, 进入下一轮
+  Runner->>Runner: 上下文接近上限时自动压缩(compact)
+  Runner-->>App: 最终消息 + session_id(可恢复/可分叉)
+```
+
 ### 2. Skills 与项目约定
 
 SDK 会加载与 Claude Code 相同的项目配置目录（如 `.claude/` 与用户级配置），因此：
@@ -59,6 +81,23 @@ SDK 会加载与 Claude Code 相同的项目配置目录（如 `.claude/` 与用
 - 与内部审批系统对接
 
 比「只在 prompt 里写不要 rm -rf」可靠一个数量级（见 [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)）。
+
+### 4. 子 Agent 的派发与成本护栏
+
+```mermaid
+flowchart TB
+  M[主 Agent: 规划与验收] -- 可并行 / 上下文脏活 --> S1[subagent: 检索仓库]
+  M -- 可并行 --> S2[subagent: 跑测试并汇总]
+  S1 --> F[(共享事实文件<br/>唯一事实源)]
+  S2 --> F
+  F --> M
+  M --> H{Hooks: PostToolUse / Stop}
+  H -- 验收通过 --> D[交付]
+  H -- 子 Agent 数或 token 超预算 --> C[限并发 / 合并任务]
+  C --> M
+```
+
+子 Agent 各有独立上下文窗口、只回传摘要——这是它省主上下文的原因，也是它容易叠成本的原因（见下表「子 Agent 成本爆炸」）。
 
 ## 可运行示例（Python）
 
@@ -106,3 +145,4 @@ async for message in query(
 - [模型原生 vs 自建 Harness](model-native-vs-harness.md)
 - [OpenAI Agents SDK](../09-frameworks/openai-agents-sdk.md)
 - [编程 Agent](../12-applications/coding-agent.md)
+

@@ -2,12 +2,14 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 日志、追踪与监控
 
-> **一句话**：Agent 可观测三件套：结构化日志（发生了什么）、分布式追踪（一次任务的完整链路）、业务监控（成功率和成本曲线）——没有它们，线上问题等于盲猜。
+{% hint style="info" %}
+**一句话**：Agent 可观测三件套：结构化日志（发生了什么）、分布式追踪（一次任务的完整链路）、业务监控（成功率和成本曲线）——没有它们，线上问题等于盲猜。
+{% endhint %}
 
 ## 先看结论
 
@@ -37,6 +39,25 @@ $$
 
 三者缺一不可：只有日志则无法还原链路；只有 trace 则无法做长期趋势；只有指标则无法定位单次故障根因。
 
+一次任务在 span 层级上长这样（trace_id 贯穿，父子关系即嵌套）：
+
+```mermaid
+sequenceDiagram
+  participant U as 用户请求
+  participant R as agent_run 任务根 span
+  participant L as llm_call span
+  participant T as tool_call span
+  participant S as sub_agent span
+  U->>R: 入口生成 trace_id + 业务维度
+  R->>L: turn 1（prompt 版本 / 模型 / 参数）
+  L-->>R: tool_use（选择 search_docs）
+  R->>T: 执行工具，记 latency / tokens / status
+  T-->>R: observation 回填
+  R->>S: 派生子任务（继承 trace_id，独立 span）
+  S-->>R: 子轨迹摘要
+  R-->>U: 最终输出 + 总步数与成本
+```
+
 ### 2. 用「四个黄金信号」组织指标
 
 Google SRE 提出的四类信号，对 Agent 同样适用，只是含义需要改写：
@@ -59,6 +80,20 @@ $$
 $$
 
 推荐策略：**失败与超时 trace 全量保留**（诊断价值最高），成功请求按低比例采样；并按时间分层——热数据（近 7 天）全字段，冷数据（更早）只留摘要与指标。
+
+```mermaid
+flowchart TB
+  E[一次任务的事件流<br/>trace_id 入口生成] --> S{执行结果}
+  S -- 失败 / 超时 --> K[全量保留<br/>打错误分类标签]
+  S -- 成功 --> P[按低比例 r 采样]
+  P -- 命中 --> H[保留原文]
+  P -- 未命中 --> AG[仅聚合为指标]
+  K --> HOT[热数据 7 天: 全字段]
+  H --> HOT
+  HOT --> COLD[冷数据: 摘要 + 指标]
+  AG --> DASH[看板: 成功率 / 平均步数 / 成本分布]
+  COLD --> DASH
+```
 
 ### 4. 告警分层
 
@@ -125,3 +160,4 @@ $$
 - [可观测性工具](observability-tools.md)
 - [状态机与事件驱动](state-machine-event-driven.md)
 - [持续评估](continuous-evaluation.md)
+

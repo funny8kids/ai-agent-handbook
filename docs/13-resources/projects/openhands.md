@@ -2,12 +2,14 @@
 tags: [application, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # OpenHands
 
-> **一句话**：全功能开源编程 Agent（原 OpenDevin）：SWE-bench 常客、可自部署的「AI 软件工程师」。
+{% hint style="info" %}
+**一句话**：全功能开源编程 Agent（原 OpenDevin）：SWE-bench 常客、可自部署的「AI 软件工程师」。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -34,3 +36,4 @@ updated: 2026-09-10
 
 - [编程 Agent](../../12-applications/coding-agent.md)
 - [SWE-bench](../benchmarks/swe-bench.md)
+

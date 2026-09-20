@@ -2,14 +2,16 @@
 tags: [embodied-ai, agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 什么是具身智能
 
-> **一句话**：智能不只是「预测下一个 token」，还包括「在物理世界里把事办成」——具身智能研究有感官和执行器的智能体如何从与环境的交互中学习，核心难点是感知与动作之间的闭环，以及不可逆的代价。
-> **难度**： 入门
-> **标签**：`#embodied-ai` `#基础`
+{% hint style="info" %}
+**一句话**：智能不只是「预测下一个 token」，还包括「在物理世界里把事办成」——具身智能研究有感官和执行器的智能体如何从与环境的交互中学习，核心难点是感知与动作之间的闭环，以及不可逆的代价。
+  **难度**： 入门
+  **标签**：`#embodied-ai` `#基础`
+{% endhint %}
 
 ## 先看结论
 
@@ -85,3 +87,4 @@ updated: 2026-09-10
 - [感知—规划—行动循环](../02-agent-basics/perception-planning-action.md)
 - [多模态模型](../03-llm/multimodal.md)
 - [机器人基础模型谱系](robot-foundation-models.md)
+

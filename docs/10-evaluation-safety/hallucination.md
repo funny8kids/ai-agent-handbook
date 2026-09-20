@@ -2,12 +2,14 @@
 tags: [safety, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 幻觉问题
 
-> **一句话**：幻觉 = 模型一本正经地编造事实；Agent 场景下幻觉会通过工具调用「落地成真」——治理靠「可验证的事实源 + 让模型承认不知道」双管齐下。
+{% hint style="info" %}
+**一句话**：幻觉 = 模型一本正经地编造事实；Agent 场景下幻觉会通过工具调用「落地成真」——治理靠「可验证的事实源 + 让模型承认不知道」双管齐下。
+{% endhint %}
 
 ## 问题动机
 
@@ -101,3 +103,4 @@ flowchart LR
 
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [可解释性](explainability.md)
+

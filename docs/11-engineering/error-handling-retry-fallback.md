@@ -2,14 +2,16 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 错误处理、重试与降级
 
-> **一句话**：策略层讲「为什么」（见规划章），工程层讲「怎么落地」：错误分类体系、重试参数表、降级链设计与兜底 UX。
-> **难度**：进阶
-> **标签**：`#engineering`
+{% hint style="info" %}
+**一句话**：策略层讲「为什么」（见规划章），工程层讲「怎么落地」：错误分类体系、重试参数表、降级链设计与兜底 UX。
+  **难度**：进阶
+  **标签**：`#engineering`
+{% endhint %}
 
 > 错误类型学与恢复决策见 [错误恢复与重试](../07-planning/error-recovery-retry.md)。本页聚焦**工程实现**。
 
@@ -31,6 +33,25 @@ updated: 2026-09-10
 | 模型拒绝 | 换措辞 1 次 → 上报 | 1 次 | - | 人工处理 |
 | 上下文溢出 | 压缩后重试 | 1 次 | - | 分段处理 |
 
+把上表落成可执行的路由：**先判幂等，再判分类码，最后才决定重试还是降级**。
+
+```mermaid
+flowchart TB
+  F[调用失败] --> C1{幂等操作?<br/>转账/发信/下单}
+  C1 -- 是 --> HM[禁止自动重试<br/>幂等键去重或升级人审]
+  C1 -- 否 --> C2{错误分类码}
+  C2 -- E_RATE_LIMIT --> B1[指数退避 + jitter, ≤5 次]
+  C2 -- E_TIMEOUT --> B2[重试 1 次后缩短任务]
+  C2 -- E_TOOL_INVALID_ARGS --> B3[错误回填, 模型自修正 ≤2 次]
+  C2 -- E_UPSTREAM_DOWN --> B4[熔断器快速失败]
+  B1 --> G{次数 / 预算 / 时间触顶?}
+  B2 --> G
+  B3 --> G
+  G -- 否 --> RT[继续重试并告知进度]
+  G -- 是 --> D[降级链: 备模型<br/>→ 缩水任务 → 人工信箱<br/>结果标注「由降级生成」]
+  B4 --> D
+```
+
 ## 熔断器模式
 
 ```python
@@ -49,6 +70,16 @@ class CircuitBreaker:
             if self.failures >= self.threshold:
                 self.open_until = time.time() + self.cooldown
             raise
+```
+
+三态迁移（上面的实现只写了 closed/open 两态，half-open 是恢复探测的关键补齐）：
+
+```mermaid
+flowchart LR
+  C[closed: 正常放行<br/>failures 计数] -- 连续失败 ≥ threshold --> O[open: 冷却期内快速失败<br/>直接走降级]
+  O -- 冷却时间到 --> H[half-open: 只放 1 个探测请求]
+  H -- 成功 --> C
+  H -- 仍失败 --> O
 ```
 
 ## 源码案例
@@ -101,3 +132,4 @@ $$
 
 - [错误恢复与重试](../07-planning/error-recovery-retry.md)
 - [Agent 工作流编排](workflow-orchestration.md)
+

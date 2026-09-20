@@ -2,12 +2,14 @@
 tags: [evaluation, application, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # SWE-bench
 
-> **一句话**：编程 Agent 的黄金标准：2294 个真实 GitHub issue，产出通过测试的 patch 才算赢。
+{% hint style="info" %}
+**一句话**：编程 Agent 的黄金标准：2294 个真实 GitHub issue，产出通过测试的 patch 才算赢。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -24,6 +26,22 @@ updated: 2026-09-10
 - 评分完全客观（Fail-to-Pass 测试通过），无 LLM 评判偏差
 - 是「模型 + harness」联合成绩，直接反映真实工程能力
 
+## 机制一图看懂
+
+每题的判分闭环，完全客观：
+
+```mermaid
+flowchart TD
+    I["真实 GitHub issue"] --> B["Docker 环境：停在 issue 之前的 base commit"]
+    B --> A["Agent 阅读代码库，产出 patch"]
+    A --> H["测试 harness：应用 patch 后重跑测试"]
+    H --> F{"FAIL_TO_PASS：issue 相关测试全部转绿？"}
+    F -->|"否"| Z["该题不得分"]
+    F -->|"是"| P{"PASS_TO_PASS：其余测试无回归？"}
+    P -->|"否"| Z
+    P -->|"是"| W["该题解决，计入解决率"]
+```
+
 ## 上手建议
 
 1. 用 [SWE-agent](https://github.com/SWE-agent/SWE-agent) 或 [OpenHands](../projects/openhands.md) 跑 lite 子集体验完整流程
@@ -34,3 +52,4 @@ updated: 2026-09-10
 
 - [AgentBench、WebArena、SWE-bench、GAIA、ToolBench](../../10-evaluation-safety/agentbench-webarena-swebench-gaia-toolbench.md)
 - [编程 Agent](../../12-applications/coding-agent.md)
+

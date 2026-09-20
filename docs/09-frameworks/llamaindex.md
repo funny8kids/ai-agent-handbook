@@ -2,12 +2,14 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LlamaIndex
 
-> **一句话**：LlamaIndex（原 GPT Index）是「数据接入 + 检索」优先的框架：几十种数据连接器与索引结构，做 RAG 和知识型 Agent 的第一选择之一。
+{% hint style="info" %}
+**一句话**：LlamaIndex（原 GPT Index）是「数据接入 + 检索」优先的框架：几十种数据连接器与索引结构，做 RAG 和知识型 Agent 的第一选择之一。
+{% endhint %}
 
 ## 先看结论
 
@@ -33,6 +35,22 @@ $$
 | Query Engine | 检索 + 组装 + 生成的封装 | 同上 |
 
 **为什么这个拆分重要**：RAG 的质量瓶颈几乎从不在「向量库选哪个」，而在**切块与检索策略**。把 Node Parser 与 Retriever 做成独立可替换环节，就是为了让你能针对失败模式逐段换零件，而不是被锁死在一条固定管线上。
+
+```mermaid
+flowchart TD
+  subgraph OFF["索引侧（离线）"]
+    RD["Reader 数据连接器<br/>SimpleDirectoryReader / LlamaHub"] --> NParser["Node Parser 切块<br/>句窗 / 层级 / 语义切块"]
+    NParser --> IDX[("Index<br/>Vector / KG / Summary")]
+  end
+  subgraph ON["查询侧（在线）"]
+    Q[用户问题] --> RET["Retriever<br/>向量 / 混合 / AutoMerging"]
+    RET --> SYN["Query Engine<br/>组装上下文 + LLM 生成"]
+    SYN --> ANS["回答 + 引用"]
+  end
+  IDX --> RET
+```
+
+*《图：LlamaIndex 管线——离线索引与在线查询两段分离，Node Parser 与 Retriever 是独立可替换环节，失败模式可逐段定位》*
 
 ## 三个关键权衡
 
@@ -90,3 +108,4 @@ print(index.as_query_engine(similarity_top_k=3).query("年假政策是什么？"
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [LangChain](langchain.md)
 - [向量数据库](../06-memory-rag/vector-database.md)
+

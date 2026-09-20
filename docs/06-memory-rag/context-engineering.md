@@ -2,12 +2,14 @@
 tags: [memory, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 上下文工程
 
-> **一句话**：Context Engineering 是 Prompt Engineering 的进化——不止写指令，而是构建「每次调用时，上下文里到底放什么」的动态系统。
+{% hint style="info" %}
+**一句话**：Context Engineering 是 Prompt Engineering 的进化——不止写指令，而是构建「每次调用时，上下文里到底放什么」的动态系统。
+{% endhint %}
 
 ## 问题动机
 
@@ -106,3 +108,4 @@ flowchart LR
 - [Token、Embedding、上下文窗口](../03-llm/token-embedding-context.md)
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)
 - [缓存与成本优化](../11-engineering/caching-cost-optimization.md)
+

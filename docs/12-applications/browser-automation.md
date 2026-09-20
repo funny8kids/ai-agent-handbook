@@ -2,12 +2,14 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 浏览器自动化
 
-> **一句话**：浏览器自动化 Agent = 让 AI 像人一样点网页：数据采集、表单填报、端到端测试；技术选型上 DOM 路线打主力、视觉路线做兜底。
+{% hint style="info" %}
+**一句话**：浏览器自动化 Agent = 让 AI 像人一样点网页：数据采集、表单填报、端到端测试；技术选型上 DOM 路线打主力、视觉路线做兜底。
+{% endhint %}
 
 > 技术原理见 [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)，本页聚焦**应用落地**。
 
@@ -104,3 +106,4 @@ flowchart TD
 
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - [错误恢复与重试](../07-planning/error-recovery-retry.md)
+

@@ -2,12 +2,14 @@
 tags: [rag, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # GraphRAG
 
-> **一句话**：GraphRAG 在向量检索之上加一层知识图谱：先从文档抽取实体与关系建图，检索时按「社区」和「关系路径」组织上下文——擅长回答「全局性、关系型」问题。
+{% hint style="info" %}
+**一句话**：GraphRAG 在向量检索之上加一层知识图谱：先从文档抽取实体与关系建图，检索时按「社区」和「关系路径」组织上下文——擅长回答「全局性、关系型」问题。
+{% endhint %}
 
 ## 先看结论
 
@@ -131,3 +133,4 @@ flowchart LR
 - [RAG 基础](rag-basics.md)
 - [知识图谱](knowledge-graph.md)
 - [向量数据库](vector-database.md)
+

@@ -2,12 +2,14 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Graph of Thoughts
 
-> **一句话**：GoT 把 ToT 的树推广成图：思路可以合并、聚合成新思路，形成任意拓扑的推理网络。
+{% hint style="info" %}
+**一句话**：GoT 把 ToT 的树推广成图：思路可以合并、聚合成新思路，形成任意拓扑的推理网络。
+{% endhint %}
 
 ## 问题动机
 
@@ -94,3 +96,4 @@ ToT 是一个人尝试三条路、走不通退回来；GoT 是三个人各走一
 
 - [Tree of Thoughts](tree-of-thoughts.md)
 - [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)
+

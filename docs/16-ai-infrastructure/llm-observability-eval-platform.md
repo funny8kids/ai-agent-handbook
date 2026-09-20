@@ -2,14 +2,16 @@
 tags: [infrastructure, evaluation, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 可观测性与评估平台
 
-> **一句话**：LLM 系统的可观测性不是「加日志」，而是让每一次输出都能回答四个问题：输入是什么、模型怎么想的（调了哪些工具）、为什么这个分数、能不能重跑一遍——把 trace 变成数据集，评估和回归才成为可能。
-> **难度**： 进阶
-> **标签**：`#infrastructure` `#evaluation`
+{% hint style="info" %}
+**一句话**：LLM 系统的可观测性不是「加日志」，而是让每一次输出都能回答四个问题：输入是什么、模型怎么想的（调了哪些工具）、为什么这个分数、能不能重跑一遍——把 trace 变成数据集，评估和回归才成为可能。
+  **难度**： 进阶
+  **标签**：`#infrastructure` `#evaluation`
+{% endhint %}
 
 ## 先看结论
 
@@ -128,3 +130,4 @@ def traced_tool(name, args, fn):
 - [模型网关与路由](model-gateway.md)
 - [持久化执行与运行时](agent-runtime-durable-execution.md)
 - [17 具身智能：评估基准](../17-embodied-ai/evaluation-benchmarks.md)
+

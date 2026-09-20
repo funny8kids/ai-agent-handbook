@@ -2,12 +2,14 @@
 tags: [agent, basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 什么是 AI Agent？
 
-> **一句话**：Agent（智能体）是能自己规划、调用工具、根据结果调整行动，最终完成目标的 AI 系统。
+{% hint style="info" %}
+**一句话**：Agent（智能体）是能自己规划、调用工具、根据结果调整行动，最终完成目标的 AI 系统。
+{% endhint %}
 
 ![Agent 核心循环](../.gitbook/assets/02-agent-loop.svg)
 
@@ -95,7 +97,9 @@ Agent 像一个**实习生**：
 - 他会自己拆任务、查资料、做表格、发现问题再补查
 - 而不是只回你一句「好的，竞品分析很重要」
 
-> **提示**：普通 LLM 是「顾问」——只出主意；Agent 是「实习生」——真的去把事做完。
+{% hint style="tip" %}
+**提示**：普通 LLM 是「顾问」——只出主意；Agent 是「实习生」——真的去把事做完。
+{% endhint %}
 
 ## 工程含义
 
@@ -126,3 +130,4 @@ Agent 像一个**实习生**：
 - [Agent 核心组件](core-components.md)
 - [Function Calling](../05-tool-protocol/function-calling.md)
 - [MCP](../05-tool-protocol/mcp.md)
+

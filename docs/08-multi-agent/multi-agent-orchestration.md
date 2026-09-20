@@ -2,12 +2,14 @@
 tags: [multi-agent, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 多 Agent 编排
 
-> **一句话**：编排 = 决定「几个 Agent、什么拓扑、谁调度、怎么容错」的顶层设计——监督者、群聊、Swarm 都只是编排谱系上的几个点。
+{% hint style="info" %}
+**一句话**：编排 = 决定「几个 Agent、什么拓扑、谁调度、怎么容错」的顶层设计——监督者、群聊、Swarm 都只是编排谱系上的几个点。
+{% endhint %}
 
 ## 先看结论
 
@@ -102,3 +104,4 @@ flowchart LR
 - [监督者模式](supervisor-pattern.md)
 - [通信协议](communication-protocol.md)
 - [工作流编排](../11-engineering/workflow-orchestration.md)
+

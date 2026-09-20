@@ -2,16 +2,27 @@
 tags: [evaluation, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # AgentBench、WebArena、SWE-bench、GAIA、ToolBench
 
-> **一句话**：五大基准各考一面：SWE-bench 考修真代码、WebArena 考逛真网站、GAIA 考通用助理、AgentBench 考综合、ToolBench 考调工具——合起来是 Agent 能力的全景图。
-> **难度**：进阶
-> **标签**：`#evaluation`
+{% hint style="info" %}
+**一句话**：五大基准各考一面：SWE-bench 考修真代码、WebArena 考逛真网站、GAIA 考通用助理、AgentBench 考综合、ToolBench 考调工具——合起来是 Agent 能力的全景图。
+  **难度**：进阶
+  **标签**：`#evaluation`
+{% endhint %}
 
 ## 五基准精读
+
+```mermaid
+flowchart LR
+  SWE[SWE-bench<br/>真实 issue 修复] --> C1[代码定位 + 可过测试的 patch]
+  WEB[WebArena<br/>自托管真实网站] --> C2[多步规划 + 状态跟踪]
+  GAIA[GAIA<br/>人类易、AI 难] --> C3[浏览 + 读文件 + 多工具编排]
+  AB[AgentBench<br/>8 个环境] --> C4[跨域综合体检]
+  TBB[ToolBench / BFCL<br/>真实 API 调用链] --> C5[函数选择 + 参数填空]
+```
 
 ### 1. SWE-bench（编程 Agent 的黄金标准）
 
@@ -77,6 +88,16 @@ $$
 
 因此读榜单时的正确姿势是：**先看这三项是否对齐，再看分数**。这也是「模型 + harness = Agent」在评测上的直接体现。
 
+```mermaid
+flowchart TB
+  X[想比较两个系统的分数] --> Q{三项是否同时对齐?<br/>模型版本 / harness / 预算}
+  Q -- 是 --> OK[可比]
+  Q -- 否 --> N1[不可比: 先对齐协议<br/>或各自建同协议内测集]
+  OK --> P{评分协议是否同类?}
+  P -- 程序化验证 --> R1[客观尺度: 测试通过 / 终态断言]
+  P -- LLM 评分 --> R2[须报与人类一致度 kappa, 再比较]
+```
+
 另一个常见混淆是**评分协议不同**：程序化验证（如测试通过率）与 LLM 评分是两种尺度，前者客观但只适用于可执行任务，后者覆盖面广但需要报告与人类的一致度（见 [Agent 评估指标](evaluation-metrics.md)）。
 
 ## 常见误区
@@ -97,3 +118,4 @@ $$
 
 - [基准测试总览](benchmarks.md)
 - [编程 Agent](../12-applications/coding-agent.md)
+

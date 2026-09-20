@@ -2,12 +2,14 @@
 tags: [framework, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LangGraph
 
-> **一句话**：把 Agent 表达为状态图的主流编排框架：checkpoint、interrupt、条件边，复杂工作流与多 Agent 的当前首选。
+{% hint style="info" %}
+**一句话**：把 Agent 表达为状态图的主流编排框架：checkpoint、interrupt、条件边，复杂工作流与多 Agent 的当前首选。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -34,3 +36,4 @@ updated: 2026-09-10
 
 - [LangGraph](../../09-frameworks/langgraph.md)
 - [状态机与事件驱动](../../11-engineering/state-machine-event-driven.md)
+

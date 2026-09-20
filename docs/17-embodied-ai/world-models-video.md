@@ -2,14 +2,16 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 世界模型与视频预训练
 
-> **一句话**：世界模型（World Model）是「会预测未来的内部模拟器」——给定当前观测和动作，它能预测下一帧会发生什么。对机器人的价值有三档：当数据生成器、当策略评估器、当规划器本身。
-> **难度**： 高级
-> **标签**：`#embodied-ai` `#llm`
+{% hint style="info" %}
+**一句话**：世界模型（World Model）是「会预测未来的内部模拟器」——给定当前观测和动作，它能预测下一帧会发生什么。对机器人的价值有三档：当数据生成器、当策略评估器、当规划器本身。
+  **难度**： 高级
+  **标签**：`#embodied-ai` `#llm`
+{% endhint %}
 
 ## 先看结论
 
@@ -81,3 +83,4 @@ $$
 - [数据引擎](data-engine.md)
 - [多模态模型](../03-llm/multimodal.md)
 - [评估与基准](evaluation-benchmarks.md)
+

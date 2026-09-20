@@ -17,12 +17,14 @@
 tags: [rag, paper]
 type: resource
 status: draft
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 【资源名称】
 
-> **一句话**：这个资源是什么、解决什么问题。
+{% hint style="info" %}
+**一句话**：这个资源是什么、解决什么问题。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -56,7 +58,7 @@ updated: 2026-09-10
 
 （反向链接：哪些知识点页面引用了这个资源）
 
-- [RAG 基础](../../06-memory-rag/rag-basics.md)
+- [RAG 基础](../06-memory-rag/rag-basics.md)
 ````
 
 ## 双向链接规范

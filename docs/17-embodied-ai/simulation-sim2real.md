@@ -2,14 +2,16 @@
 tags: [embodied-ai, evaluation, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 仿真与 Sim-to-Real
 
-> **一句话**：仿真的价值不是「便宜地刷分」，而是给你一台可以无限快进、能设陷阱、能量化不确定性的时间机器——真正难的是把「仿真里的 95%」变成「真机上的 60%」，而域随机化（domain randomization）与 real2sim 标定是两座最常见的桥。
-> **难度**： 高级
-> **标签**：`#embodied-ai` `#evaluation`
+{% hint style="info" %}
+**一句话**：仿真的价值不是「便宜地刷分」，而是给你一台可以无限快进、能设陷阱、能量化不确定性的时间机器——真正难的是把「仿真里的 95%」变成「真机上的 60%」，而域随机化（domain randomization）与 real2sim 标定是两座最常见的桥。
+  **难度**： 高级
+  **标签**：`#embodied-ai` `#evaluation`
+{% endhint %}
 
 ## 先看结论
 
@@ -132,3 +134,4 @@ def step_with_latency(env, policy_state, obs, p):
 - [世界模型与视频预训练](world-models-video.md)
 - [数据引擎](data-engine.md)
 - [VLA 模型架构](vla-models.md)
+

@@ -2,12 +2,14 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 监督者模式
 
-> **一句话**：Supervisor（监督者）模式 = 一个协调者 Agent 负责拆解、派发、汇总，多个 Worker 只管干活——多 Agent 系统的默认架构，层级清晰、通信可控。
+{% hint style="info" %}
+**一句话**：Supervisor（监督者）模式 = 一个协调者 Agent 负责拆解、派发、汇总，多个 Worker 只管干活——多 Agent 系统的默认架构，层级清晰、通信可控。
+{% endhint %}
 
 ## 先看结论
 
@@ -108,3 +110,4 @@ flowchart TB
 - [多 Agent 协作](multi-agent-collaboration.md)
 - [通信协议](communication-protocol.md)
 - [子目标规划](../07-planning/subgoal-planning.md)
+

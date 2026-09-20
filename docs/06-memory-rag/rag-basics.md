@@ -2,12 +2,14 @@
 tags: [rag, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # RAG 基础
 
-> **一句话**：RAG（Retrieval-Augmented Generation，检索增强生成）= 回答前先去知识库里捞相关资料，再让 LLM 按资料作答——给模型「开卷考试」的能力。
+{% hint style="info" %}
+**一句话**：RAG（Retrieval-Augmented Generation，检索增强生成）= 回答前先去知识库里捞相关资料，再让 LLM 按资料作答——给模型「开卷考试」的能力。
+{% endhint %}
 
 ## 问题动机
 
@@ -127,3 +129,4 @@ print(engine.query("公司的年假政策是什么？"))            # 带引用�
 
 - [Embedding 与相似度检索](embedding-similarity.md)
 - [GraphRAG](graphrag.md)
+

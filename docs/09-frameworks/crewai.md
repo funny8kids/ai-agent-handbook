@@ -2,12 +2,14 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # CrewAI
 
-> **一句话**：CrewAI 用「球队隐喻」组织多 Agent：角色（Agent）、任务（Task）、团队（Crew）、流程（Process），上手最快的角色化多 Agent 框架。
+{% hint style="info" %}
+**一句话**：CrewAI 用「球队隐喻」组织多 Agent：角色（Agent）、任务（Task）、团队（Crew）、流程（Process），上手最快的角色化多 Agent 框架。
+{% endhint %}
 
 ## 先看结论
 
@@ -49,6 +51,19 @@ Crew(agents=[researcher, writer], tasks=[t1, t2],
      process="sequential").kickoff()
 ```
 
+```mermaid
+flowchart TD
+  K["Crew.kickoff()"] --> P{Process 类型?}
+  P -->|sequential| T1["Task1：调研竞品定价<br/>agent=调研员，expected_output=对比表"]
+  T1 -->|context 传递| T2["Task2：写决策建议<br/>agent=撰稿人，expected_output=500字建议"]
+  P -->|hierarchical| M["内置 Manager<br/>拆解目标·分派任务·验收质检"]
+  M -->|指派| T1
+  M -->|指派| T2
+  T2 --> R["最终产出"]
+```
+
+*《图：Crew = {Agent, Task, Process} 结构——sequential 按任务顺序接力，hierarchical 由内置经理动态分派（监督者模式开箱版）》*
+
 ## 选型对比
 
 | 维度 | CrewAI | AutoGen | LangGraph |
@@ -89,3 +104,4 @@ Crew(agents=[researcher, writer], tasks=[t1, t2],
 - [角色分配](../08-multi-agent/role-assignment.md)
 - [监督者模式](../08-multi-agent/supervisor-pattern.md)
 - [任务分解](../07-planning/task-decomposition.md)
+

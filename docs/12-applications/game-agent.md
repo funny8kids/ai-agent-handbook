@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 游戏 Agent
 
-> **一句话**：游戏是 Agent 的天然试验场（环境封闭、反馈即时、可无限重试）——从 AlphaGo 的 RL 到今天 LLM 驱动的智能 NPC，两条技术路线并存。
-> **难度**：进阶
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：游戏是 Agent 的天然试验场（环境封闭、反馈即时、可无限重试）——从 AlphaGo 的 RL 到今天 LLM 驱动的智能 NPC，两条技术路线并存。
+  **难度**：进阶
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -75,3 +77,4 @@ $$
 
 - [记忆类型](../06-memory-rag/memory-types.md)
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
+

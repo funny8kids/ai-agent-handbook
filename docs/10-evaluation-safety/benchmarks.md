@@ -2,12 +2,14 @@
 tags: [evaluation]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 基准测试总览
 
-> **一句话**：基准测试是 Agent 能力的「标准化考场」——看懂每个基准考什么、怎么算分、有什么局限，才不会被榜单牵着走。
+{% hint style="info" %}
+**一句话**：基准测试是 Agent 能力的「标准化考场」——看懂每个基准考什么、怎么算分、有什么局限，才不会被榜单牵着走。
+{% endhint %}
 
 ## 问题动机
 
@@ -56,6 +58,21 @@ $$
 - 是否允许人工介入、超时与预算
 
 **模型 + harness = Agent**，这是读榜单时最容易忽略的一条。
+
+### 4. 从榜单到自建：协议怎么选
+
+```mermaid
+flowchart TB
+  U[要评测我的 Agent] --> Q1{任务能否自动判分?}
+  Q1 -- 可跑测试/命令 --> B1[借 SWE-bench 协议<br/>F2P 通过 + P2P 不回归]
+  Q1 -- 系统终态可断言 --> B2[借 WebArena 协议<br/>程序化状态校验]
+  Q1 -- 开放式回答 --> B3[精确匹配或 LLM 评分<br/>须报与人类一致度]
+  B1 --> C{三个变量是否固定?<br/>版本 / harness / 预算}
+  B2 --> C
+  B3 --> C
+  C -- 是 --> OK[可与榜单横向比较]
+  C -- 否 --> NO[只跟自己比<br/>同一 harness 跑时间序列]
+```
 
 ## 主流基准一览
 
@@ -108,3 +125,4 @@ $$
 - [评估 2026：基准代际](../18-frontier-2026/eval-2026.md)
 - [2026 安全现实](safety-incidents-2026.md)
 - [基准测试资源](../13-resources/benchmarks/README.md)
+

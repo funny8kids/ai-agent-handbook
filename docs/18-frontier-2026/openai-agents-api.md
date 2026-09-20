@@ -2,12 +2,14 @@
 tags: [agents-api, openai, harness, sandbox, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # OpenAI Agents API
 
-> **一句话**：2026-09-10 公测的托管 Agent 运行时——把驱动 Codex 的 harness 与沙箱基础设施，通过一次 API call 开放给开发者。
+{% hint style="info" %}
+**一句话**：2026-09-10 公测的托管 Agent 运行时——把驱动 Codex 的 harness 与沙箱基础设施，通过一次 API call 开放给开发者。
+{% endhint %}
 
 ![Agents API 架构：应用 → 托管 harness → 沙箱](../.gitbook/assets/18-agents-api-arch.svg)
 
@@ -140,3 +142,4 @@ flowchart LR
 - [MCP](../05-tool-protocol/mcp.md)
 - [沙箱与执行环境](../16-ai-infrastructure/sandbox-execution-environments.md)
 - [持久化执行与 Agent 运行时](../16-ai-infrastructure/agent-runtime-durable-execution.md)
+

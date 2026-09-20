@@ -2,12 +2,14 @@
 tags: [framework, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # DSPy
 
-> **一句话**：DSPy（Declarative Self-improving Python）把 prompt 从「手写咒语」变成「编译产物」：声明输入输出 + 少量样例，框架自动优化提示词——「prompt 工程的程序化」。
+{% hint style="info" %}
+**一句话**：DSPy（Declarative Self-improving Python）把 prompt 从「手写咒语」变成「编译产物」：声明输入输出 + 少量样例，框架自动优化提示词——「prompt 工程的程序化」。
+{% endhint %}
 
 ## 先看结论
 
@@ -40,6 +42,20 @@ $$
 - $$m$$：指标函数（精确匹配、F1、LLM 评分等）
 
 现代优化器（如 MIPROv2）用「先自举出候选示例、再用贝叶斯搜索在指令 × 示例的组合空间里找高分方案」的方式近似求解。**这条式子是整个框架的钥匙**：优化上限完全由 $$\mathcal{D}$$ 与 $$m$$ 决定——垃圾指标必然优化出垃圾 prompt。
+
+```mermaid
+flowchart LR
+  S["Signature<br/>声明输入/输出字段"] --> F["程序 f_p<br/>Module 组合（ChainOfThought/ReAct）"]
+  MOD["Module：执行结构"] --> F
+  F --> O["Optimizer（如 MIPROv2）<br/>贝叶斯搜索：指令措辞 × few-shot 示例"]
+  D["评估集 D"] --> O
+  M["指标 m：exact_match / F1 / LLM 评分"] --> O
+  O -->|argmax 指标| P["编译产物 p*：自动搜出的最优提示"]
+  P -->|替换人工措辞| F
+  O -->|低分方案淘汰| X["丢弃"]
+```
+
+*《图：DSPy 编译流——Signature+Module 定义程序，Optimizer 在评估集与指标上搜索提示空间，产出可版本化的 prompt 编译产物》*
 
 | 概念 | 作用 | 类比 |
 |---|---|---|
@@ -113,3 +129,4 @@ rag_optimized = optimizer.compile(rag, trainset=trainset)
 - [Prompt Engineering](../04-prompt-reasoning/prompt-engineering.md)
 - [持续评估](../11-engineering/continuous-evaluation.md)
 - [Agent 评估指标](../10-evaluation-safety/evaluation-metrics.md)
+

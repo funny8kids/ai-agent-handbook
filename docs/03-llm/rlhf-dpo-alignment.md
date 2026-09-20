@@ -2,12 +2,14 @@
 tags: [llm, safety, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # RLHF、DPO 与对齐
 
-> **一句话**：对齐（Alignment）让模型输出「有用、诚实、无害」；主流路线是用人类偏好数据做 RLHF 或它的简化版 DPO。
+{% hint style="info" %}
+**一句话**：对齐（Alignment）让模型输出「有用、诚实、无害」；主流路线是用人类偏好数据做 RLHF 或它的简化版 DPO。
+{% endhint %}
 
 ## 问题动机
 
@@ -58,6 +60,17 @@ $$
 
 直观看：它**提高**好回答相对参考模型的概率、**压低**坏回答的概率。$$\beta$$ 的作用与 RLHF 中一致——约束偏离幅度。DPO 只需一次监督式训练，不需要采样 rollout，因而更稳定、更省算力。
 
+## 两条路线对比图
+
+```mermaid
+flowchart TD
+    SFT["SFT 模型：会跟随指令"] --> RM["训练奖励模型：从成对偏好学出评委"]
+    RM --> PPO["PPO 优化：策略生成回答 → 奖励模型打分 → KL 拴住参考模型"]
+    PPO -->|"迭代采样，算力高、可在线探索"| ALA["对齐模型（RLHF 三步）"]
+    SFT --> DPO["DPO：直接在偏好对上做分类式损失，跳过评委与 RL"]
+    DPO -->|"一次监督式训练，稳定省算力"| ALB["对齐模型（DPO 一步）"]
+```
+
 ## 概念速查
 
 | 概念 | 一句话 | 类比 |
@@ -102,3 +115,4 @@ $$
 
 - [预训练、微调与指令微调](pretraining-finetuning.md)
 - [对齐与安全](../10-evaluation-safety/alignment-safety.md)
+

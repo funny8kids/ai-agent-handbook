@@ -2,14 +2,16 @@
 tags: [agent, basics, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Agent 状态管理
 
-> **一句话**：Agent 的状态就是「模型上下文里的全部内容」；状态管理的本质是决定什么进入上下文、存在哪里、怎么恢复。
-> **难度**：进阶
-> **标签**：`#agent` `#engineering`
+{% hint style="info" %}
+**一句话**：Agent 的状态就是「模型上下文里的全部内容」；状态管理的本质是决定什么进入上下文、存在哪里、怎么恢复。
+  **难度**：进阶
+  **标签**：`#agent` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -89,3 +91,4 @@ $$
 - [感知—规划—行动循环](perception-planning-action.md)
 - [上下文工程](../06-memory-rag/context-engineering.md)
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)
+

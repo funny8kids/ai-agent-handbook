@@ -2,12 +2,14 @@
 tags: [agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 自主性等级
 
-> **一句话**：Agent 的自主性不是有或无，而是一条从「建议」到「全自动」的滑杆；工程上要按风险逐级放权。
+{% hint style="info" %}
+**一句话**：Agent 的自主性不是有或无，而是一条从「建议」到「全自动」的滑杆；工程上要按风险逐级放权。
+{% endhint %}
 
 ## 先看结论
 
@@ -96,3 +98,4 @@ flowchart LR
 
 - [Human-in-the-loop](human-in-the-loop.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
+

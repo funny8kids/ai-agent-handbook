@@ -2,14 +2,16 @@
 tags: [safety, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 数据隐私
 
-> **一句话**：Agent 放大了数据隐私风险——它主动读、主动传、主动记；治理靠「最小化 + 出域控制 + 记忆卫生」三道闸。
-> **难度**：进阶
-> **标签**：`#safety` `#engineering`
+{% hint style="info" %}
+**一句话**：Agent 放大了数据隐私风险——它主动读、主动传、主动记；治理靠「最小化 + 出域控制 + 记忆卫生」三道闸。
+  **难度**：进阶
+  **标签**：`#safety` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -78,3 +80,4 @@ $$
 
 - [向量数据库](../06-memory-rag/vector-database.md)
 - [权限控制与沙箱隔离](permission-sandbox.md)
+

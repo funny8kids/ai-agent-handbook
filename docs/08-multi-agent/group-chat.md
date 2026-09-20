@@ -2,12 +2,14 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 群聊模式
 
-> **一句话**：群聊（Group Chat）= 多个 Agent 在一个共享对话流里发言，靠一个「经理」决定谁说话、说到几轮为止——AutoGen 带火的多 Agent 形态。
+{% hint style="info" %}
+**一句话**：群聊（Group Chat）= 多个 Agent 在一个共享对话流里发言，靠一个「经理」决定谁说话、说到几轮为止——AutoGen 带火的多 Agent 形态。
+{% endhint %}
 
 ## 先看结论
 
@@ -99,3 +101,4 @@ flowchart LR
 - [监督者模式](supervisor-pattern.md)
 - [辩论、共识与投票](debate-consensus-voting.md)
 - [通信协议](communication-protocol.md)
+

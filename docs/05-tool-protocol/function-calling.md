@@ -2,12 +2,14 @@
 tags: [tooling, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Function Calling
 
-> **一句话**：Function Calling 是让模型输出「调用哪个函数 + JSON 参数」的训练能力；模型只出主意，执行永远在你的代码里。
+{% hint style="info" %}
+**一句话**：Function Calling 是让模型输出「调用哪个函数 + JSON 参数」的训练能力；模型只出主意，执行永远在你的代码里。
+{% endhint %}
 
 ## 先看结论
 
@@ -162,3 +164,4 @@ while True:
 - [Tool Use](tool-use.md)
 - [结构化输出](../04-prompt-reasoning/structured-output.md)
 - [MCP](mcp.md)
+

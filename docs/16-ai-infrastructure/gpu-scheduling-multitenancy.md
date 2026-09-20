@@ -2,14 +2,16 @@
 tags: [infrastructure, engineering, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # GPU 调度与多租户
 
-> **一句话**：GPU 是 AI 基础设施里最贵的资源，调度层的任务是「让每张卡的显存和算力都被用起来，同时不让人人互抢」——切分（MIG/时分）、隔离（配额与优先级）、弹性（按队列长度扩缩容）三件事。
-> **难度**： 高级
-> **标签**：`#infrastructure` `#engineering`
+{% hint style="info" %}
+**一句话**：GPU 是 AI 基础设施里最贵的资源，调度层的任务是「让每张卡的显存和算力都被用起来，同时不让人人互抢」——切分（MIG/时分）、隔离（配额与优先级）、弹性（按队列长度扩缩容）三件事。
+  **难度**： 高级
+  **标签**：`#infrastructure` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -114,3 +116,4 @@ spec:
 - [训练与微调基础设施](training-finetune-infra.md)
 - [推理经济学与部署形态](inference-economics-deployment.md)
 - [部署与弹性伸缩](../11-engineering/deployment-scaling.md)
+

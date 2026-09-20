@@ -2,14 +2,16 @@
 tags: [safety, tooling, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 工具权限与沙箱
 
-> **一句话**：权限决定「Agent 能不能做」，沙箱决定「做坏了影响多大」——两者合起来是 Agent 安全的承重墙。
-> **难度**：进阶
-> **标签**：`#safety` `#tooling`
+{% hint style="info" %}
+**一句话**：权限决定「Agent 能不能做」，沙箱决定「做坏了影响多大」——两者合起来是 Agent 安全的承重墙。
+  **难度**：进阶
+  **标签**：`#safety` `#tooling`
+{% endhint %}
 
 ## 先看结论
 
@@ -95,3 +97,4 @@ $$
 - [提示注入](../10-evaluation-safety/prompt-injection.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
+

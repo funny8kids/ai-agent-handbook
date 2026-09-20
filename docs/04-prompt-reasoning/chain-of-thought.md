@@ -2,12 +2,14 @@
 tags: [prompt, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Chain of Thought
 
-> **一句话**：让模型「把思考过程写出来」再给答案——中间步骤给模型更多计算空间，显著提升推理任务准确率。
+{% hint style="info" %}
+**一句话**：让模型「把思考过程写出来」再给答案——中间步骤给模型更多计算空间，显著提升推理任务准确率。
+{% endhint %}
 
 ## 问题动机
 
@@ -85,3 +87,4 @@ flowchart LR
 
 - [Tree of Thoughts](tree-of-thoughts.md)
 - [ReAct](react.md)
+

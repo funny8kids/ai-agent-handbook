@@ -2,12 +2,14 @@
 tags: [frontier, models, gpt-6, claude, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 2026 前沿模型地图
 
-> **一句话**：2026-09 的前沿不再是「谁 MMLU 高」，而是谁在 **computer use、长时程编码、科研工具链、企业治理** 上同时过关——代表是 GPT-6 Astra 与 Claude Fable 5.1。
+{% hint style="info" %}
+**一句话**：2026-09 的前沿不再是「谁 MMLU 高」，而是谁在 **computer use、长时程编码、科研工具链、企业治理** 上同时过关——代表是 GPT-6 Astra 与 Claude Fable 5.1。
+{% endhint %}
 
 ![2026 前沿模型与 harness 关系](../.gitbook/assets/18-model-harness-matrix.svg)
 
@@ -113,3 +115,4 @@ $$
 - [模型原生 vs 自建 Harness](model-native-vs-harness.md)
 - [评估 2026](eval-2026.md)
 - [推理、量化与部署](../03-llm/inference-quantization-deployment.md)
+

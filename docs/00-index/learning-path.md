@@ -2,12 +2,14 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 学习路线
 
-> **一句话**：按「基础 → Agent 核心 → 工程与安全 → 应用与平台 → 具身 / 前沿」分阶段走，每阶段都有明确的目标、前置知识与自检标准。
+{% hint style="info" %}
+**一句话**：按「基础 → Agent 核心 → 工程与安全 → 应用与平台 → 具身 / 前沿」分阶段走，每阶段都有明确的目标、前置知识与自检标准。
+{% endhint %}
 
 ## 先看结论
 
@@ -41,7 +43,9 @@ flowchart LR
   O --> J
 ```
 
-> **提示**：13–15 是资料/模板/术语篇（随时查），16 是「把 Agent 跑起来并跑稳」的平台层，17 是把同一套循环搬进物理世界，**18 是对齐 2026-09 模型/harness/评估代际的快车道**。
+{% hint style="tip" %}
+**提示**：13–15 是资料/模板/术语篇（随时查），16 是「把 Agent 跑起来并跑稳」的平台层，17 是把同一套循环搬进物理世界，**18 是对齐 2026-09 模型/harness/评估代际的快车道**。
+{% endhint %}
 
 ## 分阶段目标与自检
 
@@ -131,3 +135,4 @@ flowchart LR
 - [资源总表](resources-index.md)
 - [开源项目索引](../13-resources/projects/README.md)
 - [18 2026 前沿](../18-frontier-2026/README.md)
+

@@ -2,14 +2,16 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 推理服务化：引擎、批处理与延迟指标
 
-> **一句话**：现代 LLM 推理引擎的核心不是「把模型跑得更快」，而是「让 GPU 在等 token 的时候别闲着」——连续批处理（continuous batching）+ 分页 KV 缓存（PagedAttention）就是这两件事的实现。
-> **难度**： 高级
-> **标签**：`#infrastructure` `#llm`
+{% hint style="info" %}
+**一句话**：现代 LLM 推理引擎的核心不是「把模型跑得更快」，而是「让 GPU 在等 token 的时候别闲着」——连续批处理（continuous batching）+ 分页 KV 缓存（PagedAttention）就是这两件事的实现。
+  **难度**： 高级
+  **标签**：`#infrastructure` `#llm`
+{% endhint %}
 
 ## 先看结论
 
@@ -147,3 +149,4 @@ $$
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
 - [GPU 调度与多租户](gpu-scheduling-multitenancy.md)
 - [部署与弹性伸缩](../11-engineering/deployment-scaling.md)
+

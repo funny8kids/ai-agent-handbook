@@ -2,12 +2,14 @@
 tags: [rag, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 向量数据库
 
-> **一句话**：向量数据库专门存 Embedding 并做近邻搜索（ANN），是 RAG 与 Agent 记忆的存储引擎；选型看规模、过滤需求与运维成本。
+{% hint style="info" %}
+**一句话**：向量数据库专门存 Embedding 并做近邻搜索（ANN），是 RAG 与 Agent 记忆的存储引擎；选型看规模、过滤需求与运维成本。
+{% endhint %}
 
 ## 先看结论
 
@@ -129,3 +131,4 @@ flowchart LR
 
 - [Embedding 与相似度检索](embedding-similarity.md)
 - [RAG 基础](rag-basics.md)
+

@@ -2,12 +2,14 @@
 tags: [meta, writing]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 风格指南
 
-> **一句话**：这本手册的写作契约——原理要能推导、结论要有出处、图片要能解释信息；emoji 是调味品，不是主菜。
+{% hint style="info" %}
+**一句话**：这本手册的写作契约——原理要能推导、结论要有出处、图片要能解释信息；emoji 是调味品，不是主菜。
+{% endhint %}
 
 ## 为什么有这版指南
 
@@ -39,9 +41,11 @@ updated: 2026-09-10
 | 页面一级标题 `#` | 0–1 个 | 整个页面最多 1 个，也可以完全没有；优先不加 |
 | 二级/三级标题 | **0 个** | 一律纯文字，便于搜索、锚点稳定、目录整洁 |
 | 正文 | **0 个** | 表情不能替代论证 |
-| 提示块标记 | 每页 ≤3 个 | 仅限 `💡 提示`、`⚠️ 注意`、`✅ 最佳实践` 三种 |
+| 提示块 | 每页 ≤3 个 | 用 GitBook hint 块：导语 `style="info"`（一句话）、经验 `style="tip"`、风险 `style="warning"`/`"danger"` |
 
-> **注意**：GitBook 侧边栏由 `SUMMARY.md` 渲染。`SUMMARY.md` 的章节标题**可以**保留 1 个模块 emoji，但条目层级不要滥用。
+{% hint style="warning" %}
+**注意**：GitBook 侧边栏由 `SUMMARY.md` 渲染。`SUMMARY.md` 的章节标题**可以**保留 1 个模块 emoji，但条目层级不要滥用。
+{% endhint %}
 
 反例（初版真实写法）：
 
@@ -117,7 +121,9 @@ updated: 2026-09-10
   $$
   ```
 
-> **注意（务必遵守）**：**行内与块级都用 `$$`**。GitBook 只解析 `$$...$$`；写成单 `$...$` 会原样显示成 `$P(y\mid x)$` 这样的纯文本，严重影响阅读。（GitHub 恰好相反：行内认单 `$`、块级认 `$$`。）本书以 GitBook 发布为准，因此**统一使用 `$$`**——代价是 GitHub 上会把这些行内公式按块级显示，换来 GitBook 上正确渲染。
+{% hint style="warning" %}
+**注意（务必遵守）**：**行内与块级都用 `$$`**。GitBook 只解析 `$$...$$`；写成单 `$...$` 会原样显示成 `$P(y\mid x)$` 这样的纯文本，严重影响阅读。（GitHub 恰好相反：行内认单 `$`、块级认 `$$`。）本书以 GitBook 发布为准，因此**统一使用 `$$`**——代价是 GitHub 上会把这些行内公式按块级显示，换来 GitBook 上正确渲染。
+{% endhint %}
 
 - 公式之后必须解释**每一项在做什么**，以及**为什么需要它**（例如：为什么除 $$\sqrt{d_k}$$——防止点积随维度增大而方差膨胀、softmax 饱和）。
 - 允许在给出公式后补生活类比，但**不能只有类比没有公式**。
@@ -132,7 +138,9 @@ updated: 2026-09-10
 3. 性能数字必须带**条件**（数据集、模型、harness），因为同一模型换 harness 成绩可能差很多。
 4. 不要用"业界普遍认为""众所周知"来支撑结论。
 
-> **注意**：GitHub star 数是会变的。写具体数字时标注**观测日期**，例如"约 21.8 万 star（2026-09）"。
+{% hint style="warning" %}
+**注意**：GitHub star 数是会变的。写具体数字时标注**观测日期**，例如"约 21.8 万 star（2026-09）"。
+{% endhint %}
 
 ## 六、图片规范：形象、生动、且能解释信息
 
@@ -151,7 +159,9 @@ updated: 2026-09-10
 ![Agent 感知—规划—行动循环](../.gitbook/assets/02-agent-loop.svg)
 ```
 
-> **提示**：图片文件名用「章节-主题」英文小写，如 `02-agent-loop.svg`；不要用 `截图1.png`、`image.png`。
+{% hint style="tip" %}
+**提示**：图片文件名用「章节-主题」英文小写，如 `02-agent-loop.svg`；不要用 `截图1.png`、`image.png`。
+{% endhint %}
 
 ### 需要「会动」的图：用 SVG（SMIL）
 
@@ -166,7 +176,9 @@ updated: 2026-09-10
 
 参考实现：`docs/.gitbook/assets/16-continuous-batching.svg`、`16-prefix-cache.svg`、`17-action-chunking.svg`。
 
-> **注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../.gitbook/assets/xxx.svg)` 引用独立文件，才能保留动画。
+{% hint style="warning" %}
+**注意**：GitBook 云端会清洗 markdown 里的内联 `<svg>`/`<animate>`，因此**不要把动画写在 md 里**；用 `![](../.gitbook/assets/xxx.svg)` 引用独立文件，才能保留动画。
+{% endhint %}
 
 ## 七、案例配给：防止单一项目刷屏
 

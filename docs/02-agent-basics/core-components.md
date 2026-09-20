@@ -2,12 +2,14 @@
 tags: [agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Agent 核心组件
 
-> **一句话**：Agent = 大脑（LLM）+ 记忆 + 工具 + 规划 + 执行循环，五个组件任何一项缺失都会让系统退化。
+{% hint style="info" %}
+**一句话**：Agent = 大脑（LLM）+ 记忆 + 工具 + 规划 + 执行循环，五个组件任何一项缺失都会让系统退化。
+{% endhint %}
 
 ## 先看结论
 
@@ -68,7 +70,9 @@ flowchart TB
 
 **Pi 的极简内核**（[仓库](https://github.com/earendil-works/pi)）：把运行时拆成几个小包——`pi-ai`（统一多 provider LLM API）、`pi-agent-core`（Agent 运行时与状态管理）、`pi-coding-agent`（编码 Agent CLI）、`pi-tui`（终端 UI）。设计取向是「提供原语而非成品」：核心只保留循环、工具执行与状态管理，其余能力由使用方组合。具体的工具集与循环实现细节请以 pi.dev 文档为准。
 
-> **注意**：Pi 项目在 2026 年由 `badlogic/pi-mono` 更名为 `earendil-works/pi` 并重构了包结构。早期二手资料里的包名（如 `@mariozechner/...`）已过期，请以仓库 README 与官网为准。
+{% hint style="warning" %}
+**注意**：Pi 项目在 2026 年由 `badlogic/pi-mono` 更名为 `earendil-works/pi` 并重构了包结构。早期二手资料里的包名（如 `@mariozechner/...`）已过期，请以仓库 README 与官网为准。
+{% endhint %}
 
 **Claude Code 的治理层**（社区逆向分析，[提示词全集](https://github.com/Piebald-AI/claude-code-system-prompts)）：在同样五组件之上叠加权限管道（每个工具调用过审批）、生命周期 Hooks、子 Agent 隔离（独立上下文与转写文件）——这是「内核之上加治理」的成熟形态。
 
@@ -99,3 +103,4 @@ flowchart TB
 
 - [感知—规划—行动循环](perception-planning-action.md)
 - [Agent 状态管理](state-management.md)
+

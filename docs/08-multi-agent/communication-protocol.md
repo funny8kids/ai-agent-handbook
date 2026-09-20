@@ -2,12 +2,14 @@
 tags: [multi-agent, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 通信协议
 
-> **一句话**：Agent 之间说什么、怎么说、谁在什么时候说——通信协议决定多 Agent 系统是「协作」还是「吵架」。
+{% hint style="info" %}
+**一句话**：Agent 之间说什么、怎么说、谁在什么时候说——通信协议决定多 Agent 系统是「协作」还是「吵架」。
+{% endhint %}
 
 ## 先看结论
 
@@ -130,3 +132,4 @@ flowchart TB
 - [A2A](../05-tool-protocol/a2a.md)
 - [多 Agent 编排](multi-agent-orchestration.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
+

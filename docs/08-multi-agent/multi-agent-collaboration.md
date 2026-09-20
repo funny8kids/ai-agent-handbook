@@ -2,12 +2,14 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 多 Agent 协作
 
-> **一句话**：多 Agent 协作 = 把一个大任务拆给多个各自带上下文的 Agent，用并行换速度、用分工换深度、用分歧换质量——但每种收益都要付通信税。
+{% hint style="info" %}
+**一句话**：多 Agent 协作 = 把一个大任务拆给多个各自带上下文的 Agent，用并行换速度、用分工换深度、用分歧换质量——但每种收益都要付通信税。
+{% endhint %}
 
 ## 先看结论
 
@@ -109,3 +111,4 @@ flowchart TB
 - [监督者模式](supervisor-pattern.md)
 - [通信协议](communication-protocol.md)
 - [多 Agent 编排](multi-agent-orchestration.md)
+

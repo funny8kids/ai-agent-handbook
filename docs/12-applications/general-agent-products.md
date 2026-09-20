@@ -2,19 +2,21 @@
 tags: [products, general-agent, computer-use, applications]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 通用 Agent 产品
 
-> **一句话**：2025–2026 兴起的「通用助理型 Agent」——在浏览器与桌面里代办研究、行程、采购、办公套件任务——与编程 Agent 同属 harness 竞争，但产品形态与风险面不同。
+{% hint style="info" %}
+**一句话**：2025–2026 兴起的「通用助理型 Agent」——在浏览器与桌面里代办研究、行程、采购、办公套件任务——与编程 Agent 同属 harness 竞争，但产品形态与风险面不同。
+{% endhint %}
 
 ## 先看结论
 
 - 通用 Agent = **computer use / browser use + 工具 + 长任务会话**，目标是「交给它一件事，回头验收」
 - 代表能力线：OpenAI 的 ChatGPT Work / Codex + Astra computer use；Anthropic 的 Claude Cowork、Claude in Chrome；以及 Manus 等独立产品
 - 与编程 Agent 的关键差异：环境非确定、成功标准模糊、更依赖 **确认策略与人工验收**
-- 工程上仍是 [模型原生 vs 自建 Harness](model-native-vs-harness.md) 问题，只是工具面从 `bash/edit` 换成 **浏览器、Office、日历、CRM**
+- 工程上仍是 [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md) 问题，只是工具面从 `bash/edit` 换成 **浏览器、Office、日历、CRM**
 
 ## 产品形态对比
 
@@ -68,3 +70,4 @@ flowchart LR
 - [浏览器自动化](browser-automation.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
 - [2026 前沿模型地图](../18-frontier-2026/frontier-models-2026.md)
+

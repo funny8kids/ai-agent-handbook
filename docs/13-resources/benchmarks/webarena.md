@@ -2,12 +2,14 @@
 tags: [evaluation, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # WebArena
 
-> **一句话**：在四个自托管真实网站（购物/论坛/CMS/GitLab）上考长程任务，程序化验证最终环境状态。
+{% hint style="info" %}
+**一句话**：在四个自托管真实网站（购物/论坛/CMS/GitLab）上考长程任务，程序化验证最终环境状态。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -24,6 +26,20 @@ updated: 2026-09-10
 - 812 个长程任务至今成功率不过半，暴露多步规划与状态跟踪短板
 - 自托管环境可安全改造为内网系统测试场
 
+## 机制一图看懂
+
+任务在真实填充的网站上跑，验证器只认最终环境状态：
+
+```mermaid
+flowchart TD
+    T["812 个长程任务：自然语言指令"] --> S["自托管四站：购物 / 论坛 / CMS / GitLab"]
+    S --> A["Agent 多步操作：点击、填表、跨页维护状态"]
+    A --> V["程序化验证器：直接查最终环境状态"]
+    V -->|"订单真的创建了"| W["得分"]
+    V -->|"状态不符"| F["失败"]
+    F --> X["暴露多步规划与状态跟踪短板"]
+```
+
 ## 上手建议
 
 1. 本地起 WebArena 环境跑几个任务，观察 Agent 如何维护跨页状态
@@ -33,3 +49,4 @@ updated: 2026-09-10
 
 - [基准测试总览](../../10-evaluation-safety/benchmarks.md)
 - [Computer Use / Browser Use](../../05-tool-protocol/computer-use-browser-use.md)
+

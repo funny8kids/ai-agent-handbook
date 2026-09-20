@@ -2,14 +2,16 @@
 tags: [infrastructure, rag, memory]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 数据与检索基础设施
 
-> **一句话**：RAG 的效果上限由数据基础设施决定——语料怎么进（采集/清洗/切块）、怎么放（索引/分片/元数据）、怎么新（增量更新与失效）、怎么评（检索质量与端到端归因），四件事缺一件，换多贵的模型都救不回来。
-> **难度**： 进阶
-> **标签**：`#infrastructure` `#rag`
+{% hint style="info" %}
+**一句话**：RAG 的效果上限由数据基础设施决定——语料怎么进（采集/清洗/切块）、怎么放（索引/分片/元数据）、怎么新（增量更新与失效）、怎么评（检索质量与端到端归因），四件事缺一件，换多贵的模型都救不回来。
+  **难度**： 进阶
+  **标签**：`#infrastructure` `#rag`
+{% endhint %}
 
 ## 先看结论
 
@@ -154,3 +156,4 @@ with psycopg.connect(DSN) as conn:
 - [上下文工程](../06-memory-rag/context-engineering.md)
 - [训练与微调基础设施](training-finetune-infra.md)
 - [可观测性与评估平台](llm-observability-eval-platform.md)
+

@@ -2,14 +2,16 @@
 tags: [safety, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 可解释性
 
-> **一句话**：可解释性 = 回答「Agent 为什么这么做」；分两层——模型内部机制（机理层）与决策依据（行为层），工程落地主要靠行为层的轨迹透明化。
-> **难度**：高级
-> **标签**：`#safety` `#evaluation`
+{% hint style="info" %}
+**一句话**：可解释性 = 回答「Agent 为什么这么做」；分两层——模型内部机制（机理层）与决策依据（行为层），工程落地主要靠行为层的轨迹透明化。
+  **难度**：高级
+  **标签**：`#safety` `#evaluation`
+{% endhint %}
 
 ## 先看结论
 
@@ -96,3 +98,4 @@ $$
 
 - [Chain of Thought](../04-prompt-reasoning/chain-of-thought.md)
 - [幻觉问题](hallucination.md)
+

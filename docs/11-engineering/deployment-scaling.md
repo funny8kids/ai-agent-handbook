@@ -2,12 +2,14 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 部署与扩缩容
 
-> **一句话**：Agent 服务是「无状态循环 + 有状态存储」的组合：无状态部分水平扩，状态交给事件存储与队列——扩缩容的答案在架构分层里。
+{% hint style="info" %}
+**一句话**：Agent 服务是「无状态循环 + 有状态存储」的组合：无状态部分水平扩，状态交给事件存储与队列——扩缩容的答案在架构分层里。
+{% endhint %}
 
 ## 先看结论
 
@@ -117,3 +119,4 @@ $$
 - [Agent 工作流编排](workflow-orchestration.md)
 - [状态机与事件驱动](state-machine-event-driven.md)
 - [缓存与成本优化](caching-cost-optimization.md)
+

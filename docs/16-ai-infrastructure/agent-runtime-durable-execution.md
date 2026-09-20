@@ -2,14 +2,16 @@
 tags: [infrastructure, engineering, agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 持久化执行与 Agent 运行时
 
-> **一句话**：长任务的可靠性不靠「写得仔细」，靠「运行时能重放」——把每一步的输入输出作为事实落盘，崩溃后从最后一个确定的状态继续，而不是从头再烧 40 分钟 token。
-> **难度**： 高级
-> **标签**：`#infrastructure` `#engineering` `#agent`
+{% hint style="info" %}
+**一句话**：长任务的可靠性不靠「写得仔细」，靠「运行时能重放」——把每一步的输入输出作为事实落盘，崩溃后从最后一个确定的状态继续，而不是从头再烧 40 分钟 token。
+  **难度**： 高级
+  **标签**：`#infrastructure` `#engineering` `#agent`
+{% endhint %}
 
 ## 先看结论
 
@@ -140,3 +142,4 @@ $$
 - [Agent 状态管理](../02-agent-basics/state-management.md)
 - [错误处理、重试与降级](../11-engineering/error-handling-retry-fallback.md)
 - [沙箱与执行环境](sandbox-execution-environments.md)
+

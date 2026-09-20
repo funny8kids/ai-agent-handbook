@@ -2,12 +2,14 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 研究 Agent
 
-> **一句话**：研究 Agent（Deep Research 类）= 多轮搜索 + 阅读 + 交叉验证 + 长文综合，是「广度优先爬取 + 深度优先阅读」的混合体；Anthropic 的多 Agent 研究系统是公开的最佳参考。
+{% hint style="info" %}
+**一句话**：研究 Agent（Deep Research 类）= 多轮搜索 + 阅读 + 交叉验证 + 长文综合，是「广度优先爬取 + 深度优先阅读」的混合体；Anthropic 的多 Agent 研究系统是公开的最佳参考。
+{% endhint %}
 
 ## 先看结论
 
@@ -116,3 +118,4 @@ flowchart TB
 - [多 Agent 协作](../08-multi-agent/multi-agent-collaboration.md)
 - [幻觉问题](../10-evaluation-safety/hallucination.md)
 - [RAG 基础](../06-memory-rag/rag-basics.md)
+

@@ -2,12 +2,14 @@
 tags: [planning, agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Plan-and-Execute
 
-> **一句话**：先让模型产出完整计划，再逐步执行并在必要时重规划——用「想清楚再做」换掉 ReAct 的「边做边想」，省 token 且更可控。
+{% hint style="info" %}
+**一句话**：先让模型产出完整计划，再逐步执行并在必要时重规划——用「想清楚再做」换掉 ReAct 的「边做边想」，省 token 且更可控。
+{% endhint %}
 
 ## 先看结论
 
@@ -111,3 +113,4 @@ flowchart LR
 - [任务分解](task-decomposition.md)
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
 - [子目标规划](subgoal-planning.md)
+

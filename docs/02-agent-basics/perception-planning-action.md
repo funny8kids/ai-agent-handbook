@@ -2,12 +2,14 @@
 tags: [agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 感知—规划—行动循环
 
-> **一句话**：Agent 的心跳是一个「观察 → 思考 → 行动 → 再观察」的循环，术语上叫感知（Perception）— 规划（Planning）— 行动（Action）。
+{% hint style="info" %}
+**一句话**：Agent 的心跳是一个「观察 → 思考 → 行动 → 再观察」的循环，术语上叫感知（Perception）— 规划（Planning）— 行动（Action）。
+{% endhint %}
 
 ## 先看结论
 
@@ -120,3 +122,4 @@ raise BudgetExceeded("达到最大轮次仍未完成")
 - [Agent 核心组件](core-components.md)
 - [Agent 状态管理](state-management.md)
 - [错误恢复与重试](../07-planning/error-recovery-retry.md)
+

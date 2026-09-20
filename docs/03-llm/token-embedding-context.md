@@ -2,12 +2,14 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Token、Embedding、上下文窗口
 
-> **一句话**：Token 是模型的眼界单位，Embedding 是词的「语义坐标」，上下文窗口是它的工作记忆容量——三者是 Agent 工程最常打交道的硬约束。
+{% hint style="info" %}
+**一句话**：Token 是模型的眼界单位，Embedding 是词的「语义坐标」，上下文窗口是它的工作记忆容量——三者是 Agent 工程最常打交道的硬约束。
+{% endhint %}
 
 ## 问题动机
 
@@ -112,3 +114,4 @@ flowchart TB
 
 - [上下文工程](../06-memory-rag/context-engineering.md)
 - [向量数据库](../06-memory-rag/vector-database.md)
+

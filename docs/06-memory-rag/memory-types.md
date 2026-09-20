@@ -2,14 +2,16 @@
 tags: [memory, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 记忆类型：短期、长期、情景、语义、程序
 
-> **一句话**：借认知科学的五分类给 Agent 记忆建模——不同记忆放不同地方、用不同机制存取。
-> **难度**：入门
-> **标签**：`#memory`
+{% hint style="info" %}
+**一句话**：借认知科学的五分类给 Agent 记忆建模——不同记忆放不同地方、用不同机制存取。
+  **难度**：入门
+  **标签**：`#memory`
+{% endhint %}
 
 ## 先看结论
 
@@ -59,3 +61,4 @@ flowchart TB
 
 - [上下文工程](context-engineering.md)
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)
+

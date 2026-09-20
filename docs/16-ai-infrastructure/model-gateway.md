@@ -2,14 +2,16 @@
 tags: [infrastructure, engineering, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 模型网关与路由
 
-> **一句话**：模型网关是所有 LLM 调用的「统一入口」：一份鉴权、一套计量、一条 fallback 链、一处缓存与配额——多模型时代的成本控制和安全策略都必须打在这一层，而不是散在各个业务代码里。
-> **难度**： 进阶
-> **标签**：`#infrastructure` `#engineering`
+{% hint style="info" %}
+**一句话**：模型网关是所有 LLM 调用的「统一入口」：一份鉴权、一套计量、一条 fallback 链、一处缓存与配额——多模型时代的成本控制和安全策略都必须打在这一层，而不是散在各个业务代码里。
+  **难度**： 进阶
+  **标签**：`#infrastructure` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -134,3 +136,4 @@ async def route(task: str, messages, schema=None, max_retry=2):
 - [缓存与成本优化](../11-engineering/caching-cost-optimization.md)
 - [推理经济学与部署形态](inference-economics-deployment.md)
 - [持久化执行与运行时](agent-runtime-durable-execution.md)
+

@@ -2,14 +2,16 @@
 tags: [infrastructure, engineering, cost]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 推理经济学与部署形态
 
-> **一句话**：自建还是买 API，是一道算术题不是信仰题——把「每次成功任务的成本」算清楚（token 单价 × 用量 ÷ 成功率 + 缓存与运维），再决定要不要为省下的单价背上 GPU 集群的运维账。
-> **难度**： 进阶
-> **标签**：`#infrastructure` `#engineering`
+{% hint style="info" %}
+**一句话**：自建还是买 API，是一道算术题不是信仰题——把「每次成功任务的成本」算清楚（token 单价 × 用量 ÷ 成功率 + 缓存与运维），再决定要不要为省下的单价背上 GPU 集群的运维账。
+  **难度**： 进阶
+  **标签**：`#infrastructure` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -49,6 +51,22 @@ for name, kw in {
 ```
 
 > 💡 **提示**：把「小模型成功率折损」显式写进公式。成功率从 0.8 掉到 0.6，等于给成本乘以 1.33——很多「换便宜模型省 80%」的方案，算完这笔只省 40%。
+
+## 成本是怎么长出来的
+
+从「每轮」一路累加到「每次成功任务」，再顺着这条链找杠杆：越靠前的节点（步数、缓存）收益越大且几乎免费，换单价在最末端。
+
+```mermaid
+flowchart LR
+  TURN[每轮成本<br/>输入tok×单价×未命中 + 输出tok×单价] --> STEPS[× 步数 · Σ 每轮]
+  STEPS --> ADD[+ 重试成本<br/>+ 检索 / 嵌入 / 沙箱]
+  ADD --> DIV[÷ 成功率]
+  DIV --> COST[每次成功任务成本]
+  COST --> L1[杠杆1：减少步数与循环]
+  COST --> L2[杠杆2：上下文瘦身 + 缓存]
+  COST --> L3[杠杆3：按难度分级路由]
+  COST --> L4[杠杆4+：量化 / 蒸馏 / 语义缓存]
+```
 
 ## 四种部署形态对照
 
@@ -113,3 +131,4 @@ for name, kw in {
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
 - [训练与微调基础设施](training-finetune-infra.md)
 - [本章导读](README.md)
+

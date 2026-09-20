@@ -2,12 +2,14 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # AI、ML、DL 的关系
 
-> **一句话**：人工智能是最大的圈，机器学习是实现它的一种方法，深度学习是机器学习中的一种技术，LLM 是深度学习的一种产物。
+{% hint style="info" %}
+**一句话**：人工智能是最大的圈，机器学习是实现它的一种方法，深度学习是机器学习中的一种技术，LLM 是深度学习的一种产物。
+{% endhint %}
 
 ## 先看结论
 
@@ -94,3 +96,4 @@ LLM 属于生成式，这决定了它的强项是「产出」、弱项是「判�
 - [机器学习基础](machine-learning-basics.md)
 - [深度学习基础](deep-learning-basics.md)
 - [什么是 AI Agent](../02-agent-basics/what-is-agent.md)
+

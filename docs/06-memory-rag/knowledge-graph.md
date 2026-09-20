@@ -2,12 +2,14 @@
 tags: [rag, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 知识图谱
 
-> **一句话**：知识图谱用「实体-关系-实体」三元组把知识织成网，精确、可推理、可解释；LLM 时代它常与向量检索搭配，而不是被取代。
+{% hint style="info" %}
+**一句话**：知识图谱用「实体-关系-实体」三元组把知识织成网，精确、可推理、可解释；LLM 时代它常与向量检索搭配，而不是被取代。
+{% endhint %}
 
 ## 问题动机
 
@@ -114,3 +116,4 @@ flowchart LR
 
 - [GraphRAG](graphrag.md)
 - [Embedding 与相似度检索](embedding-similarity.md)
+

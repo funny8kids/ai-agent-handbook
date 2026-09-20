@@ -2,12 +2,14 @@
 tags: [framework, agent]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Pi Agent（earendil-works/pi）
 
-> **一句话**：极简路线的开源 Agent harness——用最小的原语（统一 LLM API + Agent 循环 + TUI + 编码 CLI）把「Agent 本质」讲清楚。
+{% hint style="info" %}
+**一句话**：极简路线的开源 Agent harness——用最小的原语（统一 LLM API + Agent 循环 + TUI + 编码 CLI）把「Agent 本质」讲清楚。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -33,7 +35,9 @@ updated: 2026-09-10
 
 **什么时候值得读**：想知道「一个 Agent 循环最小需要什么」时，从上到下读一遍比读任何教程都直接。
 
-> **注意**：本项目在 2026 年从 `badlogic/pi-mono` 更名为 `earendil-works/pi` 并重构了包结构。旧链接会自动跳转，但**具体的内部实现细节（如循环行数、工具数量）请以当前仓库与 pi.dev 文档为准**——本书已删除此前无法核实的相关表述。
+{% hint style="warning" %}
+**注意**：本项目在 2026 年从 `badlogic/pi-mono` 更名为 `earendil-works/pi` 并重构了包结构。旧链接会自动跳转，但**具体的内部实现细节（如循环行数、工具数量）请以当前仓库与 pi.dev 文档为准**——本书已删除此前无法核实的相关表述。
+{% endhint %}
 
 ## 上手建议
 
@@ -53,3 +57,4 @@ updated: 2026-09-10
 - [感知—规划—行动循环](../../02-agent-basics/perception-planning-action.md)
 - [ReAct](../../04-prompt-reasoning/react.md)
 - [编程 Agent](../../12-applications/coding-agent.md)
+

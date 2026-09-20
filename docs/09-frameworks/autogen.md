@@ -2,12 +2,14 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # AutoGen
 
-> **一句话**：微软的多智能体对话框架（现与 Semantic Kernel 合流为 Microsoft Agent Framework）：让多个 Agent 通过对话协作，GroupChat 模式的开创者。
+{% hint style="info" %}
+**一句话**：微软的多智能体对话框架（现与 Semantic Kernel 合流为 Microsoft Agent Framework）：让多个 Agent 通过对话协作，GroupChat 模式的开创者。
+{% endhint %}
 
 ## 先看结论
 
@@ -35,6 +37,19 @@ $$
 | GroupChat + Manager | 共享消息流 + 发言调度 |
 | Handoff | 控制权移交 |
 
+```mermaid
+flowchart TD
+  G[(共享消息流)] --> M["GroupChatManager<br/>用 LLM 读消息流，决定下一个发言者"]
+  M -->|需要写码| A1[Assistant：代码 Agent]
+  M -->|需要运行| A2["UserProxy：沙箱执行"]
+  M -->|需要人审| A3[人类代理]
+  A1 -->|回复写回消息流| G
+  A2 -->|执行结果写回消息流| G
+  A3 -->|人工反馈写回消息流| G
+```
+
+*《图：AutoGen GroupChat 拓扑——调度器每轮从消息流中选出发言者，发言再回流，形成协作循环》*
+
 ## 双 Agent 对话（经典入门例）
 
 ```python
@@ -47,6 +62,21 @@ user.initiate_chat(assistant, message="写个脚本统计本目录代码行数�
 ```
 
 这个例子里包含了 AutoGen 最有价值的设计：**「模型写代码 → 框架安全执行 → 报错信息回填 → 模型修正」的闭环**。代码执行被放在受控目录（`work_dir`）中，避免模型直接操作宿主机。
+
+```mermaid
+sequenceDiagram
+  participant U as UserProxy（人 + 沙箱）
+  participant A as AssistantAgent（LLM）
+  U->>A: 任务：统计本目录代码行数并验证
+  A-->>U: 生成 Python 代码块
+  U->>U: 在 work_dir 沙箱中执行
+  U->>A: 回填执行结果 / 报错信息
+  A-->>U: 根据报错修正代码再提交
+  U->>A: 运行成功，输出验证结果
+  A-->>U: 任务完成
+```
+
+*《图：双 Agent 代码执行闭环——报错信息成为下一轮修正的输入，循环直到成功（务必设轮次上限）》*
 
 ## 选型对比
 
@@ -88,3 +118,4 @@ user.initiate_chat(assistant, message="写个脚本统计本目录代码行数�
 - [群聊模式](../08-multi-agent/group-chat.md)
 - [Semantic Kernel](semantic-kernel.md)
 - [通信协议](../08-multi-agent/communication-protocol.md)
+

@@ -2,12 +2,14 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Reflexion
 
-> **一句话**：Reflexion 让 Agent 失败后「写复盘」：把失败原因总结成语言化的经验存进记忆，下次尝试带着教训上路。
+{% hint style="info" %}
+**一句话**：Reflexion 让 Agent 失败后「写复盘」：把失败原因总结成语言化的经验存进记忆，下次尝试带着教训上路。
+{% endhint %}
 
 ## 问题动机
 
@@ -84,3 +86,4 @@ flowchart LR
 - [Self-Refine](self-refine.md)
 - [错误恢复与重试](../07-planning/error-recovery-retry.md)
 - [记忆类型](../06-memory-rag/memory-types.md)
+

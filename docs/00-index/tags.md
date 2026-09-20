@@ -2,12 +2,14 @@
 tags: [basics]
 type: index
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 标签索引
 
-> **一句话**：全书统一的标签全集。给页面打标签时从这里取，保证检索一致。
+{% hint style="info" %}
+**一句话**：全书统一的标签全集。给页面打标签时从这里取，保证检索一致。
+{% endhint %}
 
 ## 标签全集
 
@@ -50,3 +52,4 @@ updated: 2026-09-12
 
 - [资源总表](resources-index.md)
 - [知识点模板](../14-templates/knowledge-template.md)
+

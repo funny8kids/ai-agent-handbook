@@ -2,12 +2,14 @@
 tags: [framework, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LangChain
 
-> **一句话**：最流行的 LLM 应用开发框架：数百个集成 + 统一抽象，生态最大的「全家桶」。
+{% hint style="info" %}
+**一句话**：最流行的 LLM 应用开发框架：数百个集成 + 统一抽象，生态最大的「全家桶」。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -43,3 +45,4 @@ updated: 2026-09-10
 
 - [LangChain](../../09-frameworks/langchain.md)
 - [LangGraph](langgraph.md)
+

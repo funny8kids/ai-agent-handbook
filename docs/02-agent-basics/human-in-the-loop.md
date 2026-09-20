@@ -2,12 +2,14 @@
 tags: [agent, basics, safety]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Human-in-the-loop
 
-> **一句话**：HITL 是在高风险节点主动安排人类介入——批准、否决、纠偏；好的 Agent 设计不是去掉人，而是把人放在最值钱的位置。
+{% hint style="info" %}
+**一句话**：HITL 是在高风险节点主动安排人类介入——批准、否决、纠偏；好的 Agent 设计不是去掉人，而是把人放在最值钱的位置。
+{% endhint %}
 
 ## 先看结论
 
@@ -111,3 +113,4 @@ $$
 - [自主性等级](autonomy-levels.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [提示注入](../10-evaluation-safety/prompt-injection.md)
+

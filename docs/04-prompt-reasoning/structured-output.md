@@ -2,12 +2,14 @@
 tags: [prompt, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 结构化输出
 
-> **一句话**：强制模型输出合法 JSON（或 XML/表格），是 Agent 把「概率文本」变成「可靠程序输入」的基石。
+{% hint style="info" %}
+**一句话**：强制模型输出合法 JSON（或 XML/表格），是 Agent 把「概率文本」变成「可靠程序输入」的基石。
+{% endhint %}
 
 ## 问题动机
 
@@ -56,6 +58,24 @@ $$
 $$
 
 越往右，模型自由度越小、合法率越高，但需要的能力（服务端或本地运行时）也越强。
+
+## 约束解码全流程
+
+把「保证语法」与「保证正确」串成一个闭环——单靠约束解码只走完了左半边：
+
+```mermaid
+flowchart TD
+    A["解码第 t 步：模型输出词表概率分布"] --> B["schema 编译成的状态机：算出本步允许的 token 集合"]
+    B --> C["非法 token 概率置零，重新归一化"]
+    C --> D["采样一个 token，追加到序列"]
+    D --> E{"序列是否完整？"}
+    E -->|"否"| A
+    E -->|"是"| F["语法 100% 合法的 JSON"]
+    F --> G{"Schema 与业务校验：枚举、范围、日期真实性"}
+    G -->|"通过"| H["交给下游程序消费"]
+    G -->|"失败"| I["回填具体错误信息，带错误重试"]
+    I --> A
+```
 
 ## 实现方式对比
 
@@ -110,3 +130,4 @@ ticket = resp.choices[0].message.parsed   # 直接得到校验过的对象
 
 - [Prompt Engineering](prompt-engineering.md)
 - [Function Calling](../05-tool-protocol/function-calling.md)
+

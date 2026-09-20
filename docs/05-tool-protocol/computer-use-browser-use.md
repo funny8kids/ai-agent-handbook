@@ -2,14 +2,16 @@
 tags: [tooling, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Computer Use / Browser Use
 
-> **一句话**：让模型看截图、动鼠标键盘来操作图形界面——Agent 能力图谱的最后一块拼图，也是当前最脆弱的一块。
-> **难度**：高级
-> **标签**：`#tooling`
+{% hint style="info" %}
+**一句话**：让模型看截图、动鼠标键盘来操作图形界面——Agent 能力图谱的最后一块拼图，也是当前最脆弱的一块。
+  **难度**：高级
+  **标签**：`#tooling`
+{% endhint %}
 
 ## 先看结论
 
@@ -114,3 +116,4 @@ $$
 - [浏览器、代码、文件系统工具](browser-code-filesystem-tools.md)
 - [多模态模型](../03-llm/multimodal.md)
 - [工具权限与沙箱](tool-permission-sandbox.md)
+

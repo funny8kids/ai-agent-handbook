@@ -2,12 +2,14 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 缓存与成本优化
 
-> **一句话**：Agent 成本优化的三板斧：prompt 缓存（结构性省钱）、上下文瘦身（少送 token）、路由降级（按任务难度分配模型）——三板斧下来常见能省 50–80%。
+{% hint style="info" %}
+**一句话**：Agent 成本优化的三板斧：prompt 缓存（结构性省钱）、上下文瘦身（少送 token）、路由降级（按任务难度分配模型）——三板斧下来常见能省 50–80%。
+{% endhint %}
 
 ## 先看结论
 
@@ -120,3 +122,4 @@ def route(step):
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)
 - [可观测性工具](observability-tools.md)
+

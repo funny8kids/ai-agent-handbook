@@ -2,12 +2,14 @@
 tags: [agent, memory, paper]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Reflexion 论文
 
-> **一句话**：用「语言化复盘」代替参数更新：失败后总结教训存入记忆，下次尝试带着经验——无需微调的强化学习。
+{% hint style="info" %}
+**一句话**：用「语言化复盘」代替参数更新：失败后总结教训存入记忆，下次尝试带着经验——无需微调的强化学习。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -24,6 +26,20 @@ updated: 2026-09-10
 - 实测硬核：HumanEval 80.1% → 91%，ALFWorld +22%
 - 官方开源实现仅百余行，是最适合精读复现的 Agent 论文之一
 
+## 机制一图看懂
+
+三组件（Actor / Evaluator / Reflector）构成语言化复盘闭环：
+
+```mermaid
+flowchart TD
+    A["Actor：尝试任务（如 HumanEval 写函数）"] --> E["Evaluator：判断成功 / 失败"]
+    E -->|"成功"| S["通过，计入解决率（80.1% → 91%）"]
+    E -->|"失败"| R["Reflector：把教训写成自然语言"]
+    R --> M["情景记忆：累积多轮复盘"]
+    M --> A2["下一次试次：prompt 带上前几轮经验"]
+    A2 --> A
+```
+
 ## 上手建议
 
 1. 读方法节的三组件：Actor / Evaluator / Reflector
@@ -34,3 +50,4 @@ updated: 2026-09-10
 
 - [Reflexion](../../04-prompt-reasoning/reflexion.md)
 - [记忆类型](../../06-memory-rag/memory-types.md)
+

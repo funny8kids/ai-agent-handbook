@@ -2,12 +2,14 @@
 tags: [planning, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 工具选择与路由
 
-> **一句话**：工具面一大，模型就开始「选错扳手」：路由 = 用检索、分组、延迟加载等手段，让模型在每一步只看到一小撮高相关工具。
+{% hint style="info" %}
+**一句话**：工具面一大，模型就开始「选错扳手」：路由 = 用检索、分组、延迟加载等手段，让模型在每一步只看到一小撮高相关工具。
+{% endhint %}
 
 ## 先看结论
 
@@ -118,3 +120,4 @@ flowchart TD
 - [Tool Use](../05-tool-protocol/tool-use.md)
 - [Function Calling](../05-tool-protocol/function-calling.md)
 - [MCP](../05-tool-protocol/mcp.md)
+

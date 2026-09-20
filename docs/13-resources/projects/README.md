@@ -2,14 +2,18 @@
 tags: [resource, project]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 开源项目索引
 
-> **一句话**：AI Agent 相关开源项目总览，按 11 类整理，收录 323 个；star 数与许可为 **2026-09** 观测值。
+{% hint style="info" %}
+**一句话**：AI Agent 相关开源项目总览，按 11 类整理，收录 323 个；star 数与许可为 **2026-09** 观测值。
+{% endhint %}
 
-> **提示**：star 数只反映关注度，不反映质量与适配度；选型请结合活跃度与你的场景实测。表中 star 与许可为 **2026-09** 的观测值，会随时间变化。
+{% hint style="tip" %}
+**提示**：star 数只反映关注度，不反映质量与适配度；选型请结合活跃度与你的场景实测。表中 star 与许可为 **2026-09** 的观测值，会随时间变化。
+{% endhint %}
 
 ## 深入卡片
 
@@ -21,22 +25,22 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [langchain-ai/langchain](https://github.com/langchain-ai/langchain) | 14.6 万 | MIT | Python | The agent engineering platform. |
-| [bytedance/deer-flow](https://github.com/bytedance/deer-flow) | 8.2 万 | MIT | Python | An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandbox… |
-| [Mintplex-Labs/anything-llm](https://github.com/Mintplex-Labs/anything-llm) | 6.6 万 | MIT | JavaScript | Stop renting your intelligence. Own it with AnythingLLM. Everything you need for a powerful local-first agen… |
-| [pathwaycom/llm-app](https://github.com/pathwaycom/llm-app) | 5.9 万 | MIT | Jupyter Notebook | Ready-to-run cloud templates for RAG, AI pipelines, and enterprise search with live data. 🐳Docker-friendly.⚡… |
-| [langchain-ai/langgraph](https://github.com/langchain-ai/langgraph) | 4.1 万 | MIT | Python | Build resilient agents. |
-| [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | 3.9 万 | MIT | TypeScript | Teams-first Multi-agent orchestration for Claude Code |
-| [stanfordnlp/dspy](https://github.com/stanfordnlp/dspy) | 3.8 万 | MIT | Python | DSPy: The framework for programming—not prompting—language models |
-| [conductor-oss/conductor](https://github.com/conductor-oss/conductor) | 3.2 万 | Apache-2.0 | Java | Conductor is an event driven agentic workflow engine providing durable and highly resilient execution engine… |
-| [ComposioHQ/composio](https://github.com/ComposioHQ/composio) | 3.0 万 | MIT | TypeScript | Composio powers 1000+ toolkits, tool search, context management, authentication, and a sandboxed workbench t… |
-| [simstudioai/sim](https://github.com/simstudioai/sim) | 3.0 万 | Apache-2.0 | TypeScript | Sim is the collaborative workspace to build, deploy, and monitor AI agents and workflows. Used by 100,000+ b… |
-| [openai/openai-agents-python](https://github.com/openai/openai-agents-python) | 2.9 万 | MIT | Python | A lightweight, powerful framework for multi-agent workflows |
-| [huggingface/smolagents](https://github.com/huggingface/smolagents) | 2.9 万 | Apache-2.0 | Python | 🤗 smolagents: a barebones library for agents that think in code. |
-| [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel) | 2.9 万 | MIT | C# | Integrate cutting-edge LLM technology quickly and easily into your apps |
-| [deepset-ai/haystack](https://github.com/deepset-ai/haystack) | 2.6 万 | Apache-2.0 | Python | Open-source AI orchestration framework for building context-engineered, production-ready LLM applications. D… |
+| [langchain-ai/langchain](https://github.com/langchain-ai/langchain) | 14.6 万 | MIT | Python | Python 全家桶框架；抽象层多、上手快但生产要自己收残局——先读 LangGraph 的思路再用它 |
+| [bytedance/deer-flow](https://github.com/bytedance/deer-flow) | 8.2 万 | MIT | Python | 字节跳动的深度研究长任务编排；沙箱与多角色分工值得读源码，但它是参考实现不是开箱产品 |
+| [Mintplex-Labs/anything-llm](https://github.com/Mintplex-Labs/anything-llm) | 6.6 万 | MIT | JavaScript | 本地优先的一体化 RAG 桌面全家桶；个人知识库零门槛，生产要精细控制的话能调的余地有限 |
+| [pathwaycom/llm-app](https://github.com/pathwaycom/llm-app) | 5.9 万 | MIT | Jupyter Notebook | Pathway 的实时增量 RAG 模板；"流式更新索引"思路独一份，但模板偏演示，别指望直接上生产 |
+| [langchain-ai/langgraph](https://github.com/langchain-ai/langgraph) | 4.1 万 | MIT | Python | 状态图式 Agent 编排，生产级框架的首选；checkpoint 与 human-in-the-loop 设计可直接学，文档零散要花时间补 |
+| [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) | 3.9 万 | MIT | TypeScript | Claude Code 的多智能体编排插件；借 Claude Code 当内核体验团队分工，不是独立框架 |
+| [stanfordnlp/dspy](https://github.com/stanfordnlp/dspy) | 3.8 万 | MIT | Python | 斯坦福的"声明式提示"框架，自动优化 prompt 与权重；学习曲线陡，适合写得起评测的研究型团队 |
+| [conductor-oss/conductor](https://github.com/conductor-oss/conductor) | 3.2 万 | Apache-2.0 | Java | Netflix 系事件驱动工作流引擎，持久化执行与重试状态管理是工业级；对纯 LLM 新手偏重量级 |
+| [ComposioHQ/composio](https://github.com/ComposioHQ/composio) | 3.0 万 | MIT | TypeScript | 托管的 SaaS 工具授权与调用中枢；快速接第三方 API 最省事，但多一层代理依赖，注意厂商锁定 |
+| [simstudioai/sim](https://github.com/simstudioai/sim) | 3.0 万 | Apache-2.0 | TypeScript | 可视化 agent 工作流工作台；做演示和快速原型好看，复杂逻辑迟早撞到天花板回到写代码 |
+| [openai/openai-agents-python](https://github.com/openai/openai-agents-python) | 2.9 万 | MIT | Python | OpenAI 官方轻量多 Agent 库、swarm 的继任者；handoff + guardrails + tracing 一站式，但深度功能与 OpenAI 生态绑定 |
+| [huggingface/smolagents](https://github.com/huggingface/smolagents) | 2.9 万 | Apache-2.0 | Python | HF 的极简 code agent 库，让模型写 Python 而非 JSON 调工具；上手惊艳，生产要自己补护栏与状态管理 |
+| [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel) | 2.9 万 | MIT | C# | 微软企业级 Agent SDK，多语言覆盖；企业集成强，但 API 更名震荡史沉重，选型先理清与 AutoGen/Agent Framework 的血缘 |
+| [deepset-ai/haystack](https://github.com/deepset-ai/haystack) | 2.6 万 | Apache-2.0 | Python | deepset 的管线式架构，搜索/RAG 场景工程成熟稳定；Agent 表达力比 LangGraph 保守，适合重工程轻花活的团队 |
 | [NirDiamant/GenAI_Agents](https://github.com/NirDiamant/GenAI_Agents) | 2.4 万 | NOASSERTION | Jupyter Notebook | 50+ tutorials and implementations for Generative AI Agent techniques, from basic conversational bots to comp… |
-| [yoheinakajima/babyagi](https://github.com/yoheinakajima/babyagi) | 2.2 万 | NOASSERTION | Python |  |
+| [yoheinakajima/babyagi](https://github.com/yoheinakajima/babyagi) | 2.2 万 | NOASSERTION | Python | 概念验证鼻祖，代码已被作者弃置，读思路可以别依赖 |
 | [jina-ai/serve](https://github.com/jina-ai/serve) | 2.2 万 | Apache-2.0 | Python | ☁️ Build multimodal AI applications with cloud-native stack |
 | [coze-dev/coze-studio](https://github.com/coze-dev/coze-studio) | 2.2 万 | Apache-2.0 | TypeScript | An AI agent development platform with all-in-one visual tools, simplifying agent creation, debugging, and de… |
 | [NirDiamant/agents-towards-production](https://github.com/NirDiamant/agents-towards-production) | 2.1 万 | NOASSERTION | Jupyter Notebook | End-to-end, code-first tutorials for building production-grade GenAI agents. From prototype to enterprise de… |
@@ -62,22 +66,22 @@ updated: 2026-09-10
 |---|---|---|---|---|
 | [affaan-m/ECC](https://github.com/affaan-m/ECC) | 25.6 万 | MIT | JavaScript | The agent harness performance optimization system. Skills, instincts, memory, security, and research-first d… |
 | [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) | 21.9 万 | MIT | TypeScript | DeepSeek Harness: Everything is a Plugin. |
-| [x1xhlol/system-prompts-and-models-of-ai-tools](https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools) | 14.3 万 | GPL-3.0 | — | FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, … |
-| [farion1231/cc-switch](https://github.com/farion1231/cc-switch) | 13.2 万 | MIT | Rust | A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Build & Herme… |
-| [openai/codex](https://github.com/openai/codex) | 12.3 万 | Apache-2.0 | Rust | Lightweight coding agent that runs in your terminal |
-| [google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli) | 10.7 万 | Apache-2.0 | TypeScript | An open-source AI agent that brings the power of Gemini directly into your terminal. |
-| [earendil-works/pi](https://github.com/earendil-works/pi) | 10.4 万 | MIT | TypeScript | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |
+| [x1xhlol/system-prompts-and-models-of-ai-tools](https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools) | 14.3 万 | GPL-3.0 | — | 主流 AI 编程工具的系统提示词合集；读别人的提示词是长进最快的方式，注意 GPL 且别直接抄段落 |
+| [farion1231/cc-switch](https://github.com/farion1231/cc-switch) | 13.2 万 | MIT | Rust | 一键切换 Claude Code / Codex 等供应商配置的桌面工具；纯效率件与 Agent 本身无关，改配置前备份好原文件 |
+| [openai/codex](https://github.com/openai/codex) | 12.3 万 | Apache-2.0 | Rust | OpenAI 官方终端编程 Agent；与自家订阅深度绑定，审批与沙箱策略要按团队规范调校再用 |
+| [google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli) | 10.7 万 | Apache-2.0 | TypeScript | Gemini 官方终端 Agent；免费额度与超长上下文是卖点，功能堆叠快、稳定性要实测后再托付关键任务 |
+| [earendil-works/pi](https://github.com/earendil-works/pi) | 10.4 万 | MIT | TypeScript | 极简 Agent 工具箱：统一 LLM API、agent loop、TUI；学 harness 原理的一流教材，生态与文档偏个人项目级 |
 | [nexu-io/open-design](https://github.com/nexu-io/open-design) | 9.5 万 | Apache-2.0 | TypeScript | 🎨 Best DeepSeek Harness Design Plugin. The open-source Claude Design alternative. 🖥️ Local-first desktop app… |
 | [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem) | 9.4 万 | Apache-2.0 | JavaScript | Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, c… |
-| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 9.3 万 | MIT | JavaScript | Production-grade engineering skills for AI coding agents. |
+| [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 9.3 万 | MIT | JavaScript | Addy Osmani 整理的工程化 skills 集；可直接插拔使用，质量参差、挑贴合自己团队规范的用 |
 | [ruvnet/ruflo](https://github.com/ruvnet/ruflo) | 7.2 万 | MIT | TypeScript | 🌊 The original agent meta-harness. Deploy intelligent multi-player swarms, coordinate autonomous workflows, … |
 | [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom) | 7.1 万 | Apache-2.0 | Python | Compress tool outputs, logs, files, and RAG chunks before they reach the LLM. 20% fewer tokens for coding ag… |
 | [colbymchenry/codegraph](https://github.com/colbymchenry/codegraph) | 7.0 万 | MIT | C | Pre-indexed code knowledge graph, auto syncs on code changes, for Claude Code, Codex, Gemini, Cursor, OpenCo… |
-| [cline/cline](https://github.com/cline/cline) | 6.8 万 | Apache-2.0 | TypeScript | Autonomous coding agent as an SDK, IDE extension, or CLI assistant. |
+| [cline/cline](https://github.com/cline/cline) | 6.8 万 | Apache-2.0 | TypeScript | VS Code 审批式编程 Agent 鼻祖；Plan/Act 分离安全感强，但逐步确认的流程 token 消耗出名地大 |
 | [stablyai/orca](https://github.com/stablyai/orca) | 6.6 万 | MIT | TypeScript | Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription… |
 | [hesreallyhim/awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | 5.4 万 | NOASSERTION | Python | A hand-picked collection of the finest of resources for the most awesome of agents, Claude Code, the undispu… |
 | [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) | 4.9 万 | MIT | JavaScript | Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering. |
-| [Aider-AI/aider](https://github.com/Aider-AI/aider) | 4.9 万 | Apache-2.0 | Python | aider is AI pair programming in your terminal |
+| [Aider-AI/aider](https://github.com/Aider-AI/aider) | 4.9 万 | Apache-2.0 | Python | 终端结对编程老将，git 自动提交与 diff 管理是标杆；repo-map 上下文设计值得读源码借鉴 |
 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | 4.4 万 | MIT | Python | Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 190,000+ scientists… |
 | [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) | 4.3 万 | MIT | C | High-performance code intelligence MCP server. Indexes codebases into a persistent knowledge graph — average… |
 | [luongnv89/claude-howto](https://github.com/luongnv89/claude-howto) | 4.1 万 | MIT | Python | A visual, example-driven guide to Claude Code — from basic concepts to advanced agents, with copy-paste temp… |
@@ -99,12 +103,12 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) | 10.4 万 | Apache-2.0 | Python | TradingAgents: Multi-Agents LLM Financial Trading Framework |
-| [FoundationAgents/MetaGPT](https://github.com/FoundationAgents/MetaGPT) | 7.0 万 | MIT | Python | 🌟 The Multi-Agent Framework: First AI Software Company, Towards Natural Language Programming |
-| [microsoft/autogen](https://github.com/microsoft/autogen) | 6.1 万 | CC-BY-4.0 | Python | A programming framework for agentic AI |
-| [crewAIInc/crewAI](https://github.com/crewAIInc/crewAI) | 5.8 万 | MIT | Python | Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, Cre… |
-| [OpenBMB/ChatDev](https://github.com/OpenBMB/ChatDev) | 3.4 万 | Apache-2.0 | Python | ChatDev 2.0: Dev All through LLM-powered Multi-Agent Collaboration |
-| [openai/swarm](https://github.com/openai/swarm) | 2.2 万 | MIT | Python | Educational framework exploring ergonomic, lightweight multi-agent orchestration. Managed by OpenAI Solution… |
+| [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) | 10.4 万 | Apache-2.0 | Python | 多智能体辩论式交易框架；当论文演示读可以，真金白银接上去三思 |
+| [FoundationAgents/MetaGPT](https://github.com/FoundationAgents/MetaGPT) | 7.0 万 | MIT | Python | 角色扮演软件公司 SOP 的多智能体流水线；分工思想值得借鉴，抽象层层叠叠读源码吃力 |
+| [microsoft/autogen](https://github.com/microsoft/autogen) | 6.1 万 | CC-BY-4.0 | Python | 微软对话式多智能体框架；API 历经大改并与 Semantic Kernel 合流进新 Agent Framework，选型先认清版本脉络 |
+| [crewAIInc/crewAI](https://github.com/crewAIInc/crewAI) | 5.8 万 | MIT | Python | 角色 + 任务式编队编排入门款；跑 demo 极快，生产级精细控制不如图式方案 |
+| [OpenBMB/ChatDev](https://github.com/OpenBMB/ChatDev) | 3.4 万 | Apache-2.0 | Python | 模拟软件瀑布流聊天开发的学术项目；教学演示定位，别拿去交付真软件 |
+| [openai/swarm](https://github.com/openai/swarm) | 2.2 万 | MIT | Python | OpenAI 的教学级 handoff 库，继任者 Agents SDK 出来后已停止演进；读 routines/handoff 概念，新项目别用 |
 | [SolaceLabs/solace-agent-mesh](https://github.com/SolaceLabs/solace-agent-mesh) | 4,933 | Apache-2.0 | Python | An event-driven framework designed to build and orchestrate multi-agent AI systems. It enables seamless inte… |
 | [LantaoYu/MARL-Papers](https://github.com/LantaoYu/MARL-Papers) | 4,878 | NOASSERTION | — | Paper list of multi-agent reinforcement learning (MARL) |
 | [VRSEN/agency-swarm](https://github.com/VRSEN/agency-swarm) | 4,555 | MIT | Python | Reliable Multi-Agent Orchestration Framework |
@@ -133,18 +137,18 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [langgenius/dify](https://github.com/langgenius/dify) | 15.5 万 | NOASSERTION | TypeScript | Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. … |
+| [langgenius/dify](https://github.com/langgenius/dify) | 15.5 万 | NOASSERTION | TypeScript | 低代码 LLMOps 平台，从想法到可演示应用最快；深度定制会撞天花板，多租户 SaaS 商用先看清 license 附加条款 |
 | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | 11.7 万 | Apache-2.0 | Python | Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graph… |
-| [infiniflow/ragflow](https://github.com/infiniflow/ragflow) | 9.0 万 | Apache-2.0 | Go | RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG wit… |
-| [mem0ai/mem0](https://github.com/mem0ai/mem0) | 6.5 万 | Apache-2.0 | Python | The Memory Layer for AI Agents - Drop-in memory infrastructure for AI agents and apps. Context that persists… |
-| [run-llama/llama_index](https://github.com/run-llama/llama_index) | 5.2 万 | MIT | Python | LlamaIndex is the leading document agent and OCR platform |
-| [milvus-io/milvus](https://github.com/milvus-io/milvus) | 4.6 万 | Apache-2.0 | Go | Milvus is a high-performance, cloud-native vector database built for scalable vector ANN search |
-| [facebookresearch/faiss](https://github.com/facebookresearch/faiss) | 4.1 万 | MIT | C++ | A library for efficient similarity search and clustering of dense vectors. |
-| [HKUDS/LightRAG](https://github.com/HKUDS/LightRAG) | 4.0 万 | MIT | Python | [EMNLP2025] LightRAG: Simple and Fast Retrieval-Augmented Generation |
-| [chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) | 3.9 万 | Apache-2.0 | Python | Langchain-Chatchat（原Langchain-ChatGLM）基于 Langchain 与 ChatGLM, Qwen 与 Llama 等语言模型的 RAG 与 Agent 应用 / Langchain… |
+| [infiniflow/ragflow](https://github.com/infiniflow/ragflow) | 9.0 万 | Apache-2.0 | Go | 深度文档理解是护城河，复杂版式与表格解析真强；部署偏重，小场景用不着整套 |
+| [mem0ai/mem0](https://github.com/mem0ai/mem0) | 6.5 万 | Apache-2.0 | Python | Agent 记忆层即插即用件，抽取 + 合并思路好；记忆质量必须拿自己的评测集验证再上线 |
+| [run-llama/llama_index](https://github.com/run-llama/llama_index) | 5.2 万 | MIT | Python | 数据连接器与索引框架起家，文档/知识库场景对味；接口变动频繁，别被教程锁定在旧 API 上 |
+| [milvus-io/milvus](https://github.com/milvus-io/milvus) | 4.6 万 | Apache-2.0 | Go | 大规模分布式向量库老牌；运维组件不少，量级不到十亿用 pgvector/Qdrant 更省心 |
+| [facebookresearch/faiss](https://github.com/facebookresearch/faiss) | 4.1 万 | MIT | C++ | 向量检索的库而非数据库；持久化、增删、分片全要自己搭，通常当算法基线或内嵌组件用 |
+| [HKUDS/LightRAG](https://github.com/HKUDS/LightRAG) | 4.0 万 | MIT | Python | 轻量图索引 RAG，论文实现里算好落地的；思路优雅，生产可靠性仍要自证 |
+| [chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) | 3.9 万 | Apache-2.0 | Python | 中文本地知识库入门标配，部署文档齐；生产要摆脱 LangChain 影子自己重做一层 |
 | [volcengine/OpenViking](https://github.com/volcengine/OpenViking) | 3.6 万 | AGPL-3.0 | Python | Self-evolving Context Database for AI Agents. Unify Agent Memory, Knowledge RAG and Skills. |
-| [microsoft/graphrag](https://github.com/microsoft/graphrag) | 3.6 万 | MIT | Python | A modular graph-based Retrieval-Augmented Generation (RAG) system |
-| [qdrant/qdrant](https://github.com/qdrant/qdrant) | 3.4 万 | Apache-2.0 | Rust | Qdrant - High-performance, massive-scale Vector Database and Vector Search Engine for the next generation of… |
+| [microsoft/graphrag](https://github.com/microsoft/graphrag) | 3.6 万 | MIT | Python | 面向"全局总结式"提问的图 RAG，代价是索引期大量 LLM 调用；不是这类查询就别开这个成本 |
+| [qdrant/qdrant](https://github.com/qdrant/qdrant) | 3.4 万 | Apache-2.0 | Rust | Rust 写的高性能向量检索，单机部署体验好；多数团队用不着 Milvus 那套集群复杂度 |
 | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) | 3.1 万 | MIT | Python | Local-first code intelligence graph for MCP and CLI. Builds a persistent map of your codebase so AI coding t… |
 | [getzep/graphiti](https://github.com/getzep/graphiti) | 3.1 万 | Apache-2.0 | Python | Build Real-Time Knowledge Graphs for AI Agents |
 | [topoteretes/cognee](https://github.com/topoteretes/cognee) | 3.1 万 | Apache-2.0 | Python | Cognee is the open-source AI memory platform for agents. Give your AI agents persistent long-term memory acr… |
@@ -152,7 +156,7 @@ updated: 2026-09-10
 | [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) | 2.6 万 | NOASSERTION | TypeScript | TencentDB Agent Memory is a team-level memory hub for AI Agents — turning conversations, docs, and code into… |
 | [letta-ai/letta](https://github.com/letta-ai/letta) | 2.5 万 | Apache-2.0 | — | Platform for stateful agents: AI with advanced memory that can learn and self-improve over time. |
 | [HKUDS/RAG-Anything](https://github.com/HKUDS/RAG-Anything) | 2.3 万 | MIT | Python | "RAG-Anything: All-in-One RAG Framework" |
-| [pgvector/pgvector](https://github.com/pgvector/pgvector) | 2.3 万 | NOASSERTION | C | Open-source vector similarity search for Postgres |
+| [pgvector/pgvector](https://github.com/pgvector/pgvector) | 2.3 万 | NOASSERTION | C | 向量检索长在 Postgres 里，事务与业务数据同库；中小规模的最优解，别为它单独养一套向量数据库 |
 | [Tencent/WeKnora](https://github.com/Tencent/WeKnora) | 2.2 万 | NOASSERTION | Go | Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, … |
 | [weaviate/weaviate](https://github.com/weaviate/weaviate) | 1.7 万 | NOASSERTION | Go | Weaviate is an open-source vector database that stores both objects and vectors, allowing for the combinatio… |
 | [memvid/memvid](https://github.com/memvid/memvid) | 1.7 万 | Apache-2.0 | Rust | Memory layer for AI Agents. Replace complex RAG pipelines with a serverless, single-file memory layer. Give … |
@@ -172,15 +176,15 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) | 9.0 万 | NOASSERTION | TypeScript | Model Context Protocol Servers |
-| [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) | 2.4 万 | MIT | Python | The official Python SDK for Model Context Protocol servers and clients |
-| [google/adk-python](https://github.com/google/adk-python) | 2.1 万 | Apache-2.0 | Python | An open-source, code-first Python toolkit for building, evaluating, and deploying sophisticated AI agents wi… |
-| [QwenLM/Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) | 1.7 万 | Apache-2.0 | Python | Agent framework and applications built upon Qwen>=3.0, featuring Function Calling, MCP, Code Interpreter, RA… |
-| [modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) | 1.3 万 | NOASSERTION | TypeScript | The official TypeScript SDK for Model Context Protocol servers and clients |
-| [hangwin/mcp-chrome](https://github.com/hangwin/mcp-chrome) | 1.2 万 | MIT | TypeScript | Chrome MCP Server is a Chrome extension-based Model Context Protocol (MCP) server that exposes your Chrome b… |
-| [modelcontextprotocol/modelcontextprotocol](https://github.com/modelcontextprotocol/modelcontextprotocol) | 9,175 | NOASSERTION | TypeScript | Specification and documentation for the Model Context Protocol |
+| [modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers) | 9.0 万 | NOASSERTION | TypeScript | 官方参考 MCP server 合集；学协议的正确起点，生产别直接跑未审阅的第三方 server |
+| [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) | 2.4 万 | MIT | Python | 官方 Python SDK，FastMCP 写法入门顺滑；协议本身还在快速演进，锁好版本 |
+| [google/adk-python](https://github.com/google/adk-python) | 2.1 万 | Apache-2.0 | Python | Google 的 code-first Agent 工具箱，评估与部署链路完整；已在 GCP 上最顺，否则处处受绑定 |
+| [QwenLM/Qwen-Agent](https://github.com/QwenLM/Qwen-Agent) | 1.7 万 | Apache-2.0 | Python | Qwen 官方工具链（function calling / code interpreter / MCP）；配 Qwen 模型最稳，非 Qwen 技术栈不必引入 |
+| [modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) | 1.3 万 | NOASSERTION | TypeScript | 官方 TS SDK；与 python-sdk 同理，API 仍在演进，升级前先看 changelog |
+| [hangwin/mcp-chrome](https://github.com/hangwin/mcp-chrome) | 1.2 万 | MIT | TypeScript | 把你已登录的 Chrome 接给 Agent，真实网站自动化能干隔离方案干不了的事；但 Agent 握着你全部会话，安全面很大 |
+| [modelcontextprotocol/modelcontextprotocol](https://github.com/modelcontextprotocol/modelcontextprotocol) | 9,175 | NOASSERTION | TypeScript | 协议规范本身；写 server/client 前先读它，tools/resources/prompts 三个原语一次搞清少踩坑 |
 | [google/adk-go](https://github.com/google/adk-go) | 8,764 | Apache-2.0 | Go | An open-source, code-first Go toolkit for building, evaluating, and deploying sophisticated AI agents with f… |
-| [modelcontextprotocol/registry](https://github.com/modelcontextprotocol/registry) | 7,234 | NOASSERTION | Go | A community driven registry service for Model Context Protocol (MCP) servers. |
+| [modelcontextprotocol/registry](https://github.com/modelcontextprotocol/registry) | 7,234 | NOASSERTION | Go | 社区 MCP 注册表，找 server 的正规入口；生态仍鱼龙混杂，接入前自行审查代码 |
 | [mobile-next/mobile-mcp](https://github.com/mobile-next/mobile-mcp) | 6,630 | Apache-2.0 | TypeScript | Model Context Protocol Server for Mobile Automation and Scraping (iOS, Android, Emulators, Simulators and Re… |
 | [getsentry/XcodeBuildMCP](https://github.com/getsentry/XcodeBuildMCP) | 6,363 | MIT | TypeScript | A Model Context Protocol (MCP) server and CLI that provides tools for agent use when working on iOS and macO… |
 | [jacob-bd/gemini-notebook-mcp-cli](https://github.com/jacob-bd/gemini-notebook-mcp-cli) | 6,056 | MIT | Python | Programmatic access to Gemini Notebook - via command-line interface (CLI), Model Context Protocol (MCP) serv… |
@@ -211,12 +215,12 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [browser-use/browser-use](https://github.com/browser-use/browser-use) | 11.4 万 | MIT | Python | Agents that use the browser. |
-| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | 3.7 万 | Apache-2.0 | TypeScript | Playwright MCP server |
-| [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk) | 3.0 万 | MIT | Python | Open-source AI browser agent for web automation: a web browsing agent and computer-use agent in plain Englis… |
-| [browserbase/stagehand](https://github.com/browserbase/stagehand) | 2.4 万 | MIT | TypeScript | The SDK For Browser Agents |
-| [nanobrowser/nanobrowser](https://github.com/nanobrowser/nanobrowser) | 1.4 万 | Apache-2.0 | TypeScript | Open-Source Chrome extension for AI-powered web automation. Run multi-agent workflows using your own LLM API… |
-| [magnitudedev/browser-agent](https://github.com/magnitudedev/browser-agent) | 4,128 | Apache-2.0 | TypeScript | Open-source, vision-first browser agent |
+| [browser-use/browser-use](https://github.com/browser-use/browser-use) | 11.4 万 | MIT | Python | 最主流的 Python 浏览器 Agent 库；快速做网页自动化很对味，长链任务的成功率与 token 成本都要自己加护栏 |
+| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | 3.7 万 | Apache-2.0 | TypeScript | 微软官方浏览器 MCP，无障碍树驱动不用截图；省 token、行为确定，给编程 Agent 配浏览能力首选 |
+| [feder-cr/AIHawk](https://github.com/feder-cr/AIHawk) | 3.0 万 | MIT | Python | 投简历自动化出圈后转向通用浏览器自动化；象征意义一直大于实用价值，用前确认最新定位 |
+| [browserbase/stagehand](https://github.com/browserbase/stagehand) | 2.4 万 | MIT | TypeScript | Browserbase 的 act/extract/observe 浏览器 SDK；自然语言指令与确定性代码可混写，是要认真上生产的方案 |
+| [nanobrowser/nanobrowser](https://github.com/nanobrowser/nanobrowser) | 1.4 万 | Apache-2.0 | TypeScript | Chrome 扩展里的多 Agent 自动化；个人流程玩具级入门，可靠性全看目标网站脸色 |
+| [magnitudedev/browser-agent](https://github.com/magnitudedev/browser-agent) | 4,128 | Apache-2.0 | TypeScript | 视觉优先的浏览器 Agent；比 DOM 方案慢且贵，只留给 DOM 拿不到的场景 |
 | [showlab/ShowUI](https://github.com/showlab/ShowUI) | 1,898 | Apache-2.0 | Python | [CVPR 2025] Open-source, End-to-end, Vision-Language-Action model for GUI Agent & Computer Use. |
 | [mediar-ai/terminator](https://github.com/mediar-ai/terminator) | 1,634 | MIT | Rust | playwright for windows computer use |
 | [hyperbrowserai/HyperAgent](https://github.com/hyperbrowserai/HyperAgent) | 1,560 | NOASSERTION | TypeScript | AI Browser Automation |
@@ -230,16 +234,16 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [langfuse/langfuse](https://github.com/langfuse/langfuse) | 3.4 万 | NOASSERTION | TypeScript | 🪢 Open source AI engineering platform: LLM evals, observability, metrics, prompt management, playground, dat… |
-| [SigNoz/signoz](https://github.com/SigNoz/signoz) | 3.2 万 | NOASSERTION | TypeScript | SigNoz is an open-source, OpenTelemetry-native observability platform for your team and their AI agents. Get… |
-| [mlflow/mlflow](https://github.com/mlflow/mlflow) | 2.8 万 | Apache-2.0 | Python | The open source AI engineering platform for agents, LLMs, and ML models. MLflow enables teams of all sizes t… |
-| [promptfoo/promptfoo](https://github.com/promptfoo/promptfoo) | 2.5 万 | MIT | TypeScript | Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare performan… |
-| [comet-ml/opik](https://github.com/comet-ml/opik) | 2.2 万 | Apache-2.0 | Python | Debug, evaluate, and monitor your LLM applications, RAG systems, and agentic workflows with comprehensive tr… |
-| [openobserve/openobserve](https://github.com/openobserve/openobserve) | 2.2 万 | AGPL-3.0 | TypeScript | Open source observability platform for logs, metrics, traces, RUM, Session replay, pipelines, SLO and LLM ob… |
-| [Arize-ai/phoenix](https://github.com/Arize-ai/phoenix) | 1.1 万 | NOASSERTION | Python | AI Observability & Evaluation |
-| [maximhq/bifrost](https://github.com/maximhq/bifrost) | 7,946 | Apache-2.0 | Go | Fastest enterprise AI gateway (50x faster than LiteLLM) with adaptive load balancer, cluster mode, guardrail… |
-| [evidentlyai/evidently](https://github.com/evidentlyai/evidently) | 7,903 | Apache-2.0 | Jupyter Notebook | Evidently is ​​an open-source ML and LLM observability framework. Evaluate, test, and monitor any AI-powered… |
-| [traceloop/openllmetry](https://github.com/traceloop/openllmetry) | 7,427 | Apache-2.0 | Python | Open-source observability for your GenAI or LLM application, based on OpenTelemetry |
+| [langfuse/langfuse](https://github.com/langfuse/langfuse) | 3.4 万 | NOASSERTION | TypeScript | 开源自托管 LLM 观测 + 评测的主力；trace 数据模型要早期定好，中途换平台很痛 |
+| [SigNoz/signoz](https://github.com/SigNoz/signoz) | 3.2 万 | NOASSERTION | TypeScript | OTel 原生老牌 APM，infra 监控是主业、AI 观测是新增；Agent 语义评测不是它的活 |
+| [mlflow/mlflow](https://github.com/mlflow/mlflow) | 2.8 万 | Apache-2.0 | Python | 老牌 ML 生命周期平台补齐了 genai 追踪；团队已在用会很顺手，纯 Agent 项目单采偏重 |
+| [promptfoo/promptfoo](https://github.com/promptfoo/promptfoo) | 2.5 万 | MIT | TypeScript | 配置文件驱动的 prompt/Agent 评测与红队；接 CI 最省事，强在断言模型而非界面体验 |
+| [comet-ml/opik](https://github.com/comet-ml/opik) | 2.2 万 | Apache-2.0 | Python | Comet 出的 Agent 调试与评测平台；SDK 接入轻，迭代快、跟文档要走最新版 |
+| [openobserve/openobserve](https://github.com/openobserve/openobserve) | 2.2 万 | AGPL-3.0 | TypeScript | 轻量一体化日志/指标/追踪平台，LLM 观测是副业；当基础设施监控选它更对 |
+| [Arize-ai/phoenix](https://github.com/Arize-ai/phoenix) | 1.1 万 | NOASSERTION | Python | Arize 的开源 trace + 评测，notebook 体验好；做离线评测的合适起点，规模大了再看托管方案 |
+| [maximhq/bifrost](https://github.com/maximhq/bifrost) | 7,946 | Apache-2.0 | Go | Go 写的高性能 AI 网关；性能宣传语要自己复测，功能面全，可作 LiteLLM 的替代候选 |
+| [evidentlyai/evidently](https://github.com/evidentlyai/evidently) | 7,903 | Apache-2.0 | Jupyter Notebook | 老牌 ML 数据分布评测报告框架，LLM 场景是延伸；统计报告视角独一份 |
+| [traceloop/openllmetry](https://github.com/traceloop/openllmetry) | 7,427 | Apache-2.0 | Python | OpenTelemetry 的 LLM 埋点规范与工具；已有 OTel 栈接进来丝滑，省得自造 trace 格式 |
 | [apache/hertzbeat](https://github.com/apache/hertzbeat) | 7,391 | Apache-2.0 | Java | An AI-powered next-generation open source real-time observability system. |
 | [GoogleCloudPlatform/agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack) | 6,556 | Apache-2.0 | Python | Ship AI Agents to Google Cloud in minutes, not months. Production-ready templates with built-in CI/CD, evalu… |
 | [microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) | 6,232 | MIT | Python | AI Agent Governance Toolkit — Policy enforcement, zero-trust identity, execution sandboxing, and reliability… |
@@ -269,16 +273,16 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [ollama/ollama](https://github.com/ollama/ollama) | 18.1 万 | MIT | Go | Get up and running with Kimi-K2.6, GLM-5.2, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models. |
-| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | 12.8 万 | MIT | C++ | LLM inference in C/C++ |
-| [vllm-project/vllm](https://github.com/vllm-project/vllm) | 9.1 万 | Apache-2.0 | Python | A high-throughput and memory-efficient inference and serving engine for LLMs |
-| [unslothai/unsloth](https://github.com/unslothai/unsloth) | 7.6 万 | Apache-2.0 | Python | Local UI to run and train LLMs and diffusion models. Supports GGUF, MLX, Qwen3.8, DeepSeek-V4, MiniMax-H3, G… |
-| [hiyouga/LlamaFactory](https://github.com/hiyouga/LlamaFactory) | 7.5 万 | Apache-2.0 | Python | Unified Efficient Fine-Tuning of 100+ LLMs & VLMs (ACL 2024) |
-| [BerriAI/litellm](https://github.com/BerriAI/litellm) | 5.8 万 | NOASSERTION | Python | The fastest, litest AI Gateway. Rust core with Python SDK. Call 100+ LLM APIs in OpenAI (or native) format w… |
-| [liguodongiot/llm-action](https://github.com/liguodongiot/llm-action) | 2.5 万 | Apache-2.0 | HTML | 本项目旨在分享大模型相关技术原理以及实战经验（大模型工程化、大模型应用落地） |
-| [huggingface/trl](https://github.com/huggingface/trl) | 1.9 万 | Apache-2.0 | Python | Train transformer language models with reinforcement learning. |
-| [mlc-ai/web-llm](https://github.com/mlc-ai/web-llm) | 1.9 万 | Apache-2.0 | TypeScript | High-performance In-browser LLM Inference Engine |
-| [stas00/ml-engineering](https://github.com/stas00/ml-engineering) | 1.9 万 | CC-BY-SA-4.0 | Python | Machine Learning Engineering Open Book |
+| [ollama/ollama](https://github.com/ollama/ollama) | 18.1 万 | MIT | Go | 一条命令跑起本地模型的体验之王；个人开发与原型首选，生产高并发要换 vLLM 这类 serving 方案 |
+| [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | 12.8 万 | MIT | C++ | GGUF 生态的地基，消费级设备推理无对手；多租户高并发 serving 得靠上层引擎 |
+| [vllm-project/vllm](https://github.com/vllm-project/vllm) | 9.1 万 | Apache-2.0 | Python | PagedAttention 出处，自托管高吞吐 serving 的默认答案；单卡小模型的新手用它是杀鸡用牛刀 |
+| [unslothai/unsloth](https://github.com/unslothai/unsloth) | 7.6 万 | Apache-2.0 | Python | 显存与速度优化的微调库，本地 UI 降门槛；部分进阶能力在商业托管侧，开源版覆盖主流架构 |
+| [hiyouga/LlamaFactory](https://github.com/hiyouga/LlamaFactory) | 7.5 万 | Apache-2.0 | Python | WebUI + YAML 配置式微调瑞士军刀；从零到 LoRA 的最短路径，科研要细粒度控制下沉到 TRL |
+| [BerriAI/litellm](https://github.com/BerriAI/litellm) | 5.8 万 | NOASSERTION | Python | 多厂商 OpenAI 兼容代理与预算管控的胶水标准件；自托管部署后版本升级要盯紧 |
+| [liguodongiot/llm-action](https://github.com/liguodongiot/llm-action) | 2.5 万 | Apache-2.0 | HTML | 中文大模型工程化实战大合集；训推部署运维体系最全的中文参考之一，当手册查很爽别当教程学 |
+| [huggingface/trl](https://github.com/huggingface/trl) | 1.9 万 | Apache-2.0 | Python | HF 的 RL 训练库，PPO/GRPO/DPO 标配；难点从来不在库而在奖励与数据，先把评测建好 |
+| [mlc-ai/web-llm](https://github.com/mlc-ai/web-llm) | 1.9 万 | Apache-2.0 | TypeScript | 浏览器内 WebGPU 推理；隐私 demo 与边缘场景好用，模型规模受用户内存硬约束 |
+| [stas00/ml-engineering](https://github.com/stas00/ml-engineering) | 1.9 万 | CC-BY-SA-4.0 | Python | Stas 的 ML 工程开源书；集群、分布式训练与调试的实战手册，做 Agent infra 前也该读 |
 | [bentoml/OpenLLM](https://github.com/bentoml/OpenLLM) | 1.3 万 | Apache-2.0 | Python | Run any open-source LLMs, such as DeepSeek and Llama, as OpenAI compatible API endpoint in the cloud. |
 | [cactus-compute/cactus](https://github.com/cactus-compute/cactus) | 5,996 | NOASSERTION | C++ | Quantization, kernels, runtime and inference engine for mobiles, wearables, smart home and robots. |
 | [MakazhanAlpamys/Soup](https://github.com/MakazhanAlpamys/Soup) | 5,984 | Apache-2.0 | Python | Fine-tune LLMs from one YAML. Layer streaming trains an 8B model on a 4 GB laptop GPU. |
@@ -308,11 +312,11 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [firecracker-microvm/firecracker](https://github.com/firecracker-microvm/firecracker) | 3.7 万 | Apache-2.0 | Rust | Secure and fast microVMs for serverless computing. |
-| [trycua/cua](https://github.com/trycua/cua) | 2.2 万 | MIT | HTML | Scale computer-use 2.0 with open-source drivers, cross-OS fleets, and benchmarks for training, evaluation, a… |
-| [e2b-dev/E2B](https://github.com/e2b-dev/E2B) | 1.4 万 | Apache-2.0 | Python | Open-source, secure environment with real-world tools for enterprise-grade agents. |
-| [agent-infra/sandbox](https://github.com/agent-infra/sandbox) | 5,883 | Apache-2.0 | Python | All-in-One Sandbox for AI Agents that combines Browser, Shell, File, MCP and VSCode Server in a single Docke… |
-| [e2b-dev/open-computer-use](https://github.com/e2b-dev/open-computer-use) | 2,249 | Apache-2.0 | Python | AI computer use powered by open source LLMs and E2B Desktop Sandbox |
+| [firecracker-microvm/firecracker](https://github.com/firecracker-microvm/firecracker) | 3.7 万 | Apache-2.0 | Rust | AWS 的 microVM 底座，serverless 沙箱的隔离答案；快照与编排层要自己搭，不是开箱 Agent 沙箱 |
+| [trycua/cua](https://github.com/trycua/cua) | 2.2 万 | MIT | HTML | 做 computer-use 训练/评测跨 OS 车队的前瞻项目；方向对但还很早期，别当成熟 infra 用 |
+| [e2b-dev/E2B](https://github.com/e2b-dev/E2B) | 1.4 万 | Apache-2.0 | Python | Agent 代码执行云沙箱的热门选择，SDK 体验丝滑；核心能力托管在服务侧，自托管边界要先看清 |
+| [agent-infra/sandbox](https://github.com/agent-infra/sandbox) | 5,883 | Apache-2.0 | Python | 单 Docker 容器打包浏览器 + Shell + MCP + VSCode；起步方便跑一体实验，跑不可信代码时单容器隔离不够看 |
+| [e2b-dev/open-computer-use](https://github.com/e2b-dev/open-computer-use) | 2,249 | Apache-2.0 | Python | E2B 官方 computer-use 示例；价值在读桌面 loop 与动作空间的工程做法，不是拿来即用的产品 |
 | [abshkbh/arrakis](https://github.com/abshkbh/arrakis) | 871 | AGPL-3.0 | Go | A fully customizable and self-hosted sandboxing solution for AI agent code execution and computer use. It fe… |
 | [e2b-dev/surf](https://github.com/e2b-dev/surf) | 863 | Apache-2.0 | TypeScript | Surf is a computer use AI agent powered by OpenAI that interacts with a E2B's virtual desktop environment th… |
 | [open-gitagent/clawless](https://github.com/open-gitagent/clawless) | 534 | MIT | TypeScript | ClawLess — A serverless browser-based runtime for Claw AI Agents powered by WebContainers |
@@ -321,16 +325,16 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [OpenBMB/ToolBench](https://github.com/OpenBMB/ToolBench) | 5,736 | Apache-2.0 | Python | [ICLR'24 spotlight] An open platform for training, serving, and evaluating large language model for tool lea… |
-| [THUDM/AgentBench](https://github.com/THUDM/AgentBench) | 3,722 | Apache-2.0 | Python | A Comprehensive Benchmark to Evaluate LLMs as Agents (ICLR'24) |
-| [Meirtz/Awesome-Context-Engineering](https://github.com/Meirtz/Awesome-Context-Engineering) | 3,299 | MIT | — | 🔥 Comprehensive survey on Context Engineering: from prompt engineering to production-grade AI systems. hundr… |
-| [blazickjp/arxiv-mcp-server](https://github.com/blazickjp/arxiv-mcp-server) | 3,127 | Apache-2.0 | Python | A local MCP server for agent literature work. Original-LaTeX section reads, BibTeX from arXiv metadata, and … |
-| [yilewang/llm-for-zotero](https://github.com/yilewang/llm-for-zotero) | 2,940 | AGPL-3.0 | TypeScript | An open-source research agent system for your Zotero library. |
-| [luo-junyu/Awesome-Agent-Papers](https://github.com/luo-junyu/Awesome-Agent-Papers) | 2,850 | NOASSERTION | — | [Up-to-date] Large Language Model Agent: A Survey on Methodology, Applications and Challenges |
-| [Shichun-Liu/Agent-Memory-Paper-List](https://github.com/Shichun-Liu/Agent-Memory-Paper-List) | 2,374 | MIT | — | The paper list of "Memory in the Age of AI Agents: A Survey" |
+| [OpenBMB/ToolBench](https://github.com/OpenBMB/ToolBench) | 5,736 | Apache-2.0 | Python | 工具调用数据集的早期经典；造数据的方法论有史料价值，数据本身质量参差 |
+| [THUDM/AgentBench](https://github.com/THUDM/AgentBench) | 3,722 | Apache-2.0 | Python | 多环境 Agent 一体考核的经典基准；强模型上已趋饱和，更适合当回归对照而非追前沿 |
+| [Meirtz/Awesome-Context-Engineering](https://github.com/Meirtz/Awesome-Context-Engineering) | 3,299 | MIT | — | 上下文工程综述配套论文清单；找文献高效，观点结论要打折读 |
+| [blazickjp/arxiv-mcp-server](https://github.com/blazickjp/arxiv-mcp-server) | 3,127 | Apache-2.0 | Python | arXiv 文献流的 MCP server；研究型 Agent 的常备件，配自己的向量库检索体验更好 |
+| [yilewang/llm-for-zotero](https://github.com/yilewang/llm-for-zotero) | 2,940 | AGPL-3.0 | TypeScript | 给自己的 Zotero 文库加 Agent 问答；个人科研很友好，AGPL 许可商用嵌入要谨慎 |
+| [luo-junyu/Awesome-Agent-Papers](https://github.com/luo-junyu/Awesome-Agent-Papers) | 2,850 | NOASSERTION | — | LLM Agent 方法学综述的配套论文库；按方法论分类，系统入场的标配 |
+| [Shichun-Liu/Agent-Memory-Paper-List](https://github.com/Shichun-Liu/Agent-Memory-Paper-List) | 2,374 | MIT | — | Agent 记忆综述的配套清单；做记忆方向绕不开的系统入口 |
 | [jmiao24/Paper2Agent](https://github.com/jmiao24/Paper2Agent) | 2,353 | MIT | Jupyter Notebook | Paper2Agent is a multi-agent AI system that automatically transforms research papers into interactive AI age… |
 | [Xnhyacinth/Awesome-LLM-Long-Context-Modeling](https://github.com/Xnhyacinth/Awesome-LLM-Long-Context-Modeling) | 2,168 | MIT | — | 📰 Must-read papers and blogs on LLM based Long Context Modeling 🔥 |
-| [sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench) | 2,001 | MIT | Python | τ-Bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains |
+| [sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench) | 2,001 | MIT | Python | 模拟用户 + 政策约束的 Tool-Agent-User 交互基准；少数经得起复现检验的 Agent 评测之一 |
 | [VoltAgent/awesome-ai-agent-papers](https://github.com/VoltAgent/awesome-ai-agent-papers) | 1,765 | MIT | — | A curated collection of AI agent research papers released in 2026, covering agent engineering, memory, evalu… |
 | [trycua/acu](https://github.com/trycua/acu) | 1,748 | NOASSERTION | — | A curated list of resources about AI agents for Computer Use, including research papers, projects, framework… |
 | [Barca0412/Introduction-to-Quantitative-Finance](https://github.com/Barca0412/Introduction-to-Quantitative-Finance) | 1,737 | MIT | Python | AI+金融（量化）：1.多因子股票量化框架开源教程 2.学界和业界的经典资料收录 3.AI + 金融的相关工作，包括LLM, Agent, benchmark(evaluation), etc. |
@@ -360,14 +364,14 @@ updated: 2026-09-10
 
 | 项目 | Star(2026-09) | 许可 | 语言 | 说明 |
 |---|---|---|---|---|
-| [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) | 9.5 万 | MIT | — | A collection of MCP servers. |
-| [dair-ai/Prompt-Engineering-Guide](https://github.com/dair-ai/Prompt-Engineering-Guide) | 7.8 万 | MIT | MDX | 🐙 Guides, papers, lessons, notebooks and resources for prompt engineering, context engineering, RAG, and AI … |
-| [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) | 7.4 万 | MIT | Jupyter Notebook | 18 Lessons to Get Started Building AI Agents |
-| [rohitg00/ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch) | 5.4 万 | MIT | Python | Learn it. Build it. Ship it for others. |
-| [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) | 4.6 万 | Apache-2.0 | Python | 《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码 |
-| [patchy631/ai-engineering-hub](https://github.com/patchy631/ai-engineering-hub) | 3.7 万 | MIT | Jupyter Notebook | In-depth tutorials on LLMs, RAGs and real-world AI agent applications. |
-| [e2b-dev/awesome-ai-agents](https://github.com/e2b-dev/awesome-ai-agents) | 3.0 万 | NOASSERTION | — | A list of AI autonomous agents |
-| [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) | 2.6 万 | NOASSERTION | TypeScript | What are the principles we can use to build LLM-powered software that is actually good enough to put in the … |
+| [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) | 9.5 万 | MIT | — | MCP server 大列表，找货入口；质量参差，接入前逐个审 |
+| [dair-ai/Prompt-Engineering-Guide](https://github.com/dair-ai/Prompt-Engineering-Guide) | 7.8 万 | MIT | MDX | dair-ai 的提示/上下文工程指南；概念准、更新勤，动手落地还得另找项目练 |
+| [microsoft/ai-agents-for-beginners](https://github.com/microsoft/ai-agents-for-beginners) | 7.4 万 | MIT | Jupyter Notebook | 微软 18 课入门课；路子正但偏浅，读完要自己往生产场景跨一步 |
+| [rohitg00/ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch) | 5.4 万 | MIT | Python | 从零开始的 AI 工程路线，量大管饱；要挑着学，别收藏了当学过 |
+| [bojieli/ai-agent-book](https://github.com/bojieli/ai-agent-book) | 4.6 万 | Apache-2.0 | Python | 中文开源书《深入理解 AI Agent》；体系完整且带按章代码，这类中文材料里的稀缺品 |
+| [patchy631/ai-engineering-hub](https://github.com/patchy631/ai-engineering-hub) | 3.7 万 | MIT | Jupyter Notebook | 一篇文章一个可跑项目的 RAG/Agent 教程库；抄改起步快，深究原理要另找材料 |
+| [e2b-dev/awesome-ai-agents](https://github.com/e2b-dev/awesome-ai-agents) | 3.0 万 | NOASSERTION | — | Agent 大全目录；逛一圈可以，商业化倾向明显、时效一般，选型别只靠它 |
+| [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents) | 2.6 万 | NOASSERTION | TypeScript | 生产级 Agent 的 12 条工程原则；杂文体但观点可直接落地，反框架炒作必读 |
 | [datawhalechina/easy-vibe](https://github.com/datawhalechina/easy-vibe) | 1.9 万 | NOASSERTION | JavaScript | 💻  vibe coding 101｜The first course for AI-native product builders. |
 | [awesome-opencode/awesome-opencode](https://github.com/awesome-opencode/awesome-opencode) | 1.0 万 | CC0-1.0 | JavaScript | A curated list of awesome plugins, themes, agents, projects, and resources for https://opencode.ai |
 | [WangRongsheng/awesome-LLM-resources](https://github.com/WangRongsheng/awesome-LLM-resources) | 8,945 | Apache-2.0 | — | 🧑‍🚀 全世界最好的LLM资料总结（多模态生成、Agent、辅助编程、AI审稿、数据处理、模型训练、模型推理、o1 模型、MCP、小语言模型、视觉语言模型） / Summary of the world's best… |
@@ -400,3 +404,4 @@ updated: 2026-09-10
 - [框架与生态](../../09-frameworks/README.md)
 - [工具调用与协议](../../05-tool-protocol/README.md)
 - [记忆与 RAG](../../06-memory-rag/README.md)
+

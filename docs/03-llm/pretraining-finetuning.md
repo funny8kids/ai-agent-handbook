@@ -2,12 +2,14 @@
 tags: [llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 预训练、微调与指令微调
 
-> **一句话**：预训练学「知识」，微调学「行为」；SFT 教模型好好说话，RLHF/DPO 教模型说「对的」话。
+{% hint style="info" %}
+**一句话**：预训练学「知识」，微调学「行为」；SFT 教模型好好说话，RLHF/DPO 教模型说「对的」话。
+{% endhint %}
 
 ## 问题动机
 
@@ -109,3 +111,4 @@ flowchart LR
 
 - [RLHF、DPO 与对齐](rlhf-dpo-alignment.md)
 - [RAG 基础](../06-memory-rag/rag-basics.md)
+

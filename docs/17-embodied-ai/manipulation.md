@@ -2,14 +2,16 @@
 tags: [embodied-ai, application]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 灵巧操作：抓取、接触与触觉
 
-> **一句话**：操作是具身智能里最难也最值钱的一块——难点不在「抓住」，而在「接触丰富」：滑、卡、变形、遮挡同时发生时，纯视觉策略会立刻失去对世界的把握，力/触觉与恢复行为才是分水岭。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#application`
+{% hint style="info" %}
+**一句话**：操作是具身智能里最难也最值钱的一块——难点不在「抓住」，而在「接触丰富」：滑、卡、变形、遮挡同时发生时，纯视觉策略会立刻失去对世界的把握，力/触觉与恢复行为才是分水岭。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -112,3 +114,4 @@ def grasp_and_insert(obj, target, arm, hand):
 - [动作表示与分层控制](action-representation-control.md)
 - [人形与腿足运动](humanoid-locomotion.md)
 - [硬件、实时与安全](hardware-realtime-safety.md)
+

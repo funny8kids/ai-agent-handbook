@@ -2,14 +2,16 @@
 tags: [rag, framework]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 向量数据库生态
 
-> **一句话**：从嵌入式库到分布式集群，向量数据库生态已覆盖各种规模——原则是「从最小可用开始」，别为不存在的规模付复杂度。
-> **难度**：入门
-> **标签**：`#rag` `#engineering`
+{% hint style="info" %}
+**一句话**：从嵌入式库到分布式集群，向量数据库生态已覆盖各种规模——原则是「从最小可用开始」，别为不存在的规模付复杂度。
+  **难度**：入门
+  **标签**：`#rag` `#engineering`
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -52,3 +54,4 @@ flowchart LR
 
 - [向量数据库](../06-memory-rag/vector-database.md)
 - [Embedding 与相似度检索](../06-memory-rag/embedding-similarity.md)
+

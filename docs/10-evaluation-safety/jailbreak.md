@@ -2,12 +2,14 @@
 tags: [safety]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 越狱攻击
 
-> **一句话**：越狱（Jailbreak）= 绕过模型的安全对齐，诱导其产出本被拒绝的内容——攻防是持续的对抗博弈，工程上靠「对齐 + 过滤 + 监控」组合拳缓解。
+{% hint style="info" %}
+**一句话**：越狱（Jailbreak）= 绕过模型的安全对齐，诱导其产出本被拒绝的内容——攻防是持续的对抗博弈，工程上靠「对齐 + 过滤 + 监控」组合拳缓解。
+{% endhint %}
 
 ## 问题动机
 
@@ -120,3 +122,4 @@ flowchart LR
 
 - [提示注入](prompt-injection.md)
 - [对齐与安全](alignment-safety.md)
+

@@ -2,12 +2,14 @@
 tags: [agent, prompt, paper]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # ReAct 论文
 
-> **一句话**：提出「推理轨迹 + 行动」交替的 Agent 范式，是几乎所有现代 Agent 循环的思想原型。
+{% hint style="info" %}
+**一句话**：提出「推理轨迹 + 行动」交替的 Agent 范式，是几乎所有现代 Agent 循环的思想原型。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -24,6 +26,24 @@ updated: 2026-09-10
 - 核心实验对比至今有效：纯推理（CoT-only）会幻觉、纯行动（Act-only）缺规划，两者交替最优
 - 提供了 HotpotQA、FEVER、ALFWorld、WebShop 四类任务的完整实验，可信度高
 
+## 机制一图看懂
+
+推理与行动交替的循环，以及它赢在何处：
+
+```mermaid
+flowchart TD
+    Q["任务：如 HotpotQA 多跳问答"] --> R["ReAct 循环"]
+    R --> T["Thought：推理下一步该查什么"]
+    T --> A["Action：调用检索等外部接口"]
+    A --> O["Observation：读回真实结果，抑制幻觉"]
+    O -->|"信息不足，继续"| T
+    O -->|"信息足够"| F["Final Answer"]
+    Q -.->|"对照组"| B["Act-only：跳过推理直接行动"]
+    B --> W["缺规划，复杂任务易失败"]
+    Q -.-> C["CoT-only：只推理不调工具"]
+    C --> H["缺外部信息，容易幻觉"]
+```
+
 ## 上手建议
 
 1. 先读 Figure 1（一张图看懂 Thought→Action→Observation）
@@ -34,3 +54,4 @@ updated: 2026-09-10
 
 - [ReAct](../../04-prompt-reasoning/react.md)
 - [什么是 AI Agent](../../02-agent-basics/what-is-agent.md)
+

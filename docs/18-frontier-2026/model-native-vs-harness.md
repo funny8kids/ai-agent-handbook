@@ -2,12 +2,14 @@
 tags: [harness, architecture, taxonomy, agents]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 模型原生 vs 自建 Harness
 
-> **一句话**：2026 年 Agent 架构的主分叉是——**模型厂商托管 harness**（Agents API / Agent SDK / Managed Agents）还是 **你自己（或开源框架）组装循环**。
+{% hint style="info" %}
+**一句话**：2026 年 Agent 架构的主分叉是——**模型厂商托管 harness**（Agents API / Agent SDK / Managed Agents）还是 **你自己（或开源框架）组装循环**。
+{% endhint %}
 
 ## 定义与边界
 
@@ -73,3 +75,4 @@ flowchart TD
 - [编程 Agent](../12-applications/coding-agent.md)
 - [OpenAI Agents API](openai-agents-api.md)
 - [Claude Agent SDK](claude-agent-sdk.md)
+

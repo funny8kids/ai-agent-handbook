@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 个人助理
 
-> **一句话**：个人助理是 Agent 的终极形态之一：长期记忆、跨应用执行、深度个性化——也是隐私、记忆管理与工具权限矛盾最尖锐的场景。
-> **难度**：进阶
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：个人助理是 Agent 的终极形态之一：长期记忆、跨应用执行、深度个性化——也是隐私、记忆管理与工具权限矛盾最尖锐的场景。
+  **难度**：进阶
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -102,3 +104,4 @@ $$
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
+

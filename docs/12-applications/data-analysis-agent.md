@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 数据分析 Agent
 
-> **一句话**：数据分析 Agent = 会写 SQL/Python、会看数据、会画图并给出结论的「初级分析师」；成败关键在「数值零幻觉」与「结论可复现」。
-> **难度**：入门
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：数据分析 Agent = 会写 SQL/Python、会看数据、会画图并给出结论的「初级分析师」；成败关键在「数值零幻觉」与「结论可复现」。
+  **难度**：入门
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -104,3 +106,4 @@ $$
 - [浏览器、代码、文件系统工具](../05-tool-protocol/browser-code-filesystem-tools.md)
 - [幻觉问题](../10-evaluation-safety/hallucination.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
+

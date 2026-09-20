@@ -2,12 +2,14 @@
 tags: [planning]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 子目标规划
 
-> **一句话**：子目标（subgoal）是计划树上带状态的节点：有自己的完成判据、依赖关系和重试策略——管理好它们，长任务才不会中途「失忆」或「迷路」。
+{% hint style="info" %}
+**一句话**：子目标（subgoal）是计划树上带状态的节点：有自己的完成判据、依赖关系和重试策略——管理好它们，长任务才不会中途「失忆」或「迷路」。
+{% endhint %}
 
 ## 先看结论
 
@@ -118,3 +120,4 @@ flowchart LR
 - [任务分解](task-decomposition.md)
 - [监督者模式](../08-multi-agent/supervisor-pattern.md)
 - [错误恢复与重试](error-recovery-retry.md)
+

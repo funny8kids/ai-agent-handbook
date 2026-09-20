@@ -2,12 +2,14 @@
 tags: [framework, multi-agent, resource]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # AutoGen / Microsoft Agent Framework
 
-> **一句话**：微软多智能体框架：GroupChat 对话协作的开创者；现与 Semantic Kernel 合流为 Agent Framework，事件驱动架构支撑生产。
+{% hint style="info" %}
+**一句话**：微软多智能体框架：GroupChat 对话协作的开创者；现与 Semantic Kernel 合流为 Agent Framework，事件驱动架构支撑生产。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -33,3 +35,4 @@ updated: 2026-09-10
 
 - [AutoGen](../../09-frameworks/autogen.md)
 - [群聊模式](../../08-multi-agent/group-chat.md)
+

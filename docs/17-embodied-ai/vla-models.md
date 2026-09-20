@@ -2,14 +2,16 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # VLA 模型架构：视觉—语言—动作怎么接起来
 
-> **一句话**：VLA（Vision-Language-Action，视觉-语言-动作模型）= 预训练 VLM 的骨干 + 一个把隐藏状态变成连续动作的「动作专家」。模型能不能在真机上流畅干活，八成取决于这个动作专家的输出形式与频率。
-> **难度**： 高级
-> **标签**：`#embodied-ai` `#llm`
+{% hint style="info" %}
+**一句话**：VLA（Vision-Language-Action，视觉-语言-动作模型）= 预训练 VLM 的骨干 + 一个把隐藏状态变成连续动作的「动作专家」。模型能不能在真机上流畅干活，八成取决于这个动作专家的输出形式与频率。
+  **难度**： 高级
+  **标签**：`#embodied-ai` `#llm`
+{% endhint %}
 
 ## 先看结论
 
@@ -124,3 +126,4 @@ def sample(h_cond, steps=10, dt=0.1):           # 欧拉积分，从噪声走到
 - [机器人基础模型谱系](robot-foundation-models.md)
 - [Transformer 与 Attention](../03-llm/transformer-attention.md)
 - [数据引擎](data-engine.md)
+

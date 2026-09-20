@@ -2,12 +2,14 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 深度学习基础
 
-> **一句话**：深度学习用多层神经网络自动学习特征表示——层越深，能表达的概念越抽象。
+{% hint style="info" %}
+**一句话**：深度学习用多层神经网络自动学习特征表示——层越深，能表达的概念越抽象。
+{% endhint %}
 
 ## 先看结论
 
@@ -121,3 +123,4 @@ flowchart LR
 
 - [机器学习基础](machine-learning-basics.md)
 - [Transformer 与 Attention](../03-llm/transformer-attention.md)
+

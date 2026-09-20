@@ -2,12 +2,14 @@
 tags: [tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Tool Use
 
-> **一句话**：Tool Use 是比 Function Calling 更宏观的话题：如何设计工具集、控制工具面、路由选择与组合调用，让 Agent 的「手」够用且不乱摸。
+{% hint style="info" %}
+**一句话**：Tool Use 是比 Function Calling 更宏观的话题：如何设计工具集、控制工具面、路由选择与组合调用，让 Agent 的「手」够用且不乱摸。
+{% endhint %}
 
 ## 先看结论
 
@@ -65,6 +67,23 @@ $$
 
 另一个常被忽略的点是**幂等**：重试安全的工具（查询、`PUT` 式覆盖写）可以放心重试；非幂等的（创建、支付、发消息）必须带幂等键或人工确认，否则「重试」会变成「重复执行」（见 [错误恢复与重试](../07-planning/error-recovery-retry.md)）。
 
+## 一次工具调用的全链路
+
+从「全量工具集」到「消化后的结果回填」，每一环都是模型选对、用好的前提：
+
+```mermaid
+flowchart TD
+    A["全量工具集"] --> B["工具面控制：分组 / 延迟加载 / 动态注入"]
+    B --> C["模型在当前场景的工具里做选择（本质是分类）"]
+    C --> D["生成结构化参数"]
+    D --> E{"schema 校验 + 权限检查"}
+    E -->|"失败"| F["回填带上下文的错误契约"]
+    F --> C
+    E -->|"通过"| G["执行工具"]
+    G --> H["结果消化：截断 + 结构化"]
+    H --> I["回填观察，进入下一步决策"]
+```
+
 ## 工具集设计清单
 
 | 原则 | 反例 | 正例 |
@@ -118,3 +137,4 @@ $$
 - [Function Calling](function-calling.md)
 - [工具选择与路由](../07-planning/tool-selection-routing.md)
 - [MCP](mcp.md)
+

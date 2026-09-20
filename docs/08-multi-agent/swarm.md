@@ -2,12 +2,14 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Swarm
 
-> **一句话**：Swarm 模式去掉了中央协调者：Agent 之间通过「移交（handoff）」直接传递控制权，像接力棒一样流动——轻量、去中心化、适合流程可枚举的场景。
+{% hint style="info" %}
+**一句话**：Swarm 模式去掉了中央协调者：Agent 之间通过「移交（handoff）」直接传递控制权，像接力棒一样流动——轻量、去中心化、适合流程可枚举的场景。
+{% endhint %}
 
 ## 先看结论
 
@@ -112,3 +114,4 @@ def triage_agent(context):
 - [监督者模式](supervisor-pattern.md)
 - [通信协议](communication-protocol.md)
 - [A2A](../05-tool-protocol/a2a.md)
+

@@ -2,12 +2,14 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LangSmith、LangFuse、Phoenix、OpenTelemetry
 
-> **一句话**：四大观测方案：LangSmith（LangChain 生态 SaaS）、LangFuse（开源可自托管）、Phoenix（Arize 开源、评估强）、OpenTelemetry（厂商中立协议）——按「生态绑定与数据主权」选。
+{% hint style="info" %}
+**一句话**：四大观测方案：LangSmith（LangChain 生态 SaaS）、LangFuse（开源可自托管）、Phoenix（Arize 开源、评估强）、OpenTelemetry（厂商中立协议）——按「生态绑定与数据主权」选。
+{% endhint %}
 
 ## 先看结论
 
@@ -43,6 +45,15 @@ OpenTelemetry 为 GenAI 定义了**语义约定**（semantic conventions），�
 
 **为什么要用约定的属性名而不是自定义**：只有这样，换成另一套后端（或自建）时 trace 仍然可读，评估与成本分析工具也能直接复用。这是「协议优先于工具」在可观测性上的体现。
 
+```mermaid
+flowchart LR
+  A[Agent 运行时埋点] --> B[OTel GenAI 语义约定<br/>操作 / 模型 / 用量属性]
+  B --> C1[LangFuse 自托管]
+  B --> C2[Phoenix]
+  B --> C3[企业现有栈<br/>Datadog / Grafana]
+  B --> C4[自建 trace 库]
+```
+
 ### 3. 采样：全量采集会破产
 
 Agent 的 trace 又大又贵（每次都含完整 prompt 与工具输出）。全量保留不现实，需要采样：
@@ -71,6 +82,22 @@ $$
 聚合维度至少要有：用户/租户、任务类型、prompt 版本、模型。有了这些维度才能回答「哪个功能最烧钱」「哪次 prompt 改动让成本翻倍」（见 [缓存与成本优化](caching-cost-optimization.md)）。
 
 ## 选型对比
+
+三个决策问题跑一遍就是选型路径：
+
+```mermaid
+flowchart TB
+  Q1{trace 数据能出内网?}
+  Q1 -- 能 --> Q2{深度绑定 LangChain?}
+  Q2 -- 是 --> LS[LangSmith SaaS]
+  Q2 -- 否 --> LF[LangFuse 云版]
+  Q1 -- 不能 --> Q3{已有 Datadog / Grafana?}
+  Q3 -- 是 --> OT[OTel 协议接入现有栈<br/>别再造孤岛]
+  Q3 -- 否 --> Q4{RAG 评估是刚需?}
+  Q4 -- 是 --> PH[Phoenix]
+  Q4 -- 否 --> LFS[LangFuse 自托管]
+  LF -.可双轨导出.-> OT
+```
 
 | 方案 | 类型 | 优势 | 适合 |
 |---|---|---|---|
@@ -129,3 +156,4 @@ resp = client.chat.completions.create(
 - [日志、追踪与监控](logging-tracing-monitoring.md)
 - [持续评估](continuous-evaluation.md)
 - [缓存与成本优化](caching-cost-optimization.md)
+

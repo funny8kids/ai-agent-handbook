@@ -2,14 +2,16 @@
 tags: [tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 浏览器、代码、文件系统工具
 
-> **一句话**：这三类工具覆盖 Agent 90% 的实际工作面——读网页、跑代码、动文件；各自的安全与设计要点完全不同。
-> **难度**：进阶
-> **标签**：`#tooling`
+{% hint style="info" %}
+**一句话**：这三类工具覆盖 Agent 90% 的实际工作面——读网页、跑代码、动文件；各自的安全与设计要点完全不同。
+  **难度**：进阶
+  **标签**：`#tooling`
+{% endhint %}
 
 ## 先看结论
 
@@ -37,6 +39,22 @@ def edit_file(path, old_text, new_text):
 ```
 
 「旧文匹配替换」是 Claude Code Edit 工具与 Pi edit 工具的共同设计：强迫模型先读后改、精确锚定，杜绝「幻觉覆盖」。
+
+## 安全写的完整流程
+
+把「先读后写 + diff 审阅 + 可回滚」三条防线画成一次 edit 的实际路径：
+
+```mermaid
+flowchart TD
+    A["模型提出修改意图"] --> B["先读：读取文件当前内容，挡住幻觉记忆"]
+    B --> C{"old_text 在文件中匹配几处？"}
+    C -->|"0 处或多处"| D["拒绝执行，报错要求更长上下文锚点"]
+    D --> A
+    C -->|"唯一匹配"| E["替换并生成 diff 预览"]
+    E --> F{"写盘是否成功？"}
+    F -->|"成功"| G["返回修改后片段，留有回执"]
+    F -->|"失败"| H["恢复原文件，保持可回滚"]
+```
 
 ## 源码案例
 
@@ -79,3 +97,4 @@ $$
 
 - [工具权限与沙箱](tool-permission-sandbox.md)
 - [Computer Use / Browser Use](computer-use-browser-use.md)
+

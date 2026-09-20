@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 客服 Agent
 
-> **一句话**：客服是 Agent 商业化最卷的赛道：分诊路由 + 知识库问答 + 工单操作 + 平滑转人工——技术不难，难在口径一致、权限收窄与情绪兜底。
-> **难度**：入门
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：客服是 Agent 商业化最卷的赛道：分诊路由 + 知识库问答 + 工单操作 + 平滑转人工——技术不难，难在口径一致、权限收窄与情绪兜底。
+  **难度**：入门
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -92,3 +94,4 @@ $$
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
 - [OpenAI Agents SDK](../09-frameworks/openai-agents-sdk.md)
+

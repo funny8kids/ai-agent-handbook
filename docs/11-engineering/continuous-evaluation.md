@@ -2,12 +2,14 @@
 tags: [engineering, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 持续评估
 
-> **一句话**：持续评估 = 把「评估集 + 回归测试 + 线上数据回流」接进 CI/CD，让每次 prompt、模型、工具变更都有数据说话——评估不是上线前的一次性动作，是常态化的质量管线。
+{% hint style="info" %}
+**一句话**：持续评估 = 把「评估集 + 回归测试 + 线上数据回流」接进 CI/CD，让每次 prompt、模型、工具变更都有数据说话——评估不是上线前的一次性动作，是常态化的质量管线。
+{% endhint %}
 
 ## 先看结论
 
@@ -71,7 +73,7 @@ $$
 
 ```mermaid
 flowchart LR
-  A[提交变更<br/>prompt/模型/工具] --> B[CI: 核心评估集<br/>"<100条, 分钟级"]
+  A[提交变更<br/>prompt/模型/工具] --> B["CI: 核心评估集<br/>不足 100 条，分钟级"]
   B -- 回归 --> X[阻断合并]
   B -- 通过 --> C[合并上线]
   C --> D[线上监控]
@@ -117,3 +119,4 @@ flowchart LR
 - [Agent 评估指标](../10-evaluation-safety/evaluation-metrics.md)
 - [可观测性工具](observability-tools.md)
 - [基准测试总览](../10-evaluation-safety/benchmarks.md)
+

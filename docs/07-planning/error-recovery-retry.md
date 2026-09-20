@@ -2,12 +2,14 @@
 tags: [planning, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 错误恢复与重试
 
-> **一句话**：Agent 的可靠性不是「不犯错」，而是「犯错后有条不紊地恢复」：重试、降级、回退、换路四板斧 + 把错误喂回模型自我修正。
+{% hint style="info" %}
+**一句话**：Agent 的可靠性不是「不犯错」，而是「犯错后有条不紊地恢复」：重试、降级、回退、换路四板斧 + 把错误喂回模型自我修正。
+{% endhint %}
 
 ## 先看结论
 
@@ -140,3 +142,4 @@ raise FatalError("重试次数耗尽：降级或上报人工")
 - [Reflexion](../04-prompt-reasoning/reflexion.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
 - [子目标规划](subgoal-planning.md)
+

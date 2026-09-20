@@ -2,12 +2,14 @@
 tags: [framework, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LangChain
 
-> **一句话**：LangChain 是最流行的 LLM 应用开发框架：统一模型/向量库/工具的抽象，配以链条式编排——生态最大，抽象也最多，要「用薄不要用厚」。
+{% hint style="info" %}
+**一句话**：LangChain 是最流行的 LLM 应用开发框架：统一模型/向量库/工具的抽象，配以链条式编排——生态最大，抽象也最多，要「用薄不要用厚」。
+{% endhint %}
 
 ## 先看结论
 
@@ -49,6 +51,19 @@ prompt = ChatPromptTemplate.from_template("用一句话解释{topic}")
 chain = prompt | ChatOpenAI(model="gpt-4o-mini")
 print(chain.invoke({"topic": "MCP 协议"}).content)
 ```
+
+```mermaid
+flowchart LR
+  IN["输入 {'topic': 'MCP 协议'}"] --> A["ChatPromptTemplate<br/>填模板 → 消息列表"]
+  A --> B["ChatOpenAI<br/>消息 → AIMessage"]
+  B --> C["StrOutputParser<br/>AIMessage → 纯文本"]
+  C --> OUT["最终回答"]
+  N["Runnable 协议：invoke / stream / batch<br/>每个节点同一接口，故可用管道符拼接"] -.- A
+  N -.- B
+  N -.- C
+```
+
+*《图：LCEL 链拓扑——所有组件实现同一 Runnable 接口，`|` 把线性段拼成链，任一段可替换、整链自动可流式/批量/追踪》*
 
 ## 选型对比
 
@@ -96,3 +111,4 @@ print(chain.invoke({"topic": "MCP 协议"}).content)
 - [LangGraph](langgraph.md)
 - [ReAct](../04-prompt-reasoning/react.md)
 - [可观测性工具](../11-engineering/observability-tools.md)
+

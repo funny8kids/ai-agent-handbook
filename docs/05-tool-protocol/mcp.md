@@ -2,12 +2,14 @@
 tags: [mcp, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # MCP：Model Context Protocol
 
-> **一句话**：MCP 是 Anthropic 于 2024 年 11 月开源的协议，为「模型 ↔ 工具/数据源」定义统一接口——AI 应用的 USB-C：写一次 Server，所有支持的客户端都能用。
+{% hint style="info" %}
+**一句话**：MCP 是 Anthropic 于 2024 年 11 月开源的协议，为「模型 ↔ 工具/数据源」定义统一接口——AI 应用的 USB-C：写一次 Server，所有支持的客户端都能用。
+{% endhint %}
 
 ## 先看结论
 
@@ -84,7 +86,9 @@ flowchart LR
 | Resources | 应用决定注入 | 只读上下文 | 文件内容、表结构 |
 | Prompts | 用户选择 | 模板化任务 | 「/review 这个 PR」 |
 
-> **提示**：Tools 由**模型**控制（它决定何时调），Resources 由**应用**控制（它决定何时注入），Prompts 由**用户**控制（它决定何时用）。这个「控制方」划分是理解三大原语的关键。
+{% hint style="tip" %}
+**提示**：Tools 由**模型**控制（它决定何时调），Resources 由**应用**控制（它决定何时注入），Prompts 由**用户**控制（它决定何时用）。这个「控制方」划分是理解三大原语的关键。
+{% endhint %}
 
 ## 最小 Server（TypeScript）
 
@@ -135,3 +139,4 @@ await server.connect(new StdioServerTransport());
 - [Function Calling](function-calling.md)
 - [A2A](a2a.md)
 - [工具权限与沙箱](tool-permission-sandbox.md)
+

@@ -2,14 +2,16 @@
 tags: [embodied-ai, engineering, safety]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 硬件、实时与安全
 
-> **一句话**：模型给你能力，硬件与安全层给你「能进现场」的资格——延迟预算、算力预算、传感冗余、力与速度限制、急停回路，这五项决定机器人是产品还是展品。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#engineering` `#safety`
+{% hint style="info" %}
+**一句话**：模型给你能力，硬件与安全层给你「能进现场」的资格——延迟预算、算力预算、传感冗余、力与速度限制、急停回路，这五项决定机器人是产品还是展品。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#engineering` `#safety`
+{% endhint %}
 
 ## 先看结论
 
@@ -45,6 +47,19 @@ updated: 2026-09-10
 **板载常见配置**（量级参考，具体看代际）：NVIDIA Jetson Orin 系列（数瓦到数十瓦，INT8/FP16 推理）、消费级移动 GPU、NPU/加速器。工程要点是**功耗-散热-算力**三角：持续推理下会热降频，热降频后控制频率掉，机器人行为就变了——必须在高温工况下重测端到端延迟与成功率。
 
 ## 安全层：怎么落到代码与硬件
+
+一次动作命令从模型到电机，要依次穿过下面这些闸门；急停与看门狗走独立安全回路，绕过策略进程直达执行器——这正是「分层冗余，任一失效另一层还能停」的落地形态。
+
+```mermaid
+flowchart LR
+  POL[策略 / 模型输出] --> SW[软件安全层<br/>限幅 · 力限 PFL · SSL · 软限位 · 自碰撞]
+  SW --> RT[实时控制线程<br/>IK · 阻抗 · 零动态内存]
+  RT --> BUS[EtherCAT 总线<br/>DC 同步 + 看门狗]
+  BUS --> MOT[电机 / 驱动器<br/>力矩限幅]
+  STOP[急停按钮<br/>Cat0 断力 · Cat1 受控停] -. 独立安全回路 .-> MOT
+  WDG[心跳 / 指令丢失] -.-> FAULT[已知安全态<br/>放负载 · 收臂 · 抱闸]
+  SW -. 拒绝 / 降级 .-> FAULT
+```
 
 ```python
 # 软件安全层（放在模型输出与机器人驱动之间，独立于策略进程）
@@ -119,3 +134,4 @@ class SafetyMonitor:
 - [评估与基准](evaluation-benchmarks.md)
 - [把 Agent 接进机器人](agent-to-robot-bridge.md)
 - [沙箱与执行环境](../16-ai-infrastructure/sandbox-execution-environments.md)
+

@@ -2,12 +2,14 @@
 tags: [memory, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 记忆压缩、遗忘与摘要
 
-> **一句话**：窗口迟早会满，所以 Agent 必须学会「忘记」：压缩（保留要点）、摘要（浓缩历史）、遗忘（主动淘汰）——这是长任务 Agent 的生存技能。
+{% hint style="info" %}
+**一句话**：窗口迟早会满，所以 Agent 必须学会「忘记」：压缩（保留要点）、摘要（浓缩历史）、遗忘（主动淘汰）——这是长任务 Agent 的生存技能。
+{% endhint %}
 
 ## 问题动机
 
@@ -108,3 +110,4 @@ flowchart LR
 
 - [上下文工程](context-engineering.md)
 - [Agent 状态管理](../02-agent-basics/state-management.md)
+

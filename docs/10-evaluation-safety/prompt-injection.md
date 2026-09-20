@@ -2,12 +2,14 @@
 tags: [safety]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 提示注入
 
-> **一句话**：提示注入（Prompt Injection）= 攻击者把恶意指令藏进 Agent 会「读」的内容里（网页、文件、邮件、工具输出），劫持 Agent 行为——Agent 时代的 SQL 注入。
+{% hint style="info" %}
+**一句话**：提示注入（Prompt Injection）= 攻击者把恶意指令藏进 Agent 会「读」的内容里（网页、文件、邮件、工具输出），劫持 Agent 行为——Agent 时代的 SQL 注入。
+{% endhint %}
 
 ## 问题动机
 
@@ -119,3 +121,4 @@ sequenceDiagram
 - [越狱攻击](jailbreak.md)
 - [权限控制与沙箱隔离](permission-sandbox.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
+

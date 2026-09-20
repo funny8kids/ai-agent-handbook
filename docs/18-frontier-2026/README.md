@@ -2,12 +2,14 @@
 tags: [frontier, models, agents, 2026]
 type: index
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 本章导读：2026 前沿
 
-> **一句话**：2026 年的竞争焦点已从「单模型分数」转向「模型 + 托管 harness + 沙箱 + 企业治理」——本章对齐 2026-09 的真实产品面。
+{% hint style="info" %}
+**一句话**：2026 年的竞争焦点已从「单模型分数」转向「模型 + 托管 harness + 沙箱 + 企业治理」——本章对齐 2026-09 的真实产品面。
+{% endhint %}
 
 ## 为什么要单独开这一章
 
@@ -41,8 +43,8 @@ flowchart TB
 | [OpenAI Agents API](openai-agents-api.md) | 用一次 API call 起托管 Agent，并理解压缩 / tool search / 子 Agent |
 | [Claude Agent SDK](claude-agent-sdk.md) | 分清 Agent SDK / CLI / Client SDK / Managed Agents |
 | [模型原生 vs 自建 Harness](model-native-vs-harness.md) | 判断你的场景该买托管 harness 还是自己写循环 |
-| [通用 Agent 产品](general-agent-products.md) | 看懂 Manus 类「通用助理」与编程 Agent 的差异 |
-| [实时语音 Agent](voice-agents.md) | 理解语音 Agent 的延迟预算与工具打断模型 |
+| [通用 Agent 产品](../12-applications/general-agent-products.md) | 看懂 Manus 类「通用助理」与编程 Agent 的差异 |
+| [实时语音 Agent](../12-applications/voice-agent.md) | 理解语音 Agent 的延迟预算与工具打断模型 |
 | [2026 协议栈](protocol-stack-2026.md) | 把 MCP / A2A / AG-UI / agents.md / Skills 放进同一张图 |
 
 ## 与旧章的关系
@@ -59,3 +61,18 @@ flowchart TB
 - [Claude Fable 5.1 and Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)（Anthropic, 2026-09）
 - [Claude Agent SDK overview](https://docs.claude.com/en/api/agent-sdk/overview)
 - [Terminal-Bench 4.0](https://www.tbench.ai/)
+
+## 读完能做到
+
+- [ ] 说清 Astra / Fable 5.1 / Opus 5 各自强在哪个场景，以及 Fable 与 Mythos 的防护档位差别
+- [ ] 看到任何 2026 榜单数字，先问五件事：任务集版本、harness、effort、防护是否开启、成本
+- [ ] 用「循环是否产品差异化」的决策流程，判断自己的场景该买托管 harness 还是自己写循环，并说出各自的代价
+- [ ] 分清 Agent SDK / CLI / Client SDK / Managed Agents 四种形态的边界，说明为什么 SDK ≠ 再包一层 Messages API
+- [ ] 把 MCP / A2A / AG-UI / agents.md 放进同一张协议栈图的四层，各说一句解决什么问题
+
+## 章末自测
+
+1. **回忆**：2026 协议栈的四个层分别是什么协议、各解决什么？（提示：见 protocol-stack-2026.md）
+2. **应用**：一家创业公司要在两周内上线编码助手，无特殊合规要求。按本章决策流程该选托管 harness 还是自研循环？主要代价是什么？（提示：见 model-native-vs-harness.md）
+3. **判断**：有人说「Agents API 不过是 chat.completions 套一层壳，不值得用」。按本章对托管 harness 的定义，这句话漏掉了哪些开箱能力？（提示：见 openai-agents-api.md）
+

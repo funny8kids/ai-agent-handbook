@@ -26,6 +26,20 @@
 3. 提交 Pull Request，描述改动内容与原因
 4. 维护者审核合并后，GitBook 会自动同步更新
 
+## 图文与排版规范
+
+- **导语用 hint 块**：每篇知识点页开头用 `{% hint style="info" %}` 放「一句话」结论；易踩的坑用 `style="tip"` / `"warning"`，危险操作警示用 `"danger"`
+- **正文流程图用 Mermaid**：GitBook 原生渲染 ```` ```mermaid ```` 块，无需插件；节点 ≤12 个，中文标签加引号，`flowchart` 画结构、`sequenceDiagram` 画交互时序
+- **章首总览图**：每章导读配一张全局地图（现有 20+ 张 SVG 在 `docs/.gitbook/assets/`，新章优先沿用同风格）
+- **长推导可折叠**：多步数学推导放正文，超一屏的证明用 `{% expandable %}` 收起，主页只留结论
+- **每页一图起步**：核心机制一节至少配一张能「看图回忆结论」的图；图要为解释而画，不放装饰图
+
+## 快速上手（good first page）
+
+- 给还没有配图的知识点页补一张 Mermaid 图（用 `grep -L mermaid docs/*/*.md` 找缺口）
+- 给 [开源项目索引](../13-resources/projects/README.md) 补一个你实测过的项目并写「一句话点评」
+- 校对任意一页的失效链接与过时数字（star 数、版本号、日期）
+
 ## 风格建议
 
 - 每页聚焦一个主题，宁短勿杂

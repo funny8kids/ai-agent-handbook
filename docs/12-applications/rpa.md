@@ -2,14 +2,16 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # RPA
 
-> **一句话**：RPA（机器人流程自动化）+ LLM = 从「死板脚本」到「能处理变化的流程自动化」：LLM 负责理解与兜底，RPA 负责精准执行——是传统 RPA 厂商与 Agent 融合的主战场。
-> **难度**：入门
-> **标签**：`#application`
+{% hint style="info" %}
+**一句话**：RPA（机器人流程自动化）+ LLM = 从「死板脚本」到「能处理变化的流程自动化」：LLM 负责理解与兜底，RPA 负责精准执行——是传统 RPA 厂商与 Agent 融合的主战场。
+  **难度**：入门
+  **标签**：`#application`
+{% endhint %}
 
 ## 先看结论
 
@@ -93,3 +95,4 @@ $$
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
 - [通用 Agent 产品](general-agent-products.md)
+

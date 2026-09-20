@@ -2,14 +2,16 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 训练与微调基础设施
 
-> **一句话**：Agent 项目里的「微调」八成不是炼丹，而是流水线工程：数据配比、LoRA 适配器管理、可复现实验记录、断点续训、评估门禁、一键上线到推理引擎——把这六件事自动化，微调才划算。
-> **难度**： 高级
-> **标签**：`#infrastructure` `#llm`
+{% hint style="info" %}
+**一句话**：Agent 项目里的「微调」八成不是炼丹，而是流水线工程：数据配比、LoRA 适配器管理、可复现实验记录、断点续训、评估门禁、一键上线到推理引擎——把这六件事自动化，微调才划算。
+  **难度**： 高级
+  **标签**：`#infrastructure` `#llm`
+{% endhint %}
 
 ## 先看结论
 
@@ -128,3 +130,4 @@ curl :8000/v1/chat/completions -d '{"model":"agent-v3","messages":[...]}'
 - [数据与检索基础设施](data-vector-storage.md)
 - [持续评估](../11-engineering/continuous-evaluation.md)
 - [推理经济学与部署形态](inference-economics-deployment.md)
+

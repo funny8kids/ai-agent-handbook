@@ -2,14 +2,16 @@
 tags: [infrastructure, safety, tooling, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 沙箱与执行环境
 
-> **一句话**：Agent 一旦能执行模型现写的代码，你的服务就多了一个「会自己找路出去的实习生」——沙箱层的任务是把「能干什么、能碰什么、能去哪、能跑多久」四件事变成可验证的边界。
-> **难度**： 高级
-> **标签**：`#infrastructure` `#safety` `#tooling`
+{% hint style="info" %}
+**一句话**：Agent 一旦能执行模型现写的代码，你的服务就多了一个「会自己找路出去的实习生」——沙箱层的任务是把「能干什么、能碰什么、能去哪、能跑多久」四件事变成可验证的边界。
+  **难度**： 高级
+  **标签**：`#infrastructure` `#safety` `#tooling`
+{% endhint %}
 
 ## 先看结论
 
@@ -117,3 +119,4 @@ def before_execute(call):
 - [权限与沙箱（安全章）](../10-evaluation-safety/permission-sandbox.md)
 - [模型网关与路由](model-gateway.md)
 - [GPU 调度与多租户](gpu-scheduling-multitenancy.md)
+

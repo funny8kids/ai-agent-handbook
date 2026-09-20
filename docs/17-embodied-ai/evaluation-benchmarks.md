@@ -2,14 +2,16 @@
 tags: [embodied-ai, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 评估与基准：怎么证明机器人真的行
 
-> **一句话**：机器人评估的第一原则是「一次成功是一次成功」——不允许无限重试、不允许剪辑、不允许只报最好那次；比分数更重要的是评测协议（任务集、初值分布、成功判据、失败分类）能否被别人复现。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#evaluation`
+{% hint style="info" %}
+**一句话**：机器人评估的第一原则是「一次成功是一次成功」——不允许无限重试、不允许剪辑、不允许只报最好那次；比分数更重要的是评测协议（任务集、初值分布、成功判据、失败分类）能否被别人复现。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#evaluation`
+{% endhint %}
 
 ## 先看结论
 
@@ -32,6 +34,21 @@ updated: 2026-09-10
 | 自建真机协议 | 真机 | 你的产品任务 | 上线验收的唯一依据 |
 
 > ⚠ **注意**：仿真基准分数很容易被「针对基准过拟合」——把基准里的相机、桌面、物体形状当成部署目标。上线前必须有一组你自己的、从基准格式独立出来的真机任务。
+
+## 评估升级阶梯
+
+证据的「保真度」逐级上升、「吞吐」逐级下降：越靠上越便宜越可回归，越靠下越接近上线真相。仿真只给相对提升，验收永远落在真机那一格。
+
+```mermaid
+flowchart TB
+  CI[仿真回归集<br/>每次改动跑 · 看相对提升] --> SR[SimplerEnv 批量 rollout<br/>低成本估真机成功率]
+  SR --> SMALL[小样本真机<br/>校准 sim-to-real 差]
+  SMALL --> FULL[全协议真机留出集<br/>四维留出 · 每条件≥20 · 失败分类]
+  FULL --> SAFE{安全 / 破坏性<br/>测试通过?}
+  SAFE -- 否 --> FIX[回修数据或控制] --> CI
+  SAFE -- 是 --> GRAY[灰度上线<br/>盯 user-facing 完成率]
+  GRAY -- 线上失败回流 --> CI
+```
 
 ## 一份可复制的真机评测协议
 
@@ -124,3 +141,4 @@ print(pd.DataFrame(trials).groupby("model_version")[
 - [仿真与 Sim-to-Real](simulation-sim2real.md)
 - [数据引擎](data-engine.md)
 - [硬件、实时与安全](hardware-realtime-safety.md)
+

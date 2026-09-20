@@ -2,12 +2,14 @@
 tags: [multi-agent, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # A2A：Agent-to-Agent
 
-> **一句话**：A2A 是 Google 发起（2025 年 4 月，同年捐给 Linux 基金会治理）的开放协议，让不同厂商、不同框架的 Agent 互相发现、对话、委派任务——MCP 管「Agent 连工具」，A2A 管「Agent 连 Agent」。
+{% hint style="info" %}
+**一句话**：A2A 是 Google 发起（2025 年 4 月，同年捐给 Linux 基金会治理）的开放协议，让不同厂商、不同框架的 Agent 互相发现、对话、委派任务——MCP 管「Agent 连工具」，A2A 管「Agent 连 Agent」。
+{% endhint %}
 
 ## 先看结论
 
@@ -136,3 +138,4 @@ flowchart TB
 - [MCP](mcp.md)
 - [通信协议](../08-multi-agent/communication-protocol.md)
 - [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)
+

@@ -2,12 +2,14 @@
 tags: [prompt, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Prompt Engineering
 
-> **一句话**：Prompt Engineering 是给「概率机器」写需求文档——角色、任务、约束、示例、格式五要素写清楚，输出质量立竿见影。
+{% hint style="info" %}
+**一句话**：Prompt Engineering 是给「概率机器」写需求文档——角色、任务、约束、示例、格式五要素写清楚，输出质量立竿见影。
+{% endhint %}
 
 ## 先看结论
 
@@ -52,6 +54,21 @@ $$
 | 分解（decomposition） | 把复杂任务拆成多个 prompt 串起来 | 单 prompt 顾此失彼时 |
 
 **few-shot 的关键不是数量而是覆盖**：示例要覆盖典型分支与边界情况，否则模型会模仿到错误的「规律」。若示例与指令冲突，模型往往跟示例走（示例是更强的条件信号）。
+
+## 五要素如何塑造输出
+
+五个要素各司其职，合起来构成条件 $$x$$；条件构造得越准，目标输出在分布下的概率越高：
+
+```mermaid
+flowchart TD
+    R["角色：你是谁"] --> X["整个 prompt = 条件 x"]
+    T["任务：做什么"] --> X
+    C["约束：不许做什么"] --> X
+    E["示例：输入到输出的示范，最强条件信号"] --> X
+    F["格式：输出长什么样"] --> X
+    X --> M["LLM 按条件分布逐 token 采样"]
+    M --> O["输出：x 越准，越贴近目标回答"]
+```
 
 ## 五要素模板
 
@@ -116,3 +133,4 @@ $$
 - [结构化输出](structured-output.md)
 - [上下文工程](../06-memory-rag/context-engineering.md)
 - [Chain of Thought](chain-of-thought.md)
+

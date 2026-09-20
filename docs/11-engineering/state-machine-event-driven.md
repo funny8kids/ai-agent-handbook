@@ -2,12 +2,14 @@
 tags: [engineering, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 状态机与事件驱动
 
-> **一句话**：把 Agent 的「循环」升格为显式状态机、把「历史」落成 append-only 事件流——这是生产 harness 的主流架构取向，也是可恢复、可审计、可回放的根源。
+{% hint style="info" %}
+**一句话**：把 Agent 的「循环」升格为显式状态机、把「历史」落成 append-only 事件流——这是生产 harness 的主流架构取向，也是可恢复、可审计、可回放的根源。
+{% endhint %}
 
 ## 先看结论
 
@@ -136,3 +138,4 @@ flowchart LR
 - [Agent 状态管理](../02-agent-basics/state-management.md)
 - [Agent 工作流编排](workflow-orchestration.md)
 - [日志、追踪与监控](logging-tracing-monitoring.md)
+

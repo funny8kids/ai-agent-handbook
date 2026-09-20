@@ -2,12 +2,14 @@
 tags: [application, rag]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 企业知识库
 
-> **一句话**：企业知识库问答是 RAG 最普遍的落地形态：技术不难、运营很难——文档治理、权限过滤、口径一致与持续运营决定成败。
+{% hint style="info" %}
+**一句话**：企业知识库问答是 RAG 最普遍的落地形态：技术不难、运营很难——文档治理、权限过滤、口径一致与持续运营决定成败。
+{% endhint %}
 
 ## 先看结论
 
@@ -107,3 +109,4 @@ flowchart TB
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [数据隐私](../10-evaluation-safety/data-privacy.md)
 - [向量数据库](../06-memory-rag/vector-database.md)
+

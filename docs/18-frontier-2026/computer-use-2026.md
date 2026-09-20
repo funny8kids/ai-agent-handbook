@@ -2,12 +2,14 @@
 tags: [computer-use, browser-use, astra, claude]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # Computer Use 2026
 
-> **一句话**：2026 的 computer use 已从「能点 GUI」变成 **产品级代办能力**——更快的视觉定位、任务边界遵守、企业白名单与自动审查成为标配。
+{% hint style="info" %}
+**一句话**：2026 的 computer use 已从「能点 GUI」变成 **产品级代办能力**——更快的视觉定位、任务边界遵守、企业白名单与自动审查成为标配。
+{% endhint %}
 
 ## 先看结论
 
@@ -67,3 +69,4 @@ $$s_t^{\text{screen}}$$ 可以是截图、可访问性树、DOM 或三者混合�
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - [通用 Agent 产品](../12-applications/general-agent-products.md)
 - [评估 2026](eval-2026.md)
+

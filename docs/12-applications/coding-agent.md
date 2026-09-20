@@ -2,14 +2,16 @@
 tags: [application, agent, advanced]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 编程 Agent
 
-> **一句话**：编程是 Agent 第一落地场景——验证客观（测试）、反馈明确（报错）、语料丰富（GitHub），本章深拆三大代表性 harness：Claude Code、Pi、DeepSeek Harness。
-> **难度**：进阶
-> **标签**：`#application` `#agent`
+{% hint style="info" %}
+**一句话**：编程是 Agent 第一落地场景——验证客观（测试）、反馈明确（报错）、语料丰富（GitHub），本章深拆三大代表性 harness：Claude Code、Pi、DeepSeek Harness。
+  **难度**：进阶
+  **标签**：`#application` `#agent`
+{% endhint %}
 
 ## 先看结论
 
@@ -124,3 +126,4 @@ $$
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
+

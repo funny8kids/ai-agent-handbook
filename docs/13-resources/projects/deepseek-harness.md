@@ -2,12 +2,14 @@
 tags: [framework, agent, tooling]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # DeepSeek Harness
 
-> **一句话**：DeepSeek 开源的「一切皆插件」生产级 Agent harness——模型、工具、会话、沙箱、甚至 Agent Loop 本身都可替换。
+{% hint style="info" %}
+**一句话**：DeepSeek 开源的「一切皆插件」生产级 Agent harness——模型、工具、会话、沙箱、甚至 Agent Loop 本身都可替换。
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -40,7 +42,9 @@ updated: 2026-09-10
 3. 带着问题读：它的「事件溯源 + 投影」如何同时满足恢复、审计与回放？（对照 [状态机与事件驱动](../../11-engineering/state-machine-event-driven.md)）
 4. 前置知识：[Agent 核心组件](../../02-agent-basics/core-components.md)、[Function Calling](../../05-tool-protocol/function-calling.md)
 
-> **提示**：本书多处以它作为「源码案例」，正是因为上述结构可逐层验证；引用路径均可在仓库中对照找到。
+{% hint style="tip" %}
+**提示**：本书多处以它作为「源码案例」，正是因为上述结构可逐层验证；引用路径均可在仓库中对照找到。
+{% endhint %}
 
 ## 参考资料
 
@@ -53,3 +57,4 @@ updated: 2026-09-10
 - [状态机与事件驱动](../../11-engineering/state-machine-event-driven.md)
 - [工具注册表](../../11-engineering/tool-registry.md)
 - [编程 Agent](../../12-applications/coding-agent.md)
+

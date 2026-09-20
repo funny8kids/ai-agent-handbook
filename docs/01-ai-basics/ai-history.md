@@ -2,12 +2,14 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 人工智能发展简史
 
-> **一句话**：AI 走过「符号规则 → 统计学习 → 深度学习 → 大模型」四步，2024 年后进入 Agent 时代——模型开始「做事」而不只是「说话」。
+{% hint style="info" %}
+**一句话**：AI 走过「符号规则 → 统计学习 → 深度学习 → 大模型」四步，2024 年后进入 Agent 时代——模型开始「做事」而不只是「说话」。
+{% endhint %}
 
 ## 先看结论
 
@@ -110,3 +112,4 @@ AI 七十年像烧一壶水：规则时代是小火慢炖不见响；深度学�
 
 - [Transformer 与 Attention](../03-llm/transformer-attention.md)
 - [什么是 AI Agent](../02-agent-basics/what-is-agent.md)
+

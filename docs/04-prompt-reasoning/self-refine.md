@@ -2,12 +2,14 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Self-Refine
 
-> **一句话**：Self-Refine 让同一个模型「生成 → 自我批评 → 修改」循环迭代，不用额外训练就能提升输出质量。
+{% hint style="info" %}
+**一句话**：Self-Refine 让同一个模型「生成 → 自我批评 → 修改」循环迭代，不用额外训练就能提升输出质量。
+{% endhint %}
 
 ## 问题动机
 
@@ -101,3 +103,4 @@ flowchart LR
 
 - [Reflexion](reflexion.md)
 - [Chain of Thought](chain-of-thought.md)
+

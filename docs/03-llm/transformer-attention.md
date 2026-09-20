@@ -2,12 +2,14 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Transformer 与 Attention
 
-> **一句话**：Transformer 用「注意力机制」让每个词直接看到所有其他词，可完全并行训练——这是 LLM 时代的架构基石。
+{% hint style="info" %}
+**一句话**：Transformer 用「注意力机制」让每个词直接看到所有其他词，可完全并行训练——这是 LLM 时代的架构基石。
+{% endhint %}
 
 ![缩放点积注意力计算流程](../.gitbook/assets/03-attention.svg)
 
@@ -105,3 +107,4 @@ $$
 
 - [Token、Embedding、上下文窗口](token-embedding-context.md)
 - [推理、量化、蒸馏与部署](inference-quantization-deployment.md)
+

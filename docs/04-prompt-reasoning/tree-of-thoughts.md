@@ -2,12 +2,14 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Tree of Thoughts
 
-> **一句话**：ToT 把思考组织成树：每步生成多个候选思路，用评估函数打分后择优继续、失败回溯——像下棋的搜索树，而不是一条道走到黑。
+{% hint style="info" %}
+**一句话**：ToT 把思考组织成树：每步生成多个候选思路，用评估函数打分后择优继续、失败回溯——像下棋的搜索树，而不是一条道走到黑。
+{% endhint %}
 
 ## 问题动机
 
@@ -88,7 +90,9 @@ def tot_solve(problem, depth=3, breadth=3, beam=2, threshold=0.4):
     return best(states)
 ```
 
-> **注意**：必须限制宽度 $$b$$、深度 $$d$$ 与总预算，否则成本随 $$b^d$$ 爆炸。
+{% hint style="warning" %}
+**注意**：必须限制宽度 $$b$$、深度 $$d$$ 与总预算，否则成本随 $$b^d$$ 爆炸。
+{% endhint %}
 
 ## 源码案例
 
@@ -112,3 +116,4 @@ def tot_solve(problem, depth=3, breadth=3, beam=2, threshold=0.4):
 
 - [Chain of Thought](chain-of-thought.md)
 - [Graph of Thoughts](graph-of-thoughts.md)
+

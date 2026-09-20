@@ -2,14 +2,16 @@
 tags: [embodied-ai, agent, tooling]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 把 Agent 接进机器人：技能库 + ROS 2 桥
 
-> **一句话**：让 LLM/Agent 层负责「理解目标、拆任务、挑技能、判成败」，让机器人栈负责「安全地执行」——接口的质量（技能的原语粒度 + 可判定的成功条件）决定了整套系统的上限。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#tooling`
+{% hint style="info" %}
+**一句话**：让 LLM/Agent 层负责「理解目标、拆任务、挑技能、判成败」，让机器人栈负责「安全地执行」——接口的质量（技能的原语粒度 + 可判定的成功条件）决定了整套系统的上限。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#tooling`
+{% endhint %}
 
 ## 先看结论
 
@@ -188,3 +190,4 @@ def agent_loop(goal, objects, runner):
 - [动作表示与分层控制](action-representation-control.md)
 - [硬件、实时与安全](hardware-realtime-safety.md)
 - [持久化执行与运行时](../16-ai-infrastructure/agent-runtime-durable-execution.md)
+

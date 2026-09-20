@@ -2,12 +2,14 @@
 tags: [protocols, mcp, a2a, ag-ui, skills]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 2026 协议栈：MCP · A2A · AG-UI · Skills
 
-> **一句话**：工具接入看 MCP，Agent 互操作看 A2A，界面流式看 AG-UI，行为可复用看 agents.md / Skills——四层解决的问题不同，不要混为一谈。
+{% hint style="info" %}
+**一句话**：工具接入看 MCP，Agent 互操作看 A2A，界面流式看 AG-UI，行为可复用看 agents.md / Skills——四层解决的问题不同，不要混为一谈。
+{% endhint %}
 
 ![2026 Agent 协议栈](../.gitbook/assets/18-protocol-stack.svg)
 
@@ -75,3 +77,4 @@ flowchart TB
 - [A2A](../05-tool-protocol/a2a.md)
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
 - [Claude Agent SDK](claude-agent-sdk.md)
+

@@ -16,9 +16,9 @@
 
 ---
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：178 页 / 18 章。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：180 页 / 18 章。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 178 pages across 18 chapters. Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 180 pages across 18 chapters. Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
 
 在线阅读（GitBook 站点）· Read online on GitBook: **VioletNotes Docs**
 

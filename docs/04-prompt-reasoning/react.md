@@ -2,12 +2,14 @@
 tags: [prompt, agent]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # ReAct
 
-> **一句话**：ReAct（Reasoning + Acting）让模型交替进行「思考轨迹」和「行动」——想一步、做一步、看结果、再想，是现代 Agent 循环的思想原型。
+{% hint style="info" %}
+**一句话**：ReAct（Reasoning + Acting）让模型交替进行「思考轨迹」和「行动」——想一步、做一步、看结果、再想，是现代 Agent 循环的思想原型。
+{% endhint %}
 
 ## 先看结论
 
@@ -50,6 +52,24 @@ ReAct 的观点是二者**互补**：推理负责「规划与追踪」，行动�
 ### 3. 现代形态：思考被内化
 
 在推理模型（o1、DeepSeek-R1 类）中，Thought 不再以可见文本产出，而是由模型在内部完成（或写在单独的 `reasoning_content` 字段）。但**行为模式没变**：仍是「想—做—看—再想」。所以判断一个系统是不是 ReAct，看的是它是否交替「决策与真实观察」，而不是看它有没有输出 Thought 文本。
+
+## 循环时序图
+
+一个关键细节：Observation 永远来自真实环境（图中自下而上的实线），模型只产出「调用意图」，绝不自己编造结果。
+
+```mermaid
+sequenceDiagram
+    participant U as 用户
+    participant L as LLM
+    participant T as 工具 / 环境
+    U->>L: 目标
+    loop Thought → Action → Observation，直到完成
+        L->>L: Thought：基于历史与观察规划下一步
+        L->>T: Action：结构化工具调用
+        T-->>L: Observation：真实执行结果（非模型生成）
+    end
+    L->>U: finish：最终答案
+```
 
 ## 循环示例
 
@@ -99,3 +119,4 @@ Action 2: finish["Cordis 插件框架"]
 - [感知—规划—行动循环](../02-agent-basics/perception-planning-action.md)
 - [Chain of Thought](chain-of-thought.md)
 - [Reflexion](reflexion.md)
+

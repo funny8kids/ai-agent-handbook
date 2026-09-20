@@ -2,14 +2,16 @@
 tags: [planning, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 工作流编排
 
-> **一句话**：工作流编排 = 把「何时用确定性代码、何时放权给 LLM」显式设计出来——好的 Agent 系统是工作流与自主性的混合体。
-> **难度**：进阶
-> **标签**：`#planning` `#engineering`
+{% hint style="info" %}
+**一句话**：工作流编排 = 把「何时用确定性代码、何时放权给 LLM」显式设计出来——好的 Agent 系统是工作流与自主性的混合体。
+  **难度**：进阶
+  **标签**：`#planning` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -100,3 +102,4 @@ $$
 - [Plan-and-Execute](plan-and-execute.md)
 - [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
+

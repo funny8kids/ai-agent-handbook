@@ -2,12 +2,14 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 多模态模型
 
-> **一句话**：多模态模型把文本、图像、音频、视频统一映射到同一语义空间，让 Agent 长出「眼睛和耳朵」——看懂屏幕截图是 Computer Use 的前提。
+{% hint style="info" %}
+**一句话**：多模态模型把文本、图像、音频、视频统一映射到同一语义空间，让 Agent 长出「眼睛和耳朵」——看懂屏幕截图是 Computer Use 的前提。
+{% endhint %}
 
 ## 先看结论
 
@@ -108,3 +110,4 @@ flowchart LR
 
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - [Token、Embedding、上下文窗口](token-embedding-context.md)
+

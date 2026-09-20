@@ -2,12 +2,14 @@
 tags: [agent, basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Agent 与 Workflow、Chatbot、Copilot 的区别
 
-> **一句话**：区别就在「谁决定流程」——Chatbot 听用户的、Workflow 听开发者的、Copilot 听用户的半程、Agent 自己全程决定。
+{% hint style="info" %}
+**一句话**：区别就在「谁决定流程」——Chatbot 听用户的、Workflow 听开发者的、Copilot 听用户的半程、Agent 自己全程决定。
+{% endhint %}
 
 ## 先看结论
 
@@ -92,3 +94,4 @@ flowchart LR
 - [什么是 AI Agent](what-is-agent.md)
 - [自主性等级](autonomy-levels.md)
 - [Human-in-the-loop](human-in-the-loop.md)
+

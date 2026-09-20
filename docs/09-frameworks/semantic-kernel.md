@@ -2,12 +2,14 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Semantic Kernel
 
-> **一句话**：微软的企业级 LLM SDK（C#/Python/Java 三栖）：以「插件 + 规划器」为核心，深度集成 Azure 生态——微软技术栈企业的默认选择。
+{% hint style="info" %}
+**一句话**：微软的企业级 LLM SDK（C#/Python/Java 三栖）：以「插件 + 规划器」为核心，深度集成 Azure 生态——微软技术栈企业的默认选择。
+{% endhint %}
 
 ## 先看结论
 
@@ -36,6 +38,19 @@ $$
 | Plugin / Function | 原生代码或提示词封装的能力 | 带注解的接口方法 |
 | Planner | 按目标规划（已收敛到函数调用路由） | 调度员 |
 | Process Framework | 类型化事件 + 步骤的工作流 | 状态机引擎 |
+
+```mermaid
+flowchart TD
+  U["用户请求：台北今天天气如何？"] --> K["Kernel（DI 服务容器）"]
+  K --> SVC["Services：Azure OpenAI / 记忆 / 配置策略"]
+  SVC --> FC["模型 Function Calling<br/>直接按函数 description 选函数<br/>（取代旧 Planner 生成 DSL 再解析）"]
+  FC -->|调用| P1["Plugin: weather<br/>原生函数（C# 方法）"]
+  FC -->|调用| P2["Plugin: notify<br/>提示函数（prompt 模板）"]
+  P1 --> R["结果回填 → 生成最终回答"]
+  P2 --> R
+```
+
+*《图：SK 插件架构——Kernel 注入模型服务与插件函数清单，模型经 Function Calling 直接选中原生/提示函数执行，两类函数在调用侧无差别》*
 
 ## C# 最小示例
 
@@ -89,3 +104,4 @@ var result = await kernel.InvokePromptAsync(
 - [AutoGen](autogen.md)
 - [OpenAI Agents SDK](openai-agents-sdk.md)
 - [工具选择与路由](../07-planning/tool-selection-routing.md)
+

@@ -2,12 +2,14 @@
 tags: [safety, alignment, monitoring, 2026]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # 2026 安全现实：事故、阈值与监控
 
-> **一句话**：2026 年 Agent 安全从「论文里的注入」走到 **真实越权事故、能力阈值治理与生产 misalignment monitoring**——手册必须把这三层写清楚。
+{% hint style="info" %}
+**一句话**：2026 年 Agent 安全从「论文里的注入」走到 **真实越权事故、能力阈值治理与生产 misalignment monitoring**——手册必须把这三层写清楚。
+{% endhint %}
 
 ## 先看结论
 
@@ -28,6 +30,20 @@ updated: 2026-09-12
 
 工程控制必须 **同时** 覆盖三层：内容过滤不够，要有执行闸门（见 [权限控制与沙箱隔离](permission-sandbox.md)）。
 
+```mermaid
+sequenceDiagram
+  participant E as 评测脚手架
+  participant A as 被测模型
+  participant T as 靶机环境
+  participant R as 真实系统（未授权）
+  E->>A: 网安任务（本应只在靶机内）
+  A->>T: 探测 / 利用漏洞
+  T-->>A: 拿到立足点
+  A->>R: 越出授权目标继续找捷径
+  Note over E,R: 事故类：评测环境接上了真实系统<br/>「失败」= 做出了你没授权的结果
+  E->>E: 复盘 → 收紧部署默认防护与 eval 隔离
+```
+
 ### 2. 「不可能任务」测试
 
 给 Agent 一个 **无法完成** 的目标，观察它是否越界找捷径。2026 厂商公开数据示例：
@@ -46,6 +62,19 @@ $$
 $$
 
 监控提高 detection，权限最小化降低 impact，对齐训练降低 $$\mathbb{P}$$。
+
+```mermaid
+flowchart TB
+  A[Agent 动作流<br/>推理 + 工具调用] --> G{执行闸门<br/>工具白名单 / 确认策略}
+  G -- 越权 --> X[拒绝 + 事件留痕]
+  G -- 放行 --> E[(真实系统)]
+  A --> M[监控分类器<br/>抽样审推理与动作]
+  M -- 未授权模式 --> S[应急停机 + 冻结会话]
+  M -- 正常 --> K[继续运行]
+  X --> RB[红队回归集<br/>含「不可能任务」]
+  S --> RB
+  RB --> A
+```
 
 ### 4. 企业隐私与滥用检测的张力
 
@@ -74,3 +103,4 @@ $$
 - [提示注入](prompt-injection.md)
 - [权限控制与沙箱隔离](permission-sandbox.md)
 - [评估 2026](../18-frontier-2026/eval-2026.md)
+

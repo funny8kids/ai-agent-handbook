@@ -2,12 +2,14 @@
 tags: [engineering, infrastructure, advanced]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 16 AI 基础设施
 
-> **一句话**：Agent 产品的体验上限，往往不在 prompt，而在基础设施——推理引擎决定「多快多贵」，缓存决定「上下文能做多长」，沙箱决定「你敢让 Agent 干什么」，网关与运行时决定「崩了能不能救回来」。
+{% hint style="info" %}
+**一句话**：Agent 产品的体验上限，往往不在 prompt，而在基础设施——推理引擎决定「多快多贵」，缓存决定「上下文能做多长」，沙箱决定「你敢让 Agent 干什么」，网关与运行时决定「崩了能不能救回来」。
+{% endhint %}
 
 ## 先看结论
 
@@ -31,6 +33,23 @@ updated: 2026-09-10
 | ⑧ 数据与检索 | 语料、向量、索引、飞轮 | 对象存储、pgvector/Qdrant/Milvus、湖仓 | [数据与检索基础设施](data-vector-storage.md) |
 | ⑨ 可观测与评估 | 知道慢在哪、错在哪 | OTel GenAI、Langfuse、离线评估集、回放 | [可观测性与评估平台](llm-observability-eval-platform.md) |
 | ⑩ 成本与形态 | 自研还是买 API | token 经济学、端侧/本地、量化蒸馏 | [推理经济学与部署形态](inference-economics-deployment.md) |
+
+## 一次调用穿过的栈
+
+下面的编号对应上表的分层。把十层放到「一次 Agent 调用」的时间线上：请求经网关进来、由运行时管状态、命中缓存则跳过 prefill、引擎出 token、工具在沙箱里执行、结果回写并全程可观测。
+
+```mermaid
+flowchart LR
+  REQ[Agent 请求<br/>稳定前缀 + 工具] --> GW[⑥ 模型网关<br/>路由 · 配额 · 审计]
+  GW --> RT[⑦ 持久化运行时<br/>checkpoint · 幂等]
+  RT --> CACHE{② 前缀缓存命中?}
+  CACHE -- 命中 · 省 prefill --> ENG[① 推理引擎<br/>prefill → decode]
+  CACHE -- 未命中 · 重算 --> ENG
+  ENG --> TOOL[⑤ 沙箱执行工具]
+  TOOL -- 结果 + 历史追加 --> RT
+  RT --> OBS[⑨ 可观测与评估]
+  GPU[③ GPU 调度] -. 供给算力 .-> ENG
+```
 
 ## 动态图示
 
@@ -56,3 +75,18 @@ updated: 2026-09-10
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
 - [17 具身智能](../17-embodied-ai/README.md)（把同一套栈搬到物理世界的形态）
+
+## 读完能做到
+
+- [ ] 说清 TTFT 和 TPOT 分别撞在哪个瓶颈（算力 vs 显存带宽），能从 p95 指标判断该管 prefill 还是 decode
+- [ ] 把自己的 Agent 上下文改成「稳定前缀 + 只追加尾部」，并实测改造前后的前缀缓存命中率变化
+- [ ] 按威胁模型选出沙箱档位（加固容器 / gVisor / microVM），并说明为什么出口网络白名单比文件系统隔离更要紧
+- [ ] 为一个跑 40 分钟的长任务设计 checkpoint 与工具调用幂等键，通过一次「kill -9 后恢复」演练
+- [ ] 用十层分层地图定位故障归属：「换模型要改 40 处代码」「供应商限流全站 500」各归哪一层管
+
+## 章末自测
+
+1. **回忆**：prefill 与 decode 各是什么瓶颈？各决定哪个延迟指标？（提示：见 inference-serving.md）
+2. **应用**：system prompt 里嵌了「当前时间戳」，为什么前缀缓存几乎必然失效？该怎么改？（提示：见 prefix-cache-context-engineering.md）
+3. **判断**：多租户 SaaS 要跑模型现写的代码，有人主张「加固 Docker 容器就够了」。按本章的威胁模型分档，这个方案漏掉了哪一档、为什么？（提示：见 sandbox-execution-environments.md）
+

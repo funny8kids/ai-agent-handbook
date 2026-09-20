@@ -2,14 +2,16 @@
 tags: [embodied-ai, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 动作表示与分层控制
 
-> **一句话**：模型输出的从来不是「动作」，而是某个坐标系下、某个频率上、经过限幅的一段目标——动作表示选错，再强的策略网络也只会稳定地失败。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#engineering`
+{% hint style="info" %}
+**一句话**：模型输出的从来不是「动作」，而是某个坐标系下、某个频率上、经过限幅的一段目标——动作表示选错，再强的策略网络也只会稳定地失败。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#engineering`
+{% endhint %}
 
 ## 先看结论
 
@@ -126,3 +128,4 @@ timestamp: monotonic_ns; obs 与 action 必须带 ts 并做最近邻对齐
 - [硬件、实时与安全](hardware-realtime-safety.md)
 - [仿真与 Sim-to-Real](simulation-sim2real.md)
 - [把 Agent 接进机器人](agent-to-robot-bridge.md)
+

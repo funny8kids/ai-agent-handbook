@@ -2,14 +2,16 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 机器人基础模型谱系
 
-> **一句话**：机器人基础模型（Robot Foundation Model）= 拿互联网规模的视觉语言先验，再用机器人轨迹把「看图说话」改造成「看图动手」——2023 年 RT-2 证明这条路能走，2024–2026 年的竞赛全在「动作头怎么做、数据从哪来、能不能上真机」。
-> **难度**： 进阶
-> **标签**：`#embodied-ai` `#llm`
+{% hint style="info" %}
+**一句话**：机器人基础模型（Robot Foundation Model）= 拿互联网规模的视觉语言先验，再用机器人轨迹把「看图说话」改造成「看图动手」——2023 年 RT-2 证明这条路能走，2024–2026 年的竞赛全在「动作头怎么做、数据从哪来、能不能上真机」。
+  **难度**： 进阶
+  **标签**：`#embodied-ai` `#llm`
+{% endhint %}
 
 ## 先看结论
 
@@ -46,6 +48,22 @@ updated: 2026-09-10
 | SmolVLA | 约 0.45B | 流式动作专家 | 消费级 GPU 上可跑，多数据集联合训练 | AgiBot World / DROID / OXE 等 | 是 |
 
 **读表三问**：动作头是离散还是连续（决定高频控制可行性）？有没有快慢分层（决定实时性与算力预算）？训练数据里真机轨迹占比多少（决定泛化是否可迁移到你的机器人）？
+
+## 两类架构对照
+
+按「是否分快慢双系统」这一条，表里的模型可归成两族：左族复用 LLM 栈、把动作离散成 token，简单但难上高频；右族慢 VLM 出意图、快动作专家出连续动作块，是当前产业共识。
+
+```mermaid
+flowchart TB
+  subgraph SS[单系统：复用 LLM 栈]
+    A1[VLM 骨干<br/>RT-2 / OpenVLA] --> A2[离散动作 token<br/>自回归 · 逐维逐步]
+    A2 --> A3[低频控制<br/>量化误差 · token 数爆炸]
+  end
+  subgraph DS[双系统：慢意图 + 快动作]
+    B1[慢系统 VLM<br/>出隐藏意图 5–10Hz] --> B2[快系统动作专家<br/>flow / 扩散 · 几十 M]
+    B2 --> B3[连续动作块高频伺服<br/>π0 / GR00T / Helix]
+  end
+```
 
 ## 选型建议（按你要做的事）
 
@@ -87,3 +105,4 @@ updated: 2026-09-10
 - [数据引擎](data-engine.md)
 - [多模态模型](../03-llm/multimodal.md)
 - [推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md)
+

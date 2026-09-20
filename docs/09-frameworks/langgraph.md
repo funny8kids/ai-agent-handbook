@@ -2,12 +2,14 @@
 tags: [framework, advanced]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # LangGraph
 
-> **一句话**：LangGraph 把 Agent 表达为「状态图」：节点是步骤、边是流转、checkpoint 提供持久化与时间旅行——复杂 Agent 工作流的当前主流选择。
+{% hint style="info" %}
+**一句话**：LangGraph 把 Agent 表达为「状态图」：节点是步骤、边是流转、checkpoint 提供持久化与时间旅行——复杂 Agent 工作流的当前主流选择。
+{% endhint %}
 
 ## 先看结论
 
@@ -116,3 +118,4 @@ app = g.compile(checkpointer=saver)   # 加 checkpoint 即可断点恢复
 - [LangChain](langchain.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
 - [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)
+

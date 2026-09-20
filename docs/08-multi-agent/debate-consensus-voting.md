@@ -2,12 +2,14 @@
 tags: [multi-agent, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 辩论、共识与投票
 
-> **一句话**：用「多个独立视角 + 显式汇聚机制」对冲单次生成的随机性与盲区——分歧是资产，汇聚机制决定分歧能不能变成质量。
+{% hint style="info" %}
+**一句话**：用「多个独立视角 + 显式汇聚机制」对冲单次生成的随机性与盲区——分歧是资产，汇聚机制决定分歧能不能变成质量。
+{% endhint %}
 
 ## 先看结论
 
@@ -114,3 +116,4 @@ flowchart TB
 - [角色分配](role-assignment.md)
 - [多 Agent 协作](multi-agent-collaboration.md)
 - [Chain of Thought](../04-prompt-reasoning/chain-of-thought.md)
+

@@ -4,9 +4,9 @@
 
 **From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · **2026 frontier**
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：178 页 / 18 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：180 页 / 18 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 178 pages across 18 chapters, including a 2026 frontier chapter, 93 of them carrying formulas, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 180 pages across 18 chapters, including a 2026 frontier chapter, 100 of them carrying formulas, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
 
 ## 快速开始 · Quick start
 
@@ -68,11 +68,14 @@
 
 ## 关于这本手册 · About this handbook
 
-- **178 页 / 18 章**（含 2026 前沿章）· 178 pages across 18 chapters
-- **93+ 页含数学公式**（KaTeX）· pages carry formulas
+- **180 页 / 18 章**（含 2026 前沿章）· 180 pages across 18 chapters
+- **100 页含数学公式**（KaTeX）· pages carry formulas
 - **每篇底部有「参考资料」**，数字与结论都能点回一手来源 · every page ends with references
-- **323 个项目索引**（实测 star 与许可）· an index of 323 projects with observed stars and licenses
-- **20+ 张自绘 SVG 图示**（部分带 SMIL 动画）· hand-drawn SVG diagrams
+- **每章「读完能做到」清单 + 章末自测**：18 章全量，题目可答、答案有出处
+- **183 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
+- **全书 154 张 Mermaid 图经真解析器逐块校验**，0 渲染风险
+- **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
+- **174 张配图**：154 个 Mermaid 内联图 + 20 张自绘 SVG（部分带动画）· 174 diagrams, parser-verified
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

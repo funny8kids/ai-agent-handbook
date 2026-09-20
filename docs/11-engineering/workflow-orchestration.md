@@ -2,12 +2,14 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # Agent 工作流编排
 
-> **一句话**：生产视角的编排 = 编排引擎选型 + 可靠性配套（队列、幂等、超时、人审中断）——模式理论见规划章，这里讲工程落地。
+{% hint style="info" %}
+**一句话**：生产视角的编排 = 编排引擎选型 + 可靠性配套（队列、幂等、超时、人审中断）——模式理论见规划章，这里讲工程落地。
+{% endhint %}
 
 > 编排的五种模式与选型逻辑见 [工作流编排（规划章）](../07-planning/workflow-orchestration.md)。本页聚焦**生产工程**。
 
@@ -121,3 +123,4 @@ flowchart LR
 - [状态机与事件驱动](state-machine-event-driven.md)
 - [部署与扩缩容](deployment-scaling.md)
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
+

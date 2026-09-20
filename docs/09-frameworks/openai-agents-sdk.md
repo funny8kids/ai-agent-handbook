@@ -2,12 +2,14 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-12
+updated: 2026-09-20
 ---
 
 # OpenAI Agents SDK
 
-> **一句话**：OpenAI 的轻量生产级 Agent SDK（2025 年发布，Swarm 的正式版）：Agent、Handoff、Guardrail、Session 四件套，追求「少抽象、可上线」。
+{% hint style="info" %}
+**一句话**：OpenAI 的轻量生产级 Agent SDK（2025 年发布，Swarm 的正式版）：Agent、Handoff、Guardrail、Session 四件套，追求「少抽象、可上线」。
+{% endhint %}
 
 ## 先看结论
 
@@ -40,6 +42,25 @@ $$
 | Session | 自动维护对话历史 | [状态管理](../02-agent-basics/state-management.md) |
 
 **Guardrail 的并行设计**也值得注意：输入安检与主 Agent **并行**执行，一旦触发就取消主任务——这样安检不额外增加延迟。与之相对，权限审批链通常是**串行阻塞**的（因为必须等人类决定）。两种设计对应两类风险：前者防「内容违规」，后者防「动作越权」（见 [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)）。
+
+```mermaid
+sequenceDiagram
+  participant U as 用户
+  participant GR as 输入 Guardrail（并行旁路）
+  participant R as Runner（主循环）
+  participant T as 分诊 Agent
+  participant F as 退款 Agent
+  U->>GR: 我上周买的东西想退款
+  U->>R: 同一请求（安检不阻塞主任务）
+  R->>T: 开始运行分诊 Agent
+  Note over T: 工具列表含 transfer_to_refund_agent
+  T->>R: 调用该「工具」＝移交控制权
+  R->>F: 切换当前 Agent，继续循环
+  F-->>R: 产出最终回答
+  R-->>U: 返回结果（若 guardrail 触发则取消主任务）
+```
+
+*《图：Agents SDK 运行循环——输入 guardrail 与主 Agent 并行安检；handoff 被建模为特殊工具，模型「调工具」即「换 Agent」》*
 
 ## 最小示例
 
@@ -114,3 +135,4 @@ print(result.final_output)
 - [Semantic Kernel](semantic-kernel.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
+

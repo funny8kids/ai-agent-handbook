@@ -2,12 +2,14 @@
 tags: [llm, engineering]
 type: knowledge
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 推理、量化、蒸馏与部署
 
-> **一句话**：让模型「跑起来且跑得便宜」的全部学问：推理优化、量化压缩、蒸馏小模型、自托管 vs API 的选型。
+{% hint style="info" %}
+**一句话**：让模型「跑起来且跑得便宜」的全部学问：推理优化、量化压缩、蒸馏小模型、自托管 vs API 的选型。
+{% endhint %}
 
 ## 问题动机
 
@@ -123,3 +125,4 @@ flowchart TD
 
 - [缓存与成本优化](../11-engineering/caching-cost-optimization.md)
 - [部署与扩缩容](../11-engineering/deployment-scaling.md)
+

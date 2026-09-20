@@ -2,12 +2,14 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # 资源总表
 
-> **一句话**：全书推荐资源的平铺总表，按「必读 → 进阶 → 参考」分级，方便快速定位。
+{% hint style="info" %}
+**一句话**：全书推荐资源的平铺总表，按「必读 → 进阶 → 参考」分级，方便快速定位。
+{% endhint %}
 
 ## 精选 Top 10
 
@@ -42,3 +44,4 @@ updated: 2026-09-10
 
 - [标签索引](tags.md)
 - [学习路线](learning-path.md)
+

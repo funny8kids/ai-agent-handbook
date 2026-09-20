@@ -2,14 +2,16 @@
 tags: [mcp, tooling, framework]
 type: resource
 status: published
-updated: 2026-09-10
+updated: 2026-09-20
 ---
 
 # MCP Servers
 
-> **一句话**：MCP Server 生态是 Agent 工具的「应用商店」：官方与社区维护着数百个现成 Server，覆盖数据库、开发、办公、浏览器等场景。
-> **难度**：入门
-> **标签**：`#mcp` `#tooling`
+{% hint style="info" %}
+**一句话**：MCP Server 生态是 Agent 工具的「应用商店」：官方与社区维护着数百个现成 Server，覆盖数据库、开发、办公、浏览器等场景。
+  **难度**：入门
+  **标签**：`#mcp` `#tooling`
+{% endhint %}
 
 | 属性 | 内容 |
 |---|---|
@@ -17,6 +19,21 @@ updated: 2026-09-10
 | 链接 | <https://github.com/modelcontextprotocol/servers> · <https://mcp.so> · <https://github.com/punkpeye/awesome-mcp-servers> |
 | 来源 | Anthropic 发起 + 社区 |
 | 标签 | `#mcp` `#tooling` |
+
+```mermaid
+flowchart LR
+  subgraph HOST["MCP Host（应用：Claude Code / Pi 等）"]
+    LLM["LLM"] --- CL["MCP Client ×N<br/>一个 Client 对一个 Server（1:1）"]
+  end
+  CL -->|JSON-RPC| S1["filesystem Server"]
+  CL -->|JSON-RPC| S2["github Server"]
+  CL -->|JSON-RPC| S3["playwright Server"]
+  S1 --> FS["受限本地目录"]
+  S2 --> API["GitHub API"]
+  S3 --> BR["浏览器实例"]
+```
+
+*《图：MCP 拓扑——Host 内嵌多个 Client，每个与一个 Server 一对一连接；Server 各暴露 Tools/Resources/Prompts 并代理真实资源》*
 
 ## 常用 Server 速查
 
@@ -28,6 +45,20 @@ updated: 2026-09-10
 | playwright | 浏览器自动化 | 网页操作、端到端测试 |
 | slack | 消息收发 | 通知与巡检机器人 |
 | memory | 简单知识图谱记忆 | 跨会话记忆实验 |
+
+```mermaid
+sequenceDiagram
+  participant H as Host（内嵌 Client + LLM）
+  participant S as MCP Server
+  H->>S: initialize（能力协商）
+  H->>S: tools/list（发现工具 schema）
+  S-->>H: 工具清单 → 注入模型上下文
+  Note over H: 模型决定调用哪个工具
+  H->>S: tools/call {name, arguments}
+  S-->>H: 执行结果回填对话
+```
+
+*《图：一次 MCP 工具调用的生命周期——先发现（tools/list）、模型自选、再执行（tools/call），Server 从不主动调模型》*
 
 ## 上手建议
 
@@ -46,3 +77,4 @@ updated: 2026-09-10
 
 - [MCP：Model Context Protocol](../05-tool-protocol/mcp.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
+
