@@ -11,6 +11,8 @@ updated: 2026-09-20
 **一句话**：ReAct（Reasoning + Acting）让模型交替进行「思考轨迹」和「行动」——想一步、做一步、看结果、再想，是现代 Agent 循环的思想原型。
 {% endhint %}
 
+![ReAct 闭环：Thought—Action—Observation，与纯 CoT 的断链对照](../.gitbook/assets/04-react-loop.svg)
+
 ## 先看结论
 
 - 核心洞察：推理为行动提供计划与追踪，行动为推理提供真实反馈——两者缺一都会失败

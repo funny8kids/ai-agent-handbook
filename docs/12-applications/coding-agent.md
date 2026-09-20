@@ -13,6 +13,8 @@ updated: 2026-09-20
   **标签**：`#application` `#agent`
 {% endhint %}
 
+![编程 Agent 的沙箱工作循环：改码—测试—修复闭环，合并权留给人](../.gitbook/assets/12-coding-agent-loop.svg)
+
 ## 先看结论
 
 - 编程 Agent = 模型 + harness；同一模型换 harness 成绩可差 20%+（SWE-bench 实证）

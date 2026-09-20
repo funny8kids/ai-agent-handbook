@@ -11,6 +11,8 @@ updated: 2026-09-20
 **一句话**：MCP 是 Anthropic 于 2024 年 11 月开源的协议，为「模型 ↔ 工具/数据源」定义统一接口——AI 应用的 USB-C：写一次 Server，所有支持的客户端都能用。
 {% endhint %}
 
+![MCP 架构：Host 内嵌 Client 一对一连接 Server，暴露 Tools/Resources/Prompts 三种原语](../.gitbook/assets/05-mcp-architecture.svg)
+
 ## 先看结论
 
 - 解决 N×M 问题：过去 M 个 Agent 对接 N 个工具要写 M×N 个集成；MCP 之后是 M+N

@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" role="img" aria-label="编程 Agent 在沙箱内的工作循环：领任务、列计划、改代码、跑测试、判定全绿，否修 bug，是开 PR 人审">
+  <defs>
+    <linearGradient id="bgc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FEFCFF"/>
+      <stop offset="100%" stop-color="#F7F2FE"/>
+    </linearGradient>
+    <linearGradient id="gSbx" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBF7FF"/><stop offset="100%" stop-color="#F3E8FF"/>
+    </linearGradient>
+    <linearGradient id="gPur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#9333EA"/>
+    </linearGradient>
+    <pattern id="gridc" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0 H0 V32" fill="none" stroke="#E6DAF5" stroke-width="0.6" opacity="0.5"/>
+    </pattern>
+    <filter id="shc" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#581C87" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrP" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#7E22CE"/>
+    </marker>
+    <marker id="arrR" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#DC2626"/>
+    </marker>
+    <marker id="arrG" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#16A34A"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="540" rx="20" fill="url(#bgc)"/>
+  <rect width="960" height="540" rx="20" fill="url(#gridc)"/>
+
+  <text x="24" y="30" font-size="16" font-weight="700" fill="#0f172a">编程 Agent：沙箱内的工作循环</text>
+  <text x="24" y="52" font-size="11.5" fill="#475569">领任务 → 列计划 → 改代码 → 跑测试 → 判定；不绿就修，全绿才交给人类</text>
+
+  <!-- ===== 沙箱大框 ===== -->
+  <g filter="url(#shc)">
+    <rect x="36" y="84" width="680" height="404" rx="16" fill="url(#gSbx)" stroke="#9333EA" stroke-width="1.6"/>
+  </g>
+  <text x="56" y="110" font-size="13.5" font-weight="700" fill="#6B21A8">沙箱 · 隔离环境（仓库副本 · 一次性会话 · 无密钥）</text>
+
+  <!-- ===== 五站 ===== -->
+  <g filter="url(#shc)">
+    <rect x="84" y="132" width="124" height="54" rx="12" fill="#FFFFFF" stroke="#C084FC"/>
+    <rect x="258" y="132" width="124" height="54" rx="12" fill="#FFFFFF" stroke="#C084FC"/>
+    <rect x="432" y="124" width="190" height="128" rx="12" fill="#FFFFFF" stroke="#C084FC"/>
+    <rect x="448" y="320" width="124" height="54" rx="12" fill="#FFFFFF" stroke="#C084FC"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="146" y="156" font-size="14" font-weight="700" fill="#0f172a">① 领任务</text>
+    <text x="146" y="174" font-size="10" fill="#64748B">issue · 验收标准</text>
+    <text x="320" y="156" font-size="14" font-weight="700" fill="#0f172a">② 列计划</text>
+    <text x="320" y="174" font-size="10" fill="#64748B">todo 清单</text>
+    <text x="527" y="148" font-size="14" font-weight="700" fill="#0f172a">③ 改代码</text>
+    <text x="510" y="344" font-size="14" font-weight="700" fill="#0f172a">④ 跑测试</text>
+    <text x="510" y="362" font-size="10" fill="#64748B">pytest · 集成检查</text>
+  </g>
+
+  <!-- diff 小卡 -->
+  <rect x="444" y="158" width="166" height="84" rx="6" fill="#1E293B"/>
+  <text x="452" y="176" font-size="10" fill="#4ADE80">+ agent.py 重试改指数退避</text>
+  <text x="452" y="196" font-size="10" fill="#F87171">- 固定 sleep 3s 的旧写法</text>
+  <text x="452" y="216" font-size="10" fill="#4ADE80">+ test_loop.py 新增用例</text>
+  <text x="452" y="234" font-size="10" fill="#64748B">git diff · 2 files</text>
+
+  <!-- 判定菱形 -->
+  <polygon points="262,307 322,347 262,387 202,347" fill="#FFFFFF" stroke="#9333EA" stroke-width="1.8" filter="url(#shc)"/>
+  <text x="262" y="352" text-anchor="middle" font-size="13" font-weight="700" fill="#6B21A8">⑤ 全绿？</text>
+
+  <!-- 仓库文件树卡 -->
+  <rect x="84" y="236" width="150" height="180" rx="10" fill="#FFFFFF" stroke="#E9D5FF" filter="url(#shc)"/>
+  <text x="98" y="258" font-size="12" font-weight="700" fill="#6B21A8">仓库工作区</text>
+  <g font-size="10.5" fill="#475569">
+    <circle cx="103" cy="277" r="3" fill="#9333EA"/><text x="112" y="281">src/</text>
+    <text x="124" y="297">├─ agent.py</text>
+    <text x="124" y="313">├─ tools.py</text>
+    <text x="124" y="329">└─ retry.py</text>
+    <circle cx="103" cy="347" r="3" fill="#16A34A"/><text x="112" y="351">tests/</text>
+    <text x="124" y="367">└─ test_loop.py</text>
+    <text x="112" y="391" fill="#94A3B8">tmpfs 可写 · 用后即弃</text>
+  </g>
+
+  <!-- ===== 主干箭头 ===== -->
+  <g stroke="#7E22CE" stroke-width="1.8" fill="none">
+    <path d="M208 159 H254" marker-end="url(#arrP)"/>
+    <path d="M382 159 H426" marker-end="url(#arrP)"/>
+    <path d="M510 252 V314" marker-end="url(#arrP)"/>
+    <path d="M448 347 H328" marker-end="url(#arrP)"/>
+  </g>
+  <!-- 一个在循环路上的数据包 -->
+  <circle r="4" fill="#9333EA">
+    <animateMotion dur="3s" repeatCount="indefinite"
+      path="M146 159 H320 H527 V347 H262"/>
+    <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.6;0.9;1" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- 否：修 bug 弧线，回到改代码 -->
+  <path d="M262 307 C 255 245 310 205 424 200" fill="none" stroke="#DC2626" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrR)"/>
+  <text x="292" y="222" text-anchor="end" font-size="11" font-weight="700" fill="#DC2626">否 · 最多 N 轮修复</text>
+
+  <!-- 是：出沙箱到 PR -->
+  <path d="M262 387 C 268 455 400 452 730 438" fill="none" stroke="#16A34A" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="338" y="466" font-size="11" font-weight="700" fill="#16A34A">是 · 全绿出箱</text>
+
+  <!-- ===== PR / 人审 ===== -->
+  <g filter="url(#shc)">
+    <rect x="738" y="408" width="198" height="64" rx="12" fill="url(#gPur)"/>
+  </g>
+  <text x="837" y="434" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">开 PR · 人工评审</text>
+  <text x="837" y="456" text-anchor="middle" font-size="10.5" fill="#FFFFFF" opacity="0.92">人，是合并前的最后一道防线</text>
+
+  <!-- ===== 侧栏注解 ===== -->
+  <g filter="url(#shc)">
+    <rect x="738" y="120" width="198" height="116" rx="12" fill="#FFFFFF" stroke="#E9D5FF"/>
+    <rect x="738" y="250" width="198" height="116" rx="12" fill="#FFFFFF" stroke="#E9D5FF"/>
+  </g>
+  <g>
+    <circle cx="762" cy="146" r="13" fill="#FEF3C7"/>
+    <rect x="756" y="145" width="12" height="9" rx="2" fill="#D97706"/>
+    <path d="M758.5 145 v-3 a3.5 3.5 0 0 1 7 0 v3" fill="none" stroke="#D97706" stroke-width="1.6"/>
+    <text x="782" y="151" font-size="13" font-weight="700" fill="#0f172a">权限闸门</text>
+    <text x="750" y="178" font-size="11" fill="#475569">Shell · 写文件都要过闸门：</text>
+    <text x="750" y="197" font-size="11" fill="#475569">先审批后执行，高风险动作</text>
+    <text x="750" y="215" font-size="11" fill="#475569">先请示人类，低风险自动留审计。</text>
+  </g>
+  <g>
+    <circle cx="762" cy="276" r="13" fill="#EDE9FE"/>
+    <g stroke="#7C3AED" stroke-width="1.8" fill="none">
+      <path d="M756 270 l4 6 l-4 6"/>
+      <path d="M763 270 l4 6 l-4 6"/>
+    </g>
+    <text x="782" y="281" font-size="13" font-weight="700" fill="#0f172a">上下文压缩</text>
+    <text x="750" y="308" font-size="11" fill="#475569">长会话自动触发：旧轮次摘要</text>
+    <text x="750" y="327" font-size="11" fill="#475569">成短笔记，保留任务与验收</text>
+    <text x="750" y="345" font-size="11" fill="#475569">标准，循环得以继续。</text>
+  </g>
+
+  <text x="24" y="512" font-size="11.5" fill="#6B21A8">循环的关键不是聪明，而是可验证：测试全绿是 Agent 自证的底线，合并的决定权始终留给人。</text>
+</svg>

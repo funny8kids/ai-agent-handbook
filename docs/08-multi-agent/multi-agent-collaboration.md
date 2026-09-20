@@ -11,6 +11,8 @@ updated: 2026-09-20
 **一句话**：多 Agent 协作 = 把一个大任务拆给多个各自带上下文的 Agent，用并行换速度、用分工换深度、用分歧换质量——但每种收益都要付通信税。
 {% endhint %}
 
+![多智能体四种协作拓扑：Supervisor、Swarm、Group Chat、Pipeline](../.gitbook/assets/08-collab-patterns.svg)
+
 ## 先看结论
 
 - 三大收益：并行（提速）、上下文隔离（每个 Agent 有干净的专属上下文）、视角分歧（互相纠错）

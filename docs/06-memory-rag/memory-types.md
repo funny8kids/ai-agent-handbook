@@ -13,6 +13,8 @@ updated: 2026-09-20
   **标签**：`#memory`
 {% endhint %}
 
+![Agent 记忆三层：工作记忆、情景记忆、语义记忆及其流转](../.gitbook/assets/06-memory-tiers.svg)
+
 ## 先看结论
 
 - 短期记忆 = 上下文窗口本身；长期记忆 = 外部存储 + 检索

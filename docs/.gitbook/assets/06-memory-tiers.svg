@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="960" height="480" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="Agent 记忆三层图：工作记忆、情景记忆、语义记忆，压缩与蒸馏向下沉淀，检索回填向上虚线回环，右侧为遗忘曲线示意">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#f0fdf4"/>
+    </linearGradient>
+    <linearGradient id="gWork" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ecfdf5"/>
+    </linearGradient>
+    <linearGradient id="gEpi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f0fdf4"/>
+    </linearGradient>
+    <linearGradient id="gSem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dcfce7"/>
+    </linearGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrGreen" markerWidth="10" markerHeight="10" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="#059669"/>
+    </marker>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0 L0 0 0 32" fill="none" stroke="#94a3b8" stroke-width="0.7" opacity="0.25"/>
+    </pattern>
+  </defs>
+
+  <rect width="960" height="480" rx="20" fill="url(#bg)"/>
+  <rect width="960" height="480" rx="20" fill="url(#grid)"/>
+
+  <text x="40" y="34" font-size="17" font-weight="700" fill="#0f172a">Agent 记忆三层：工作记忆 · 情景记忆 · 语义记忆</text>
+  <text x="40" y="54" font-size="12" fill="#475569">上下文会被清空，记忆必须分层落盘：压缩向下沉淀，检索向上回填</text>
+
+  <!-- ============ 三层卡片 ============ -->
+  <!-- 工作记忆 -->
+  <g>
+    <rect x="170" y="76" width="500" height="96" rx="14" fill="url(#gWork)" stroke="#059669" stroke-width="2" filter="url(#sh)"/>
+    <rect x="176" y="90" width="5" height="68" rx="2.5" fill="#059669"/>
+    <rect x="196" y="98" width="48" height="48" rx="12" fill="#d1fae5"/>
+    <g transform="translate(220,122)" fill="none" stroke="#047857" stroke-width="1.8" stroke-linecap="round">
+      <rect x="-9" y="-9" width="18" height="18" rx="3"/>
+      <path d="M-4.5,-9 L-4.5,-13.5 M0,-9 L0,-13.5 M4.5,-9 L4.5,-13.5"/>
+      <path d="M-4.5,9 L-4.5,13.5 M0,9 L0,13.5 M4.5,9 L4.5,13.5"/>
+      <rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="#047857" stroke="none"/>
+    </g>
+    <text x="258" y="110" font-size="16" font-weight="700" fill="#0f172a">工作记忆（Work Memory）</text>
+    <text x="258" y="132" font-size="12.5" fill="#475569">即上下文窗口：此刻正在推理的全部内容</text>
+    <g stroke="#6ee7b7" fill="#ecfdf5">
+      <rect x="258" y="142" width="66" height="20" rx="10"/>
+      <rect x="332" y="142" width="52" height="20" rx="10"/>
+      <rect x="392" y="142" width="86" height="20" rx="10"/>
+    </g>
+    <g font-size="10.5" fill="#047857">
+      <text x="291" y="156" text-anchor="middle">会话内</text>
+      <text x="358" y="156" text-anchor="middle">易失</text>
+      <text x="435" y="156" text-anchor="middle">容量=窗口</text>
+    </g>
+  </g>
+
+  <!-- 情景记忆 -->
+  <g>
+    <rect x="170" y="204" width="500" height="96" rx="14" fill="url(#gEpi)" stroke="#16a34a" stroke-width="2" filter="url(#sh)"/>
+    <rect x="176" y="218" width="5" height="68" rx="2.5" fill="#16a34a"/>
+    <rect x="196" y="226" width="48" height="48" rx="12" fill="#dcfce7"/>
+    <g transform="translate(220,250)">
+      <rect x="-9" y="-10.5" width="18" height="21" rx="2.5" fill="none" stroke="#15803d" stroke-width="1.8"/>
+      <path d="M-5,-5 L5,-5 M-5,0 L5,0 M-5,5 L2,5" stroke="#15803d" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+    <text x="258" y="238" font-size="16" font-weight="700" fill="#0f172a">情景记忆（Episodic Memory）</text>
+    <text x="258" y="260" font-size="12.5" fill="#475569">会话转录落盘：每轮消息与工具结果的原始记录（JSONL）</text>
+    <g stroke="#86efac" fill="#f0fdf4">
+      <rect x="258" y="270" width="92" height="20" rx="10"/>
+      <rect x="358" y="270" width="66" height="20" rx="10"/>
+      <rect x="432" y="270" width="80" height="20" rx="10"/>
+    </g>
+    <g font-size="10.5" fill="#15803d">
+      <text x="304" y="284" text-anchor="middle">JSONL 追加</text>
+      <text x="391" y="284" text-anchor="middle">可回放</text>
+      <text x="472" y="284" text-anchor="middle">原始细节</text>
+    </g>
+  </g>
+
+  <!-- 语义记忆 -->
+  <g>
+    <rect x="170" y="332" width="500" height="96" rx="14" fill="url(#gSem)" stroke="#047857" stroke-width="2" filter="url(#sh)"/>
+    <rect x="176" y="346" width="5" height="68" rx="2.5" fill="#047857"/>
+    <rect x="196" y="354" width="48" height="48" rx="12" fill="#a7f3d0"/>
+    <g transform="translate(220,378)" fill="#065f46">
+      <ellipse cx="0" cy="-7" rx="9.5" ry="3.4"/>
+      <path d="M-9.5,-7 L-9.5,6 A9.5,3.4 0 0 0 9.5,6 L9.5,-7 A9.5,3.4 0 0 1 -9.5,-7 Z" opacity="0.8"/>
+      <ellipse cx="0" cy="-1" rx="9.5" ry="3.4" fill="#a7f3d0"/>
+    </g>
+    <text x="258" y="366" font-size="16" font-weight="700" fill="#0f172a">语义记忆（Semantic Memory）</text>
+    <text x="258" y="388" font-size="12.5" fill="#475569">蒸馏后的稳定事实与偏好，跨会话持久保存</text>
+    <g stroke="#34d399" fill="#dcfce7">
+      <rect x="258" y="398" width="110" height="20" rx="10"/>
+      <rect x="376" y="398" width="80" height="20" rx="10"/>
+      <rect x="464" y="398" width="72" height="20" rx="10"/>
+    </g>
+    <g font-size="10.5" fill="#065f46">
+      <text x="313" y="412" text-anchor="middle">向量 / KV 存储</text>
+      <text x="416" y="412" text-anchor="middle">蒸馏沉淀</text>
+      <text x="500" y="412" text-anchor="middle">长期保留</text>
+    </g>
+  </g>
+
+  <!-- ============ 向下：压缩与蒸馏 ============ -->
+  <path d="M300 172 L300 198" stroke="#059669" stroke-width="2.4" marker-end="url(#arrGreen)"/>
+  <text x="316" y="182" font-size="12" font-weight="700" fill="#047857">压缩 / 摘要：窗口将满，旧轮次摘要后落盘</text>
+  <path d="M300 300 L300 326" stroke="#059669" stroke-width="2.4" marker-end="url(#arrGreen)"/>
+  <text x="316" y="310" font-size="12" font-weight="700" fill="#047857">蒸馏 / 沉淀：从转录提炼事实与偏好</text>
+
+  <!-- ============ 向左回环：检索回填 ============ -->
+  <path d="M170 380 C 96 380, 96 116, 164 116" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrGreen)">
+    <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="2s" repeatCount="indefinite"/>
+  </path>
+  <text transform="translate(66,248) rotate(-90)" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">检索回填（top-k 注入当前上下文）</text>
+
+  <!-- ============ 右侧：遗忘曲线 ============ -->
+  <g>
+    <rect x="700" y="76" width="236" height="224" rx="12" fill="#ffffff" stroke="#cbd5e1" filter="url(#sh)"/>
+    <text x="716" y="100" font-size="13" font-weight="700" fill="#0f172a">遗忘曲线（示意）</text>
+    <text x="716" y="118" font-size="10.5" fill="#475569">记忆强度随时间指数衰减</text>
+
+    <path d="M730 136 L730 258 L920 258" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+    <path d="M734 144 C 748 152, 754 198, 776 222 C 800 248, 856 252, 916 252 L 916 258 L 734 258 Z" fill="#059669" opacity="0.08"/>
+    <path id="decay" d="M734 144 C 748 152, 754 198, 776 222 C 800 248, 856 252, 916 252" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+    <circle r="3.5" fill="#047857">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M734 144 C 748 152, 754 198, 776 222 C 800 248, 856 252, 916 252"/>
+    </circle>
+    <text x="836" y="182" font-size="11.5" font-weight="700" fill="#475569">不访问 → 衰减</text>
+    <text x="826" y="274" text-anchor="middle" font-size="10.5" fill="#64748b">时间</text>
+    <text transform="translate(718,200) rotate(-90)" text-anchor="middle" font-size="10.5" fill="#64748b">保留强度</text>
+  </g>
+
+  <!-- 对策卡 -->
+  <g>
+    <rect x="700" y="316" width="236" height="112" rx="12" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="716" y="340" font-size="12.5" font-weight="700" fill="#14532d">对抗遗忘的三条路</text>
+    <text x="716" y="362" font-size="11" fill="#166534">1. 反复访问 / 复习 → 衰减重置</text>
+    <text x="716" y="382" font-size="11" fill="#166534">2. 压缩转写 → 存入情景层</text>
+    <text x="716" y="402" font-size="11" fill="#166534">3. 蒸馏落盘 → 语义层最耐久</text>
+  </g>
+
+  <text x="40" y="458" font-size="11.5" fill="#64748b">分层直觉：窗口是草稿纸，转录是流水账，语义是笔记本——越往下越耐久。</text>
+</svg>

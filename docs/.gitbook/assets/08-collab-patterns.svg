@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" role="img" aria-label="多智能体四种协作拓扑：主管工作者、蜂群交接、群聊全互连、流水线，及选型中心提示">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFBF7"/>
+      <stop offset="100%" stop-color="#FFF3E6"/>
+    </linearGradient>
+    <linearGradient id="gOrg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="gOrgSoft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF7ED"/><stop offset="100%" stop-color="#FFEDD5"/>
+    </linearGradient>
+    <linearGradient id="gPipe" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FDBA74"/><stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <pattern id="grid1" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0 H0 V32" fill="none" stroke="#EAD9CB" stroke-width="0.6" opacity="0.5"/>
+    </pattern>
+    <filter id="sh1" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#7C2D12" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrS" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arrO" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#EA580C"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="540" rx="20" fill="url(#bg1)"/>
+  <rect width="960" height="540" rx="20" fill="url(#grid1)"/>
+
+  <text x="40" y="50" font-size="22" font-weight="700" fill="#0f172a">多智能体的四种协作拓扑</text>
+  <text x="40" y="74" font-size="12.5" fill="#475569">选拓扑只看任务形状：谁能看全上下文、谁需要转交、工序是否固定</text>
+
+  <!-- ======== 左上：Supervisor - Worker ======== -->
+  <g>
+    <rect x="40" y="102" width="430" height="182" rx="14" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5" filter="url(#sh1)"/>
+    <rect x="40" y="102" width="6" height="182" rx="3" fill="url(#gOrg)"/>
+    <text x="62" y="128" font-size="14.5" font-weight="700" fill="#0f172a">Supervisor–Worker（主管—工作者）</text>
+    <rect x="62" y="144" width="206" height="124" rx="10" fill="url(#gOrgSoft)"/>
+    <g stroke="#EA580C" stroke-width="1.6" fill="none">
+      <path d="M176 190 L148 168" marker-end="url(#arrO)"/>
+      <path d="M160 206 L112 232" marker-end="url(#arrO)"/>
+      <path d="M204 206 L252 232" marker-end="url(#arrO)"/>
+    </g>
+    <g stroke="#94A3B8" stroke-width="1.6" fill="none">
+      <path d="M252 238 L206 212" marker-end="url(#arrS)"/>
+    </g>
+    <circle cx="182" cy="200" r="18" fill="url(#gOrg)" filter="url(#sh1)"/>
+    <circle cx="140" cy="162" r="9" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.6"/>
+    <circle cx="104" cy="238" r="9" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.6"/>
+    <circle cx="258" cy="238" r="9" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.6"/>
+    <text x="182" y="204" text-anchor="middle" font-size="10.5" font-weight="700" fill="#FFFFFF">主管</text>
+    <text x="286" y="188" font-size="12" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="286" y="208" font-size="12" fill="#475569">任务可预先分解，需要总控、</text>
+    <text x="286" y="226" font-size="12" fill="#475569">汇总与审计；主管持有全局状态。</text>
+  </g>
+
+  <!-- ======== 右上：Swarm / Handoff ======== -->
+  <g>
+    <rect x="490" y="102" width="430" height="182" rx="14" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5" filter="url(#sh1)"/>
+    <rect x="490" y="102" width="6" height="182" rx="3" fill="url(#gOrg)"/>
+    <text x="512" y="128" font-size="14.5" font-weight="700" fill="#0f172a">Swarm / Handoff（蜂群—对等转交）</text>
+    <rect x="512" y="144" width="206" height="124" rx="10" fill="url(#gOrgSoft)"/>
+    <g stroke="#EA580C" stroke-width="1.8" fill="none">
+      <path d="M576 176 C 604 158, 640 158, 662 178" marker-end="url(#arrO)"/>
+      <path d="M668 202 C 662 226, 638 242, 616 244" marker-end="url(#arrO)"/>
+    </g>
+    <path d="M586 240 C 566 226, 562 204, 570 190" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrS)"/>
+    <circle cx="580" cy="184" r="12" fill="#FFFFFF" stroke="#EA580C" stroke-width="2"/>
+    <circle cx="672" cy="188" r="12" fill="#FFFFFF" stroke="#EA580C" stroke-width="2"/>
+    <circle cx="604" cy="248" r="12" fill="url(#gOrg)"/>
+    <circle r="4.5" fill="#EA580C">
+      <animateMotion dur="3s" repeatCount="indefinite"
+        path="M580 184 C 608 160, 646 160, 670 186 C 664 222, 640 240, 606 246"/>
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.06;0.9;1" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <text x="734" y="188" font-size="12" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="734" y="208" font-size="12" fill="#475569">对话在专家之间对等转交，</text>
+    <text x="734" y="226" font-size="12" fill="#475569">谁最合适谁接手，无中心调度。</text>
+  </g>
+
+  <!-- ======== 左下：Group Chat ======== -->
+  <g>
+    <rect x="40" y="306" width="430" height="182" rx="14" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5" filter="url(#sh1)"/>
+    <rect x="40" y="306" width="6" height="182" rx="3" fill="url(#gOrg)"/>
+    <text x="62" y="332" font-size="14.5" font-weight="700" fill="#0f172a">Group Chat（群聊—全员互见）</text>
+    <rect x="62" y="348" width="206" height="124" rx="10" fill="url(#gOrgSoft)"/>
+    <g stroke="#C29B7F" stroke-width="1.1" opacity="0.85">
+      <line x1="172" y1="376" x2="224" y2="414"/>
+      <line x1="172" y1="376" x2="120" y2="414"/>
+      <line x1="172" y1="376" x2="139" y2="460"/>
+      <line x1="172" y1="376" x2="205" y2="460"/>
+      <line x1="224" y1="414" x2="205" y2="460"/>
+      <line x1="224" y1="414" x2="139" y2="460"/>
+      <line x1="224" y1="414" x2="120" y2="414"/>
+      <line x1="120" y1="414" x2="139" y2="460"/>
+      <line x1="120" y1="414" x2="205" y2="460"/>
+      <line x1="139" y1="460" x2="205" y2="460"/>
+    </g>
+    <circle cx="172" cy="376" r="11" fill="url(#gOrg)"/>
+    <circle cx="224" cy="414" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
+    <circle cx="120" cy="414" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
+    <circle cx="139" cy="460" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
+    <circle cx="205" cy="460" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
+    <text x="286" y="392" font-size="12" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="286" y="412" font-size="12" fill="#475569">多方辩论、交叉评审与验证，</text>
+    <text x="286" y="430" font-size="12" fill="#475569">所有 Agent 共享发言记录。</text>
+  </g>
+
+  <!-- ======== 右下：Pipeline ======== -->
+  <g>
+    <rect x="490" y="306" width="430" height="182" rx="14" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5" filter="url(#sh1)"/>
+    <rect x="490" y="306" width="6" height="182" rx="3" fill="url(#gOrg)"/>
+    <text x="512" y="332" font-size="14.5" font-weight="700" fill="#0f172a">Pipeline（流水线—固定工序）</text>
+    <rect x="512" y="348" width="206" height="124" rx="10" fill="url(#gOrgSoft)"/>
+    <g filter="url(#sh1)">
+      <rect x="528" y="392" width="42" height="34" rx="8" fill="url(#gPipe)" opacity="0.55"/>
+      <rect x="588" y="392" width="42" height="34" rx="8" fill="url(#gPipe)" opacity="0.72"/>
+      <rect x="648" y="392" width="42" height="34" rx="8" fill="url(#gPipe)" opacity="0.88"/>
+    </g>
+    <g stroke="#EA580C" stroke-width="1.8" fill="none">
+      <path d="M570 409 H586" marker-end="url(#arrO)"/>
+      <path d="M630 409 H646" marker-end="url(#arrO)"/>
+      <path d="M690 409 H702" marker-end="url(#arrO)"/>
+    </g>
+    <circle cx="549" cy="378" r="4.5" fill="#EA580C">
+      <animate attributeName="cx" values="549;609;669;700;700" keyTimes="0;0.33;0.66;0.85;1" dur="3.2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="378;378;378;392;392" keyTimes="0;0.33;0.66;0.85;1" dur="3.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;1;1;1;0" keyTimes="0;0.33;0.66;0.85;1" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="734" y="392" font-size="12" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="734" y="412" font-size="12" fill="#475569">工序固定、上下游清晰：一棒</text>
+    <text x="734" y="430" font-size="12" fill="#475569">接一棒，每站只专注一个角色。</text>
+  </g>
+
+  <!-- ======== 中心提示 ======== -->
+  <g filter="url(#sh1)">
+    <rect x="245" y="266" width="470" height="46" rx="23" fill="url(#gOrg)"/>
+  </g>
+  <text x="480" y="294" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">拓扑不是越复杂越好——能用单个 Agent 解决，就别开多 Agent。</text>
+</svg>

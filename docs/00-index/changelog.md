@@ -2,6 +2,23 @@
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-20（第 9 次）旗舰概念插图第二批：8 张自绘 SVG 上线
+
+补上「只有框图、没有图册」的最后一块短板，为核心概念页新增 8 张与既有资产同风格的自绘 SVG（960 宽、淡网格第二层背景、章色主色、语义化 SMIL 动效，全部经真实渲染逐张目检）：
+
+| 插图 | 接入页面 | 讲什么 |
+|---|---|---|
+| 上下文预算 | [Token 与上下文](../03-llm/token-embedding-context.md) | 200k 窗口五段分配 + 压缩前后对照，缓存分界一眼可见 |
+| ReAct 闭环 | [ReAct](../04-prompt-reasoning/react.md) | 思考—行动—观察三环，左侧纯 CoT 断链对照、右侧真实轨迹示例 |
+| MCP 架构 | [MCP](../05-tool-protocol/mcp.md) | M×N 乱麻 vs M+N 统一协议，Host/Client/Server 与三种原语 |
+| 记忆三层 | [记忆类型](../06-memory-rag/memory-types.md) | 工作/情景/语义的沉淀与回填回路 + 遗忘曲线 |
+| 规划对比 | [Plan-and-Execute](../07-planning/plan-and-execute.md) | 先谋后动 vs 边想边做双泳道，含重规划回跳与两本账 |
+| 协作拓扑 | [多智能体协作](../08-multi-agent/multi-agent-collaboration.md) | Supervisor/Swarm/Group Chat/Pipeline 四宫格与选型底线 |
+| Trace 瀑布 | [日志、追踪与监控](../11-engineering/logging-tracing-monitoring.md) | 一次运行的 span 树时间轴，延迟/token/成本/重试四项必录 |
+| 编程 Agent 循环 | [编程 Agent](../12-applications/coding-agent.md) | 沙箱内改码—测试—修复闭环，合并权留给人 |
+
+全书配图达 **182 张**（154 Mermaid + 28 自绘 SVG）。
+
 ## 2026-09-20（第 8 次）全书 Mermaid 章色配色：告别默认灰白
 
 针对线上抽查发现的「全书图只有黑白框图、图册感弱」做视觉体系升级：

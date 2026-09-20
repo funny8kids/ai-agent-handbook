@@ -75,7 +75,7 @@
 - **183 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
 - **全书 154 张 Mermaid 图经真解析器逐块校验**，0 渲染风险
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **174 张配图**：154 个 Mermaid 内联图 + 20 张自绘 SVG（部分带动画）· 174 diagrams, parser-verified
+- **182 张配图**：154 个 Mermaid 内联图（全部带章节配色）+ 28 张自绘 SVG（部分带动画）· 182 diagrams, parser-verified
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

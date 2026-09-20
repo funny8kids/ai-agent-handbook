@@ -11,6 +11,8 @@ updated: 2026-09-20
 **一句话**：先让模型产出完整计划，再逐步执行并在必要时重规划——用「想清楚再做」换掉 ReAct 的「边做边想」，省 token 且更可控。
 {% endhint %}
 
+![Plan-and-Execute 与 ReAct：同一任务的两种执行形态对比](../.gitbook/assets/07-plan-vs-react.svg)
+
 ## 先看结论
 
 - 三阶段：Plan（一次出全计划）→ Execute（逐步执行）→ Replan（偏差时重规划）
