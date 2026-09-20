@@ -74,6 +74,7 @@ $$
 ## 路由策略
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
 flowchart TD
   A[用户请求] --> B{工具总量?}
   B -- "<20" --> C[全量注入 schema]

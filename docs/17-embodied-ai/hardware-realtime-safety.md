@@ -51,6 +51,7 @@ updated: 2026-09-20
 一次动作命令从模型到电机，要依次穿过下面这些闸门；急停与看门狗走独立安全回路，绕过策略进程直达执行器——这正是「分层冗余，任一失效另一层还能停」的落地形态。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart LR
   POL[策略 / 模型输出] --> SW[软件安全层<br/>限幅 · 力限 PFL · SSL · 软限位 · 自碰撞]
   SW --> RT[实时控制线程<br/>IK · 阻抗 · 零动态内存]

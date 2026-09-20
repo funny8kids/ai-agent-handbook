@@ -58,6 +58,7 @@ updated: 2026-09-20
 ## 编程 Agent 的通用模式
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F4EBFD","primaryBorderColor":"#9333EA","primaryTextColor":"#1F2937","secondaryColor":"#E7D2FA","tertiaryColor":"#FBF7FE","lineColor":"#C48FF3","actorBkg":"#F6EFFD","actorBorder":"#9333EA","actorTextColor":"#1F2937","signalColor":"#B370F0","noteBkgColor":"#ECDAFB","noteBorderColor":"#9333EA","noteTextColor":"#1F2937","labelBoxBkgColor":"#F4EBFD","labelBoxBorderColor":"#9333EA"}}}%%
 flowchart LR
   A[理解任务<br/>读 issue/复现] --> B[定位<br/>grep/read 探索]
   B --> C[计划<br/>Todo/Plan 模式]

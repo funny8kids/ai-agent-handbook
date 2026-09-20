@@ -28,6 +28,7 @@ updated: 2026-09-20
 ## 全章地图
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart LR
   A[评估] --> A1[指标] --> A2[基准]
   B[安全] --> B1[幻觉] --> B2[提示注入] --> B3[越狱]

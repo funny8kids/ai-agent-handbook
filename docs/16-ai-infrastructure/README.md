@@ -39,6 +39,7 @@ updated: 2026-09-20
 下面的编号对应上表的分层。把十层放到「一次 Agent 调用」的时间线上：请求经网关进来、由运行时管状态、命中缓存则跳过 prefill、引擎出 token、工具在沙箱里执行、结果回写并全程可观测。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
   REQ[Agent 请求<br/>稳定前缀 + 工具] --> GW[⑥ 模型网关<br/>路由 · 配额 · 审计]
   GW --> RT[⑦ 持久化运行时<br/>checkpoint · 幂等]

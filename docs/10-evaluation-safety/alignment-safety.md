@@ -43,6 +43,7 @@ updated: 2026-09-20
 - 建立行为回归集：每次模型/prompt 升级重跑「诱惑场景」（能否骗它跳过测试？）
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   A[能力评估<br/>做不做得对] --> B[行为评估<br/>诱惑下守不守规则]
   B -- 未过 --> F[加约束: 权限/审批/目标锚]
@@ -95,6 +96,7 @@ $$
 当奖励信号客观（代码是否通过测试、数学答案是否对），就不必在「有用」与「无害」之间反复调参——模型只需把事做对。这也是 RL 训练推理模型与 Agent 专用模型的一条主线（见 [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md)）。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart LR
   A[模型输出 / 行为] --> B{奖励信号来源}
   B -- 人类偏好判断 --> C[RLHF / DPO]

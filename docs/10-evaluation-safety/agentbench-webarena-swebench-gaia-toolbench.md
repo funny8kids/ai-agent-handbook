@@ -16,6 +16,7 @@ updated: 2026-09-20
 ## 五基准精读
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart LR
   SWE[SWE-bench<br/>真实 issue 修复] --> C1[代码定位 + 可过测试的 patch]
   WEB[WebArena<br/>自托管真实网站] --> C2[多步规划 + 状态跟踪]
@@ -89,6 +90,7 @@ $$
 因此读榜单时的正确姿势是：**先看这三项是否对齐，再看分数**。这也是「模型 + harness = Agent」在评测上的直接体现。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   X[想比较两个系统的分数] --> Q{三项是否同时对齐?<br/>模型版本 / harness / 预算}
   Q -- 是 --> OK[可比]

@@ -42,6 +42,7 @@ $$
 一次任务在 span 层级上长这样（trace_id 贯穿，父子关系即嵌套）：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 sequenceDiagram
   participant U as 用户请求
   participant R as agent_run 任务根 span
@@ -82,6 +83,7 @@ $$
 推荐策略：**失败与超时 trace 全量保留**（诊断价值最高），成功请求按低比例采样；并按时间分层——热数据（近 7 天）全字段，冷数据（更早）只留摘要与指标。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart TB
   E[一次任务的事件流<br/>trace_id 入口生成] --> S{执行结果}
   S -- 失败 / 超时 --> K[全量保留<br/>打错误分类标签]

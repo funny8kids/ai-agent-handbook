@@ -24,6 +24,7 @@ updated: 2026-09-20
 ## 分层与接口
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   U[用户目标<br/>「把桌收拾干净，杯子收水槽」] --> AG[Agent 层<br/>LLM/VLM：分解·选技能·判成败·请示]
   AG -->|skill call + obj_id| Q[意图队列<br/>带超时/取消/幂等键]

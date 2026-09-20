@@ -34,6 +34,7 @@ updated: 2026-09-20
 ## 时间线
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart LR
   A[1950 图灵测试] --> B[1956 达特茅斯会议<br/>AI 诞生]
   B --> C[1973 第一次寒冬<br/>算力不足]

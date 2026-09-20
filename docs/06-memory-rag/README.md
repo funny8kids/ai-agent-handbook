@@ -24,6 +24,7 @@ updated: 2026-09-20
 ## 全章地图
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart LR
   A[记忆分类<br/>记什么] --> B[上下文工程<br/>怎么放]
   B --> C[Embedding/向量库<br/>怎么找]

@@ -24,6 +24,7 @@ updated: 2026-09-20
 ## 流水线全景
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
   D[数据管线<br/>清洗/去重/配比] --> S[训练<br/>LoRA / FSDP / DeepSpeed]
   S --> C[Checkpoint + 实验记录<br/>config/commit/数据版本]

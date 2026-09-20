@@ -31,6 +31,7 @@ updated: 2026-09-20
 工程控制必须 **同时** 覆盖三层：内容过滤不够，要有执行闸门（见 [权限控制与沙箱隔离](permission-sandbox.md)）。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 sequenceDiagram
   participant E as 评测脚手架
   participant A as 被测模型
@@ -64,6 +65,7 @@ $$
 监控提高 detection，权限最小化降低 impact，对齐训练降低 $$\mathbb{P}$$。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   A[Agent 动作流<br/>推理 + 工具调用] --> G{执行闸门<br/>工具白名单 / 确认策略}
   G -- 越权 --> X[拒绝 + 事件留痕]

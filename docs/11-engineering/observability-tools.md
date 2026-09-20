@@ -46,6 +46,7 @@ OpenTelemetry 为 GenAI 定义了**语义约定**（semantic conventions），�
 **为什么要用约定的属性名而不是自定义**：只有这样，换成另一套后端（或自建）时 trace 仍然可读，评估与成本分析工具也能直接复用。这是「协议优先于工具」在可观测性上的体现。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart LR
   A[Agent 运行时埋点] --> B[OTel GenAI 语义约定<br/>操作 / 模型 / 用量属性]
   B --> C1[LangFuse 自托管]
@@ -86,6 +87,7 @@ $$
 三个决策问题跑一遍就是选型路径：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart TB
   Q1{trace 数据能出内网?}
   Q1 -- 能 --> Q2{深度绑定 LangChain?}

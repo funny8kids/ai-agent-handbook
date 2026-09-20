@@ -55,6 +55,7 @@ $$
 ## 循环图
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F2EBFD","primaryBorderColor":"#7C3AED","primaryTextColor":"#1F2937","secondaryColor":"#E2D4FB","tertiaryColor":"#FAF7FE","lineColor":"#B793F5","actorBkg":"#F5EFFE","actorBorder":"#7C3AED","actorTextColor":"#1F2937","signalColor":"#A375F2","noteBkgColor":"#E7DCFC","noteBorderColor":"#7C3AED","noteTextColor":"#1F2937","labelBoxBkgColor":"#F2EBFD","labelBoxBorderColor":"#7C3AED"}}}%%
 flowchart LR
   A[感知<br/>读环境/工具结果] --> B[规划<br/>LLM 推理决策]
   B --> C[行动<br/>调用工具]

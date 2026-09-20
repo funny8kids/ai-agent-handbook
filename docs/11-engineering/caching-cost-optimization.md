@@ -68,6 +68,7 @@ $$
 ## 三板斧
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart TB
   A[成本优化] --> B["板斧1: Prompt 缓存<br/>静态前缀+动态后置<br/>命中省 ~90%"]
   A --> C["板斧2: 上下文瘦身<br/>压缩/截断/延迟加载工具<br/>少送 30-60%"]

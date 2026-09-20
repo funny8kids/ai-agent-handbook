@@ -79,6 +79,24 @@ while not done and steps < MAX_STEPS:
 
 详细对比见 [Agent 与 Workflow、Chatbot、Copilot 的区别](agent-vs-workflow-chatbot-copilot.md)。
 
+拿到一个系统，顺着两个判别问题走，三秒钟定位它属于哪一档：
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F2EBFD","primaryBorderColor":"#7C3AED","primaryTextColor":"#1F2937","secondaryColor":"#E2D4FB","tertiaryColor":"#FAF7FE","lineColor":"#B793F5","actorBkg":"#F5EFFE","actorBorder":"#7C3AED","actorTextColor":"#1F2937","signalColor":"#A375F2","noteBkgColor":"#E7DCFC","noteBorderColor":"#7C3AED","noteTextColor":"#1F2937","labelBoxBkgColor":"#F2EBFD","labelBoxBorderColor":"#7C3AED"}}}%%
+flowchart TD
+  Q1{"下一步做什么，<br/>由谁决定?"} -->|"用户逐条推进"| R1["Chatbot<br/>只回答，不行动"]
+  Q1 -->|"开发者写死的流程"| R2["Workflow<br/>LLM 只在固定节点填空"]
+  Q1 -->|"模型自己决定"| Q2{"允许模型<br/>动态选工具吗?"}
+  Q2 -->|"否"| R3["纯推理规划器<br/>有想法，没手脚"]
+  Q2 -->|"是"| Q3{"执行结果会回流<br/>影响下一步吗?"}
+  Q3 -->|"否，一次性执行完"| R2
+  Q3 -->|"是，循环里带反馈"| R4["Agent"]
+```
+
+{% hint style="tip" %}
+**提示**：Q1 问「谁掌控制流」，Q2/Q3 问「行动与反馈是否闭环」——两问不过关的，都不是 Agent，只是长得像。
+{% endhint %}
+
 ## 核心概念
 
 | 组件 | 作用 | 类比 |

@@ -83,6 +83,7 @@ $$\gamma$$ 是折扣因子，越接近 1 越看重长远收益。策略 $$\pi_\t
 ## 监督学习的流程
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart LR
   A[收集数据] --> B[划分训练/验证/测试集]
   B --> C[选择模型]

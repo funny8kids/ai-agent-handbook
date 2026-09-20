@@ -62,6 +62,7 @@ $$
 ### 4. 从榜单到自建：协议怎么选
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   U[要评测我的 Agent] --> Q1{任务能否自动判分?}
   Q1 -- 可跑测试/命令 --> B1[借 SWE-bench 协议<br/>F2P 通过 + P2P 不回归]

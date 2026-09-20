@@ -23,6 +23,7 @@ updated: 2026-09-20
 本章四页是一条「包含链」：每一层解决上一层解决不了的问题，最终走到 LLM——Agent 的大脑。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart TD
     A["人工智能 AI：让机器表现出智能"] -->|"包含"| B["机器学习 ML：不手写规则，从数据中学"]
     B -->|"三大范式"| B1["监督学习：有标准答案"]

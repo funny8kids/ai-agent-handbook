@@ -73,6 +73,7 @@ $$R$$ 是各路检索器，$$\mathrm{rank}_r(d)$$ 是文档 $$d$$ 在第 $$r$$ �
 两路各补短板——向量路管「意思像」，关键词路管「字面准」，RRF 只按排名融合、不必对齐分数量纲：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart TD
     Q["用户查询"] --> K["关键词检索 BM25：型号、错误码、精确词"]
     Q --> E["查询编码 + L2 归一化"]

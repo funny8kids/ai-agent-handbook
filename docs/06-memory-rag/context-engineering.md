@@ -58,6 +58,7 @@ $$\alpha$$ 是缓存折扣倍数（常见约 10）。**任何混进静态前缀�
 ## 每步调用的上下文组装
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart LR
   A[固定层<br/>system prompt + 工具 schema<br/>静态·可缓存] --> D[本次请求上下文]
   B[项目记忆<br/>CLAUDE.md / 用户偏好] --> D

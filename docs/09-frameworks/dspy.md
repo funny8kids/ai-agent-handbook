@@ -44,6 +44,7 @@ $$
 现代优化器（如 MIPROv2）用「先自举出候选示例、再用贝叶斯搜索在指令 × 示例的组合空间里找高分方案」的方式近似求解。**这条式子是整个框架的钥匙**：优化上限完全由 $$\mathcal{D}$$ 与 $$m$$ 决定——垃圾指标必然优化出垃圾 prompt。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 flowchart LR
   S["Signature<br/>声明输入/输出字段"] --> F["程序 f_p<br/>Module 组合（ChainOfThought/ReAct）"]
   MOD["Module：执行结构"] --> F

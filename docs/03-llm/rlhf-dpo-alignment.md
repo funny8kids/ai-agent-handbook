@@ -63,6 +63,7 @@ $$
 ## 两条路线对比图
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart TD
     SFT["SFT 模型：会跟随指令"] --> RM["训练奖励模型：从成对偏好学出评委"]
     RM --> PPO["PPO 优化：策略生成回答 → 奖励模型打分 → KL 拴住参考模型"]

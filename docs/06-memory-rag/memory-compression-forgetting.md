@@ -68,6 +68,7 @@ $$
 ## 压缩流水线
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart LR
   A[上下文水位监测] -- 达到阈值 --> B[选择压缩对象<br/>旧工具输出/久远对话]
   B --> C[生成摘要<br/>保留决策与结论]

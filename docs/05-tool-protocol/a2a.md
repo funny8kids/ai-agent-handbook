@@ -40,6 +40,7 @@ A2A 定义的正是后者：一个 Agent 通过 HTTP 暴露自己，另一个 Ag
 A2A 把一次协作建模为 `Task`，有明确状态机——这是它区别于「一问一答」的关键：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 stateDiagram-v2
   [*] --> submitted
   submitted --> working
@@ -72,6 +73,7 @@ A2A 强调 Agent 之间**互相不可见内部实现**：一方只声明「我�
 ## MCP vs A2A
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 flowchart TB
   subgraph A2A层[Agent ↔ Agent: A2A]
     A1[行程 Agent<br/>LangGraph] <-->|Agent Card/Task| A2[机票 Agent<br/>另一厂商]

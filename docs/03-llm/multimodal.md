@@ -56,6 +56,7 @@ $$\mathbf{v}_i$$、$$\mathbf{t}_i$$ 分别是第 $$i$$ 张图和对应文本的�
 ## 图示
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart LR
   A[图像] --> B[视觉编码器 ViT]
   C[音频] --> D[音频编码器]

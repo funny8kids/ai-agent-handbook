@@ -75,6 +75,7 @@ $$A$$ 是邻接矩阵，$$k_i$$ 是节点度，$$m$$ 是总边数，$$c_i$$ 是�
 ## 图示
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart LR
   A[张三] --|就职于|--> B[ACME 公司]
   B --|生产|--> C[芯片A]

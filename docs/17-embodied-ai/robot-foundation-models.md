@@ -54,6 +54,7 @@ updated: 2026-09-20
 按「是否分快慢双系统」这一条，表里的模型可归成两族：左族复用 LLM 栈、把动作离散成 token，简单但难上高频；右族慢 VLM 出意图、快动作专家出连续动作块，是当前产业共识。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   subgraph SS[单系统：复用 LLM 栈]
     A1[VLM 骨干<br/>RT-2 / OpenVLA] --> A2[离散动作 token<br/>自回归 · 逐维逐步]

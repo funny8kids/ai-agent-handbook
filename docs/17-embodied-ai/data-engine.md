@@ -37,6 +37,7 @@ updated: 2026-09-20
 五条来源在「质检 → 配比 → 训练」处汇成一条前向通路，再把部署失败样本回流成闭环——飞轮的迭代速度取决于这一圈多长。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart LR
   T[真机遥操作<br/>质量高 · 单位成本贵] --> Q[自动质检<br/>成功判定 · 抖动 · 丢帧]
   U[手持夹爪 UMI<br/>便宜 · 动作近似] --> Q

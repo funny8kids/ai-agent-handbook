@@ -64,6 +64,7 @@ $$
 把「保证语法」与「保证正确」串成一个闭环——单靠约束解码只走完了左半边：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
 flowchart TD
     A["解码第 t 步：模型输出词表概率分布"] --> B["schema 编译成的状态机：算出本步允许的 token 集合"]
     B --> C["非法 token 概率置零，重新归一化"]

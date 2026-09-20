@@ -31,6 +31,7 @@ updated: 2026-09-20
 三级难度阶梯，按所需步数与工具分层：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     Q["466 道题：人类容易、AI 难"] --> L1["Level 1：少数几步，基本只需检索"]
     Q --> L2["Level 2：多步工具链，浏览 + 文件 + 计算组合"]

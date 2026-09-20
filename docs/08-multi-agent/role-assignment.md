@@ -33,6 +33,7 @@ updated: 2026-09-20
 角色间的箭头就是「交接契约」：产出格式提前定死，下游才能稳定消费。注意评审者只有只读与测试工具——它能挑问题，但不能替执行者改代码：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FDEEE7","primaryBorderColor":"#EA580C","primaryTextColor":"#1F2937","secondaryColor":"#FADACA","tertiaryColor":"#FEF8F5","lineColor":"#F3A379","actorBkg":"#FDF2EC","actorBorder":"#EA580C","actorTextColor":"#1F2937","signalColor":"#F08A55","noteBkgColor":"#FBE1D3","noteBorderColor":"#EA580C","noteTextColor":"#1F2937","labelBoxBkgColor":"#FDEEE7","labelBoxBorderColor":"#EA580C"}}}%%
 flowchart TD
     P["规划者 Planner：只读工具"] -->|"任务清单 JSON"| W["执行者 Worker：全量工具，只做分到的子任务"]
     W -->|"完成的工件"| R["评审者 Reviewer：只读 + 测试工具"]

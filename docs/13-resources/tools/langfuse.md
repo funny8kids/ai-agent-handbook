@@ -31,6 +31,7 @@ updated: 2026-09-20
 trace 进来到回归评估出去的闭环：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     A["应用侧一行接入 SDK"] --> T["Trace 采集：会话级聚合 + 按模型/用户成本归因"]
     T --> S["打分：人工标注 / 模型评估 / 用户反馈"]

@@ -91,6 +91,7 @@ $$
 ## 选型决策
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart TD
   A[Agent 需要什么模型?] --> B{强工具调用+长上下文质量优先?}
   B -- 是 --> C["旗舰 API（Claude / GPT / DeepSeek）"]

@@ -31,6 +31,7 @@ updated: 2026-09-20
 任务在真实填充的网站上跑，验证器只认最终环境状态：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     T["812 个长程任务：自然语言指令"] --> S["自托管四站：购物 / 论坛 / CMS / GitLab"]
     S --> A["Agent 多步操作：点击、填表、跨页维护状态"]

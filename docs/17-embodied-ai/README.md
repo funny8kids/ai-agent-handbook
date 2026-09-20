@@ -24,6 +24,7 @@ updated: 2026-09-20
 本章所有页面都围着这一个断层转——语义只有几赫兹、控制要上千赫兹，中间靠动作分块与异步重规划补上；而真实世界的反馈不可回滚，一次失败就要人工复位。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   GOAL[自然语言目标] --> SLOW[语义决策 · 慢系统<br/>VLM / VLA 约 5–10Hz]
   SLOW --> BRIDGE[频率断层补偿<br/>action chunking · 异步重规划 · 残差]

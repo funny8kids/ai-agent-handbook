@@ -64,6 +64,7 @@ QLoRA 进一步把冻结的基座量化到 4-bit，再用 LoRA 训练，使消�
 ## 训练管线
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart LR
   A[预训练<br/>万亿 token 文本<br/>学知识与语言] --> B[SFT 指令微调<br/>万-百万条问答对<br/>学指令跟随]
   B --> C[偏好对齐<br/>RLHF / DPO<br/>学有用且安全]

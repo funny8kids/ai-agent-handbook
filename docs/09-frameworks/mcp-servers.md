@@ -21,6 +21,7 @@ updated: 2026-09-20
 | 标签 | `#mcp` `#tooling` |
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 flowchart LR
   subgraph HOST["MCP Host（应用：Claude Code / Pi 等）"]
     LLM["LLM"] --- CL["MCP Client ×N<br/>一个 Client 对一个 Server（1:1）"]
@@ -47,6 +48,7 @@ flowchart LR
 | memory | 简单知识图谱记忆 | 跨会话记忆实验 |
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 sequenceDiagram
   participant H as Host（内嵌 Client + LLM）
   participant S as MCP Server

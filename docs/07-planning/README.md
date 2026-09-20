@@ -25,6 +25,7 @@ updated: 2026-09-20
 规划系统永远在两极之间找平衡：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
 flowchart LR
   A["完全预先规划<br/>Plan-and-Execute<br/>✓可控 ✗脆弱"] <-->|"工程光谱"| B["完全动态规划<br/>ReAct 即兴<br/>✓灵活 ✗失控"]
   A <--> C["混合式<br/>动态重规划<br/>生产主流"]

@@ -31,6 +31,7 @@ updated: 2026-09-20
 推理与行动交替的循环，以及它赢在何处：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     Q["任务：如 HotpotQA 多跳问答"] --> R["ReAct 循环"]
     R --> T["Thought：推理下一步该查什么"]

@@ -24,6 +24,7 @@ updated: 2026-09-20
 ## 数据管线全景
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
   S[来源<br/>Wiki/工单/代码/Git/DB] --> I[采集与规范化<br/>解析→Markdown/JSON]
   I --> C[清洗与切块<br/>语义边界/去重/脱敏]

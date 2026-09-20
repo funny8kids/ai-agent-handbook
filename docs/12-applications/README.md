@@ -34,6 +34,7 @@ updated: 2026-09-20
 本章的场景不是并列清单，而是一条「验证客观度」递减的梯队——越靠左边验收越机器化，Agent 越早可用：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F4EBFD","primaryBorderColor":"#9333EA","primaryTextColor":"#1F2937","secondaryColor":"#E7D2FA","tertiaryColor":"#FBF7FE","lineColor":"#C48FF3","actorBkg":"#F6EFFD","actorBorder":"#9333EA","actorTextColor":"#1F2937","signalColor":"#B370F0","noteBkgColor":"#ECDAFB","noteBorderColor":"#9333EA","noteTextColor":"#1F2937","labelBoxBkgColor":"#F4EBFD","labelBoxBorderColor":"#9333EA"}}}%%
 flowchart LR
     A["编程 Agent：测试通过即验收"] --> B["数据分析：SQL 结果可机检"]
     B --> C["企业知识库：引用准确率可测"]

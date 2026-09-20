@@ -153,6 +153,26 @@ updated: 2026-09-20
 
 数量：原理型 1–3 张（其中至少 1 张 Mermaid），概念型至少 1 张。**图要准，不要多。**
 
+### Mermaid 章色配色（硬性要求）
+
+全书 Mermaid 块统一带**章色主题指令**：每个 ```` ```mermaid ```` 块的第一行必须是 `%%{init: ...}%%`，取所在章节的主色，让读者扫一眼就知道自己在第几章。2026-09-20 起全书 154 块已注入，新增图不得省略。
+
+| 章 | 主色 | 章 | 主色 | 章 | 主色 |
+|---|---|---|---|---|---|
+| 00 导航 | `#64748B` | 06 记忆与 RAG | `#059669` | 12 应用 | `#9333EA` |
+| 01 AI 基础 | `#2563EB` | 07 规划 | `#CA8A04` | 13 资源库 | `#475569` |
+| 02 Agent 基础 | `#7C3AED` | 08 多智能体 | `#EA580C` | 14 模板 | `#78716C` |
+| 03 LLM | `#4F46E5` | 09 框架 | `#E11D48` | 15 术语表 | `#0E7490` |
+| 04 提示与推理 | `#0284C7` | 10 评估与安全 | `#DC2626` | 16 基础设施 | `#16A34A` |
+| 05 工具与协议 | `#0D9488` | 11 工程化 | `#C026D3` | 17 具身智能 | `#B45309` |
+| | | 18 2026 前沿 | `#6D28D9` | 99 关于 | `#64748B` |
+
+配色公式固定：`primaryColor` = 主色掺白 90%、`secondaryColor` = 掺白 78%、`lineColor` = 掺白 45%、`primaryTextColor` = `#1F2937`。示例（02 章，写成一行）：
+
+```text
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F2EBFD","primaryBorderColor":"#7C3AED","primaryTextColor":"#1F2937","secondaryColor":"#E2D4FB","tertiaryColor":"#FAF7FE","lineColor":"#B793F5","actorBkg":"#F5EFFE","actorBorder":"#7C3AED","actorTextColor":"#1F2937","signalColor":"#A375F2","noteBkgColor":"#E7DCFC","noteBorderColor":"#7C3AED","noteTextColor":"#1F2937"}}}%%
+```
+
 引用方式（相对路径）：
 
 ```markdown
@@ -211,6 +231,7 @@ updated: 2026-09-20
 - [ ] 涉及原理的页面给出核心公式，并解释每一项的作用
 - [ ] 每个数字/结论都能点到一手来源；文末有「参考资料」
 - [ ] 至少 1 张 Mermaid 或自绘 SVG 配图（概念型起）
+- [ ] 每个 Mermaid 块首行带所在章的 `%%{init}%%` 章色指令（见第六节配色表）
 - [ ] 案例与主题相关，没有出现"任何页面都塞同一个项目"
 - [ ] 达到对应体裁的字数下限
 - [ ] 术语首次出现给出中英文对照，如：检索增强生成（RAG，Retrieval-Augmented Generation）

@@ -56,6 +56,7 @@ $$
 把分级跑成会话内的生命周期，权限就是「最小起步 → 显式晋升 → 到期回收」：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   S[会话开始] --> P0[装载策略表<br/>只取能力集合 C 的最小子集]
   P0 --> A{动作请求}
@@ -80,6 +81,7 @@ $$
 这解释了为什么「权限 + 沙箱 + 审批 + 审计」要一起上：任何单层都不够强（例如 $$p_l=0.5$$），但四层串联能把风险压到约 6%。也解释了为什么「在系统提示词里写不要危险操作」几乎没有安全价值——它既不是独立层，也容易被注入绕过（见 [提示注入](prompt-injection.md)）。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart LR
   T[被注入或出错的模型<br/>要执行动作] --> L1[层1 策略表<br/>只给必需权限]
   L1 -- 绕过 p1 --> L2[层2 分级审批<br/>不可逆动作人审]

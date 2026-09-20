@@ -31,6 +31,7 @@ updated: 2026-09-20
 每题的判分闭环，完全客观：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     I["真实 GitHub issue"] --> B["Docker 环境：停在 issue 之前的 base commit"]
     B --> A["Agent 阅读代码库，产出 patch"]

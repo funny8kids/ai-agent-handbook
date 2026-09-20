@@ -35,6 +35,7 @@ updated: 2026-09-20
 命令自上而下、状态自下而上；频率逐层升高，正是「平衡交给底层、上层只发末端轨迹 + 接触力期望」的由来。把它塞进同一个网络，实时与安全都会输。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   L5[任务/语义层 · 1–10Hz<br/>VLA · 行为树：选目标 / 发子目标] --> L4[移动操作 · 20–50Hz<br/>技能组合 + 学习型残差]
   L4 --> L3[运动技能库 · 50–100Hz<br/>走 / 蹲 / 爬 / 搬运 policy]

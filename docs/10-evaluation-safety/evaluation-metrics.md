@@ -75,6 +75,7 @@ $$p_o$$ 是观察到的同意率，$$p_e$$ 是随机情况下的期望同意率�
 「答案错了」是一个复合信号，用指标顺序往下问，才能定位到可修的那一层：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart TB
   A[最终答案错误] --> B{"Recall@k 达标?"}
   B -- 否 --> B1[检索问题<br/>切块 / embedding / 混合检索]

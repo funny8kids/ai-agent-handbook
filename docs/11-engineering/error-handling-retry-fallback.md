@@ -36,6 +36,7 @@ updated: 2026-09-20
 把上表落成可执行的路由：**先判幂等，再判分类码，最后才决定重试还是降级**。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart TB
   F[调用失败] --> C1{幂等操作?<br/>转账/发信/下单}
   C1 -- 是 --> HM[禁止自动重试<br/>幂等键去重或升级人审]
@@ -75,6 +76,7 @@ class CircuitBreaker:
 三态迁移（上面的实现只写了 closed/open 两态，half-open 是恢复探测的关键补齐）：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 flowchart LR
   C[closed: 正常放行<br/>failures 计数] -- 连续失败 ≥ threshold --> O[open: 冷却期内快速失败<br/>直接走降级]
   O -- 冷却时间到 --> H[half-open: 只放 1 个探测请求]

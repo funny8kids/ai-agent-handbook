@@ -25,6 +25,7 @@ updated: 2026-09-20
 ![学习路线：四个阶段](../.gitbook/assets/00-learning-path.svg)
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F1F3","primaryBorderColor":"#64748B","primaryTextColor":"#1F2937","secondaryColor":"#DDE0E5","tertiaryColor":"#F9F9FA","lineColor":"#AAB3BF","actorBkg":"#F3F4F6","actorBorder":"#64748B","actorTextColor":"#1F2937","signalColor":"#939EAE","noteBkgColor":"#E3E6EA","noteBorderColor":"#64748B","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0F1F3","labelBoxBorderColor":"#64748B"}}}%%
 flowchart LR
   A[01 AI 基础] --> B[02 Agent 基础]
   B --> C[03 LLM 基础]

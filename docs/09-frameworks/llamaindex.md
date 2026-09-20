@@ -37,6 +37,7 @@ $$
 **为什么这个拆分重要**：RAG 的质量瓶颈几乎从不在「向量库选哪个」，而在**切块与检索策略**。把 Node Parser 与 Retriever 做成独立可替换环节，就是为了让你能针对失败模式逐段换零件，而不是被锁死在一条固定管线上。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 flowchart TD
   subgraph OFF["索引侧（离线）"]
     RD["Reader 数据连接器<br/>SimpleDirectoryReader / LlamaHub"] --> NParser["Node Parser 切块<br/>句窗 / 层级 / 语义切块"]

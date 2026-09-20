@@ -31,6 +31,7 @@ updated: 2026-09-20
 采样 → 过滤 → 微调三步，数据完全由模型自己标注：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     D["无标注文本"] --> M["模型自采样：在哪些位置插入 API 调用可能有帮助？"]
     M --> S["候选数据：含工具调用 token 的变体"]

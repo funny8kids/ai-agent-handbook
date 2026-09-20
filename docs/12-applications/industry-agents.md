@@ -73,6 +73,7 @@ $$
 一个可操作的推导顺序：① 列出该行业「错了会怎样」的动作清单；② 为每条标注可逆性与后果严重度；③ 据此决定自主等级与审批点；④ 最后才选模型与框架。顺序反了，就会做出「技术上先进、合规上不可用」的系统。这套推导也让跨行业复用成为可能：复用的是流程与工具，重新推导的是自主边界。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F4EBFD","primaryBorderColor":"#9333EA","primaryTextColor":"#1F2937","secondaryColor":"#E7D2FA","tertiaryColor":"#FBF7FE","lineColor":"#C48FF3","actorBkg":"#F6EFFD","actorBorder":"#9333EA","actorTextColor":"#1F2937","signalColor":"#B370F0","noteBkgColor":"#ECDAFB","noteBorderColor":"#9333EA","noteTextColor":"#1F2937","labelBoxBkgColor":"#F4EBFD","labelBoxBorderColor":"#9333EA"}}}%%
 flowchart TD
     A["① 列出错了会怎样的动作清单"] --> B["② 逐条标注可逆性与后果严重度"]
     B --> C["③ 推导自主等级与人审边界"]

@@ -62,6 +62,7 @@ $$
 ## 编排谱系
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FDEEE7","primaryBorderColor":"#EA580C","primaryTextColor":"#1F2937","secondaryColor":"#FADACA","tertiaryColor":"#FEF8F5","lineColor":"#F3A379","actorBkg":"#FDF2EC","actorBorder":"#EA580C","actorTextColor":"#1F2937","signalColor":"#F08A55","noteBkgColor":"#FBE1D3","noteBorderColor":"#EA580C","noteTextColor":"#1F2937","labelBoxBkgColor":"#FDEEE7","labelBoxBorderColor":"#EA580C"}}}%%
 flowchart LR
   A["顺序流水线<br/>固定·最稳"] --> B["监督者/层级<br/>统筹·主流"] --> C["群聊/辩论<br/>发散·贵"] --> D["Swarm/handoff<br/>去中心·轻"] --> E["动态自组<br/>前沿·实验"]
 ```

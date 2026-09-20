@@ -31,6 +31,7 @@ updated: 2026-09-20
 三组件（Actor / Evaluator / Reflector）构成语言化复盘闭环：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
 flowchart TD
     A["Actor：尝试任务（如 HumanEval 写函数）"] --> E["Evaluator：判断成功 / 失败"]
     E -->|"成功"| S["通过，计入解决率（80.1% → 91%）"]

@@ -67,6 +67,7 @@ $$
 把上面「恰当」粒度的例子画成依赖图，就能看清分解的真正产物是 DAG 而非文本清单：有依赖的排序，无依赖的可并行，每个节点带机检验收：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
 flowchart TD
     G["目标：实现用户系统"] --> A["定义 User 数据模型与校验"]
     A --> B["实现注册/登录接口"]

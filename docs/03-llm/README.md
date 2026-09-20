@@ -30,6 +30,7 @@ updated: 2026-09-20
 训练管线三段式 + 部署一环，落到 Agent 工程上是三条硬约束：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart TD
     A["预训练：学成下一个 token 预测器"] --> B["指令微调 SFT：学会问答格式"]
     B --> C["偏好对齐 RLHF/DPO：有用、诚实、无害"]

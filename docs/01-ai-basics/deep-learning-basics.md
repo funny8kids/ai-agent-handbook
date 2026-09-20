@@ -78,6 +78,7 @@ $$E_i$$ 是第 $$i$$ 个专家网络，$$g_i$$ 是门控权重，TopK 只取权�
 ## 图示
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart LR
   A[输入层<br/>原始数据] --> B[隐藏层 1<br/>学边缘/字符]
   B --> C[隐藏层 2<br/>学局部模式]

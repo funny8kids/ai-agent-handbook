@@ -2,6 +2,15 @@
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-20（第 8 次）全书 Mermaid 章色配色：告别默认灰白
+
+针对线上抽查发现的「全书图只有黑白框图、图册感弱」做视觉体系升级：
+
+- **154 个 Mermaid 块全部注入 `%%{init}%%` 章色主题**：18 章各配一个主色（02 紫、05 青、09 玫红、10 红……），节点底色统一为主色掺白 90%、连线掺白 45%，一眼可辨所在章节；GitHub 与 GitBook 原生支持该指令
+- **门面页补图**：[什么是 AI Agent](../02-agent-basics/what-is-agent.md) 新增「两分钟判断是不是 Agent」决策流程图，全书正文页（除模板页）实现图零空白
+- **规范固化**：[风格指南](../14-templates/style-guide.md) 新增「Mermaid 章色配色（硬性要求）」一节——章色表、混色公式、可直接复制的指令示例；写作检查清单同步加一条
+- 全部 154 块经真解析器（mermaid@11）逐块校验 0 失败
+
 ## 2026-09-20（第 7 次）对标头部开源手册：图文、排版与自测体系升级
 
 以 GitHub 同类头部项目（bojieli/ai-agent-book、microsoft/ai-agents-for-beginners、huggingface/agents-course、datawhalechina/self-llm 等）为参照，补三块短板：

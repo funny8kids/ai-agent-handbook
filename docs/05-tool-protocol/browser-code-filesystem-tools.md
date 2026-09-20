@@ -45,6 +45,7 @@ def edit_file(path, old_text, new_text):
 把「先读后写 + diff 审阅 + 可回滚」三条防线画成一次 edit 的实际路径：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 flowchart TD
     A["模型提出修改意图"] --> B["先读：读取文件当前内容，挡住幻觉记忆"]
     B --> C{"old_text 在文件中匹配几处？"}

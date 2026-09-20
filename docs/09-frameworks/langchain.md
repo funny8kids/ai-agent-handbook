@@ -53,6 +53,7 @@ print(chain.invoke({"topic": "MCP 协议"}).content)
 ```
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 flowchart LR
   IN["输入 {'topic': 'MCP 协议'}"] --> A["ChatPromptTemplate<br/>填模板 → 消息列表"]
   A --> B["ChatOpenAI<br/>消息 → AIMessage"]

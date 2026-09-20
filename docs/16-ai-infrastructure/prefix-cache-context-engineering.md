@@ -25,6 +25,7 @@ updated: 2026-09-20
 聊天是「一问一答」，Agent 是「一轮一轮把越滚越长的上下文重发」：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
   T1["第 1 轮<br/>sys + tools<br/>5k tok"] --> T2["第 2 轮<br/>sys + tools + 历史<br/>7k tok"]
   T2 --> T3["第 3 轮<br/>sys + tools + 更长历史<br/>12k tok"]

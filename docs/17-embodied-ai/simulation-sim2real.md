@@ -26,6 +26,7 @@ updated: 2026-09-20
 ![域随机化与 Sim-to-Real（动画）](../.gitbook/assets/17-sim2real-domain-randomization.svg)
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart LR
   R2S[real2sim 标定<br/>URDF / 相机 / 延迟] --> TR[策略训练<br/>RL / 模仿 / 世界模型]
   DR[域随机化<br/>物理 + 视觉 + 时序] --> TR

@@ -38,6 +38,7 @@ $$
 | Handoff | 控制权移交 |
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 flowchart TD
   G[(共享消息流)] --> M["GroupChatManager<br/>用 LLM 读消息流，决定下一个发言者"]
   M -->|需要写码| A1[Assistant：代码 Agent]
@@ -64,6 +65,7 @@ user.initiate_chat(assistant, message="写个脚本统计本目录代码行数�
 这个例子里包含了 AutoGen 最有价值的设计：**「模型写代码 → 框架安全执行 → 报错信息回填 → 模型修正」的闭环**。代码执行被放在受控目录（`work_dir`）中，避免模型直接操作宿主机。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 sequenceDiagram
   participant U as UserProxy（人 + 沙箱）
   participant A as AssistantAgent（LLM）

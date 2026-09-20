@@ -40,6 +40,7 @@ updated: 2026-09-20
 证据的「保真度」逐级上升、「吞吐」逐级下降：越靠上越便宜越可回归，越靠下越接近上线真相。仿真只给相对提升，验收永远落在真机那一格。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   CI[仿真回归集<br/>每次改动跑 · 看相对提升] --> SR[SimplerEnv 批量 rollout<br/>低成本估真机成功率]
   SR --> SMALL[小样本真机<br/>校准 sim-to-real 差]

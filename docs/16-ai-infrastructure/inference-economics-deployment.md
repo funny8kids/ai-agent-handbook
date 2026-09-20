@@ -57,6 +57,7 @@ for name, kw in {
 从「每轮」一路累加到「每次成功任务」，再顺着这条链找杠杆：越靠前的节点（步数、缓存）收益越大且几乎免费，换单价在最末端。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
   TURN[每轮成本<br/>输入tok×单价×未命中 + 输出tok×单价] --> STEPS[× 步数 · Σ 每轮]
   STEPS --> ADD[+ 重试成本<br/>+ 检索 / 嵌入 / 沙箱]

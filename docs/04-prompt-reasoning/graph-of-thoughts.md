@@ -50,6 +50,7 @@ GoT 的核心收益来自**聚合**：它把「各自探索」变成「节点复
 ## ToT vs GoT
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
 flowchart LR
   subgraph ToT[树: 只能向下分叉]
     A1 --> A2 --> A3

@@ -72,6 +72,7 @@ $$
 从「全量工具集」到「消化后的结果回填」，每一环都是模型选对、用好的前提：
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 flowchart TD
     A["全量工具集"] --> B["工具面控制：分组 / 延迟加载 / 动态注入"]
     B --> C["模型在当前场景的工具里做选择（本质是分类）"]

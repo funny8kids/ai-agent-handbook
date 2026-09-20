@@ -79,6 +79,7 @@ $$
 ## 错误处理决策树
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
 flowchart TD
   A[工具/模型报错] --> B{错误类型?}
   B -- 瞬时: 超时/限流 --> C[指数退避+抖动<br/>最多 N 次]

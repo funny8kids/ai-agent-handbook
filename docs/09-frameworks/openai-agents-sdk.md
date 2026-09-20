@@ -44,6 +44,7 @@ $$
 **Guardrail 的并行设计**也值得注意：输入安检与主 Agent **并行**执行，一旦触发就取消主任务——这样安检不额外增加延迟。与之相对，权限审批链通常是**串行阻塞**的（因为必须等人类决定）。两种设计对应两类风险：前者防「内容违规」，后者防「动作越权」（见 [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)）。
 
 ```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 sequenceDiagram
   participant U as 用户
   participant GR as 输入 Guardrail（并行旁路）
