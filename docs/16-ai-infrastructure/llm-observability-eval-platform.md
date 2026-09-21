@@ -2,7 +2,7 @@
 tags: [infrastructure, evaluation, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 可观测性与评估平台
@@ -25,7 +25,7 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
+flowchart TD
   A[Agent 运行时] -->|OTLP spans/events| B[Collector / 平台<br/>Langfuse · Phoenix · ClickHouse]
   B --> C[(trace 库)]
   C --> D[仪表盘<br/>成功率·TTFT·成本·缓存命中]

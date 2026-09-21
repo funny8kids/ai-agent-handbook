@@ -30,7 +30,7 @@ OpenHands 的骨架是**事件流 + 沙箱运行时**：Agent 与环境的每次
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart LR
+flowchart TD
     AG["Agent 大脑<br/>CodeAct：动作就是一段可执行代码"] -->|"Action：跑命令 / 改文件 / 开浏览器"| ES[("事件流 EventStream<br/>全程记录、可回放")]
     ES --> RUN["Docker 沙箱<br/>终端 · 编辑器 · Jupyter · 浏览器"]
     RUN -->|"Observation：输出与报错"| ES

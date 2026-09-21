@@ -2,7 +2,7 @@
 tags: [safety, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 权限控制与沙箱隔离
@@ -82,7 +82,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
-flowchart LR
+flowchart TD
   T[被注入或出错的模型<br/>要执行动作] --> L1[层1 策略表<br/>只给必需权限]
   L1 -- 绕过 p1 --> L2[层2 分级审批<br/>不可逆动作人审]
   L2 -- 绕过 p2 --> L3[层3 沙箱<br/>容器 + 默认无网络]

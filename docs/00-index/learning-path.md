@@ -2,7 +2,7 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 学习路线
@@ -26,22 +26,15 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F1F3","primaryBorderColor":"#64748B","primaryTextColor":"#1F2937","secondaryColor":"#DDE0E5","tertiaryColor":"#F9F9FA","lineColor":"#AAB3BF","actorBkg":"#F3F4F6","actorBorder":"#64748B","actorTextColor":"#1F2937","signalColor":"#939EAE","noteBkgColor":"#E3E6EA","noteBorderColor":"#64748B","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0F1F3","labelBoxBorderColor":"#64748B"}}}%%
-flowchart LR
-  A[01 AI 基础] --> B[02 Agent 基础]
-  B --> C[03 LLM 基础]
-  C --> D[04 Prompt 与推理]
-  D --> E[05 工具与协议]
-  E --> F[06 记忆与 RAG]
-  F --> G[07 规划]
-  G --> H[08 多智能体]
-  H --> I[09 框架]
-  I --> J[10 评估与安全]
-  J --> K[11 工程化]
-  K --> L[12 应用案例]
-  L --> M[16 AI 基础设施]
-  M --> N[17 具身智能]
-  L --> O[18 2026 前沿]
-  O --> J
+flowchart TD
+  A["01 AI 基础<br/>02 Agent 基础"] --> B["03 LLM 基础<br/>04 Prompt 与推理"]
+  B --> C["05 工具与协议<br/>06 记忆与 RAG"]
+  C --> D["07 规划<br/>08 多智能体"]
+  D --> E["09 框架<br/>10 评估与安全"]
+  E --> F["11 工程化<br/>12 应用案例"]
+  F --> G["16 AI 基础设施<br/>17 具身智能"]
+  F --> H["18 2026 前沿<br/>模型与 harness 代际"]
+  H -.->|"选型结论回灌评估基线"| E
 ```
 
 {% hint style="tip" %}

@@ -32,18 +32,18 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart TD
+flowchart LR
   A[要选框架] --> B{核心诉求?}
   B -->|RAG 检索质量| LI[LlamaIndex]
-  B -->|现成集成快速搭建| LC[LangChain]
-  B -->|复杂可审计控制流| LG[LangGraph]
-  B -->|prompt 质量优化·有评估指标| DS[DSPy]
-  B -->|工具跨应用复用| MC[MCP Servers]
+  B -->|要现成集成| LC[LangChain]
+  B -->|要可审计控制流| LG[LangGraph]
+  B -->|优化 prompt 质量| DS[DSPy]
+  B -->|工具要复用| MC[MCP Servers]
   B -->|多 Agent 协作| C{哪种协作形态?}
-  C -->|模型写码并安全执行| AG[AutoGen / Agent Framework]
+  C -->|模型写码执行| AG["AutoGen /<br/>Agent Framework"]
   C -->|角色化快速组队| CR[CrewAI]
-  C -->|轻量 handoff + 生产特性| OA[OpenAI Agents SDK]
-  C -->|.NET / Azure 企业栈| SK[Semantic Kernel]
+  C -->|轻量 handoff| OA[OpenAI Agents SDK]
+  C -->|Azure 企业栈| SK[Semantic Kernel]
 ```
 
 *《图：框架选型决策流——先按核心诉求分流，多 Agent 场景再按协作形态细分；循环若非差异化，优先评估托管 harness》*

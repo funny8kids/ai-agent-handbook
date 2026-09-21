@@ -2,7 +2,7 @@
 tags: [planning, agent]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Plan-and-Execute
@@ -67,7 +67,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
-flowchart LR
+flowchart TD
   A[目标] --> B[Planner 生成计划]
   B --> C{人审?}
   C -- 可选 --> D[Executor 执行步骤1]

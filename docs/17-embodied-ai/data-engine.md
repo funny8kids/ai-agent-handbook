@@ -2,7 +2,7 @@
 tags: [embodied-ai, data, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 数据引擎：机器人数据从哪来
@@ -38,7 +38,7 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TD
   T[真机遥操作<br/>质量高 · 单位成本贵] --> Q[自动质检<br/>成功判定 · 抖动 · 丢帧]
   U[手持夹爪 UMI<br/>便宜 · 动作近似] --> Q
   S[仿真合成<br/>可扩 · 有 sim-to-real 差] --> Q

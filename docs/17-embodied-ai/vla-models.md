@@ -2,7 +2,7 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # VLA 模型架构：视觉—语言—动作怎么接起来
@@ -24,7 +24,7 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TD
   CAM[多相机帧<br/>224² · 3–6 路] --> VIS[Vision Encoder<br/>SigLIP / DINOv2]
   TXT[自然语言指令] --> TOK[Tokenizer]
   VIS --> PROJ[投影到语言空间]

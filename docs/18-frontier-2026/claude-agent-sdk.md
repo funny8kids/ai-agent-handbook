@@ -2,7 +2,7 @@
 tags: [claude, agent-sdk, harness, framework]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Claude Agent SDK
@@ -53,15 +53,15 @@ sequenceDiagram
   participant Perm as Permissions
   participant Hook as Hooks
   participant Tool as 工具 / MCP
-  App->>Runner: prompt + options(allowed_tools, cwd, permission_mode)
-  Runner->>Runner: 加载系统提示与 .claude 配置 / Skills
-  Runner->>Perm: 模型产出 tool_use(Edit/Bash), 判权限
-  Perm->>Hook: PreToolUse 回调(需确认或命中规则)
+  App->>Runner: prompt + options<br/>(tools, cwd, permission_mode)
+  Runner->>Runner: 加载系统提示<br/>与 .claude 配置 / Skills
+  Runner->>Perm: 模型产出 tool_use<br/>(Edit/Bash) 判权限
+  Perm->>Hook: PreToolUse 回调<br/>需确认或命中规则
   Hook->>Hook: lint / 危险命令拦截 / 审计落盘
-  Hook-->>Tool: 放行后执行(受限工作目录)
-  Tool-->>Runner: 工具结果回填, 进入下一轮
-  Runner->>Runner: 上下文接近上限时自动压缩(compact)
-  Runner-->>App: 最终消息 + session_id(可恢复/可分叉)
+  Hook-->>Tool: 放行后执行<br/>受限工作目录
+  Tool-->>Runner: 结果回填<br/>进入下一轮
+  Runner->>Runner: 接近上限时自动压缩<br/>(compact)
+  Runner-->>App: 最终消息 + session_id<br/>可恢复 / 可分叉
 ```
 
 ### 2. Skills 与项目约定

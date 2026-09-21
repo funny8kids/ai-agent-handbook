@@ -26,7 +26,7 @@ LangChain 的核心资产是 **Runnable 协议**：模型、prompt 模板、输�
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart LR
+flowchart TD
     Q["输入"] --> PT["prompt 模板"] --> LLM["聊天模型"] --> OP["输出解析器"] --> OUT["结构化结果"]
     RET["检索器：也是一个 Runnable"] -.->|"当链上的一环插进来"| PT
     LLM -.->|"partner 包：换厂商不动链"| PRV["OpenAI / Anthropic / 本地"]
