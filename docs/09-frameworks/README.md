@@ -2,7 +2,7 @@
 tags: [framework]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 09 框架与生态
@@ -57,6 +57,14 @@ flowchart TD
 一条「五问决策链」把六种编排范式收敛到具体选型：先定控制流形态，再看生态、可观测与锁定成本。
 
 ![框架选型速查：一条五问决策链，先选范式再点名框架](../.gitbook/assets/09-framework-map-ui.svg)
+
+「可视化编排」这一路的代表作是 Dify，真实画布长这样：
+
+![Dify 工作流画布真实界面：START→LLM→LLM 节点连线 + 右侧 LLM 节点配置面板](../.gitbook/assets/screenshots/04-dify-workflow-ui.png)
+
+*来源：Dify 官方文档 [docs.dify.ai/en/guides/workflow/node/llm](https://docs.dify.ai/en/guides/workflow/node/llm) 内嵌截图，访问日期 2026-09-22。*
+
+看右侧那块面板就能理解低代码的取舍：模型（`gpt-4o CHAT`）、上下文变量、SYSTEM 提示词（还带 220 token 计数与 Jinja 开关）、Vision 分辨率、OUTPUT VARIABLES 全在一个抽屉里——**节点就是 prompt 单元，变量按显式 schema 在节点间流**（左侧 `START` 上那个 `input_text REQUIRED` 就是入口契约）。左上角 `Auto-Saved · Published 22 minutes ago` 与右上角 `Run` / `Publish` 分离，意味着**试跑和上线是两个动作**，这是产品化编排相对裸代码最实在的便利。代价也在这张图里：一条 START→LLM→LLM 的直线很好看，而**循环、动态扇出、断点恢复这些恰恰是代码图（LangGraph）的主场**——所以选型心法第一条仍然是「先问要不要框架」，而不是「哪个画布更漂亮」。
 
 ## 读完能做到
 

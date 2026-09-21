@@ -2,7 +2,7 @@
 tags: [mcp, tooling]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # MCP：Model Context Protocol
@@ -116,6 +116,14 @@ await server.connect(new StdioServerTransport());
 接 Server 进 Agent 之前，先用官方 **MCP Inspector** 把三种原语逐个试一遍——`tools/list` 返回的 `inputSchema` 决定模型怎么填参数，握手与心跳状态在底栏一目了然。
 
 ![MCP Inspector 调试台：左选 Server、中切三种原语、右查 JSON Schema 并试运行](../.gitbook/assets/05-mcp-inspector-ui.svg)
+
+上图是我们按真实布局画的示意；下面这张是官方 Inspector 的实际界面。
+
+![MCP Inspector 真实界面：Tools 列表、Results 结果区、右侧 Messages 协议流水](../.gitbook/assets/screenshots/02-mcp-inspector-ui.png)
+
+*来源：MCP 官方文档 [modelcontextprotocol.io/docs/tools/inspector](https://modelcontextprotocol.io/docs/tools/inspector) 内嵌的 demo 截图，访问日期 2026-09-22。*
+
+看右侧那条 Messages 流水比看结果更有价值：`PROMPTS/GET`、`TOOLS/CALL`、`RESOURCES/LIST` 每行就是一次 JSON-RPC 往返，41ms、43ms 的耗时直接标在旁边。左侧 `get_weather` 被点选、中间 Results 里那句 `Weather in Boston: sunny, 24°C`，就是 `tools/call` 的 `content` 原样落地——**协议长什么样，在这张图里比在任何规范文本里都直观**。
 
 ## 工程含义
 

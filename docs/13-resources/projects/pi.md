@@ -2,7 +2,7 @@
 tags: [framework, agent]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Pi Agent（earendil-works/pi）
@@ -34,6 +34,16 @@ updated: 2026-09-20
 - `packages/chord`、`packages/telemetry`：应用组合运行时与厂商中立的可观测契约
 
 **什么时候值得读**：想知道「一个 Agent 循环最小需要什么」时，从上到下读一遍比读任何教程都直接。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
+flowchart LR
+    CA["成品层<br/>coding-agent：交互式编码 CLI<br/>tui：终端 UI 库"] --> CORE["运行时层<br/>agent-core<br/>工具调用 + 状态管理 + Agent 循环"]
+    CH["chord / telemetry<br/>组合运行时 + 厂商中立可观测"] -.-> CORE
+    CORE --> AI["原语层<br/>pi-ai：统一多 provider LLM API<br/>OpenAI / Anthropic / Google"]
+```
+
+包划分本身就说明了它的立场：**依赖只能单向往下**，最底层薄到只剩「把一段对话发给模型」，越往上才越接近产品。想换 provider 只碰 `pi-ai`，想改循环只碰 `agent-core`——这就是「提供原语而非成品」在目录结构上的样子。
 
 {% hint style="warning" %}
 **注意**：本项目在 2026 年从 `badlogic/pi-mono` 更名为 `earendil-works/pi` 并重构了包结构。旧链接会自动跳转，但**具体的内部实现细节（如循环行数、工具数量）请以当前仓库与 pi.dev 文档为准**——本书已删除此前无法核实的相关表述。

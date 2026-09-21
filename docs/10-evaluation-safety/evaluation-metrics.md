@@ -2,7 +2,7 @@
 tags: [evaluation]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Agent 评估指标
@@ -102,6 +102,14 @@ flowchart TB
 一套跑得动的评估，最后都收敛成一块「发布门禁」屏：总通过率、回归用例数、单次成本三张卡，配版本对比与逐用例判定——绿了才放行，红了先查回归。
 
 ![Agent 评测看板：通过率 / 回归 / 成本三卡 + 版本对比 + 发布门禁判定](../.gitbook/assets/10-eval-console-ui.svg)
+
+上面是示意，下面是 LangSmith 实验对比页的真实截图——一块真正在用的评测屏长什么样：
+
+![LangSmith 实验对比真实界面：逐用例的多个评估器得分、延迟与 Tokens 同行排列，Heat Map 开关把分数染色](../.gitbook/assets/screenshots/08-langsmith-experiment-ui.png)
+
+*来源：LangSmith 官方文档 [docs.smith.langchain.com/evaluation](https://docs.smith.langchain.com/evaluation) 内嵌截图，访问日期 2026-09-22。*
+
+三个细节值得抄：① **一行一个用例，多个评估器并排成列**（`Hallucination` / `Helpful` / `Random`），于是「同一条输出幻觉满分但有用性 0 分」这种冲突会直接摊在眼前——单一总分会把它抹平；② `Latency` 和 `Tokens` 与得分同表，**慢和贵会被当成质量问题一起看**，而不是等成本月报才发现；③ 那列 `Random` 稳定在 0.5 附近——把随机打分器当对照组跑进同一张表，是检验「LLM-as-judge 到底比瞎猜强多少」最省事的做法，正好对应本节前面那条 judge 可信度。
 
 - **能程序化验证的，绝不交给 LLM 评分**：测试是否通过、字段是否匹配、格式是否合法都是客观信号，优先级高于 judge。
 - **评估集是资产**：从第一天开始把线上失败案例回流进评估集，回归测试才能防退化。

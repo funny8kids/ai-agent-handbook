@@ -8,6 +8,27 @@
 - 运行：`python lab6_guardrails.py`；带真模型：设 `OPENAI_API_KEY` 后 `python lab6_guardrails.py --real`
 - 前置阅读：[提示注入](../10-evaluation-safety/prompt-injection.md)、[权限与沙箱](../10-evaluation-safety/permission-sandbox.md)、[什么是 LLM](../03-llm/what-is-llm.md)
 
+## 两道护栏拦在哪
+
+护栏不是「一个过滤器」，而是两个不同位置的闸门：**出口**管模型想让工具干什么，**入口**管工具返回值想对模型说什么。本实验把两道闸门分别写成函数，下面是判定顺序。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
+flowchart TD
+    PRO["模型提议调用工具"] --> GATE{"出口闸门：权限分级"}
+    GATE -->|"读：直接放行"| EX["执行工具"]
+    GATE -->|"写：放行并记审计日志"| EX
+    GATE -->|"删 / 对外发消息"| HM{"人审批准?"}
+    HM -->|"是：放行 + 留证据"| EX
+    HM -->|"否"| BN["拒执，把原因回注给模型"]
+    BN --> NEXT["进入下一轮推理"]
+    EX --> RET["工具返回值：外部内容，默认不可信"]
+    RET --> SCAN{"入口闸门：含注入指令?"}
+    SCAN -->|"干净"| NEXT
+    SCAN -->|"命中"| ISO["降级为纯数据<br/>用边界包裹，不当指令执行"]
+    ISO --> NEXT
+```
+
 ## 完整代码（复制即跑）
 
 ```python

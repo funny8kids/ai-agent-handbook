@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 日志、追踪与监控
@@ -139,6 +139,14 @@ $$
 落到日常排查，是一屏「三跳定位」控制台：搜索框回运行 → 筛选器锁错误与慢请求 → span 树里那根最长的红条点开侧板，核对输入输出与成本。
 
 ![可观测性控制台：Trace 列表 + span 瀑布 + 单 span 详情三跳定位](../.gitbook/assets/11-observability-ui.svg)
+
+上面是示意，下面是真实产品长什么样——Arize Phoenix 的 Trace Details 页：
+
+![Phoenix Trace Details 真实界面：左侧 span 树带逐级耗时，右侧选中 span 的 prompt 原文与延迟/Tokens 指标](../.gitbook/assets/screenshots/06-arize-phoenix-trace-ui.png)
+
+*来源：Arize Phoenix 官方文档 [arize.com/docs/phoenix/tracing/llm-traces](https://arize.com/docs/phoenix/tracing/llm-traces) 内嵌截图，访问日期 2026-09-22。*
+
+这张图恰好是「三跳定位」的活教材：左树从 `BaseQueryEngine.query`（1.00s）一路缩到 `OpenAI.chat`（0.54s），**一半时间花在一个 LLM 调用上**这件事不用问人，看条子长度就知道；右侧选中 span 直接摊开 system/user 消息原文和 1631 tokens。注意 user 消息里那一大段是检索回来的文档正文——`os.environ["PHOENIX_API_KEY"]` 这类字符串原样进了 prompt。它不是攻击，只是官方文档内容，但这正是注入面长什么样：**外部文本会原封不动变成模型读到的指令上下文**，只有 trace 把它摊开你才会意识到自己有多依赖「检索回来的东西恰好无害」这个假设（→ [提示注入](../10-evaluation-safety/prompt-injection.md)）。
 
 - trace_id 在入口生成，贯穿模型调用/工具/子 Agent 全链路
 - 告警三层：可用性（服务挂）、质量（成功率跌破阈值）、成本（日 token 超预算）

@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # LangSmith、LangFuse、Phoenix、OpenTelemetry
@@ -32,6 +32,14 @@ $$
 $$
 
 每一层都是一个 **span**，带自己的起止时间、输入输出与元数据。于是「为什么这次答错了」可以逐层定位：是检索没召回、工具报错、还是模型自己跑偏。
+
+Langfuse 的界面把这句话变成了三栏实物：
+
+![Langfuse Trace 真实界面：左筛选器与 trace 表、中 span 瀑布、右单步 Input/Output](../.gitbook/assets/screenshots/01-langfuse-trace-ui.png)
+
+*来源：Langfuse 官方文档 [langfuse.com/docs/tracing](https://langfuse.com/docs/tracing) 内嵌截图，访问日期 2026-09-22。*
+
+读这张图的顺序就是排查顺序：左侧 Filters 里 `SPAN` 与 `GENERATION` 分开计数（全项目 7K 对 6）——**工具/中间步骤的数量比模型调用高三个量级，钱却全花在那 6 次生成上**，这就是「按类型分面筛选」存在的理由；中间瀑布把 `process_paper_ensemble`（39.12s）拆成 `safe_process_paper` → `process_paper` → `get_project_github_urls` 的嵌套，慢在哪一层一眼可见；右侧选中 `parse_artifacts` 后 Input/Output 全量 JSON 摊开，连 `Session` 和 `User ID` 都钉在标题栏上。这三栏齐活的工具就是选型表里那一行的意思：**没有 span 级输入输出，「逐层定位」只是口号**。
 
 ### 2. 用 OTel 语义约定描述 GenAI
 

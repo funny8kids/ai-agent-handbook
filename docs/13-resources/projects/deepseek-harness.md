@@ -2,7 +2,7 @@
 tags: [framework, agent, tooling]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # DeepSeek Harness
@@ -34,6 +34,21 @@ updated: 2026-09-20
 - `apps/cli`、`apps/web`：同一内核的多接入面
 
 **什么时候值得读**：想理解「生产级 Agent 运行时怎么分层」时，它比读框架文档更有价值——因为分层是被强制暴露出来的，不是被封装掉的。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
+flowchart TD
+    SP["core/system-prompt<br/>每步动态组装提示词"] --> LOOP
+    TR["core/tools<br/>工具注册与治理"] --> LOOP
+    LOOP["core/agent-loop<br/>turn / step 状态机"] <--> SES["core/session<br/>事件溯源 + 投影"]
+    LOOP --> SBX["sandbox：隔离执行"]
+    LOOP --> MC["mcp：外部工具接入"]
+    PLAN["plan / goal<br/>计划与目标做成插件"] -.->|"换掉不影响内核"| LOOP
+    PRE["preset/agent-presets"] -.-> LOOP
+    LOOP --> FACE["apps/cli · apps/web<br/>同一内核，两个接入面"]
+```
+
+图里只有中间那个方框是不可替换的，其余全是插槽。对照第 11 章的说法：**恢复、审计、回放三件事都挂在 session 上**，而不是散落在业务代码里——这也是它敢把 Agent Loop 本身做成可替换组件的底气。
 
 ## 上手建议
 

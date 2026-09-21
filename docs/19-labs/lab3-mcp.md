@@ -16,6 +16,24 @@
 - **一条管道**：stdin/stdout 上每行一个 JSON-RPC 2.0 报文；
 - **三个约定**：`initialize` 握手对版本 → `tools/list` 能力发现 → `tools/call` 干活。
 
+把这三步画成报文往返，就是下面这张时序图——运行实验时打印出来的正好是这六条：
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
+sequenceDiagram
+    participant C as Client 主进程
+    participant P as stdin/stdout 管道
+    participant S as Server 子进程
+    C->>P: initialize 报文
+    P->>S: 一行 JSON-RPC 2.0
+    S-->>C: 协议版本 + 能力声明
+    C->>S: tools/list 能力发现
+    S-->>C: 工具清单 + inputSchema
+    C->>S: tools/call 名字 + 参数
+    S-->>C: content 结果
+    Note over C,S: server 崩了不带走 client，进程隔离是白送的
+```
+
 ## 完整代码（复制即跑）
 
 ```python

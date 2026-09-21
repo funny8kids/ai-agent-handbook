@@ -12,6 +12,8 @@
 <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-323-4C1D95?style=flat-square">
 <img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-100-A78BFA?style=flat-square">
 <img alt="Labs" src="https://img.shields.io/badge/offline%20labs-6-DB2777?style=flat-square">
+<img alt="Figures" src="https://img.shields.io/badge/figures-210-0D9488?style=flat-square">
+<img alt="Real UI screenshots" src="https://img.shields.io/badge/real%20UI%20shots-8-E11D48?style=flat-square">
 
 <br>
 <br>

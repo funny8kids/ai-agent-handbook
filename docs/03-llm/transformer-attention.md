@@ -2,7 +2,7 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Transformer 与 Attention
@@ -41,6 +41,50 @@ $$
 - 右乘 $$V$$：按权重对所有位置的 $$V$$ 加权求和，得到该位置的新表示
 
 对 Agent 的直接含义：**注意力是 $$O(n^2)$$ 的**（$$n$$ 为序列长度），注意力矩阵占显存、也决定上下文成本——这正是长上下文昂贵、需要 KV 缓存与压缩的根因。
+
+上面四个符号加起来不到 20 行 NumPy，跑一遍就能确认自己没有只背公式：
+
+```python
+# -*- coding: utf-8 -*-
+import numpy as np
+
+rng = np.random.default_rng(0)
+n, d, dk = 4, 12, 6                     # 4 个 token，模型维 12，注意力头维 6
+X = rng.normal(size=(n, d))
+Wq, Wk, Wv = (rng.normal(size=(d, dk)) for _ in range(3))
+Q, K, V = X @ Wq, X @ Wk, X @ Wv
+
+scores = Q @ K.T / np.sqrt(dk)          # (n, n) 相关度，除以 sqrt(dk) 控方差
+mask = np.triu(np.full_like(scores, -np.inf), k=1)   # 因果掩码：不许偷看未来
+weights = np.exp(scores + mask)
+weights /= weights.sum(axis=1, keepdims=True)         # 按行 softmax，每行和为 1
+out = weights @ V                        # 加权求和，得到每个位置的新表示
+
+print("注意力权重（行=当前词，列=被看的词，- 表示被掩码）:")
+for i, row in enumerate(weights):
+    print("  token%d  " % i + "  ".join("%.3f" % w if mask[i, j] == 0 else "  -  " for j, w in enumerate(row)))
+print("\n每行权重和:", np.round(weights.sum(axis=1), 6))
+print("输出形状:", out.shape, "| 权重矩阵形状:", weights.shape, "-> O(n^2) 就在这")
+```
+
+真实输出（`python attn.py`，NumPy 2.4）：
+
+```text
+注意力权重（行=当前词，列=被看的词，- 表示被掩码）:
+  token0  1.000    -      -      -
+  token1  0.000  1.000    -      -
+  token2  0.049  0.551  0.400    -
+  token3  0.001  0.000  0.000  0.999
+
+每行权重和: [1. 1. 1. 1.]
+输出形状: (4, 6) | 权重矩阵形状: (4, 4) -> O(n^2) 就在这
+```
+
+三件事值得停一下：
+
+- 上三角全是 `-`：这就是因果掩码，也是「解码只能一个字一个字往外蹦」的代码形态
+- 权重矩阵是 $$n\times n$$ 而输出是 $$n\times d_k$$：**平方级开销长在权重上，不在输出上**，所以 KV 缓存能救显存却救不了注意力计算
+- `token3` 那一行几乎把全部权重压在自己身上（0.999）——随机投影下点积一大，softmax 就饱和成近似 one-hot，这正是 $$\sqrt{d_k}$$ 缩放要解决的问题，也是「注意力可视化」能骗人的原因：这一行看起来很有信息量，其实只是随机数
 
 ### 2. 多头注意力
 

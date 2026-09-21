@@ -12,6 +12,25 @@
 
 第 10 章说「没有评测就没有迭代」，第 11 章说「看不见就修不好」。本实验把两句话变成两个文件：一份成绩单 + 一份 trace。被测对象是 Lab 1 那种循环的简化版，我们**故意让它在一道多跳题上答错**（幻觉），看评测系统能不能当场抓住。
 
+数据流一画就清楚了：左边是「考场」，右边是「行车记录仪」，两者都从同一次运行里长出来。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
+flowchart TD
+    DS["测试集：题目 + 可机判断言"] --> RUN["跑 Agent 循环"]
+    RUN --> ANS["最终答案"]
+    ANS --> JD["断言判定 pass / fail"]
+    JD --> PASS["pass@1 成绩单"]
+    RUN --> SP["span 计时<br/>LLM 调用 / 工具调用"]
+    SP --> WF["瀑布图：瓶颈在哪一跳"]
+    SP --> DISK["traces.jsonl 落盘"]
+    DISK --> RB["事后复盘、查那道错题"]
+    PASS --> FIX["改 prompt 或工具"]
+    WF --> FIX
+    RB --> FIX
+    FIX -.->|"下一轮回归对比"| RUN
+```
+
 ## 完整代码（复制即跑）
 
 ```python

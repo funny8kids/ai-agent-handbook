@@ -12,6 +12,23 @@
 
 所有 RAG 框架的说明书都会告诉你「支持多种检索器」，但骨架只有一个：**把问题变成词袋，把文档变成词袋，打分，取 top-k，塞进 prompt**。本实验手写 BM25——就是那个 1990 年代提出、至今仍是混合检索里「关键词半边天」的公式。没有魔法，只有三个因子：词频（饱和）、文档长度（惩罚）、稀有度（IDF）。
 
+下面这条链路就是本实验要手写的全部东西，右边多出来的「引用」一步是很多教程会漏掉的：
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
+flowchart LR
+    Q["用户问题"] --> TOK["问题变词袋"]
+    DOC["本地文档集"] --> CHK["切块 chunking"]
+    CHK --> IDX["BM25 索引<br/>词频 / 文档长度 / IDF"]
+    TOK --> SC["逐块打分"]
+    IDX --> SC
+    SC --> TOPK["取 top-k 块"]
+    TOPK --> PR["拼 prompt<br/>资料块 + 问题 + 引用要求"]
+    PR --> LLM["MockLLM 生成"]
+    LLM --> ANS["带出处的回答"]
+    ANS -.->|"回答缺引用 → 判失败，回查切块与打分"| CHK
+```
+
 ## 完整代码（复制即跑）
 
 ```python
