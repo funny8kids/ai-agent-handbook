@@ -7,12 +7,12 @@
 全书第一次出现**真实软件界面**：此前 191 张配图全是自绘 SVG 与 Mermaid，读者看不到「这些工具真长什么样」。这一版补上截图，同时清掉三类体检出的短板。
 
 - **8 张真实产品 UI 截图**（`docs/.gitbook/assets/screenshots/`，目录内 `MANIFEST.md` 逐张记录来源 URL 与访问日期）：Langfuse Trace 视图（11 章）、MCP Inspector 协议监控（05 章）、OpenHands Automate（12 章 + 项目页）、Dify 工作流画布（09 章）、Open WebUI 对话与工作区（12 章）、Arize Phoenix Trace Details（11 章）、AutoGen Studio Team Builder（09 章）、LangSmith 实验对比表（10 章）。每张逐项目检：真实产品界面、无 cookie 横幅与遮罩、文字可辨；7 个来源 URL 复核 HTTP 200。**每张图配一段「读这张图的顺序」**，指出面板与本页论点的对应关系，而不是贴完就算。
-- **补齐违反「每页有图」自订标准的页面**：[Lab 2](../19-labs/lab2-rag.md) BM25 检索链路、[Lab 3](../19-labs/lab3-mcp.md) MCP 握手时序、[Lab 5](../19-labs/lab5-eval-trace.md) 评测—trace 数据流、[Lab 6](../19-labs/lab6-guardrails.md) 两道护栏决策流，各配一张章色 Mermaid；新图全部经 Edge 真实渲染逐张目检（首版有裁切/留白问题，改扁平 LR 后通过；Lab 2 那张单排 LR 在正文宽度下字号太小，最终改成「离线建库 / 在线问答」双泳道，并把「回答不合格就回查切块」这条虚线显式画出来）。
+- **补齐违反「每页有图」自订标准的页面**：[Lab 2](../19-labs/lab2-rag.md) BM25 检索链路、[Lab 3](../19-labs/lab3-mcp.md) MCP 握手时序、[Lab 5](../19-labs/lab5-eval-trace.md) 评测—trace 数据流、[Lab 6](../19-labs/lab6-guardrails.md) 两道护栏决策流，各配一张章色 Mermaid；新图全部经 Edge 真实渲染逐张目检：Lab 3 用时序图，Lab 2/5/6 用竖排 `flowchart TD`。Lab 2 首版试过单排横向 LR，十个节点被正文宽度压到看不清字号，改回竖排后每张卡片文字都清晰，并把「回答不合格就回查切块与打分」这条虚线显式画了出来。
 - **13 章 5 个薄项目页增厚**：[LangGraph](../13-resources/projects/langgraph.md)、[AutoGen](../13-resources/projects/autogen.md)、[CrewAI](../13-resources/projects/crewai.md)、[LangChain](../13-resources/projects/langchain.md)、[OpenHands](../13-resources/projects/openhands.md) 从 575–820 字扩到与其它资源页同密度（架构要点 + 适用场景 + 手写点评 + 真实链接），并把 7 个项目页全部配图；LangChain 页补 3 行 Runnable 管道代码判断协议价值。
 - **核心页补最小可跑代码**：[Transformer 与注意力](../03-llm/transformer-attention.md) 新增 12 行 NumPy 单头因果注意力，与正文公式逐项对应，**贴出本机真实运行的权重矩阵输出**，并解释三件事：causal mask 就是「逐字解码」的代码形态、平方级开销长在权重矩阵上（所以 KV 缓存救显存救不了注意力）、softmax 饱和为什么让注意力可视化容易骗人。
 - **未能做到的部分如实记录**：LangGraph Studio 与 browser-use 的官方文档页经渲染后 DOM 里只有品牌图，无公开产品截图；CrewAI 文档站的 `crews.png` / `flows.png` 目检是概念示意图（与自绘 Mermaid 等价），故不引入；Langfuse Cloud 官方 demo 工作区跳登录墙，改用其文档内嵌截图。原因写进 MANIFEST，避免后人重复踩。
 
-统计更新：全书配图 **210 张**（168 Mermaid + 34 自绘 SVG + 8 真实截图），提示卡 204 个，187 页 / 19 章不变；168 个 Mermaid 块经真解析器逐块校验 0 失败，无断链回归。
+统计更新：全书配图 **210 张**（168 Mermaid + 34 自绘 SVG + 8 真实截图），187 页 / 19 章不变；168 个 Mermaid 块经真解析器逐块校验 0 失败，无断链回归。提示卡重新逐文件点数：全库 `{% hint %}` 共 206 处，其中 4 处是 14 章模板代码块里的写法示例（不会渲染成卡片），**真实提示卡 202 个**——此前两处统计分别写成 206 和 204，均以本次点数为准。
 
 ## 2026-09-21（第 10 次）动手实验章 + 门面升级 + 术语速查 + 实战手记
 
