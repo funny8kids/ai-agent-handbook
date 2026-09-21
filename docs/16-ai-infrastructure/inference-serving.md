@@ -138,6 +138,12 @@ $$
 
 用上面脚本对同一模型分别测 `max_tokens=1`（纯 prefill）、`max_tokens=300`（prefill+decode）、并发 1 / 8 / 32 三档，画出 TTFT 与 TPOT 随并发的曲线，判断你的瓶颈落在哪一档并发。
 
+## 实战手记
+
+- **榜单与现场差的是分布**：经验值上，用短文本、均匀负载测出来的吞吐，跟真实 Agent 负载能差 3–5 倍——长上下文、突发并发、前缀命中率忽高忽低，每一项都在吃掉理论收益。容量表要用线上流量日志回放压出来的数字填，别用论文的。
+- **调优红利常大于换引擎**：我们常见的项目里，把同一个引擎的批处理参数、KV 量化、chunked prefill 认真调一轮拿到的提升，通常不小于在两个主流引擎之间折腾迁移的收益——而迁移还要重踩一遍坑。选型会开三天，调参往往三天就回本。
+- **前缀命中率是最值得盯的运营指标**：对 Agent 负载，这个数低于三成的话，先回头检查自家 prompt 组装（system prompt 是否稳定、历史是否被截了头），再谈引擎的高级特性。命中率从三成拉到七成，等效于白捡半集群算力。
+
 ## 相关资源
 
 - [vLLM](https://github.com/vllm-project/vllm)、[SGLang](https://github.com/sgl-project/sglang)、[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM)

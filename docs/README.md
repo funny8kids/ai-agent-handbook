@@ -1,12 +1,14 @@
 # AI Agent 手册 · AI Agent Handbook
 
+![AI Agent 学习手册 · 从原理到生产](.gitbook/assets/banner-home.svg)
+
 **从原理到生产**：LLM 与注意力 · Agent 循环 · 工具协议 · 记忆与 RAG · 规划 · 多智能体 · 评估与安全 · 工程化 · AI 基础设施 · 具身智能
 
 **From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · **2026 frontier**
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：180 页 / 18 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：187 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 180 pages across 18 chapters, including a 2026 frontier chapter, 100 of them carrying formulas, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 187 pages across 19 chapters, including a 2026 frontier chapter, 100 of them carrying formulas, 6 offline-runnable hands-on labs, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
 
 ## 快速开始 · Quick start
 
@@ -18,10 +20,17 @@
 | 要搭团队底座 · Platform / Infra | 03 → 11 → 16 | 能给出 TTFT/TPOT/缓存命中率/成本基线 · set cost & latency baselines |
 | 做机器人或想转具身 · Robotics | 02 → 04 → 17 → 16 | 能跑通「感知→技能→执行」闭环 · close a perceive→skill→act loop |
 | 追前沿与选型 · Frontier / Buyer | 02 → 18 → 10 → 12 | 能读懂 Astra / Agents API / Fable 5.1 对比并做 harness 选型 · pick a 2026 stack |
+| 想动手写代码 · Hands-on | 02 → 04 → 06 → 19 | 能离线跑通 6 个实验、把 MockLLM 换成真 API · run all 6 labs offline, then swap in a real model |
 
 完整路线、前置知识与自检标准 · Full paths, prerequisites & self-checks：**[学习路线 Learning path](00-index/learning-path.md)**
 
 ![学习路线：四个阶段 · Four-stage learning path](.gitbook/assets/00-learning-path.svg)
+
+## 边学边做 · Hands-on labs
+
+第 19 章是 6 个**纯标准库、零 API Key、离线可跑**的动手实验：手写最小 ReAct 闭环 → 迷你 BM25 RAG → 迷你 MCP 服务 → 三角色协作 → 评测与 trace → 护栏与接真模型。每个实验含完整代码、真实运行输出、排错备忘，看懂后把 MockLLM 换成真 API 主循环一行不改。
+
+👉 **[进入动手实验 · Start the labs](19-labs/README.md)**
 
 ## 必读 12 个 · Top 12 must-reads
 
@@ -68,14 +77,14 @@
 
 ## 关于这本手册 · About this handbook
 
-- **180 页 / 18 章**（含 2026 前沿章）· 180 pages across 18 chapters
+- **187 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 187 pages across 19 chapters
 - **100 页含数学公式**（KaTeX）· pages carry formulas
 - **每篇底部有「参考资料」**，数字与结论都能点回一手来源 · every page ends with references
-- **每章「读完能做到」清单 + 章末自测**：18 章全量，题目可答、答案有出处
-- **183 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
-- **全书 154 张 Mermaid 图经真解析器逐块校验**，0 渲染风险
+- **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
+- **204 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
+- **全书 157 张 Mermaid 图经真解析器逐块校验**，0 渲染风险
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **182 张配图**：154 个 Mermaid 内联图（全部带章节配色）+ 28 张自绘 SVG（部分带动画）· 182 diagrams, parser-verified
+- **191 张配图**：157 个 Mermaid 内联图（全部带章节配色）+ 34 张自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）· 191 diagrams, parser-verified
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

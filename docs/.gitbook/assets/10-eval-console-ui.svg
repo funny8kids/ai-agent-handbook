@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="Agent 评测看板窗口示意：顶部通过率、回归数、成本三张分数卡，中部新旧版本 pass@1 逐套件柱状对比与发布门禁判定卡，下方五行用例表列出期望、实际与判定勾叉，底注强调回归必须人工复核">
+  <defs>
+    <linearGradient id="bge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#fff1f2"/>
+    </linearGradient>
+    <pattern id="gridr" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#e11d48" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="gNew" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fb7185"/><stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="gOld" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <filter id="she" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <filter id="shes" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- ===== 背景 ===== -->
+  <rect width="960" height="560" rx="18" fill="url(#bge)"/>
+  <rect width="960" height="560" rx="18" fill="url(#gridr)"/>
+  <rect x="0.5" y="0.5" width="959" height="559" rx="18" fill="none" stroke="#cbd5e1"/>
+
+  <!-- ===== 页头 ===== -->
+  <text x="32" y="36" font-size="18" font-weight="700" fill="#0f172a">Agent 评测看板：这版能不能发，看这块屏</text>
+  <text x="32" y="56" font-size="12.5" fill="#475569">通过率是入场券，回归才是刹车片：分数卡、版本对比、用例明细一屏看全</text>
+  <g filter="url(#shes)">
+    <rect x="806" y="20" width="124" height="26" rx="13" fill="#ffe4e6" stroke="#fda4af"/>
+  </g>
+  <text x="868" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="#be123c">第 10 章 · 评估与安全</text>
+
+  <!-- ===== 窗口外壳 ===== -->
+  <g filter="url(#she)">
+    <rect x="32" y="68" width="896" height="460" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  </g>
+  <path d="M32 80 A12 12 0 0 1 44 68 H916 A12 12 0 0 1 928 80 V104 H32 Z" fill="#fdeef0"/>
+  <line x1="32" y1="104" x2="928" y2="104" stroke="#fbcfd5"/>
+  <circle cx="54" cy="86" r="5.5" fill="#f87171"/>
+  <circle cx="70" cy="86" r="5.5" fill="#fbbf24"/>
+  <circle cx="86" cy="86" r="5.5" fill="#34d399"/>
+  <text x="106" y="91" font-size="13" font-weight="700" fill="#334155">Agent 评测看板 — 发布门禁</text>
+  <rect x="832" y="76" width="80" height="20" rx="10" fill="#f8d7dd"/>
+  <text x="872" y="90" text-anchor="middle" font-size="12" fill="#9f1239">运行 #482</text>
+
+  <!-- ===== 三张分数卡 ===== -->
+  <g filter="url(#shes)">
+    <rect x="48" y="118" width="280" height="88" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="340" y="118" width="280" height="88" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+    <rect x="632" y="118" width="280" height="88" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  </g>
+  <rect x="56" y="130" width="5" height="64" rx="2.5" fill="#e11d48"/>
+  <rect x="348" y="130" width="5" height="64" rx="2.5" fill="#f59e0b"/>
+  <rect x="640" y="130" width="5" height="64" rx="2.5" fill="#059669"/>
+
+  <text x="76" y="142" font-size="12.5" fill="#475569">总通过率</text>
+  <text x="76" y="178" font-size="30" font-weight="800" fill="#0f172a">82.4%</text>
+  <rect x="172" y="154" width="66" height="22" rx="11" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="205" y="169" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">+3.1 pt</text>
+  <text x="76" y="198" font-size="12" fill="#94a3b8">对比 v3.2 · 128 用例</text>
+
+  <text x="368" y="142" font-size="12.5" fill="#475569">回归用例数（原本通过转失败）</text>
+  <text x="368" y="178" font-size="30" font-weight="800" fill="#0f172a">5</text>
+  <rect x="410" y="154" width="86" height="22" rx="11" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="453" y="169" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">需人工复核</text>
+  <text x="368" y="198" font-size="12" fill="#94a3b8">近 30 天均值 2.3 例</text>
+
+  <text x="660" y="142" font-size="12.5" fill="#475569">单次运行成本</text>
+  <text x="660" y="178" font-size="30" font-weight="800" fill="#0f172a">¥0.13</text>
+  <rect x="752" y="154" width="56" height="22" rx="11" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="780" y="169" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">-18%</text>
+  <text x="660" y="198" font-size="12" fill="#94a3b8">预算 ≤¥0.15 · 在预算内</text>
+
+  <!-- ===== 柱状对比 ===== -->
+  <rect x="48" y="222" width="560" height="140" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="64" y="244" font-size="13" font-weight="700" fill="#0f172a">pass@1 逐套件对比</text>
+  <rect x="428" y="232" width="14" height="10" rx="2" fill="url(#gOld)"/>
+  <text x="447" y="241" font-size="12" fill="#64748b">v3.2</text>
+  <rect x="498" y="232" width="14" height="10" rx="2" fill="url(#gNew)"/>
+  <text x="517" y="241" font-size="12" fill="#be123c">v4.0</text>
+
+  <line x1="72" y1="340" x2="584" y2="340" stroke="#cbd5e1"/>
+  <!-- 组 1 代码修复 72→78 -->
+  <rect x="100" y="288" width="22" height="52" rx="3" fill="url(#gOld)"/>
+  <rect x="128" y="284" width="22" height="56" rx="3" fill="url(#gNew)"/>
+  <text x="111" y="282" text-anchor="middle" font-size="12" fill="#64748b">72</text>
+  <text x="139" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#be123c">78</text>
+  <!-- 组 2 网页任务 55→61 -->
+  <rect x="230" y="300" width="22" height="40" rx="3" fill="url(#gOld)"/>
+  <rect x="258" y="296" width="22" height="44" rx="3" fill="url(#gNew)"/>
+  <text x="241" y="294" text-anchor="middle" font-size="12" fill="#64748b">55</text>
+  <text x="269" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#be123c">61</text>
+  <!-- 组 3 工具调用 88→92 -->
+  <rect x="360" y="276" width="22" height="64" rx="3" fill="url(#gOld)"/>
+  <rect x="388" y="274" width="22" height="66" rx="3" fill="url(#gNew)"/>
+  <text x="371" y="270" text-anchor="middle" font-size="12" fill="#64748b">88</text>
+  <text x="399" y="268" text-anchor="middle" font-size="12" font-weight="700" fill="#be123c">92</text>
+  <!-- 组 4 长文问答 64→57（回归） -->
+  <rect x="490" y="294" width="22" height="46" rx="3" fill="url(#gOld)"/>
+  <rect x="518" y="299" width="22" height="41" rx="3" fill="url(#gNew)"/>
+  <text x="501" y="288" text-anchor="middle" font-size="12" fill="#64748b">64</text>
+  <text x="529" y="293" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">57</text>
+  <g font-size="12" text-anchor="middle" fill="#475569">
+    <text x="125" y="356">代码修复</text>
+    <text x="255" y="356">网页任务</text>
+    <text x="385" y="356">工具调用</text>
+    <text x="515" y="356" fill="#be123c" font-weight="700">长文问答·跌</text>
+  </g>
+
+  <!-- ===== 门禁判定卡 ===== -->
+  <rect x="624" y="222" width="288" height="140" rx="12" fill="#fff1f2" stroke="#fecdd3"/>
+  <text x="640" y="246" font-size="13" font-weight="700" fill="#881337">发布门禁判定</text>
+  <circle cx="648" cy="268" r="4" fill="#059669"/>
+  <text x="660" y="272" font-size="12.5" fill="#334155">新增通过 9 例</text>
+  <circle cx="648" cy="292" r="4" fill="#e11d48"/>
+  <text x="660" y="296" font-size="12.5" fill="#334155">回归失败 5 例 · 超阈值 2</text>
+  <circle cx="648" cy="316" r="4" fill="#94a3b8"/>
+  <text x="660" y="320" font-size="12.5" fill="#334155">结果持平 114 例</text>
+  <rect x="640" y="332" width="206" height="24" rx="12" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="743" y="348" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">结论：暂缓发布，先查回归</text>
+
+  <!-- ===== 用例表 ===== -->
+  <rect x="48" y="374" width="864" height="142" rx="12" fill="#ffffff" stroke="#e2e8f0"/>
+  <g font-size="12" font-weight="700" fill="#64748b">
+    <text x="64" y="394">用例</text>
+    <text x="296" y="394">期望</text>
+    <text x="524" y="394">实际</text>
+    <text x="826" y="394">判定</text>
+  </g>
+  <line x1="60" y1="400" x2="900" y2="400" stroke="#e2e8f0"/>
+  <rect x="56" y="449" width="848" height="22" rx="6" fill="#fff1f2"/>
+  <rect x="56" y="493" width="848" height="21" rx="6" fill="#f8fafc"/>
+
+  <g font-size="12.5">
+    <text x="64" y="421" font-weight="600" fill="#0f172a">修复空指针崩溃</text>
+    <text x="296" y="421" fill="#334155">测试全绿 · 改 2 文件</text>
+    <text x="524" y="421" fill="#334155">测试全绿 · 改 2 文件</text>
+    <text x="826" y="422" font-size="14" font-weight="700" fill="#059669">✓</text>
+    <text x="844" y="421" font-size="12" fill="#047857">通过</text>
+
+    <text x="64" y="443" font-weight="600" fill="#0f172a">三站比价聚合</text>
+    <text x="296" y="443" fill="#334155">3 家报价 · 带来源链接</text>
+    <text x="524" y="443" fill="#334155">3 家报价 · 带来源链接</text>
+    <text x="826" y="444" font-size="14" font-weight="700" fill="#059669">✓</text>
+    <text x="844" y="443" font-size="12" fill="#047857">通过</text>
+
+    <text x="64" y="465" font-weight="600" fill="#0f172a">合同要点抽取</text>
+    <text x="296" y="465" fill="#334155">8 项要点 · 含付款条款</text>
+    <text x="524" y="465" fill="#b91c1c">只抽到 6 项 · 漏付款条款</text>
+    <text x="826" y="466" font-size="14" font-weight="700" fill="#e11d48">✗</text>
+    <text x="844" y="465" font-size="12" font-weight="700" fill="#be123c">回归</text>
+
+    <text x="64" y="487" font-weight="600" fill="#0f172a">预订含取消</text>
+    <text x="296" y="487" fill="#334155">取消后清空订单状态</text>
+    <text x="524" y="487" fill="#b91c1c">取消成功 · 订单状态未清</text>
+    <text x="826" y="488" font-size="14" font-weight="700" fill="#e11d48">✗</text>
+    <text x="844" y="487" font-size="12" font-weight="700" fill="#be123c">回归</text>
+
+    <text x="64" y="509" font-weight="600" fill="#0f172a">工具参数容错</text>
+    <text x="296" y="509" fill="#334155">缺 date 时默认今天</text>
+    <text x="524" y="509" fill="#334155">重试 1 次后成功</text>
+    <text x="826" y="510" font-size="14" font-weight="700" fill="#059669">✓</text>
+    <text x="844" y="509" font-size="12" fill="#92400e">带重试</text>
+  </g>
+
+  <!-- ===== 底注 ===== -->
+  <text x="32" y="548" font-size="12" fill="#64748b">发布纪律：回归必须逐例人工复核并归类（模型波动 / 提示变更 / 评测集噪声），每一例给出解释并完成成本核算才允许放行。</text>
+</svg>

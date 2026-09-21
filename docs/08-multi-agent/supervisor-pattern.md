@@ -100,6 +100,12 @@ flowchart TB
 
 设计「季度财报分析」的 Supervisor 方案：几个 Worker？各自工具面？Supervisor 的派发模板与汇总模板各写一版，并用上下文公式估算 Supervisor 的单轮上下文规模。
 
+## 实战手记
+
+- **Worker 各有各的想当然**：派发模板不锁格式时，同一个任务三个 worker 会交出三种「看似都合理」的产出，Supervisor 在汇总环节白白烧 token。我们常见的项目里做法是把输出契约固化成 schema，回传先校验，不合格直接打回——比让汇总器事后归纳便宜得多。
+- **账单会明显变厚**：每个 Worker 都揣着一份完整上下文，经验值上一个监督者系统的 token 消耗是单 Agent 跑同任务的三到五倍，加了并行重试能到近十倍。给业务方看这个架构之前，先把单任务成本算出来，不然月底财务会先找你。
+- **没 trace 就没法断案**：{% hint style="warning" %}Worker「不听话」时——重复派发、两个 Worker 悄悄做同一子任务、派发死循环——没有链路记录根本看不出来。上线第一周最值钱的事是给每次派发和回传都带上任务 ID 与父子关系，随时能还原谁把什么发给了谁。{% endhint %}
+
 ## 参考资料
 
 - [How we built our multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system)（Anthropic Engineering）

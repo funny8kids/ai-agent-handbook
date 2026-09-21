@@ -58,3 +58,22 @@ flowchart TD
 2. **应用**：「每月登录网银下载账单并记账」怎么拆成 API + GUI + HITL 的混合方案？哪些步骤必须走 GUI？（提示：见 computer-use-browser-use.md）
 3. **判断**：「给 Agent 尽量多塞工具以增强能力」——用工具面治理（选择准确率随工具数下降）评价这个主张。（提示：见 tool-use.md、tool-permission-sandbox.md）
 
+## 本章术语速查
+
+协议和工具的名词最容易混，照页面出场顺序理了一遍，每条只讲分工不讲实现。
+
+| 英文术语 | 中文 | 白话一句话 |
+|---|---|---|
+| Function Calling | 函数调用 | 给 schema→模型出调用意图→你执行→回填结果的四步往返：模型从头到尾没碰过地面 |
+| Schema | 工具描述 | 参数结构加一句说明，既是工具说明书又是隐形路由器，而且每一轮都在吃上下文 |
+| Tool Use | 工具使用 | 每步挑哪个工具、怎么组合是门策略学；原子、无歧义、幂等友好、返回可消化是四条设计底线 |
+| Idempotency | 幂等 | 跑一遍和跑两遍结果一样；对转账这种非幂等操作，重试就等于重复扣款 |
+| Model Context Protocol (MCP) | 模型上下文协议 | 号称「AI 的 USB-C」：把 M 个应用 × N 个工具的接线灾难压成 M+N |
+| JSON-RPC 2.0 | （消息格式，通用译名） | MCP 传话用的报文规矩，连上先握手协商能力，再开始正经通信 |
+| Tools / Resources / Prompts | MCP 三大原语 | Server 能供的三样货：工具用来动手，资源用来读数据，Prompts 是现成的提示模板 |
+| Agent-to-Agent (A2A) | Agent 互通协议 | MCP 把工具变手脚，A2A 把 Agent 变同事：跨厂商地发现、对话、委派任务 |
+| Agent Card | 能力名片 | 放在 `/.well-known/agent-card.json` 的自我介绍，先查明对方能干啥再下单，不必读源码 |
+| Sandbox | 沙箱 | 跑不可信代码的笼子：隔离强度有梯度，图的就是「被骗了伤害也有上界」 |
+| Prompt Injection | 提示注入 | 藏在网页、工具 description 里的「忽略之前的指令」，工具链的头号攻击面 |
+| Computer Use | 电脑操作 | 没有 API 时让模型看截图点 GUI：截图→定位→点击，坐标会漂、按平方烧 token，当兜底用 |
+

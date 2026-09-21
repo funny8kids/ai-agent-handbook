@@ -54,6 +54,10 @@ flowchart TD
 - 框架不锁定模型：选型时确认「换模型只改配置」
 - 学框架的正确姿势：读它的「Agent 循环」源码，对照 [02 Agent 基础](../02-agent-basics/README.md) 的原理——框架没有魔法
 
+一条「五问决策链」把六种编排范式收敛到具体选型：先定控制流形态，再看生态、可观测与锁定成本。
+
+![框架选型速查：一条五问决策链，先选范式再点名框架](../.gitbook/assets/09-framework-map-ui.svg)
+
 ## 读完能做到
 
 - [ ] 用「核心诉求分流」决策树为给定项目选框架：RAG 检索质量→LlamaIndex、复杂可审计控制流→LangGraph、prompt 有指标可优化→DSPy、快速搭集成→LangChain
@@ -67,4 +71,23 @@ flowchart TD
 1. **回忆**：LangGraph 里的节点为什么建议幂等？不幂等 + checkpoint 重放会导致什么后果？（提示：见 langgraph.md）
 2. **应用**：要搭「模型写代码 → 安全执行 → 报错回填 → 修正」的闭环，选 AutoGen/Agent Framework、CrewAI 还是 LangGraph？说理由。（提示：见 autogen.md、crewai.md、langgraph.md）
 3. **判断**：「先问要不要框架」——用 Pi 约 300 行循环这个例子，评价框架买来的（状态管理 + 生态）和付出的（黑盒 + 依赖）分别是什么。（提示：见 README 选型心法、langgraph.md）
+
+## 本章术语速查
+
+框架名本身不值钱，值钱的是每家黑话背后的抽象——表里这些名词认全了，选型决策树就不再是天书。
+
+| 英文术语 | 中文 | 白话一句话 |
+|---|---|---|
+| Runnable / LCEL | （LangChain）统一接口与管道语法 | `prompt \| llm \| parser` 一根管道能串起来，因为家家都实现同一套 invoke/stream/batch，换模型不改链路 |
+| StateGraph | 状态图（LangGraph） | 把 Agent 画成显式的图：节点干活、边定去向、条件边按状态拐弯，难点是控制流不是调模型 |
+| Checkpoint / Interrupt | 持久化与中断 | 状态存档 + 停在某节点等人审，断点恢复、时间旅行、HITL 全靠这两件 |
+| Reader / Index / Retriever / Query Engine | 检索管线（LlamaIndex） | RAG 被拆成一条每段可换件的流水线：读进来、切成索引、召回、组装作答 |
+| GroupChat | 群聊编排（AutoGen） | 人、LLM、工具都只是消息流里的参与者，Manager 用 LLM 挑下一个发言者 |
+| Agent / Task / Process | 球队三件套（CrewAI） | role/goal/backstory 填角色、expected_output 定验收、sequential 或 hierarchical 定流程，组队做成填空题 |
+| Signature / Optimizer | 签名与优化器（DSPy） | 你只声明输入输出长什么样，措辞交给优化器在评估集上搜——前提是你有指标可优化 |
+| Handoff | 移交（OpenAI Agents SDK） | 把转交实现成名为 `transfer_to_xxx` 的特殊工具，模型「选工具」顺便就完成了换人 |
+| Guardrail | 护栏 | 旁路安检员：输入输出并行过检，与串行的权限审批各防各的风险 |
+| Kernel / Plugin / Planner | 内核与插件（Semantic Kernel） | 按企业容器思路管 LLM：服务注入、原生函数和提示函数在调用侧一个样 |
+| MCP Server | 工具服务器 | 把一套能力打包成谁都能插的进程，工具第一次能跨应用复用 |
+| Vector Database | 向量数据库生态 | RAG 的地基选型行：嵌入式库、开源服务、托管云各管一段规模与过滤需求 |
 

@@ -113,6 +113,10 @@ await server.connect(new StdioServerTransport());
 - **官方 Server 仓库**（[modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers)）：文件系统、GitHub、Slack、Postgres 等参考实现——读 filesystem server 的源码是入门 MCP 的最佳路径
 - **Claude Code 的 MCP 管理**：通过 `claude mcp add` 注册、按项目/用户分级 scope、MCP 工具进权限管道——生态接入与安全管控并行
 
+接 Server 进 Agent 之前，先用官方 **MCP Inspector** 把三种原语逐个试一遍——`tools/list` 返回的 `inputSchema` 决定模型怎么填参数，握手与心跳状态在底栏一目了然。
+
+![MCP Inspector 调试台：左选 Server、中切三种原语、右查 JSON Schema 并试运行](../.gitbook/assets/05-mcp-inspector-ui.svg)
+
 ## 工程含义
 
 - **MCP 是工具来源，不是运行时**：它解决「工具从哪来、怎么描述」，不负责循环、记忆、编排——那些仍是 harness 的职责。
@@ -129,6 +133,12 @@ await server.connect(new StdioServerTransport());
 ## 小练习
 
 把你常用的三个内部 API 封装成一个 MCP Server：选 stdio 还是 HTTP？哪些暴露为 Tools、哪些作为 Resources、哪些做成 Prompts？再列出你会加的输入校验与权限规则。
+
+## 实战手记
+
+- **本地 Server 的成本在启动那一下**：stdio 每接一个都要拉起子进程。经验值上，一个 Node 写的 Server 冷启动一秒到三秒，挂到第五六个时用户会明显觉得「怎么半天没反应」；这类延迟跟模型能力无关，纯是握手排队：先分清是排队慢还是推理慢，再决定动哪一侧。
+- **工具清单会悄悄变大**：装第三方 Server 前后各拉一次 `tools/list`，把结果存进仓库对比。我们常见的项目里，多出来两个能发消息的工具，只有 diff 能看出来——模型不会主动汇报这件事。
+- **Server 崩在半轮上**：{% hint style="warning" %}子进程挂了，Client 回填给模型的往往是一个空结果或超时文本，模型很自然地把它读成「这里确实没有数据」，然后带着这个结论再走好几轮。所以「工具没起来」和「工具返回空」必须是两种不同的回填内容，这一字之差决定了故障在第几轮被发现。{% endhint %}
 
 ## 参考资料
 

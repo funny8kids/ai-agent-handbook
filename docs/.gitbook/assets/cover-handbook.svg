@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="16" role="img" aria-label="AI Agent 学习手册封面：顶部状态徽章与大标题，手绘感下划线，中部一条从想法经规划、工具、记忆、协作到上线的六节点视觉动线，右下角统计感信息条列出章数、页数、公式页、图与项目索引数量">
+  <defs>
+    <linearGradient id="bgc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="55%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+    <radialGradient id="glowc" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#bfdbfe" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dotc" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#334155" opacity="0.06"/>
+    </pattern>
+    <linearGradient id="underg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="55%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="n1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="n2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="n3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2dd4bf"/><stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="n4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="n5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="n6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fb7185"/><stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <filter id="shc" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+    <filter id="shcs" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrc" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L9,4 L0,8 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 背景：渐变 + 点阵 + 光晕 ===== -->
+  <rect width="1600" height="900" rx="28" fill="url(#bgc)"/>
+  <rect width="1600" height="900" rx="28" fill="url(#dotc)"/>
+  <ellipse cx="800" cy="330" rx="640" ry="300" fill="url(#glowc)"/>
+  <rect x="0.5" y="0.5" width="1599" height="899" rx="28" fill="none" stroke="#cbd5e1"/>
+
+  <!-- 左上徽章 -->
+  <g filter="url(#shcs)">
+    <rect x="100" y="60" width="356" height="44" rx="22" fill="#e0f2fe" stroke="#7dd3fc"/>
+  </g>
+  <circle cx="126" cy="82" r="5" fill="#0284c7"/>
+  <text x="142" y="89" font-size="18" font-weight="700" fill="#075985">开源手册 · 持续更新 · 2026-09 前沿已对齐</text>
+
+  <!-- 右上装饰：抽象环路 -->
+  <g opacity="0.75">
+    <circle cx="1420" cy="140" r="52" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="3 8"/>
+    <circle cx="1420" cy="140" r="30" fill="none" stroke="#a5b4fc" stroke-width="1.4"/>
+    <circle cx="1420" cy="88" r="5" fill="#0284c7"/>
+    <circle cx="1466" cy="164" r="5" fill="#d97706"/>
+    <circle cx="1374" cy="164" r="5" fill="#7c3aed"/>
+    <circle cx="1520" cy="60" r="3.5" fill="#94a3b8"/>
+    <circle cx="1548" cy="96" r="2.5" fill="#cbd5e1"/>
+  </g>
+
+  <!-- ===== 大标题 ===== -->
+  <text x="800" y="302" text-anchor="middle" font-size="104" font-weight="800" fill="#0f172a" letter-spacing="4">AI Agent 学习手册</text>
+  <!-- 手绘感下划线：主笔 + 回声笔 -->
+  <path d="M448 344 C 640 332, 900 356, 1096 340 C 1140 337, 1158 342, 1152 350" fill="none" stroke="url(#underg)" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+  <path d="M492 364 C 700 356, 950 374, 1128 360" fill="none" stroke="url(#underg)" stroke-width="3.5" stroke-linecap="round" opacity="0.35"/>
+
+  <text x="800" y="428" text-anchor="middle" font-size="22" letter-spacing="6" fill="#475569">AI AGENT HANDBOOK · FROM THEORY TO PRODUCTION</text>
+  <text x="800" y="486" text-anchor="middle" font-size="28" font-weight="600" fill="#1e293b">从原理到生产：原理给推导 · 结论给出处 · 案例给源码，每一页都把话说实</text>
+
+  <!-- ===== 视觉动线：想法 → 规划 → 工具 → 记忆 → 协作 → 上线 ===== -->
+  <g font-size="14" fill="#64748b" text-anchor="middle">
+    <text x="800" y="552" font-size="17" font-weight="700" fill="#475569" letter-spacing="2">一条主线，把 19 章串成一次从零到上线的旅程</text>
+  </g>
+
+  <!-- 连接线（先画，节点盖住端点） -->
+  <g fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" opacity="0.85">
+    <path d="M248 646 C 288 632, 322 632, 362 640" marker-end="url(#arrc)"/>
+    <path d="M496 640 C 536 626, 570 626, 610 634" marker-end="url(#arrc)"/>
+    <path d="M744 634 C 784 622, 818 622, 856 630" marker-end="url(#arrc)"/>
+    <path d="M990 630 C 1030 620, 1064 620, 1104 630" marker-end="url(#arrc)"/>
+    <path d="M1238 634 C 1278 626, 1312 626, 1352 640" marker-end="url(#arrc)"/>
+  </g>
+
+  <!-- 节点 1 想法 -->
+  <g filter="url(#shc)"><circle cx="180" cy="646" r="52" fill="url(#n1)"/></g>
+  <g transform="translate(180,642)" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round">
+    <circle cx="0" cy="2" r="12"/>
+    <path d="M-5 14 L-5 19 M5 14 L5 19 M-5 19 L5 19"/>
+    <path d="M0 -18 L0 -24 M-14 -12 L-19 -16 M14 -12 L19 -16"/>
+  </g>
+  <text x="180" y="738" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">想法</text>
+  <text x="180" y="766" text-anchor="middle" font-size="15" fill="#64748b">第 1–3 章 · 认知与底座</text>
+
+  <!-- 节点 2 规划 -->
+  <g filter="url(#shc)"><circle cx="428" cy="640" r="52" fill="url(#n2)"/></g>
+  <g transform="translate(428,640)" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-15" y="-16" width="30" height="32" rx="4"/>
+    <path d="M-9 -7 L-6 -4 L0 -10"/>
+    <path d="M-9 5 L-6 8 L0 2"/>
+    <path d="M5 -7 L10 -7 M5 5 L10 5"/>
+  </g>
+  <text x="428" y="732" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">规划</text>
+  <text x="428" y="760" text-anchor="middle" font-size="15" fill="#64748b">第 7 章 · 分解与搜索</text>
+
+  <!-- 节点 3 工具 -->
+  <g filter="url(#shc)"><circle cx="676" cy="634" r="52" fill="url(#n3)"/></g>
+  <g transform="translate(676,634)">
+    <g fill="none" stroke="#ffffff" stroke-width="2.6">
+      <rect x="-18" y="-18" width="15" height="15" rx="3.5"/>
+      <rect x="3" y="-18" width="15" height="15" rx="3.5"/>
+      <rect x="-18" y="3" width="15" height="15" rx="3.5"/>
+    </g>
+    <path d="M10.5 3 L10.5 18 M3 10.5 L18 10.5" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round"/>
+  </g>
+  <text x="676" y="726" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">工具</text>
+  <text x="676" y="754" text-anchor="middle" font-size="15" fill="#64748b">第 5 章 · 协议与调用</text>
+
+  <!-- 节点 4 记忆 -->
+  <g filter="url(#shc)"><circle cx="924" cy="630" r="52" fill="url(#n4)"/></g>
+  <g transform="translate(924,630)" fill="#ffffff">
+    <ellipse cx="0" cy="-12" rx="14" ry="5"/>
+    <path d="M-14 -12 L-14 10 A14,5 0 0 0 14 10 L14 -12 A14,5 0 0 1 -14 -12 Z" opacity="0.9"/>
+    <ellipse cx="0" cy="-1" rx="14" ry="5" fill="#059669" opacity="0.35"/>
+    <ellipse cx="0" cy="-1" rx="14" ry="5" fill="none" stroke="#ffffff" stroke-width="2"/>
+  </g>
+  <text x="924" y="722" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">记忆</text>
+  <text x="924" y="750" text-anchor="middle" font-size="15" fill="#64748b">第 6 章 · 分层与检索</text>
+
+  <!-- 节点 5 协作 -->
+  <g filter="url(#shc)"><circle cx="1172" cy="634" r="52" fill="url(#n5)"/></g>
+  <g transform="translate(1172,634)" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round">
+    <path d="M0 -14 L-14 10 M0 -14 L14 10 M-14 10 L14 10" opacity="0.85"/>
+    <circle cx="0" cy="-14" r="5.5" fill="#ffffff"/>
+    <circle cx="-14" cy="10" r="5.5" fill="#ffffff"/>
+    <circle cx="14" cy="10" r="5.5" fill="#ffffff"/>
+  </g>
+  <text x="1172" y="726" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">协作</text>
+  <text x="1172" y="754" text-anchor="middle" font-size="15" fill="#64748b">第 8 章 · 多智能体</text>
+
+  <!-- 节点 6 上线 -->
+  <g filter="url(#shc)"><circle cx="1420" cy="646" r="52" fill="url(#n6)"/></g>
+  <g transform="translate(1420,648)" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-16 10 L14 -14"/>
+    <path d="M-2 -14 L14 -14 L14 2"/>
+    <path d="M-12 20 C -4 14, 4 6, 8 -2" opacity="0.7" stroke-dasharray="4 5" stroke-width="2.4"/>
+  </g>
+  <text x="1420" y="738" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">上线</text>
+  <text x="1420" y="766" text-anchor="middle" font-size="15" fill="#64748b">第 10–17 章 · 评估到部署</text>
+
+  <!-- ===== 右下统计感元素 ===== -->
+  <g filter="url(#shcs)">
+    <rect x="900" y="820" width="600" height="42" rx="21" fill="#ffffff" fill-opacity="0.9" stroke="#cbd5e1"/>
+  </g>
+  <text x="1196" y="846" text-anchor="middle" font-size="16" font-weight="600" fill="#475569">19 章 · 187 页 · 100 页含公式 · 6 个离线实验 · 323 个项目索引 · MIT 开源</text>
+</svg>

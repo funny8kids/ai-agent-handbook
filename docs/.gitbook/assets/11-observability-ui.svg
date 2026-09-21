@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="可观测性控制台窗口示意：顶部搜索框与状态耗时模型时间四个筛选器，左栏五条 trace 列表带状态点与耗时，中间选中 trace 的 span 树配彩色时间条并标出超时错误，右板展示该 span 的状态、重试、token、成本与输出预览，可重放或加入评测">
+  <defs>
+    <linearGradient id="bgo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#faf5ff"/>
+    </linearGradient>
+    <pattern id="grido" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#7c3aed" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <filter id="sho" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <filter id="shos" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- ===== 背景 ===== -->
+  <rect width="960" height="560" rx="18" fill="url(#bgo)"/>
+  <rect width="960" height="560" rx="18" fill="url(#grido)"/>
+  <rect x="0.5" y="0.5" width="959" height="559" rx="18" fill="none" stroke="#cbd5e1"/>
+
+  <!-- ===== 页头 ===== -->
+  <text x="32" y="36" font-size="18" font-weight="700" fill="#0f172a">可观测性控制台：从一屏 trace 跳到坏掉的那个 span</text>
+  <text x="32" y="56" font-size="12.5" fill="#475569">搜索找回运行，筛选器锁住错误与慢请求，span 树看时序，侧板核对该 span 的输入输出与成本</text>
+  <g filter="url(#shos)">
+    <rect x="812" y="20" width="118" height="26" rx="13" fill="#f5f3ff" stroke="#ddd6fe"/>
+  </g>
+  <text x="871" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="#6d28d9">第 11 章 · 可观测</text>
+
+  <!-- ===== 窗口外壳 ===== -->
+  <g filter="url(#sho)">
+    <rect x="32" y="68" width="896" height="460" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  </g>
+  <path d="M32 80 A12 12 0 0 1 44 68 H916 A12 12 0 0 1 928 80 V104 H32 Z" fill="#f3f0fa"/>
+  <line x1="32" y1="104" x2="928" y2="104" stroke="#e9d5ff"/>
+  <circle cx="54" cy="86" r="5.5" fill="#f87171"/>
+  <circle cx="70" cy="86" r="5.5" fill="#fbbf24"/>
+  <circle cx="86" cy="86" r="5.5" fill="#34d399"/>
+  <text x="106" y="91" font-size="13" font-weight="700" fill="#334155">Agent 可观测性控制台 — Traces</text>
+  <rect x="836" y="76" width="76" height="20" rx="10" fill="#e9d5ff"/>
+  <text x="874" y="90" text-anchor="middle" font-size="12" fill="#6d28d9">采样 100%</text>
+
+  <!-- ===== 工具条：搜索 + 筛选器 ===== -->
+  <rect x="48" y="112" width="264" height="28" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+  <g fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round">
+    <circle cx="64" cy="124" r="4.5"/>
+    <path d="M67.5 127.5 L72 132"/>
+  </g>
+  <text x="80" y="130" font-size="12" fill="#94a3b8">按 trace id / 会话 / 关键词搜索</text>
+  <rect x="324" y="112" width="96" height="28" rx="14" fill="#f5f3ff" stroke="#8b5cf6"/>
+  <text x="372" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#6d28d9">状态 · 错误</text>
+  <rect x="430" y="112" width="90" height="28" rx="14" fill="#faf5ff" stroke="#ddd6fe"/>
+  <text x="475" y="130" text-anchor="middle" font-size="12" fill="#7c3aed">耗时 · 大于5秒</text>
+  <rect x="530" y="112" width="86" height="28" rx="14" fill="#faf5ff" stroke="#ddd6fe"/>
+  <text x="573" y="130" text-anchor="middle" font-size="12" fill="#7c3aed">模型 · 全部</text>
+  <rect x="626" y="112" width="100" height="28" rx="14" fill="#faf5ff" stroke="#ddd6fe"/>
+  <text x="676" y="130" text-anchor="middle" font-size="12" fill="#7c3aed">时间 · 24 小时</text>
+  <text x="912" y="130" text-anchor="end" font-size="12" fill="#94a3b8">命中 1,284 条</text>
+
+  <!-- ===== 左栏：trace 列表 ===== -->
+  <rect x="48" y="152" width="276" height="336" rx="10" fill="#fdfcff" stroke="#e9d5ff"/>
+  <text x="62" y="174" font-size="12.5" font-weight="700" fill="#0f172a">Trace 列表</text>
+  <text x="310" y="174" text-anchor="end" font-size="12" fill="#94a3b8">已筛出 5 条</text>
+
+  <rect x="56" y="184" width="260" height="54" rx="10" fill="#ede9fe" stroke="#8b5cf6"/>
+  <circle cx="70" cy="201" r="4.5" fill="#ef4444"/>
+  <text x="82" y="205" font-size="12" font-weight="700" fill="#3b0764" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">7f3a…c02d</text>
+  <text x="306" y="205" text-anchor="end" font-size="12.5" font-weight="700" fill="#4c1d95">8.2 s</text>
+  <text x="82" y="224" font-size="12" fill="#7c3aed">14 spans · 收尾断言失败</text>
+
+  <circle cx="70" cy="261" r="4.5" fill="#10b981"/>
+  <text x="82" y="265" font-size="12" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">b21e…07fa</text>
+  <text x="306" y="265" text-anchor="end" font-size="12.5" font-weight="700" fill="#334155">5.6 s</text>
+  <text x="82" y="284" font-size="12" fill="#94a3b8">11 spans · 正常结束</text>
+
+  <circle cx="70" cy="321" r="4.5" fill="#f59e0b"/>
+  <text x="82" y="325" font-size="12" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">0cc8…4e19</text>
+  <text x="306" y="325" text-anchor="end" font-size="12.5" font-weight="700" fill="#334155">12.4 s</text>
+  <text x="82" y="344" font-size="12" fill="#94a3b8">22 spans · 步数触顶退出</text>
+
+  <circle cx="70" cy="381" r="4.5" fill="#10b981"/>
+  <text x="82" y="385" font-size="12" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">e930…b3d7</text>
+  <text x="306" y="385" text-anchor="end" font-size="12.5" font-weight="700" fill="#334155">3.1 s</text>
+  <text x="82" y="404" font-size="12" fill="#94a3b8">8 spans · 正常结束</text>
+
+  <circle cx="70" cy="441" r="4.5" fill="#ef4444"/>
+  <text x="82" y="445" font-size="12" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">4d77…a6f2</text>
+  <text x="306" y="445" text-anchor="end" font-size="12.5" font-weight="700" fill="#334155">6.9 s</text>
+  <text x="82" y="464" font-size="12" fill="#94a3b8">9 spans · 工具调用超时</text>
+
+  <!-- ===== 中间：span 树 + 彩色时间条 ===== -->
+  <rect x="340" y="152" width="372" height="336" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="354" y="174" font-size="12.5" font-weight="700" fill="#0f172a">Trace 7f3a…c02d · 14 spans · 8.2 s</text>
+  <g font-size="12" fill="#94a3b8" text-anchor="middle">
+    <text x="470" y="194">0s</text><text x="520" y="194">2s</text><text x="570" y="194">4s</text>
+    <text x="620" y="194">6s</text><text x="670" y="194">8s</text>
+  </g>
+  <line x1="470" y1="200" x2="694" y2="200" stroke="#e2e8f0"/>
+  <g stroke="#f1f5f9">
+    <line x1="520" y1="202" x2="520" y2="470"/><line x1="570" y1="202" x2="570" y2="470"/>
+    <line x1="620" y1="202" x2="620" y2="470"/><line x1="670" y1="202" x2="670" y2="470"/>
+  </g>
+  <g font-size="12" fill="#334155">
+    <text x="354" y="216">agent 运行</text>
+    <text x="354" y="245">组装提示</text>
+    <text x="354" y="274" fill="#6d28d9">└ react 循环</text>
+    <text x="366" y="303">├ 思考 1</text>
+    <text x="366" y="332">├ 搜索网页</text>
+    <text x="366" y="361">├ 思考 2</text>
+    <text x="366" y="390" fill="#b91c1c" font-weight="700">├ 查财报 超时</text>
+    <text x="366" y="419">├ 子代理制表</text>
+    <text x="366" y="448">└ 输出守卫</text>
+  </g>
+  <rect x="470" y="205" width="205" height="11" rx="3" fill="#94a3b8"/>
+  <rect x="470" y="234" width="10" height="11" rx="3" fill="#cbd5e1"/>
+  <rect x="480" y="263" width="170" height="11" rx="3" fill="#a78bfa"/>
+  <rect x="483" y="292" width="20" height="11" rx="3" fill="#e879f9"/>
+  <rect x="508" y="321" width="38" height="11" rx="3" fill="#22d3ee"/>
+  <rect x="533" y="350" width="16" height="11" rx="3" fill="#e879f9"/>
+  <rect x="535" y="379" width="50" height="11" rx="3" fill="#22d3ee" stroke="#ef4444" stroke-width="1.6"/>
+  <path d="M591 381 l6 7 M597 381 l-6 7" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="620" y="410" width="40" height="11" rx="3" fill="#c4b5fd"/>
+  <rect x="666" y="439" width="10" height="11" rx="3" fill="#fbbf24"/>
+
+  <!-- ===== 右板：span 详情 ===== -->
+  <rect x="724" y="152" width="188" height="336" rx="10" fill="#faf5ff" stroke="#e9d5ff"/>
+  <text x="738" y="174" font-size="12.5" font-weight="700" fill="#4c1d95">Span 详情</text>
+  <text x="738" y="196" font-size="12" font-weight="700" fill="#0f172a" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">fetch_financials</text>
+  <rect x="738" y="204" width="104" height="22" rx="11" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="790" y="219" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">timeout · 5 s</text>
+  <g font-size="12">
+    <text x="738" y="250" fill="#64748b">状态</text><text x="900" y="250" text-anchor="end" font-weight="700" fill="#b91c1c">error</text>
+    <text x="738" y="272" fill="#64748b">开始于</text><text x="900" y="272" text-anchor="end" fill="#0f172a">2.1 s</text>
+    <text x="738" y="294" fill="#64748b">耗时</text><text x="900" y="294" text-anchor="end" fill="#0f172a">5.0 s</text>
+    <text x="738" y="316" fill="#64748b">重试</text><text x="900" y="316" text-anchor="end" fill="#0f172a">1 次 · 换源</text>
+    <text x="738" y="338" fill="#64748b">tokens</text><text x="900" y="338" text-anchor="end" fill="#0f172a">1.2k + 340</text>
+    <text x="738" y="360" fill="#64748b">成本</text><text x="900" y="360" text-anchor="end" fill="#0f172a">¥0.021</text>
+  </g>
+  <line x1="736" y1="372" x2="900" y2="372" stroke="#e9d5ff"/>
+  <text x="738" y="390" font-size="12" font-weight="700" fill="#4c1d95">输出预览</text>
+  <rect x="736" y="398" width="164" height="60" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <g font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">
+    <text x="746" y="415"><tspan fill="#64748b">{ </tspan><tspan fill="#0f766e">"error"</tspan><tspan fill="#64748b">: </tspan><tspan fill="#b45309">"TIMEOUT",</tspan></text>
+    <text x="746" y="432"><tspan fill="#64748b">  </tspan><tspan fill="#0f766e">"after_retries"</tspan><tspan fill="#64748b">: </tspan><tspan fill="#7c3aed">1</tspan><tspan fill="#64748b">,</tspan></text>
+    <text x="746" y="449"><tspan fill="#64748b">  </tspan><tspan fill="#0f766e">"next"</tspan><tspan fill="#64748b">: </tspan><tspan fill="#b45309">"换源重试"</tspan><tspan fill="#64748b"> }</tspan></text>
+  </g>
+  <rect x="736" y="462" width="76" height="22" rx="11" fill="#ede9fe" stroke="#a78bfa"/>
+  <text x="774" y="477" text-anchor="middle" font-size="12" font-weight="700" fill="#5b21b6">重放</text>
+  <rect x="820" y="462" width="80" height="22" rx="11" fill="#f5f3ff" stroke="#ddd6fe"/>
+  <text x="860" y="477" text-anchor="middle" font-size="12" fill="#6d28d9">加评测集</text>
+
+  <!-- ===== 底注 ===== -->
+  <text x="32" y="548" font-size="12" fill="#64748b">三跳定位：搜索找回 trace → 筛选器缩到错误 → span 树里最长那根带红框的条；把失败样例一键沉淀为回归评测用例。</text>
+</svg>

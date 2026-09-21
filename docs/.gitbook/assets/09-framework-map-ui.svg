@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" role="img" aria-label="框架选型速查信息图：顶部怎么选决策节点向下串五个问题，是则左右分流到图状态机编排、角色对话编排、检索优先框架、提示程序化、事件驱动编排六张范式卡，全部答否则落到托管平台，每卡配一句适用场景">
+  <defs>
+    <linearGradient id="bgf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#eef2ff"/>
+    </linearGradient>
+    <pattern id="gridf" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#4f46e5" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="gDec" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="gCardL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef2ff"/>
+    </linearGradient>
+    <linearGradient id="gCardR" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f5f3ff"/>
+    </linearGradient>
+    <filter id="shf" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <filter id="shfs" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrInd" markerWidth="10" markerHeight="10" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="#4f46e5"/>
+    </marker>
+    <marker id="arrSl" markerWidth="9" markerHeight="9" refX="6.4" refY="3" orient="auto">
+      <path d="M0,0 L6.4,3 L0,6 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 背景 ===== -->
+  <rect width="960" height="560" rx="18" fill="url(#bgf)"/>
+  <rect width="960" height="560" rx="18" fill="url(#gridf)"/>
+  <rect x="0.5" y="0.5" width="959" height="559" rx="18" fill="none" stroke="#cbd5e1"/>
+
+  <!-- ===== 页头 ===== -->
+  <text x="32" y="36" font-size="18" font-weight="700" fill="#0f172a">框架选型速查：先选范式，再点名框架</text>
+  <text x="32" y="56" font-size="12.5" fill="#475569">六种编排思路 × 一条五问决策链：先定控制流的形态，再谈具体选型</text>
+  <g filter="url(#shfs)">
+    <rect x="800" y="20" width="130" height="26" rx="13" fill="#e0e7ff" stroke="#c7d2fe"/>
+  </g>
+  <text x="865" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="#4338ca">第 9 章 · 框架与编排</text>
+
+  <!-- ===== 决策链主干 ===== -->
+  <g filter="url(#shf)">
+    <rect x="368" y="70" width="224" height="36" rx="18" fill="url(#gDec)"/>
+  </g>
+  <text x="480" y="93" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">怎么选？按顺序回答五个问题</text>
+
+  <line x1="480" y1="106" x2="480" y2="120" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
+  <line x1="480" y1="160" x2="480" y2="192" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
+  <line x1="480" y1="230" x2="480" y2="262" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
+  <line x1="480" y1="300" x2="480" y2="332" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
+  <line x1="480" y1="370" x2="480" y2="402" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
+  <g font-size="12" fill="#94a3b8">
+    <text x="492" y="180">否</text>
+    <text x="492" y="250">否</text>
+    <text x="492" y="320">否</text>
+    <text x="492" y="390">否</text>
+  </g>
+
+  <!-- 五个问题胶囊 -->
+  <g font-size="12.5" font-weight="700" fill="#3730a3" text-anchor="middle">
+    <rect x="362" y="124" width="236" height="36" rx="18" fill="#ffffff" stroke="#a5b4fc" filter="url(#shfs)"/>
+    <text x="480" y="147">要显式状态图、回环与断点恢复？</text>
+    <rect x="362" y="194" width="236" height="36" rx="18" fill="#ffffff" stroke="#a5b4fc" filter="url(#shfs)"/>
+    <text x="480" y="217">要多角色互相对话协作？</text>
+    <rect x="362" y="264" width="236" height="36" rx="18" fill="#ffffff" stroke="#a5b4fc" filter="url(#shfs)"/>
+    <text x="480" y="287">以知识检索问答为主？</text>
+    <rect x="362" y="334" width="236" height="36" rx="18" fill="#ffffff" stroke="#a5b4fc" filter="url(#shfs)"/>
+    <text x="480" y="357">想用数据自动调提示词？</text>
+    <rect x="362" y="404" width="236" height="36" rx="18" fill="#ffffff" stroke="#a5b4fc" filter="url(#shfs)"/>
+    <text x="480" y="427">要接高并发事件流与人审？</text>
+  </g>
+
+  <!-- 是分支箭头与标签 -->
+  <g stroke="#4f46e5" stroke-width="1.8">
+    <line x1="362" y1="142" x2="344" y2="142" marker-end="url(#arrInd)"/>
+    <line x1="598" y1="212" x2="616" y2="212" marker-end="url(#arrInd)"/>
+    <line x1="362" y1="282" x2="344" y2="282" marker-end="url(#arrInd)"/>
+    <line x1="598" y1="352" x2="616" y2="352" marker-end="url(#arrInd)"/>
+    <line x1="362" y1="422" x2="344" y2="422" marker-end="url(#arrInd)"/>
+    <line x1="598" y1="422" x2="616" y2="422" marker-end="url(#arrInd)"/>
+  </g>
+  <g font-size="12" font-weight="700" fill="#059669">
+    <text x="346" y="134">是</text>
+    <text x="602" y="204">是</text>
+    <text x="346" y="274">是</text>
+    <text x="602" y="344">是</text>
+    <text x="346" y="414">是</text>
+  </g>
+  <text x="602" y="414" font-size="12" font-weight="700" fill="#92400e">否</text>
+
+  <!-- ===== 六张范式卡 ===== -->
+  <!-- A 图状态机（左 1） -->
+  <g filter="url(#shf)">
+    <rect x="40" y="112" width="300" height="60" rx="12" fill="url(#gCardL)" stroke="#c7d2fe"/>
+  </g>
+  <rect x="52" y="124" width="36" height="36" rx="9" fill="#e0e7ff"/>
+  <g stroke="#4338ca" stroke-width="1.8" fill="none">
+    <circle cx="64" cy="136" r="3.2"/><circle cx="79" cy="133" r="3.2"/><circle cx="68" cy="150" r="3.2"/>
+    <path d="M66.5 138 L66.8 147 M67 136 L76 133.6 M70.5 148.6 L77 136"/>
+  </g>
+  <text x="102" y="137" font-size="13.5" font-weight="700" fill="#0f172a">图状态机编排</text>
+  <text x="102" y="157" font-size="12" fill="#475569">分支回环多，要断点恢复与回放</text>
+
+  <!-- B 角色对话（右 2） -->
+  <g filter="url(#shf)">
+    <rect x="620" y="182" width="300" height="60" rx="12" fill="url(#gCardR)" stroke="#c7d2fe"/>
+  </g>
+  <rect x="632" y="194" width="36" height="36" rx="9" fill="#e0e7ff"/>
+  <g stroke="#4338ca" stroke-width="1.8" fill="none">
+    <rect x="638" y="202" width="17" height="12" rx="3.5"/>
+    <rect x="647" y="210" width="16" height="11" rx="3.5" fill="#e0e7ff"/>
+  </g>
+  <text x="682" y="207" font-size="13.5" font-weight="700" fill="#0f172a">角色对话编排</text>
+  <text x="682" y="227" font-size="12" fill="#475569">把团队分工写进提示，轮流议事</text>
+
+  <!-- C 检索优先（左 3） -->
+  <g filter="url(#shf)">
+    <rect x="40" y="252" width="300" height="60" rx="12" fill="url(#gCardL)" stroke="#c7d2fe"/>
+  </g>
+  <rect x="52" y="264" width="36" height="36" rx="9" fill="#e0e7ff"/>
+  <g stroke="#4338ca" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <circle cx="67" cy="279" r="5.5"/>
+    <path d="M71.5 283.5 L77 289 M78 271 L83 271"/>
+  </g>
+  <text x="102" y="277" font-size="13.5" font-weight="700" fill="#0f172a">检索优先框架</text>
+  <text x="102" y="297" font-size="12" fill="#475569">知识问答是主线，工具围着检索转</text>
+
+  <!-- D 提示程序化（右 4） -->
+  <g filter="url(#shf)">
+    <rect x="620" y="322" width="300" height="60" rx="12" fill="url(#gCardR)" stroke="#c7d2fe"/>
+  </g>
+  <rect x="632" y="334" width="36" height="36" rx="9" fill="#e0e7ff"/>
+  <g stroke="#4338ca" stroke-width="1.8" stroke-linecap="round">
+    <path d="M639 346 L661 346 M639 358 L661 358"/>
+    <circle cx="653" cy="346" r="3" fill="#ffffff"/>
+    <circle cx="646" cy="358" r="3" fill="#ffffff"/>
+  </g>
+  <text x="682" y="347" font-size="13.5" font-weight="700" fill="#0f172a">提示程序化</text>
+  <text x="682" y="367" font-size="12" fill="#475569">提示词当参数，用数据调整条流水线</text>
+
+  <!-- E 事件驱动（左 5） -->
+  <g filter="url(#shf)">
+    <rect x="40" y="392" width="300" height="60" rx="12" fill="url(#gCardL)" stroke="#c7d2fe"/>
+  </g>
+  <rect x="52" y="404" width="36" height="36" rx="9" fill="#e0e7ff"/>
+  <path d="M73 409 L61 426 L68 426 L65 437 L78 419 L70 419 Z" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.6" stroke-linejoin="round"/>
+  <text x="102" y="417" font-size="13.5" font-weight="700" fill="#0f172a">事件驱动编排</text>
+  <text x="102" y="437" font-size="12" fill="#475569">消息触发、人审插队，随时可暂停</text>
+
+  <!-- F 托管平台（右 5，兜底） -->
+  <g filter="url(#shf)">
+    <rect x="620" y="392" width="300" height="60" rx="12" fill="url(#gCardR)" stroke="#fcd34d"/>
+  </g>
+  <rect x="632" y="404" width="36" height="36" rx="9" fill="#fef3c7"/>
+  <g stroke="#b45309" stroke-width="1.8" fill="none">
+    <path d="M641 426 A5.5 5.5 0 1 1 643.5 416 A7 7 0 0 1 657 415.5 A5.5 5.5 0 1 1 659 426 Z"/>
+  </g>
+  <text x="682" y="417" font-size="13.5" font-weight="700" fill="#0f172a">托管平台</text>
+  <text x="682" y="437" font-size="12" fill="#475569">都不强求就不自建，合规换时间</text>
+
+  <!-- ===== 底注 ===== -->
+  <text x="40" y="502" font-size="12.5" fill="#475569">决策口诀：<tspan font-weight="700" fill="#4338ca">控制流越复杂越靠图，协作越像开会越靠角色，流量越大越靠事件，越不想运维越靠托管。</tspan></text>
+  <text x="40" y="528" font-size="12" fill="#94a3b8">范式比名字重要：换框架换不掉坏架构，先选对控制流形态，再看生态、可观测与锁定成本。</text>
+</svg>

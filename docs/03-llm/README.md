@@ -64,3 +64,22 @@ flowchart TD
 2. **应用**：128K 窗口的模型能「一次读完整个代码库」吗？用 lost-in-the-middle 说明为什么 RAG 与压缩仍然必要。（提示：见 token-embedding-context.md、transformer-attention.md）
 3. **判断**：「Agent 不好用就该去微调模型」——用「九成问题靠改 prompt、精简工具、优化上下文」这条判断评价它。（提示：见 pretraining-finetuning.md）
 
+## 本章术语速查
+
+这批词是「机房视角」的：先把画面记住，公式留到需要时再回头看正文。
+
+| 英文术语 | 中文 | 白话一句话 |
+|---|---|---|
+| Large Language Model (LLM) | 大语言模型 | 本质是个下一 token 预测器：把整片语料变成「接下来是哪个字」的填空接龙 |
+| Autoregressive | 自回归 | 刚生成的 token 拼回输入再算下一个，所以生成只能一个字一个字往外蹦，跳不了步 |
+| Transformer | Transformer 架构 | 2017 年后的所有主流 LLM 共用底座，靠注意力让任意词直接看到任意词、还能并行训练 |
+| Attention (Self-Attention) | 注意力机制 | 每个位置算「分给其他位置多少关注」，O(n²) 的开销就是长上下文贵的根源 |
+| Token | 词元 | 模型眼里的大小、账单上的格：BPE 把文本切块，常见词一整块、生僻词被拆碎 |
+| Embedding | 嵌入向量 | 词的语义坐标，意思越近坐标越挨着，语义检索的地基 |
+| Context Window | 上下文窗口 | 一次调用能「看见」的 token 上限，Agent 的工作记忆预算——200K 不是随便塞的房间 |
+| LoRA | 低秩微调 | 不动原权重、只训两块薄薄的小矩阵贴上去，低成本微调的数学秘密 |
+| RLHF | 基于人类反馈的强化学习 | 人给回答打分、训个「评委」奖励模型、再用 PPO 优化策略，ChatGPT 的谈吐是这么来的 |
+| DPO | 直接偏好优化 | 拿好/坏答案对直接学，不用先请评委，RLHF 的两步并成一步 |
+| KV Cache | KV 缓存 | 把历史 token 的键值存住不重算，长上下文的显存大户，也是推理优化核心 |
+| Quantization | 量化 | 把权重数值精度压低（GPTQ/AWQ/GGUF），牺牲一点质量换大模型塞进笔记本 |
+

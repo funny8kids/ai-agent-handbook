@@ -217,6 +217,15 @@
 * [评估 2026：基准代际](18-frontier-2026/eval-2026.md)
 * [2026 协议栈](18-frontier-2026/protocol-stack-2026.md)
 
+## 🧪 19 动手实验
+* [本章导读](19-labs/README.md)
+* [Lab 1 最小 ReAct 闭环](19-labs/lab1-react.md)
+* [Lab 2 手写迷你 RAG](19-labs/lab2-rag.md)
+* [Lab 3 手写迷你 MCP](19-labs/lab3-mcp.md)
+* [Lab 4 三角色协作](19-labs/lab4-multi-agent.md)
+* [Lab 5 评测与可观测](19-labs/lab5-eval-trace.md)
+* [Lab 6 护栏与真模型切换](19-labs/lab6-guardrails.md)
+
 ## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)
 * [许可证](99-about/license.md)

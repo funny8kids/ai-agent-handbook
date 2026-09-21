@@ -108,6 +108,12 @@ app = g.compile(checkpointer=saver)   # 加 checkpoint 即可断点恢复
 
 把 [工作流编排](../11-engineering/workflow-orchestration.md) 里的「投诉处理」画成 LangGraph 状态图：节点、条件边、HITL interrupt 各在哪？哪个节点需要 checkpoint？
 
+## 实战手记
+
+- **状态膨胀是肉眼可见的**：起手 state 里两个字段，一个月后能膨胀到十来个，顺手把整段消息历史往图里传。经验值上，给团队立一条「新增字段要说明为什么跨节点传」的规矩就足够，只在单节点用的内容一律收进局部变量，graph 调试会体面很多。
+- **checkpoint 先免费后收费**：每个超步都落一条记录，长任务高并发下存储涨得很快。我们常见的项目里，开发期用内存或 SQLite 很顺，上线换 Postgres 后要开始管清理——只对进行中的线程保留完整 checkpoint，跑完的压缩归档，体积通常能掉一半以上。
+- **interrupt 等人是真会等爆**：人工审暂停点上线后，最常见的事故不是审错而是没人审——线程挂到第二天早上。每个 interrupt 位都要接通知渠道，并和业务约定超时后的默认动作，否则生产里堆起来的是一排挂着的线程。
+
 ## 参考资料
 
 - [LangGraph 官方文档](https://langchain-ai.github.io/langgraph/)
