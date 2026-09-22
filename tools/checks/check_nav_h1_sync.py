@@ -3,16 +3,17 @@
 Platform fact this checker encodes (measured on the live deployment, round 55): GitBook renders
 the SUMMARY.md link text as BOTH <title> and the visible <h1>, and drops the markdown H1 of the
 body entirely. Evidence: docs/19-labs/lab4-multi-agent.md is authored as
-「# Lab 4：三角色协作（Planner / Executor / Reviewer）」 while the published page reads
-<title>Lab 4 三角色协作</title> / <h1>Lab 4 三角色协作</h1>, and the parenthetical appears nowhere in
-the served HTML. So the sidebar label is not just navigation text — it is the page's heading.
+「# Lab 4：三角色协作（Planner / Executor / Reviewer）」 while the published page read
+<title>Lab 4 三角色协作</title> / <h1>Lab 4 三角色协作</h1> — verbatim the SUMMARY label of the
+time — and the parenthetical appeared nowhere in the served HTML. So the sidebar label is not
+just navigation text: it is the page's heading.
 
-Therefore any label that is not the page's H1 (up to GitBook's punctuation rewriting) silently
-shortens the reader-visible title. Chapter landing pages published <h1>本章导读</h1> and the
+Therefore any label that is not the page's H1 silently becomes the reader-visible title. Chapter landing pages published <h1>本章导读</h1> and the
 homepage published <h1>首页</h1> for exactly this reason.
 
-Rule: norm(SUMMARY label) == norm(body H1), where norm() collapses the punctuation GitBook
-rewrites. Fixes go on the SUMMARY side (labels carry the full title); nothing is deleted.
+Rule: norm(SUMMARY label) == norm(body H1). norm() collapses punctuation, which is a defensive
+allowance — measured on the live site the label is published verbatim, colons and brackets
+included. Fixes go on the SUMMARY side (labels carry the full title); nothing is deleted.
 
 Usage:  python tools/checks/check_nav_h1_sync.py [--report]
 """
@@ -80,15 +81,15 @@ def run_controls(rows, problems):
     assert len(rows) >= 190, "vacuity: only %d SUMMARY entries parsed" % len(rows)
     assert any(r[0] == "README.md" for r in rows), \
         "control: homepage entry not parsed, so the label/H1 compare is unreachable"
-    # hit control: GitBook's own punctuation rewrite must not read as a divergence.
+    # hit control: a punctuation-only difference must not read as a divergence (defensive slack).
     assert norm("Lab 4：三角色协作（Planner / Executor / Reviewer）") == \
         norm("Lab 4 三角色协作 Planner Executor Reviewer"), \
-        "control: normaliser rejects a pair GitBook renders identically"
+        "control: normaliser rejects a punctuation-only difference"
     # phantom control: a genuinely different title must still read as a divergence.
     assert norm("本章导读") != norm("06 记忆与 RAG") != norm("完全不同的标题"), \
         "control: normaliser equates two different titles (ruler too loose)"
     diverged = [p for p in problems if p.startswith("TITLE")]
-    print("controls: entries=%d TITLE-findings=%d, punctuation rewrite accepted / different title rejected"
+    print("controls: entries=%d TITLE-findings=%d, punctuation-only difference accepted / different title rejected"
           % (len(rows), len(diverged)))
 
 

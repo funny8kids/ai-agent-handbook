@@ -19,6 +19,8 @@ import os
 import random
 import re
 import sys
+import time
+import urllib.error
 import urllib.request
 
 SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
@@ -30,11 +32,21 @@ TOKEN = re.compile(r"\{%-?\s*(stepper|step|tabs|tab)\b((?:%(?!\})|[^%])*)%\}")
 TITLE_ATTR = re.compile(r'title\s*=\s*"([^"]+)"')
 
 
-def fetch(url, binary=False):
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=90) as resp:
-        data = resp.read()
-    return data if binary else data.decode("utf-8", "replace")
+def fetch(url, binary=False, tries=4):
+    """GitBook's CDN closes TLS connections at will mid-sweep; retry before blaming the page."""
+    last = None
+    for n in range(tries):
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                data = resp.read()
+            return data if binary else data.decode("utf-8", "replace")
+        except (urllib.error.URLError, OSError) as exc:
+            last = exc
+            if n == tries - 1:
+                break
+            time.sleep(2 * (n + 1))
+    raise RuntimeError("fetch failed after %d tries: %s (%s)" % (tries, url, last))
 
 
 def llms_urls():
@@ -42,13 +54,28 @@ def llms_urls():
     return re.findall(r"\((https://[^)\s]+\.md)\)", text)
 
 
+def tail(rel_path):
+    """A page's path below its chapter directory, lowercased — the part GitBook keeps verbatim.
+
+    Measured on llms.txt: GitBook transliterates the chapter directory to pinyin
+    (`09-frameworks/langchain.md` -> `09-kuang-jia-yu-sheng-tai/langchain.md`) but publishes every
+    deeper segment unchanged (`13-resources/projects/langchain.md` ->
+    `13-zi-yuan-ku/projects/langchain.md`). Matching on the basename alone collided those two
+    pages and silently dropped 5 of the 54 widget pages from live coverage; matching on the tail
+    separates them without ever constructing a URL. The tail's length also carries the segment
+    count, so `docs/README.md` (tail ()) can never match a chapter README (`00-index/README.md`,
+    tail ("readme.md",)) -- that one has no published tail and stays a skip.
+    """
+    return tuple(s.lower() for s in rel_path.replace("\\", "/").split("/")[1:])
+
+
 def page_index(urls):
-    """Map a file stem to its live URL. Ambiguous stems are dropped, never guessed."""
-    by_stem = {}
+    """Map a published page tail to its live URL. Ambiguous tails are dropped, never guessed."""
+    by_tail = {}
     for u in urls:
-        stem = os.path.basename(u)[:-3]
-        by_stem.setdefault(stem, []).append(u)
-    return {k: v[0] for k, v in by_stem.items() if len(v) == 1}
+        rel = u[len(SITE) + 1:] if u.startswith(SITE) else os.path.basename(u)
+        by_tail.setdefault(tail(rel), []).append(u)
+    return {k: v[0] for k, v in by_tail.items() if len(v) == 1}
 
 
 def widget_pages():
@@ -87,11 +114,13 @@ SKIP_BODY = re.compile(r"^(\{|`|\||>|!\[|\+\+|$)")
 def snippet_of(body_lines):
     """First plain-prose line of a step/tab body — the string the reader must see rendered.
 
-    Lines with inline code are skipped: GitBook splits those into separate <code> nodes, so a
-    raw substring compare would fail on content that renders fine.
+    Skipped: lines with inline code (GitBook emits separate <code> nodes, so a raw substring
+    compare breaks on content that renders fine), lines with `**` bold, and lines carrying a
+    displayed formula (dollar-dollar or backslash-paren delimiters) — KaTeX rewrites those, so
+    the source text is not what the page shows.
     """
     for line in body_lines:
-        if SKIP_BODY.match(line) or "`" in line or "**" in line:
+        if SKIP_BODY.match(line) or any(t in line for t in ("`", "**", "$$", r"\(")):
             continue
         clean = re.sub(r"^#{1,6}\s*", "", line).strip()
         if len(clean) >= 8:
@@ -148,11 +177,11 @@ def visible_controls():
     served = ('<h1>Lab 1：最小 ReAct 闭环</h1><div class="x"><script>var a="起点：模型的上下文里只有问题";</script>'
               '<p>起点：模型的上下文里只有问题，往后是正文。</p></div>')
     body = visible(served)
-    assert norm("Lab 1：最小 ReAct 闭环") in body, "control: heading punctuation rewrite not tolerated"
+    assert norm("Lab 1：最小 ReAct 闭环") in body, "control: punctuation-insensitive compare broken"
     assert norm("起点：模型的上下文里只有问题") in body, "control: body probe lost a present string"
     assert norm("这段文字在页面上根本不存在啊啊啊啊") not in body, "control: phantom string matched"
     assert "var a=" not in body, "control: <script> content leaked into visible text"
-    print("visibility controls: heading punctuation normalised, script stripped, phantom rejected")
+    print("visibility controls: markup/entities stripped, script rejected, phantom rejected")
 
 
 def h1_of(text):
@@ -161,11 +190,12 @@ def h1_of(text):
 
 
 def visible(served):
-    """Reader-visible text: GitBook's markup, entities and punctuation all normalised away.
+    """Reader-visible text: markup stripped and entities decoded.
 
-    Normalisation is required because GitBook rewrites heading punctuation — an H1 authored as
-    「Lab 1：最小 ReAct 闭环」 is published as "Lab 1 最小 ReAct 闭环", which made a raw substring
-    probe report a real, published page as "shape failed".
+    norm() also collapses punctuation. Measured on this deployment the platform publishes the
+    SUMMARY label verbatim (colons and brackets survive), so that collapsing is a defensive
+    allowance, not a workaround for a rewrite — and tools/checks/check_nav_h1_sync.py is what
+    guarantees label == page H1 in the first place.
     """
     txt = re.sub(r"<(script|style|svg)[^>]*>.*?</\1>", " ", served, flags=re.S | re.I)
     txt = html.unescape(re.sub(r"<[^>]+>", " ", txt))
@@ -200,7 +230,7 @@ def pick(pages, want_all, sample):
     return pages if want_all else (labs + rest)[:max(sample, len(labs))]
 
 
-EXTRACT_SAMPLE = """{% stepper %}
+EXTRACT_SAMPLE = r"""{% stepper %}
 {% step %}
 
 #### 第一步：真实标题文字长度足够
@@ -211,6 +241,8 @@ EXTRACT_SAMPLE = """{% stepper %}
 
 {% tabs %}
 {% tab title="分支 A" %}
+
+四项延迟全付：$$L_{\text{e2e}} = \sum_i L_i$$
 
 这里是标签页里的正文内容。
 {% endtab %}
@@ -236,6 +268,26 @@ EXTRACT_PHANTOM = """```markdown
 """
 
 
+def page_index_controls():
+    """The tail matcher must separate same-named pages and never invent a URL."""
+    urls = [SITE + "/readme.md",
+            SITE + "/09-kuang-jia-yu-sheng-tai/langchain.md",
+            SITE + "/13-zi-yuan-ku/projects/langchain.md"]
+    idx = page_index(urls)
+    assert idx.get(tail("README.md")) == urls[0], "control: homepage tail did not resolve"
+    assert idx.get(tail("09-frameworks/langchain.md")) == urls[1], \
+        "control: chapter page did not resolve through its pinyin directory"
+    assert idx.get(tail("13-resources/projects/langchain.md")) == urls[2], \
+        "control: same-named pages were not told apart"
+    assert idx.get(tail("00-index/README.md")) is None, \
+        "control: a chapter README resolved to the homepage"
+    collide = page_index(urls + [SITE + "/16-yy/langchain.md"])
+    assert all(tail(r) not in collide for r in ("09-frameworks/langchain.md",
+                                                "16-ai-infrastructure/langchain.md")), \
+        "control: an ambiguous tail resolved anyway"
+    print("url-index controls: same-named pages separated, chapter README and ambiguous tails refused")
+
+
 def run_extractor_controls():
     got = extract_widgets(EXTRACT_SAMPLE)
     assert [k for k, _, _ in got] == ["stepper", "tabs", "stepper"], \
@@ -251,6 +303,7 @@ def run_extractor_controls():
 def main():
     args = sys.argv[1:]
     run_extractor_controls()
+    page_index_controls()
     visible_controls()
     want_all = "--all" in args
     sample = int(args[args.index("--sample") + 1]) if "--sample" in args else 10
@@ -272,21 +325,24 @@ def main():
         return 0
 
     index = page_index(llms_urls())
-    checked = missing_url = 0
+    assert len(index) >= 180, "vacuity: live url index only resolved %d pages" % len(index)
+    checked = missing_url = checked_props = 0
     problems = []
     for path, stem, text, widgets in pick(pages, want_all, sample):
-        url = index.get(stem)
+        rel = os.path.relpath(path, DOCS)
+        url = index.get(tail(rel))
         if not url:
             missing_url += 1
-            print("  skip (no unambiguous live url): %s" % stem)
+            print("  skip (no unambiguous live url): %s" % rel.replace("\\", "/"))
             continue
         errs = check_page(url, text, widgets)
         checked += 1
+        checked_props += len(widgets)
         print("  %-40s widgets=%d %s" % (stem, len(widgets), "ok" if not errs else "PROBLEMS"))
         problems += errs
     assert checked >= 5, "vacuity: only %d pages were actually checked" % checked
-    print("\nchecked=%d skipped(no url)=%d widget-props=%d problems=%d"
-          % (checked, missing_url, total_widgets, len(problems)))
+    print("\nchecked=%d skipped(no url)=%d widget-props(checked pages only)=%d problems=%d"
+          % (checked, missing_url, checked_props, len(problems)))
     for p in problems[:40]:
         print("  -", p)
     return 1 if problems else 0
