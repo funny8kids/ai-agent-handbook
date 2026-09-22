@@ -132,4 +132,5 @@ print(docs[int(np.argmax(scores))])           # → RAG 用检索增强生成
 
 - [向量数据库](vector-database.md)
 - [RAG 基础](rag-basics.md)
+- [Embedding 微调](embedding-finetuning.md)
 

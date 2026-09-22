@@ -136,4 +136,5 @@ flowchart LR
 - [RAG 基础](rag-basics.md)
 - [知识图谱](knowledge-graph.md)
 - [向量数据库](vector-database.md)
+- [Text-to-SQL：让 Agent 查结构化数据](text-to-sql.md)
 

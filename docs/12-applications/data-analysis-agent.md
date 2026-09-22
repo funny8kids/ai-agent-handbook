@@ -104,6 +104,7 @@ $$
 ## 相关知识点
 
 - [浏览器、代码、文件系统工具](../05-tool-protocol/browser-code-filesystem-tools.md)
+- [Text-to-SQL：让 Agent 查结构化数据](../06-memory-rag/text-to-sql.md)
 - [幻觉问题](../10-evaluation-safety/hallucination.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
 - [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
