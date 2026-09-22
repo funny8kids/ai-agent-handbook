@@ -13,9 +13,9 @@ updated: 2026-09-23
 
 **From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · **2026 frontier**
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：196 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1、System One 决策模型）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：196 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1、System One 决策模型）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、流程给成分步演示与可点标签（全书正文不贴可执行代码，接口只给真实字段契约）。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 196 pages across 19 chapters, including a 2026 frontier chapter (GPT-6 Astra, Agents API, Claude Fable 5.1, **System One decision models**), 108 of them carrying rendered formulas, plus 6 offline-runnable hands-on labs and an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 196 pages across 19 chapters, including a 2026 frontier chapter (GPT-6 Astra, Agents API, Claude Fable 5.1, **System One decision models**), 108 of them carrying rendered formulas, plus 6 offline-runnable hands-on labs and an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, and processes are stepped out as interactive walkthroughs rather than pasted code.
 
 ## 快速开始 · Quick start
 
@@ -36,7 +36,7 @@ updated: 2026-09-23
 *《图：四阶段路线是按「能否自检」切分的——每块底部写着过关标准，达不到就别进下一阶段》*
 ## 边学边做 · Hands-on labs
 
-第 19 章是 6 个**纯标准库、零 API Key、离线可跑**的动手实验：手写最小 ReAct 闭环 → 迷你 BM25 RAG → 迷你 MCP 服务 → 三角色协作 → 评测与 trace → 护栏与接真模型。每个实验含完整代码、真实运行输出、排错备忘，看懂后把 MockLLM 换成真 API 主循环一行不改。
+第 19 章是 6 个**纯标准库、零 API Key、离线可跑**的动手实验：手写最小 ReAct 闭环 → 迷你 BM25 RAG → 迷你 MCP 服务 → 三角色协作 → 评测与 trace → 护栏与接真模型。页面里不放代码，改成一步步的**分步演示**与**可点标签**（对照组、失败分支都能点开看），配的每一份输出都是本机真跑出来的原文——第 54 轮把这句话逐条复跑核对过：六页共 95 个引用数字，60 个直接对上默认运行，剩下 35 个逐条追查后 33 个用「把改动重新做一遍」复现（lab6 的 3/8=38% 误伤与 2/4 漏防、lab4 的消息数 7→9 与总线 298→303 字、lab3 的 -32601 报文与三工具发现行、lab2 三组标签与两个 b 值的完整排序），2 个是判据假阳性（`"temperature": 0.2` 那类写在 JSON 契约里的字段本就不是运行输出）；核对过程中修掉了 lab3 服务端一处真 bug。脚本自己在仓库 `labs/` 下，六个文件各自自包含，看懂后把 MockLLM 换成真 API 主循环一行不改。
 
 👉 **[进入动手实验 · Start the labs](19-labs/README.md)**
 
@@ -86,15 +86,16 @@ updated: 2026-09-23
 ## 关于这本手册 · About this handbook
 
 - **196 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 196 pages across 19 chapters。口径说清：这 196 是**已发布页面数**（本地 `docs/` 下 `.md` 减 `SUMMARY.md` 与截图清单），含首页与 3 个模板/指南页；纯正文是 193 篇。与线上 `llms.txt` 的页面数一一对过，不是估的
-- **108 篇页面含 KaTeX 公式，共 821 条**（判据：先剥代码块与行内代码、再按房内 `$$…$$` 语法配对，逐条过真 `katex@0.18.7` `renderToString(throwOnError)` ——**0 解析失败**；范围是 193 篇正文，含本页与更新日志，模板页代码块里的示例写法不算。把更新日志页排除则是 107 篇 / 811 条。公式数**只认这一个判据脚本**的读数——站内另有两个统计脚本给出 811 与 834，差异全来自范围与配对规则的口径不同，本轮起它们不再作为公式统计来源）· 108 pages carry rendered formulas
+- **108 篇页面含 KaTeX 公式，共 930 条**（判据：先剥代码块与行内代码、再按房内 `$$…$$` 语法配对，逐条过真 `katex@0.18.7` `renderToString(throwOnError)` ——**0 解析失败**；范围是 193 篇正文，含本页与更新日志，模板页代码块里的示例写法不算。把更新日志页排除则是 107 篇 / 920 条。公式数**只认这一个判据脚本**的读数——站内另有两个统计脚本读出 931 与 943，差异全来自范围（是否含截图清单）与配对规则（是否先剥行内代码）不同，本轮起它们不再作为公式统计来源）· 108 pages carry rendered formulas
 - **数字与结论都能点回一手来源**，文末「参考资料」只放外部来源 · every claim links back to a primary source
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
-- **212 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现（逐文件点数，代码块与行内代码里的写法示例不计入）
-- **全书 189 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
-- **153 篇知识/资源页全部有「参考资料」**（按 frontmatter `type` 统计，不是靠肉眼挑）：339 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
+- **251 个 GitBook 原生提示卡 + 54 组分步演示（279 步）+ 52 组可点标签（195 个页签）**：一句话结论 / 易踩的坑 / 风险警示分色呈现，流程与分支结局用交互组件逐步走完（逐文件点数，代码块与行内代码里的写法示例不计入）
+- **正文零可执行代码**：需要动手的地方给的是**真实字段契约**（`json`/`yaml`，每份都过 `json.loads`）与分步演示；六个实验的脚本仍在仓库 `labs/` 下可离线真跑，页面按路径指过去。第 54 轮据此清零了 55 页 / 60 块 / 1502 行代码，同时正文净增 12.1 万字符（新增 17.7 万、删除 5.6 万，剥掉 Markdown 符号后按字符计，58 个被改文件）
+- **全书 217 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
+- **154 篇知识/资源页全部有「参考资料」**（按 frontmatter `type` 统计，不是靠肉眼挑）：339 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **229 张页内配图**：189 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 229 in-page figures, parser-verified diagrams + real product UI screenshots。按**放置次数**算是 234 处，差的那 5 处是 4 张 SVG 与 1 张截图跨页复用；另有 2 张自绘 SVG 用作 GitBook 站标，不在页面正文里，故不计入配图数
-- **186 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；45 处图片放置里 43 处带注（另 2 处是首页装饰横幅与更新日志里讲写法的一行示例），189 张 Mermaid **141 张带图注、48 张由图前或图后实质引导语解释，逐块量过：0 张裸图**，**没有一张图是「如下图所示」四个字打发的**
+- **257 张页内配图**：217 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 257 in-page figures, parser-verified diagrams + real product UI screenshots。按**放置次数**算是 262 处，差的那 5 处是 4 张 SVG 与 1 张截图跨页复用；另有 3 张自绘 SVG（封面与两枚站标）只在站点设置与仓库 README 里用，不在正文页，故不计入配图数
+- **215 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；45 处图片放置里 44 处带注（另 1 处是首页装饰横幅），217 张 Mermaid **171 张带图注、46 张由图前或图后实质引导语解释，逐块量过：0 张裸图**，**没有一张图是「如下图所示」四个字打发的**
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、System One 决策模型（Jev）、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。
