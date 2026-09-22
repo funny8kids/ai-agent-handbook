@@ -15,6 +15,7 @@ updated: 2026-09-22
 
 ![编程 Agent 的沙箱工作循环：改码—测试—修复闭环，合并权留给人](../.gitbook/assets/12-coding-agent-loop.svg)
 
+*《图：五步圈在沙箱里自转，唯一出口是「全绿」；不绿最多修 N 轮，出箱后开 PR 由人评审——合并权始终不在 Agent 手上》*
 ## 先看结论
 
 - 编程 Agent = 模型 + harness；同一模型换 harness 成绩可差 20%+（SWE-bench 实证）
@@ -68,6 +69,8 @@ flowchart LR
   D -- 失败 --> C
   D -- 通过 --> E[交付<br/>diff + 说明]
 ```
+
+*《图：test/lint 一失败就退回「修改」重做，通过才前进到交付——改的是最小 diff，测试是合并前的硬闸门》*
 
 通用模式落到产品界面上，是 OpenHands 的 Automate 视图：
 

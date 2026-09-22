@@ -102,6 +102,8 @@ flowchart TD
   F -- 否 --> C
 ```
 
+*《图：先问质量是否优先——是就直接上旗舰 API，否才继续问数据能否出域；预算不敏感仍绕回旗舰 API，自托管只是数据不出域时的退路》*
+
 ## 源码案例
 
 - **vLLM**（[GitHub](https://github.com/vllm-project/vllm) / [论文](https://arxiv.org/abs/2309.06180)）：PagedAttention 把 KV 缓存像虚拟内存一样分页管理，消除碎片并支持前缀共享——自托管 Agent 服务的首选后端

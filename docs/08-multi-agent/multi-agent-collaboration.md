@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![多智能体四种协作拓扑：Supervisor、Swarm、Group Chat、Pipeline](../.gitbook/assets/08-collab-patterns.svg)
 
+*《图：四种拓扑各自标了「何时用」，判据是任务形状而非复杂度；图底那句提醒要当真——单个 Agent 能解决就别开多 Agent》*
 ## 先看结论
 
 - 三大收益：并行（提速）、上下文隔离（每个 Agent 有干净的专属上下文）、视角分歧（互相纠错）
@@ -77,6 +78,8 @@ flowchart TB
     B1 --> B3[Worker 2<br/>独立上下文]
   end
 ```
+
+*《图：左框只有一个节点，子任务挤在同一份上下文里排队；右框两条边都从 Lead 射出、两个 Worker 之间没有横边——多出来的不是对话量，是两份互不污染的上下文》*
 
 ## 工程含义
 

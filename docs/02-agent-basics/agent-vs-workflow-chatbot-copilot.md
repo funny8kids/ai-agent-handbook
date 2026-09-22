@@ -60,6 +60,8 @@ flowchart LR
   B --> C --> D --> E
 ```
 
+*《图：Chatbot→Copilot→Workflow→Agent 是自主性递增的一条序，代价是可预测性递减——步骤固定就别往右走，省下的都是成本和稳定性》*
+
 ## 生活类比
 
 - Chatbot = 电话客服：问什么答什么

@@ -72,6 +72,8 @@ flowchart LR
   D --> E[下游决策基于假数据]
 ```
 
+*《图：两条落地链的代价不对称：编造函数名止步于烧 token、当场可见；编造数据却一路写进报告与库、被下游决策采信，中段没有任何中断点》*
+
 ## 源码案例
 
 - **Claude Code 的防幻觉工程**（逆向全集：[Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts)）：系统提示词强制「先 Read 再 Edit」（杜绝凭记忆改代码）、错误信息原文回传（不信模型的「我觉得哪里错了」）、diff 预览让人审——防幻觉是 prompt + 工具流程 + 人审的合力

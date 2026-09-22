@@ -52,6 +52,8 @@ stateDiagram-v2
   Listening --> Listening: 继续听
 ```
 
+*《图：打断是硬边——Speaking 一检测到用户开口就直退 Listening、跳过重新思考；要调工具才绕道 Tooling 再回 Speaking》*
+
 **Barge-in** 规则：`Speaking` 中检测到用户语音 → 立刻停 TTS、清空播放队列、必要时取消 in-flight 工具。
 
 ## 端点判定：语音 Agent 真正的难点

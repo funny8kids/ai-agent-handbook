@@ -13,6 +13,7 @@ updated: 2026-09-22
 
 ![2026 Agent 协议栈](../.gitbook/assets/18-protocol-stack.svg)
 
+*《图：四层各管一段，分层的依据不是调用方向而是「谁被迫改代码」——界面换 AG-UI、工具换 MCP、Agent 互调换 A2A，三层互不顶替》*
 ## 先看结论
 
 | 层 | 协议/规范 | 解决 |
@@ -105,6 +106,8 @@ flowchart TB
   RT --- MCP[MCP 工具与数据]
   RT --- SK[agents.md / Skills]
 ```
+
+*《图：连线全为无向——UI 只经 AG-UI 触到 RT；A2A、MCP、Skills 并列挂在 RT 下，分层不看调用方向只看谁被迫改代码》*
 
 ## 工程含义
 

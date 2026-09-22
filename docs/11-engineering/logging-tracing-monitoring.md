@@ -13,6 +13,7 @@ updated: 2026-09-22
 
 ![一次 Agent 运行的 trace 瀑布：span 树、时间轴与四项必录指标](../.gitbook/assets/11-trace-waterfall.svg)
 
+*《图：瀑布上每个 span 都强制带同样四件事——延迟、token、成本、重试；缺任何一项，这次运行就无法与上次比较》*
 ## 先看结论
 
 - Agent 的追踪单位是「一次任务运行」：从用户输入到最终输出的完整轨迹（含每步 prompt、工具调用、token 消耗）

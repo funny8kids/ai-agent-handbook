@@ -74,6 +74,8 @@ flowchart TB
   S --> U
 ```
 
+*《图：八条边没有一条绕过 Supervisor，Worker 彼此互不相连——星型省掉的是两两直连那堆边，代价是中心既是必经之路又是唯一出口》*
+
 ## 源码案例
 
 - **DeepSeek Harness：Supervisor–Worker 的插件化**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：官方定位为「以层级式 Supervisor–Worker 为主，兼容并行、流水线和可替换循环的混合系统」；子 Agent 调度走同一条事件流——Supervisor 逻辑本身可替换，这是它对多 Agent 架构的主要贡献

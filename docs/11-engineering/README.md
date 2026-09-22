@@ -33,6 +33,8 @@ flowchart TB
   ORCH --> S[(状态存储<br/>事件流)]
 ```
 
+*《图：客户端经网关与编排层落到 Agent 运行时——模型、工具、可观测三层全挂在它身上；状态不进运行时，外置给编排层的事件流》*
+
 ## 延伸必读
 
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)——Agent 工程化的 12 条原则，本章多个小节与之呼应

@@ -31,6 +31,8 @@ flowchart TB
   B --> D["游戏工程收益:<br/>有记忆的NPC、自动化测试"]
 ```
 
+*《图：RL 把可验证奖励、过程监督「思想迁移」进 Agent 工程，LLM 换来有记忆 NPC 与自动化测试——两线擅长面互补》*
+
 ## 源码案例
 
 - **MineDojo / VPT**（[论文](https://arxiv.org/abs/2206.08853) / [OpenAI VPT 官方仓库](https://github.com/openai/Video-Pre-Training)）：在 Minecraft 上训练通用 Agent——VPT 用 7 万小时视频预训练 + RL 微调完成「砍树→合成工具→挖钻石」长链任务；是「LLM 时代之前」最具启发性的具身 Agent 工作

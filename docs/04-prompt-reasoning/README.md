@@ -33,6 +33,8 @@ flowchart TD
   F -- 否 --> H[CoT + Self-Consistency]
 ```
 
+*《图：三问定模式——要动外部工具就 ReAct，纯推理且解空间小走单链 CoT，空间大再分岔：算力够上 ToT/GoT，不够就用 CoT 加自一致性这条平价替代》*
+
 ## 本站页面
 
 - [Prompt Engineering](prompt-engineering.md)

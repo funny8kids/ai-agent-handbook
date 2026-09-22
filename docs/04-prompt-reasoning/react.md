@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![ReAct 闭环：Thought—Action—Observation，与纯 CoT 的断链对照](../.gitbook/assets/04-react-loop.svg)
 
+*《图：左半条纯 CoT 链在「需要的外部事实」处断开，右半条每轮拿 Observation 校准——那条缺失的边就是幻觉与可核查的分界》*
 ## 先看结论
 
 - 核心洞察：推理为行动提供计划与追踪，行动为推理提供真实反馈——两者缺一都会失败

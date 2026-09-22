@@ -37,6 +37,8 @@ sequenceDiagram
     Note over P: 超过最大轮数则升级给人
 ```
 
+*《图：打回只回给 Executor 修订，通过才向 Planner 交人；Note 那条「超轮数升级给人」是这条链唯一的人工出口》*
+
 ## 完整代码（复制即跑）
 
 ```python

@@ -82,6 +82,8 @@ flowchart TB
   A2 -->|MCP| T2[工具/数据]
 ```
 
+*《图：行程与机票两个 Agent 之间只有那条标着 Agent Card/Task 的横边，各自向下接工具的竖边仍写着 MCP——层次不同，所以并存而非替代》*
+
 | 维度 | MCP | A2A |
 |---|---|---|
 | 连接对象 | Agent ↔ 工具/数据源 | Agent ↔ Agent |

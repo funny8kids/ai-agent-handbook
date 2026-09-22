@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![2026 前沿模型与 harness 关系](../.gitbook/assets/18-model-harness-matrix.svg)
 
+*《图：三行不是并列清单而是三层依赖——模型要有 harness 承载，harness 之外要有治理读数；换模型只动第一行，换托管方式要动第二行》*
 ## 先看结论
 
 - **GPT-6 Astra**（`gpt-6-astra`，2026-09-09）：OpenAI 当前最强工作型模型；computer use / 浏览 / 软件工程 / 网络安全 / 科研全面拉高；首次触达 Preparedness **Critical 网络安全**阈值

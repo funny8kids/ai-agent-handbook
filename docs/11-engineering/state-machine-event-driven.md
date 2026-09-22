@@ -90,6 +90,8 @@ flowchart TB
   R --> BUS
 ```
 
+*《图：状态从不直接存，全靠投影从 append-only 事件流折叠出来；running 执行 turn 后把结果追加回流，重放与审计同源》*
+
 ## 源码案例
 
 **1. DeepSeek Harness：事件驱动状态机的完整开源实现**（[仓库](https://github.com/deepseek-ai/deepseek-harness)，必读）

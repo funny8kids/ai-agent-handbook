@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![Supervisor–Worker 协作](../.gitbook/assets/08-multi-agent.svg)
 
+*《图：Supervisor 拆、派、合，Worker 各带独立上下文与工具集，只回传产出与引用；那条 append-only 事件流才让多智能体可审计》*
 ## 你将学到
 
 - 什么时候真的需要多 Agent（以及什么时候单 Agent 更好）

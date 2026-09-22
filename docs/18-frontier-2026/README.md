@@ -38,6 +38,8 @@ flowchart TB
   A --> F[协议栈<br/>MCP+A2A+AG-UI<br/>+agents.md/Skills]
 ```
 
+*《图：五个平铺分支无先后（模型、运行时、分类学、产品、协议栈），但「模型原生 vs 自建 harness」的分叉决定前两项怎么选》*
+
 | 页面 | 读完你能 |
 |---|---|
 | [2026 前沿模型地图](frontier-models-2026.md) | 说清 Astra / Fable 5.1 / Opus 5 各自强在哪、价格与安全档位 |
@@ -47,6 +49,8 @@ flowchart TB
 | [通用 Agent 产品](../12-applications/general-agent-products.md) | 看懂 Manus 类「通用助理」与编程 Agent 的差异 |
 | [实时语音 Agent](../12-applications/voice-agent.md) | 理解语音 Agent 的延迟预算与工具打断模型 |
 | [2026 协议栈](protocol-stack-2026.md) | 把 MCP / A2A / AG-UI / agents.md / Skills 放进同一张图 |
+| [Computer Use 2026](computer-use-2026.md) | 分清桌面操作型 Agent 的 partial / strict 口径与企业闸门 |
+| [评估 2026](eval-2026.md) | 用「读榜五问」拆解任何一条 2026 榜单数字 |
 
 ## 与旧章的关系
 

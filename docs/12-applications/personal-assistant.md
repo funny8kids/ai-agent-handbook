@@ -34,6 +34,8 @@ flowchart TB
   S -- '明天有雨, 提醒带伞' --> U
 ```
 
+*《图：记忆系统与工具面支撑被动应答，真正的分水岭是调度器——它按定时或事件主动把「明天有雨」这类提醒推给用户》*
+
 ## 源码案例
 
 - **Mem0 / Letta 作为记忆层**（[GitHub](https://github.com/mem0ai/mem0) / [GitHub](https://github.com/letta-ai/letta)）：个人助理的记忆基建首选——Mem0 从对话中抽取事实（「用户对花生过敏」）存档并在合适时机召回；Letta 的虚拟内存管理支撑长期运行

@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![Function Calling 完整链路](../.gitbook/assets/05-tool-calling.svg)
 
+*《图：编号 1→6 里模型只出现在 2 和 6，中间三步全在你的代码里——权限、沙箱、超时都不由模型决定》*
 ## 你将学到
 
 - Function Calling 的完整链路：schema 注册 → 模型决策 → 参数解析 → 执行回填
@@ -33,6 +34,8 @@ flowchart TD
   C --> E[治理: 权限与沙箱]
   E --> F[前沿: Computer Use]
 ```
+
+*《图：全章只有模型层分出两条边：往生态走是 MCP 接工具、再经 A2A 跨 Agent；往 Agent 走是 Tool Use 策略，必须先过权限与沙箱这一关，才轮得到 Computer Use》*
 
 ## 本站页面
 

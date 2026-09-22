@@ -13,6 +13,7 @@ updated: 2026-09-22
 
 ![Agents API 架构：应用 → 托管 harness → 沙箱](../.gitbook/assets/18-agents-api-arch.svg)
 
+*《图：托管的边界要看清：harness 循环、自动压缩、tool search、子 Agent 并行都在 API 内，沙箱可选 OpenAI hosted 或 E2B/Modal》*
 ## 先看结论
 
 - 本质：**模型 + 托管 harness + 可选托管/自托管沙箱**；OpenAI 维护 harness，你提供工具、知识与工作流
@@ -112,6 +113,8 @@ flowchart TB
   SB --> FS[(文件/中间产物)]
   App -->|控制自托管算力| SB
 ```
+
+*《图：sessions.create 单向流进 Codex 再落到沙箱；产物回文件系统，只有自托管算力允许 App 直连沙箱、绕开厂商 harness》*
 
 ## 常见故障与排查
 

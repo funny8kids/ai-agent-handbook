@@ -13,6 +13,7 @@ updated: 2026-09-20
 
 ![Agent 核心循环](../.gitbook/assets/02-agent-loop.svg)
 
+*《图：目标进、观察出，四步一圈；LLM 推理、工具、记忆是撑住这一圈的三块底座，不在圈上》*
 ## 你将学到
 
 - Agent 的定义，以及它和 Chatbot / Workflow / Copilot 的边界

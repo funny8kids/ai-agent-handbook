@@ -41,6 +41,8 @@ flowchart TD
     C -.->|"Lesson 8"| RAG["配合本书 06 记忆与 RAG"]
 ```
 
+*《图：实线只是 11 课的先后，跳读的虚线才是用法：B 段后回 02 章校准概念，Lesson 8 配 06 章记忆与 RAG》*
+
 ## 上手建议
 
 1. 学完 Lesson 1–5 后回来读本书 [02 Agent 基础](../../02-agent-basics/README.md) 做概念校准

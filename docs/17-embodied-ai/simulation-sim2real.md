@@ -25,6 +25,7 @@ updated: 2026-09-22
 
 ![域随机化与 Sim-to-Real（动画）](../.gitbook/assets/17-sim2real-domain-randomization.svg)
 
+*《图：底部两组数是全章最该记住的一页：无随机化 95%→35%，只随机化视觉仍 88%→52%——动力学失配不会被更好的贴图救回来》*
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
@@ -36,6 +37,8 @@ flowchart TB
   SYSID --> ZEROSHOT[真机直接部署<br/>或微调后部署]
   ZEROSHOT --> FLY[真机失败回流] --> TR
 ```
+
+*《图：真机小样本辨识残差有两条出口——一条改域随机化的分布范围，一条放行部署；部署后的失败再回流策略训练》*
 
 ## 仿真器选择
 

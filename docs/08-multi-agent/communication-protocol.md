@@ -95,6 +95,8 @@ flowchart TB
   end
 ```
 
+*《图：同样是三个节点，星型只画了两条边且条条过 Supervisor，点对点已经把三条边用满——节点再往上加，后者按 n(n−1)/2 爆炸，前者只多一条》*
+
 ## 源码案例
 
 - **DeepSeek Harness：通信即事件**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：子 Agent 调度全部走同一条 append-only 事件流——「协议」被简化为「事件类型 + 投影规则」：Lead 读取子 Agent 的完成事件与产出引用，而非完整对话，天然防上下文爆炸

@@ -13,6 +13,7 @@ updated: 2026-09-22
 
 ![MCP 架构：Host 内嵌 Client 一对一连接 Server，暴露 Tools/Resources/Prompts 三种原语](../.gitbook/assets/05-mcp-architecture.svg)
 
+*《图：上下两半是同一批应用与工具——上面连出 M×N 条定制集成，下面换成 MCP 后只剩 M+N 个标准接口》*
 ## 先看结论
 
 - 解决 N×M 问题：过去 M 个 Agent 对接 N 个工具要写 M×N 个集成；MCP 之后是 M+N
@@ -80,6 +81,8 @@ flowchart LR
   S2 --- D
   S3 --- D
 ```
+
+*《图：Host 只有一条边连到内嵌的那个 Client，真正扇出文件系统/GitHub/数据库三条通道的是 Client；数据与工具全挂在 Server 侧，Host 从不直连》*
 
 ## 三大原语
 

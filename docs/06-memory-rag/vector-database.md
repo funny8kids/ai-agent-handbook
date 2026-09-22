@@ -102,6 +102,8 @@ flowchart LR
   D --> E["Rerank 精排<br/>Top-5 给 LLM"]
 ```
 
+*《图：50 条候选收到 5 条之间还压着两道工序——权限/时间/租户的元数据过滤排在精排之前，这一关不能推到生成阶段去补》*
+
 ## 源码案例
 
 - **HNSW**（[论文](https://arxiv.org/abs/1603.09320) / [FAISS 实现](https://github.com/facebookresearch/faiss)）：多层跳表式图结构，从稀疏顶层粗跳到底层精找——想懂 ANN，读它的论文与 FAISS 的 `IndexHNSW` 文档是最直接的路径

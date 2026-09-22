@@ -45,6 +45,8 @@ flowchart TD
     C --> H["缺外部信息，容易幻觉"]
 ```
 
+*《图：Observation 处才见分晓——信息不足回 Thought 再转一圈，足够才出 Final Answer；两条虚线对照各崩一侧》*
+
 ## 上手建议
 
 1. 先读 Figure 1（一张图看懂 Thought→Action→Observation）

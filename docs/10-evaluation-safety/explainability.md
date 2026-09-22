@@ -33,6 +33,8 @@ flowchart TB
   C --> D
 ```
 
+*《图：三条汇入 D 的分支全是系统侧记录——轨迹、RAG 引用、策略配置；模型自述的原因根本不在图上，可核验与合理化就此分界》*
+
 ## 源码案例
 
 - **DeepSeek Harness：为解释而生的架构**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：append-only 事件流把「每一步的 system prompt、推理内容、工具调用与结果、子 Agent 调度、上下文注入」全部留痕，Trajectory 视图按来源检查——「解释」变成按时间轴重放事件，这是行为层可解释性的标杆实现

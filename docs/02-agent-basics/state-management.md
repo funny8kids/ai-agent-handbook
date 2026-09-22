@@ -39,6 +39,8 @@ flowchart LR
   E --> B
 ```
 
+*《图：用户输入和工具调用都往 append-only 事件流里追加，模型看到的上下文由投影层现拼——日志才是事实来源，上下文只是它的一个视图》*
+
 ## 源码案例
 
 **1. DeepSeek Harness：状态即事件流**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）

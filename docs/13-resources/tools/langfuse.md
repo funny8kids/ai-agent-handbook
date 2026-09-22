@@ -43,6 +43,8 @@ flowchart TD
     PUB --> T
 ```
 
+*《图：trace 一进打分就分家——指标退化沿回滚边退回接入 SDK，通过才上线并把流量续回采集；闭环靠失败 trace 转成回归用例》*
+
 ## 上手建议
 
 1. 一行接入（`from langfuse.openai import openai`）跑通 trace

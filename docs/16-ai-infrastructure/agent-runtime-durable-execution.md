@@ -38,6 +38,8 @@ stateDiagram-v2
   ToolDone --> [*]: 完成
 ```
 
+*《图：状态机的关键是 llm_output 与 tool_result 两条独立迁移；ToolPending 超时退到 Failed，带去重键回 LLMStep 才不会重烧 token》*
+
 **关键**：`llm_output` 与 `tool_result` 是两条独立事件。恢复时：若已有 `llm_output` 但没有 `tool_result` → 只重放工具调用；两者都有 → 直接进下一步。**这就是崩溃后不重复烧 token 的原理。**
 
 ## 运行时职责边界

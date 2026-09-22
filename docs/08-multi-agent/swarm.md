@@ -64,6 +64,8 @@ flowchart LR
   R --|handoff 需人工|--> H[人工坐席]
 ```
 
+*《图：只有退款那支 handoff 最终落到人工坐席这个出口，技术支持 Agent 一条出边都没有——缺终止出口的移交图，就是无限传球的温床》*
+
 ## Supervisor vs Swarm
 
 | 维度 | 监督者 | Swarm |

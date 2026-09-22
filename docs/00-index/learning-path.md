@@ -24,6 +24,8 @@ updated: 2026-09-22
 
 ![学习路线：四个阶段](../.gitbook/assets/00-learning-path.svg)
 
+*《图：同一张路线图的站内版——四个阶段各带周数与检验项，①② 走完才谈 ③ 的生产化》*
+
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F1F3","primaryBorderColor":"#64748B","primaryTextColor":"#1F2937","secondaryColor":"#DDE0E5","tertiaryColor":"#F9F9FA","lineColor":"#AAB3BF","actorBkg":"#F3F4F6","actorBorder":"#64748B","actorTextColor":"#1F2937","signalColor":"#939EAE","noteBkgColor":"#E3E6EA","noteBorderColor":"#64748B","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0F1F3","labelBoxBorderColor":"#64748B"}}}%%
 flowchart TD
@@ -36,6 +38,8 @@ flowchart TD
   F --> H["18 2026 前沿<br/>模型与 harness 代际"]
   H -.->|"选型结论回灌评估基线"| E
 ```
+
+*《图：主干按 01→12 逐级解锁不能跳，末尾 18 前沿的选型结论用虚线回灌进 10 的评估基线——学习闭环靠这条反向边收口》*
 
 {% hint style="tip" %}
 **提示**：13–15 是资料/模板/术语篇（随时查），16 是「把 Agent 跑起来并跑稳」的平台层，17 是把同一套循环搬进物理世界，**18 是对齐 2026-09 模型/harness/评估代际的快车道**。

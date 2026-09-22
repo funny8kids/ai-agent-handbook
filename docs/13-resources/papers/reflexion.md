@@ -41,6 +41,8 @@ flowchart TD
     A2 --> A
 ```
 
+*《图：Evaluator 判失败是唯一的增益来源——成功只累加解决率，失败才走 Reflector 写教训、进情景记忆、回灌下一次 prompt》*
+
 ## 上手建议
 
 1. 读方法节的三组件：Actor / Evaluator / Reflector
