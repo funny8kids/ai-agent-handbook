@@ -50,6 +50,36 @@ updated: 2026-09-22
 - **检索侧指标**：Context Precision（上下文里有用信息的占比/排序）、Context Recall（该找到的都找到了吗）。
 - **RAGAS** 等框架用 LLM 当裁判自动算这些指标，无需每轮人工标注——但要注意裁判本身的偏差，重要决策仍抽样人评。
 
+## 关键指标的数学
+
+上面反复点名的 RRF、Recall@k、MRR、nDCG 都不是黑话，各有明确的算法。把它们写清楚，才知道每一环到底在优化什么：
+
+**混合召回的融合分（RRF，Reciprocal Rank Fusion）**——只用排名、不用原始分数，天然免调两路权重：
+
+$$
+\mathrm{RRF}(d)=\sum_{r\in R}\frac{1}{k+\mathrm{rank}_r(d)},\qquad k\approx 60
+$$
+
+某文档在各路召回里排名越靠前，累加的融合分越高；$k$ 是平滑常数，压掉头部名次的过度主导。
+
+**检索侧的两个基本盘**——召回看「别漏」，排序看「把对的排前面」：
+
+$$
+\mathrm{Recall@}k=\frac{|\text{相关}\cap \text{Top-}k|}{|\text{相关}|},\qquad
+\mathrm{MRR}=\frac{1}{|Q|}\sum_{i=1}^{|Q|}\frac{1}{\mathrm{rank}_i}
+$$
+
+Recall@k 衡量前 k 条覆盖了多少该找的东西；MRR 只对「第一条正确结果排多前」敏感（越靠前分越高），适合「用户只看第一条」的场景。
+
+**带位置折扣的排序质量（nDCG@k）**——把「相关度」和「排在第几位」一起算：
+
+$$
+\mathrm{DCG@}k=\sum_{i=1}^{k}\frac{2^{rel_i}-1}{\log_2(i+1)},\qquad
+\mathrm{nDCG@}k=\frac{\mathrm{DCG@}k}{\mathrm{IDCG@}k}
+$$
+
+分母 $\log_2(i+1)$ 让越靠后的命中折扣越大，$\mathrm{IDCG}$ 是理想排序的 DCG（归一化用），于是 nDCG 落在 0–1，可直接跨查询比较。重排环节「把对的排前面」的成效，就用它来量。
+
 ## 检索质量漏斗
 
 ```mermaid
