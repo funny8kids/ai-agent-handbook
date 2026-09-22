@@ -70,6 +70,7 @@
 * [知识图谱](06-memory-rag/knowledge-graph.md)
 * [记忆压缩、遗忘与摘要](06-memory-rag/memory-compression-forgetting.md)
 * [记忆固化与睡眠时计算](06-memory-rag/sleep-time-memory-consolidation.md)
+* [长上下文退化与有效上下文窗口](06-memory-rag/long-context-degradation.md)
 
 ## 🗺️ 07 规划与任务执行
 * [本章导读](07-planning/README.md)
