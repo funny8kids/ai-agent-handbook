@@ -60,7 +60,7 @@ updated: 2026-09-10
 
 ## 核心机制
 
-给出公式、推导或伪代码。以注意力为例：
+给出公式与推导，并用**形状契约**说明每一步的输入输出规模（写伪代码不如把形状写对——形状错了，读者一眼就能看出来）：
 
 $$
 \mathrm{Attention}(Q,K,V)=\mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
@@ -72,14 +72,17 @@ $$
 - $$\sqrt{d_k}$$：缩放因子，防止点积随维度增大而方差膨胀、softmax 饱和
 - $$V$$：按权重加权求和，得到输出
 
-（伪代码须显式标注为伪代码，不要与真实代码混用。）
-
-```text
-# 伪代码：单头注意力前向
-scores = Q @ K.T / sqrt(d_k)
-weights = softmax(scores)
-output = weights @ V
+```json
+{
+  "Q": "[n_seq, d_k]",
+  "K": "[n_seq, d_k]",
+  "scores": "[n_seq, n_seq]  ← 平方膨胀发生在这一行",
+  "weights": "softmax 后每行和为 1",
+  "output": "[n_seq, d_k]  ← 与 Q 同形，所以能堆层"
+}
 ```
+
+三句话读完这张表：序列长度 $$n_{seq}$$ 让 `scores` 按平方增长（这就是长上下文贵的地方），归一化让注意力是"分配"而不是"叠加"，输出恒等于 `Q` 的形状（所以残差连接才接得上）。
 
 ## 直觉解释
 
@@ -165,20 +168,36 @@ updated: 2026-09-10
 - 什么时候用：……
 - 前置要求：……
 
-## 可运行示例
+## 数据契约与逐步演示
 
-真实依赖、真实函数签名：
+先给一段**字段名属实**的请求契约（读者照着能在自己 SDK 里对上号）：
 
-```python
-from openai import OpenAI
-
-client = OpenAI()
-resp = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "你好"}],
-)
-print(resp.choices[0].message.content)
+```json
+{
+  "model": "gpt-4o-mini",
+  "messages": [{ "role": "user", "content": "你好" }],
+  "max_output_tokens": 256,
+  "temperature": 0
+}
 ```
+
+再点明返回值里该读哪一个字段，别让人去猜整个响应对象：正文在 `choices[0].message.content`，工具调用意图在同级的 `tool_calls`，用量与计费在 `usage.total_tokens`，出错了看状态码 + `error.code` 而不是看 body 长度。
+
+多步过程用 `{% stepper %}` 展开，读者可以一步步点着看：
+
+{% stepper %}
+{% step %}组装请求：系统提示 + 历史 + 本轮输入按契约字段拼好，先估 token 再发{% endstep %}
+{% step %}读回 `content`，若同时有 `tool_calls` 则本轮不结束，先执行工具{% endstep %}
+{% step %}把工具结果作为新消息追加回去，回到上一步直到没有 `tool_calls`{% endstep %}
+{% endstepper %}
+
+分支结局用 `{% tabs %}` 并列，避免写成"可能会失败"：
+
+{% tabs %}
+{% tab title="正常结束" %}`finish_reason = "stop"`，无 `tool_calls`{% endtab %}
+{% tab title="被截断" %}`finish_reason = "length"`——说明 `max_output_tokens` 给小了，或该走流式{% endtab %}
+{% tab title="要调工具" %}`finish_reason = "tool_calls"`，参数在 `tool_calls[i].function.arguments`（是 JSON 字符串，不是对象）{% endtab %}
+{% endtabs %}
 
 ## 常见故障与排查
 
