@@ -87,10 +87,10 @@ $$
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
 flowchart TB
-  W["上下文窗口（如 200K）"] --> A["System Prompt（固定，~2-10K）"]
-  W --> B["项目记忆 CLAUDE.md / 工具说明（~1-5K）"]
-  W --> C["对话历史 + 工具结果（持续膨胀）"]
-  W --> D["输出预留（~4-16K）"]
+  W["上下文窗口<br/>（如 200K）"] --> A["System Prompt<br/>固定 ~2-10K"]
+  W --> B["项目记忆<br/>CLAUDE.md/工具说明<br/>（~1-5K）"]
+  W --> C["对话历史+工具结果<br/>（持续膨胀）"]
+  W --> D["输出预留<br/>~4-16K"]
   C -.快满时.-> E["压缩/摘要/截断"]
 ```
 

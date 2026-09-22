@@ -2,7 +2,7 @@
 tags: [safety, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 对齐与安全
@@ -98,14 +98,14 @@ $$
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
 flowchart LR
-  A[模型输出 / 行为] --> B{奖励信号来源}
-  B -- 人类偏好判断 --> C[RLHF / DPO]
-  C --> D[对齐税: 能力下降、过度拒绝]
-  B -- 客观可验证 --> E[测试通过 / 环境反馈做奖励]
-  E --> F[张力小: 把事做对即可]
-  D --> G[两侧同时报告<br/>ASR / over-refusal / 能力保持]
-  F --> G
+  A[模型输出/行为] --> B{奖励信号来源}
+  B -- 人类偏好 --> C[RLHF/DPO→对齐税<br/>能力降·过度拒绝]
+  B -- 客观可验证 --> E[测试/环境反馈做奖励<br/>张力小，把事做对即可]
+  C --> G[两侧同时报告<br/>ASR·over-refusal·能力保持]
+  E --> G
 ```
+
+*《图：奖励信号从哪来，决定了对齐张力有多大——可验证奖励把「有用 vs 无害」的拉扯换成「做对没做对」，但上线后两侧指标仍要同时报》*
 
 需要强调的是：对齐没有终态。新能力（工具调用、长期记忆、多 Agent 协作）会不断带来新的对齐面，因此对齐是一项**持续的工程活动**，而不是一次性训练步骤。
 

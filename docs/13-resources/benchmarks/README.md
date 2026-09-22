@@ -2,12 +2,14 @@
 tags: [resource, evaluation]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-22
 ---
 
 # 基准测试
 
-> Agent 能力基准的卡片与索引。基准怎么读、怎么用，见 [基准测试总览](../../10-evaluation-safety/benchmarks.md)。
+{% hint style="info" %}
+**一句话**：这里是各基准的卡片与索引；基准怎么读、怎么用来反推自己的评估集，见 [基准测试总览](../../10-evaluation-safety/benchmarks.md)。
+{% endhint %}
 
 ## 收录列表
 

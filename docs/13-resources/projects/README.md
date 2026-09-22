@@ -2,7 +2,7 @@
 tags: [resource, project]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 开源项目索引
@@ -20,6 +20,22 @@ updated: 2026-09-20
 下面几个项目在本手册中有单独的深读卡片：
 
 [LangChain](langchain.md) · [LangGraph](langgraph.md) · [AutoGen](autogen.md) · [CrewAI](crewai.md) · [OpenHands](openhands.md) · [DeepSeek Harness](deepseek-harness.md) · [Pi Agent](pi.md)
+
+## 怎么用这张索引
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
+flowchart LR
+  Q[要选型] --> T{"先问一句：<br/>要的是组件、<br/>编排还是成品？"}
+  T -- 组件/集成 --> A["看集成数量<br/>与抽象层代价"]
+  T -- 编排/状态图 --> B["看控制流表达力<br/>与可恢复性"]
+  T -- 能跑的成品 --> C["看权限、评估<br/>与运维成本"]
+  A --> G["读深读卡片<br/>+ 自己的场景跑一遍"]
+  B --> G
+  C --> G
+```
+
+*《图：三类项目的评价标准完全不同——把它们放在同一张 star 排行榜上比，是选型最常见的错误》*
 
 ## Agent 框架与编排
 

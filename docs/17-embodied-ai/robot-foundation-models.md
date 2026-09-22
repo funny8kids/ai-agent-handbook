@@ -55,15 +55,18 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart TB
-  subgraph SS[单系统：复用 LLM 栈]
-    A1[VLM 骨干<br/>RT-2 / OpenVLA] --> A2[离散动作 token<br/>自回归 · 逐维逐步]
-    A2 --> A3[低频控制<br/>量化误差 · token 数爆炸]
-  end
-  subgraph DS[双系统：慢意图 + 快动作]
-    B1[慢系统 VLM<br/>出隐藏意图 5–10Hz] --> B2[快系统动作专家<br/>flow / 扩散 · 几十 M]
-    B2 --> B3[连续动作块高频伺服<br/>π0 / GR00T / Helix]
-  end
+flowchart LR
+  A1[VLM 骨干<br/>RT-2 / OpenVLA] --> A2[离散动作 token<br/>自回归 · 逐维逐步]
+  A2 --> A3[低频控制<br/>量化误差 · token 数爆炸]
+```
+
+*《图：单系统路线——直接复用 LLM 栈，动作被离散成 token，代价是量化误差与 token 数爆炸，只撑得起低频控制》*
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+flowchart LR
+  B1[慢系统 VLM<br/>出隐藏意图 5–10Hz] --> B2[快系统动作专家<br/>flow / 扩散 · 几十 M]
+  B2 --> B3[连续动作块高频伺服<br/>π0 / GR00T / Helix]
 ```
 
 ## 选型建议（按你要做的事）

@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Semantic Kernel
@@ -76,6 +76,8 @@ var result = await kernel.InvokePromptAsync(
 | 适合 | .NET 企业集成、Azure 栈 | 多 Agent 研究/代码执行 | 快速搭建应用 |
 
 **选型建议**：.NET/Java 企业且已在 Azure 生态 → SK；新多 Agent 项目 → 关注 Microsoft Agent Framework；Python 快速原型 → LangChain/AutoGen。
+
+**迁移成本集中在三处**：Kernel 的 DI 注册与过滤器、Plugin/Function 的声明方式、Process Framework 的步骤定义。多 Agent 逻辑在 SK 里写得越薄，往 Agent Framework 挪越便宜；反过来，把规划、人工确认、失败补偿全都编进 Process 步骤的项目，迁移实际等于一次重写——所以评估迁移时先数一数 Process 里有多少步骤在编排「模型之外的决策」。
 
 ## 源码案例
 

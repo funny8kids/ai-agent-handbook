@@ -128,6 +128,7 @@ flowchart TB
 1. **Harness 商品化**：09 章的开源框架与本 API 是互补——框架给你组装自由，托管 harness 给你省运维
 2. **对照开源学习**：读 `openai/codex` 仍是最便宜的 harness 教科书之一（见 [编程 Agent](../12-applications/coding-agent.md)）
 3. **安全面扩大**：托管沙箱 ≠ 免责任；MCP server 与 vault 密钥仍是你的攻击面（见 [提示注入](../10-evaluation-safety/prompt-injection.md)）
+4. **可移植性要主动测**：把 DoD、工具白名单、子 Agent 拓扑写成自己仓库里的配置，而不是散在提示词中——换 harness 时能带走的只有前者，后者会跟着供应商的措辞习惯一起沉没
 
 ## 参考资料
 

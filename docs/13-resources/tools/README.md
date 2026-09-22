@@ -2,12 +2,14 @@
 tags: [resource, tooling]
 type: index
 status: published
-updated: 2026-09-10
+updated: 2026-09-22
 ---
 
 # 工具
 
-> Agent 开发者的常用工具箱：协议生态与可观测基建。
+{% hint style="info" %}
+**一句话**：Agent 开发者的常用工具箱，集中在两块——协议/MCP 生态，以及追踪与评估这类可观测基建。
+{% endhint %}
 
 ## 收录列表
 

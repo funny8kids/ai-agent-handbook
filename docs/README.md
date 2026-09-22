@@ -89,10 +89,10 @@ updated: 2026-09-22
 - **每篇底部有「参考资料」**，数字与结论都能点回一手来源 · every page ends with references
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
 - **202 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
-- **全书 170 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都实测过，最宽 1096px，全部落在正文列宽（1120px）内，线上不会被缩放
+- **全书 180 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
 - **144 篇知识/资源页全部有「参考资料」**：315 条外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **212 张配图**：170 个 Mermaid 内联图（全部带章节配色）+ 34 张自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 212 figures, parser-verified diagrams + real product UI screenshots
+- **222 张配图**：180 个 Mermaid 内联图（全部带章节配色）+ 34 张自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 222 figures, parser-verified diagrams + real product UI screenshots
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

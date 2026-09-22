@@ -26,23 +26,26 @@ updated: 2026-09-22
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
 flowchart LR
-  subgraph OUT["查询：混合召回到带引用生成"]
-    Q[查询] --> RET[混合召回]
-    RET --> RR[重排/过滤<br/>权限·时间]
-    RR --> GEN[生成 + 引用]
-    GEN --> FB[反馈与失败样本]
-  end
-  subgraph IN["入库：一份数据，两份存储"]
-    S[来源<br/>Wiki/工单/代码/Git/DB] --> I[采集与规范化<br/>解析成 Markdown/JSON]
-    I --> C[清洗与切块<br/>语义边界/去重/脱敏]
-    C --> E[Embedding + 元数据<br/>tenant/acl/时间/版本]
-    E --> IDX[(向量索引<br/>+ 全文索引 + 图谱)]
-    C --> RAW[(对象存储<br/>原文 + 快照)]
-    RAW --> AUD[引用可回溯]
-  end
+  S[来源<br/>Wiki/工单/代码/DB] --> I[采集与规范化<br/>转 Markdown/JSON]
+  I --> C[清洗与切块<br/>语义边界/脱敏]
+  C --> E[Embedding+元数据<br/>acl/版本]
+  E --> IDX[(向量/全文/图谱)]
+  C --> RAW[(对象存储<br/>原文+快照)]
+  RAW --> AUD[引用可回溯]
 ```
 
-*《图：入库与查询两条链——索引就绪后供查询侧混合召回并随写入增量更新/删除；查询侧攒下的反馈与失败样本回流到入库侧的「清洗与切块」，这一回流正是检索质量迭代的主循环》*
+*《图：入库侧——清洗切块之后一分二：Embedding 带元数据进索引，原文快照进对象存储，后者是「引用可回溯」的底账》*
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
+flowchart LR
+  Q[查询] --> RET[混合召回]
+  RET --> RR[重排/过滤<br/>权限·时间]
+  RR --> GEN[生成 + 引用]
+  GEN --> FB[反馈与失败样本]
+```
+
+*《图：查询侧——上图入库完成的索引在这里被混合召回，权限与时间在过滤层强制执行；末端攒下的反馈与失败样本回流到入库侧的「清洗与切块」，这一回流正是检索质量迭代的主循环》*
 
 ## 选型对照
 

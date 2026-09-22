@@ -9,6 +9,22 @@ updated: 2026-09-22
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-22（第 15 次）量测引擎与线上对齐：上一轮的图形结论有一半是错的
+
+本轮第一个缺陷在**工具身上**：本地量测用的是 mermaid 12.0.0，而 GitBook 线上加载的是 `mermaid@11.14.0`（从页面 `<script>` 里读出来的）。两个版本对「`flowchart` 方向 × 互不相连 subgraph」的处理规则**正好相反**，所以第 14 轮那两条"实测规律"站不住。校准做法：抓一张线上已渲染页面的 SVG `viewBox`（497.52×1542.70），与本地同源码渲染结果比对，把本地降到 11.14.0 后得到 498×1543 才算对上。**教训固化为一条前置检查：量测引擎版本必须先证明与线上同版本，再谈规律。**
+
+- **换引擎后同一批 170 块重测，缺陷清单完全变样**：超宽 **0→12 块**（最宽 1712px，线上等于把字缩到 10.4px），上一轮判定的 30 张「竖条」里只有 **14 张**在 11.14 下真的是竖条。也就是说第 14 轮"清零超宽"是本地自欺，线上从没清过。
+- **11.14 下重新量出的排布规律**（已全部写进[风格指南](../14-templates/style-guide.md)）：① 宽度由**排数 × 每排节点数**决定，精简标签措辞几乎无效（1244→1174，约 5%），无损合并掉一排才有效（1158→999，约 160px）。② `flowchart TB` + 两个**互不相连**的 subgraph 才是「左右双栏、栏内横向」（1098×244）；同样的源码写 `flowchart LR` 会塌成 349×840 的竖条。③ TB 父图里 subgraph 的 `direction LR` 仍被忽略（加与不加都是 1060×244）。④ TB 父图下**后声明的 subgraph 渲染在左边**，源码顺序与读图顺序相反，图注写「左/右」必须截图复核。
+- **超宽 12→0**：能无损并排的就并排——[安全边界](../17-embodied-ai/hardware-realtime-safety.md) 1433→999、[对齐与安全](../10-evaluation-safety/alignment-safety.md) 1410→1029（5 排压成 3 排）、[LangChain 一条链](../09-frameworks/langchain.md) 1206→966（终点节点合并）、[DSPy](../09-frameworks/dspy.md) 1238→1106；其余按 ① 处理或按下一条拆块。全库最宽 1712→**1116px**，180 块有效字号全部 16.0px（无任何缩放）。
+- **竖条最严重的 9 张拆成上下两块**：[向量存储](../16-ai-infrastructure/data-vector-storage.md)、[微调基建](../16-ai-infrastructure/training-finetune-infra.md)、[结构化输出](../04-prompt-reasoning/structured-output.md)、[RAG 基础](../06-memory-rag/rag-basics.md)、[LlamaIndex](../09-frameworks/llamaindex.md)、[SWE-bench](../13-resources/benchmarks/swe-bench.md)、[MCP Servers](../13-resources/tools/mcp-servers.md)、[机器人基础模型](../17-embodied-ai/robot-foundation-models.md)、[实验地图](../19-labs/README.md)。被拆掉的跨块连线一律写进图注，信息不丢（例：向量存储的「反馈回流到清洗切块」）。块数 170→180（另 1 张是新增，见下）。
+- **两张图有真实的图形完整性 bug**（新写的一版未命名节点 lint 抓出来的，该 lint 误报率太高已弃用，但这两条是真的）：[GoT](../04-prompt-reasoning/graph-of-thoughts.md) 的树图用裸 ID，线上渲染出写着「A1」「A2」的空盒子，现在全部补上标签并按 ④ 重排为 1098×244 的双栏；[Reflexion](../04-prompt-reasoning/reflexion.md) 有一条 `B2 --> C` 的边引用了不存在的节点，Mermaid 会凭空造一个空节点，已删。
+- **正文厚度：900 字以下的知识页 7→0**。本轮补的是机制不是字数：[Self-Refine](../04-prompt-reasoning/self-refine.md) 823→1097（反馈来源四档对照 + 选择规则）、[GoT](../04-prompt-reasoning/graph-of-thoughts.md) 837→1055（三种可落地的聚合算子）、[协议栈 2026](../18-frontier-2026/protocol-stack-2026.md) 843→949（判据反读）、[Semantic Kernel](../09-frameworks/semantic-kernel.md) 852→952（迁移成本三处）、[Reflexion](../04-prompt-reasoning/reflexion.md) 874→1014（复盘存哪一层、按失败签名去重）、[OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) 895→958（可移植性要主动测）、[Swarm 交接](../08-multi-agent/swarm.md) 898→1140（一次合格交接的四个字段 + 验收法）。
+- **提示卡一致性**：9 个索引页的开头引用块统一改成房风格 `{% hint style="info" %}` **一句话**卡（[总索引](../00-index/README.md)、[资源库](../13-resources/README.md) 下 7 个子索引、[许可证](../99-about/license.md)），文字只做改写与补足，不删信息。脚本对每条替换都断言命中唯一，FAILS: 0。
+- **最后一张无图的大页补图**：[开源项目索引](../13-resources/projects/README.md)（3539 字，全库最大的无图页）新增「怎么用这张索引」三分类决策图。
+- **上一轮自己造成的损伤，如实记**：第 14 次提交（`4e2d236`）误删了「第 13 次」小节标题，导致那一轮正文挂在第 14 次底下。本轮从 `319412c` 取回原文恢复。
+- **回归校验**：180 个 Mermaid 块真解析器 `parsed=180 failed=0`；188 页 0 断链、0 孤儿页、0 页缺 SUMMARY 条目、0 锚点失效；189 个 md 围栏配对 0 异常；frontmatter 不符房风格仍只有 1 个（截图清单 `MANIFEST.md`，有意保留）；统计同步为 README 的 Mermaid 180 / 配图 222 / 最宽 1116px。一个假阳性也记在这里：资产扫描把 `cover-handbook.svg` 报成"未使用"，实际它被仓库根目录 README 引用，是脚本只扫 `docs/` 的口径问题。
+- **留下的取舍（要操作者定调）**：仍有 **9 张竖条**未拆——[WebArena](../13-resources/benchmarks/webarena.md) 347×734、[LangGraph](../09-frameworks/langgraph.md) 363×638、[OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) 364×652、[AI 简史](../01-ai-basics/ai-history.md) 370×854、[越狱攻击](../10-evaluation-safety/jailbreak.md) 373×654、[人形机器人运动控制](../17-embodied-ai/humanoid-locomotion.md) 374×830、[工具注册表](../11-engineering/tool-registry.md) 388×504、[通用 Agent 产品](../12-applications/general-agent-products.md) 408×788、[企业知识库](../12-applications/enterprise-knowledge-base.md) 408×884。它们**字号都是满尺寸 16px，读起来不费力**，只是右侧留白多；而且这一批的纵向本身就是语义（时间轴、防御纵深、分层收敛），拆成两块会丢掉"一层压一层"的读法。要不要为版面整齐牺牲这层语义，属产品级取舍，本轮不动。其余未做项：14 个无图页全部是 `type: index` 索引页，按规范免图；[基准](../13-resources/benchmarks/README.md)、[数据集](../13-resources/datasets/README.md) 等 4 张表格型索引不为凑字数硬扩；封面/横幅两张 SVG 的自然宽 1600/1920px 是通栏素材，按设计豁免。
+
 ## 2026-09-22（第 14 次）正文厚度与图形几何：薄页、超宽图、细条图三类缺陷一起量清
 
 这一轮沿用「先量后改」，并新增两条量纲：知识页正文的中文字数、每张 Mermaid 图的**自然宽×高比例**。上一轮只量了宽度，漏掉了反方向的毛病——图太窄也会毁排版。
@@ -20,9 +36,11 @@ updated: 2026-09-22
 - **失败与回退如实记录**：曾按「最长路径 ≤5 就换 LR」批量翻转 16 张图，实测 **15 张超宽**（最高 2053px、字号被缩到 8.7px），已全部回退，只有第 18 章评测流水线一张成立。教训是 rank 数不等于最长路径——旁支与孤立节点各占一排，这条也写进了风格指南，避免下轮重犯。
 - **一处真实错字**：[通用 Agent 产品](../12-applications/general-agent-products.md) 里「付款前停”」引号不配对，改为「付款前停止」。
 - **回归校验**：170 个 Mermaid 块真解析器 `parsed=170 failed=0`（较上轮 +2：第 18 章评测流水线图、协议栈时序图），全树宽度复测 **0 超宽**、最宽 1096px、每块有效字号 16.0px；189 个 md 文件围栏配对 0 异常；frontmatter 不符房风格仅 1 个（`.gitbook/assets/screenshots/MANIFEST.md`，有意保留）；知识页缺「参考资料」0；站内链接 1484 条 0 断链，692 条唯一外链逐条核查 0 硬断。统计同步：README 的 Mermaid 168→170、配图 210→212、含公式页 100→105。
-- **下一轮待办（需要操作者定调）**：仍有约 30 张图属「窄高细条」（比例 0.34–0.55，如[权限四层楼](../10-evaluation-safety/permission-sandbox.md) 348×1080、[CrewAI 流程](../09-frameworks/crewai.md) 296×1038、[AI 简史](../01-ai-basics/ai-history.md) 360×768）。其中一部分**纵向本身就是语义**（防御纵深、时间轴、层级收敛），拆成两排会丢掉「一层压一层」的读法；要不要为统一版面牺牲这层语义，属产品级取舍，本轮先不动，留到定调之后。
+- **下一轮待办（需要操作者定调）**：仍有约 30 张图属「窄高细条」（比例 0.34–0.55，如[权限四层楼](../10-evaluation-safety/permission-sandbox.md) 348×1080、[CrewAI 流程](../09-frameworks/crewai.md) 296×1038、[AI 简史](../01-ai-basics/ai-history.md) 360×768）。其中一部分**纵向本身就是语义**（防御纵深、时间轴、层级收敛），拆成两排会丢掉「一层压一层」的读法；要不要为统一版面牺牲这层语义，属产品级取舍，本轮先不动，留到定调之后。**（本条与上一条的宽度数字是用 mermaid 12.0.0 量的，与线上版本不一致，已在第 15 轮作废并重测。）**
 
 
+
+## 2026-09-22（第 13 次）出处体检：小节命名、站内链接错位与引用编号核对
 
 前 12 轮都在补图和补内容，这一轮只查一件事：**书里写的出处，是不是真的、对不对得上**。量测方式全部可复现——脚本点数 + 逐条 curl + arXiv export API 比对标题，不用主观判断。结果比预想的糟：问题不在「没写引用」，而在「写了但用错了地方」。
 

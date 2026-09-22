@@ -2,12 +2,14 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Awesome 列表
 
-> 持续维护的资源合集，适合「扫货式」发现新项目。注意 Awesome 列表只负责「全」，不负责「精」——取舍仍靠自己判断。
+{% hint style="info" %}
+**一句话**：Awesome 列表只负责「全」，不负责「精」——用它扫货发现新项目，取舍仍要靠自己判断。
+{% endhint %}
 
 下面每条都在 2026-09-21 用 GitHub API 逐个查过：链接有效，并记下 star 与最近推送时间。这两个数字比列表里的自我描述更有用——**半年没推的列表，条目就当历史资料读**。
 

@@ -25,12 +25,12 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart TD
-    A["人工智能 AI：让机器表现出智能"] -->|"包含"| B["机器学习 ML：不手写规则，从数据中学"]
-    B -->|"三大范式"| B1["监督学习：有标准答案"]
-    B --> B2["无监督学习：没答案，找结构"]
-    B --> B3["强化学习：靠奖励信号试错"]
-    B -->|"包含"| C["深度学习 DL：多层神经网络学表示"]
-    C -->|"规模化产物"| D["大语言模型 LLM：第 03 章，Agent 的大脑"]
+    A["人工智能 AI<br/>让机器表现出智能"] -->|"包含"| B["机器学习 ML<br/>不手写规则，从数据中学"]
+    B -->|"三大范式"| B1["监督学习<br/>有标准答案"]
+    B --> B2["无监督学习<br/>没答案，找结构"]
+    B --> B3["强化学习<br/>靠奖励信号试错"]
+    B -->|"包含"| C["深度学习 DL<br/>多层网络学表示"]
+    C -->|"规模化产物"| D["大语言模型 LLM<br/>第 03 章，Agent 的大脑"]
 ```
 
 ## 前置要求

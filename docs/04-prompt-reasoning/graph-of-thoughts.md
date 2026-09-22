@@ -2,7 +2,7 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Graph of Thoughts
@@ -51,20 +51,32 @@ GoT 的核心收益来自**聚合**：它把「各自探索」变成「节点复
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
-flowchart LR
-  subgraph ToT[树: 只能向下分叉]
-    A1 --> A2 --> A3
+flowchart TB
+  subgraph GoT["图：可合并"]
+    G0[思路 A] --> G2[聚合]
+    G1[思路 B] --> G2
+    G2 --> G3[更优解]
   end
-  subgraph GoT[图: 可合并聚合]
-    B1 --> B3
-    B2 --> B3
-    B3 --> B4[聚合出更优解]
+  subgraph ToT["树：只分叉"]
+    T0[起点] --> T1[分支] --> T2[叶子]
   end
 ```
+
+*《图：左边的树一路向下，叶子结论互不相通；右边两条思路汇进同一个聚合节点——「多父合一」正是 GoT 相对 ToT 多出来的那件事》*
 
 ## 直觉解释
 
 ToT 是一个人尝试三条路、走不通退回来；GoT 是三个人各走一条路，回来后**把三张地图拼成一张**——合并本身就是一次创造。
+
+## 三种能落地的聚合算子
+
+| 聚合形态 | 合并语义 | 生产里对应什么 |
+|---|---|---|
+| 归并 | 多份局部结果合成一份全局有序结果 | 分块排序后多路归并、多路检索结果融合 |
+| 投票 | 各方案主张自己的答案，按票数或分数取胜 | Self-Consistency、多 Agent 投票（→ [辩论、共识与投票](../08-multi-agent/debate-consensus-voting.md)） |
+| 归约 | 逐条把局部结论累积进同一个状态 | Map-Reduce 摘要、LangGraph 的 reducer 字段 |
+
+判断标准很实际：**合并时是否需要同时看到所有输入**。需要（排序、去重、冲突消解）→ 这是真聚合，GoT 有收益；不需要（逐条累加即可）→ 一个 reduce 循环就够，不必建图。
 
 ## 工程含义
 

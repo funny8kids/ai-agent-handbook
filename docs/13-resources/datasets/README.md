@@ -2,12 +2,14 @@
 tags: [resource, evaluation]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 数据集
 
-> Agent 训练与评估相关的公开数据集索引。
+{% hint style="info" %}
+**一句话**：Agent 训练与评估数据集索引。挑数据集先看三件事：许可证能不能用、有没有可能已进模型训练集（污染）、指标是怎么算出来的。
+{% endhint %}
 
 ## 常用数据集速查
 

@@ -7,7 +7,9 @@ updated: 2026-09-22
 
 # 许可证
 
-本手册内容基于 **MIT License** 发布。
+{% hint style="info" %}
+**一句话**：正文与自绘图示按 MIT 授权，可自由复用与商用；引用的第三方资源仍受各自协议约束。
+{% endhint %}
 
 完整许可证文本见仓库根目录的 [LICENSE](https://github.com/funny8kids/ai-agent-handbook/blob/main/LICENSE) 文件。
 

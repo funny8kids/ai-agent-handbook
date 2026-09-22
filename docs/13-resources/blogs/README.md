@@ -2,12 +2,14 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 博客
 
-> 一手工程经验的第一来源。Agent 领域变化快，博客比论文与教材更「新鲜」。
+{% hint style="info" %}
+**一句话**：一手工程经验的第一来源——这个领域变化太快，博客往往比论文和教材更贴近当下能跑通的做法。
+{% endhint %}
 
 ## 先读这四篇文章
 

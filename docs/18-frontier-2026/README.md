@@ -31,11 +31,11 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0EAFB","primaryBorderColor":"#6D28D9","primaryTextColor":"#1F2937","secondaryColor":"#DFD0F7","tertiaryColor":"#F9F6FD","lineColor":"#AF89EA","actorBkg":"#F3EEFC","actorBorder":"#6D28D9","actorTextColor":"#1F2937","signalColor":"#9969E4","noteBkgColor":"#E5D8F8","noteBorderColor":"#6D28D9","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0EAFB","labelBoxBorderColor":"#6D28D9"}}}%%
 flowchart TB
-  A[18 前沿] --> B[模型：GPT-6 Astra<br/>Claude Fable/Opus]
-  A --> C[运行时：Agents API<br/>Claude Agent SDK]
-  A --> D[分类学：模型原生 vs 自建 harness]
-  A --> E[产品：通用 Agent / 语音 Agent]
-  A --> F[协议栈：MCP + A2A + AG-UI<br/>+ agents.md / Skills]
+  A[18 前沿] --> B[模型<br/>GPT-6 Astra<br/>Claude Fable/Opus]
+  A --> C[运行时<br/>Agents API<br/>Claude Agent SDK]
+  A --> D[分类学<br/>模型原生<br/>vs 自建 harness]
+  A --> E[产品<br/>通用 Agent<br/>/语音 Agent]
+  A --> F[协议栈<br/>MCP+A2A+AG-UI<br/>+agents.md/Skills]
 ```
 
 | 页面 | 读完你能 |

@@ -2,7 +2,7 @@
 tags: [embodied-ai, engineering, safety]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 硬件、实时与安全
@@ -53,14 +53,15 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart LR
-  POL[策略 / 模型输出] --> SW[软件安全层<br/>限幅 · 力限 PFL · SSL · 软限位 · 自碰撞]
-  SW --> RT[实时控制线程<br/>IK · 阻抗 · 零动态内存]
-  RT --> BUS[EtherCAT 总线<br/>DC 同步 + 看门狗]
-  BUS --> MOT[电机 / 驱动器<br/>力矩限幅]
-  STOP[急停按钮<br/>Cat0 断力 · Cat1 受控停] -. 独立安全回路 .-> MOT
-  WDG[心跳 / 指令丢失] -.-> FAULT[已知安全态<br/>放负载 · 收臂 · 抱闸]
-  SW -. 拒绝 / 降级 .-> FAULT
+  SW[软件安全层←策略输出<br/>限幅·PFL·SSL·软限位] --> RT[实时控制线程<br/>IK·阻抗<br/>零动态内存]
+  RT --> BUS[EtherCAT 总线<br/>DC 同步+看门狗]
+  BUS --> MOT[电机/驱动器<br/>力矩限幅]
+  STOP[急停按钮<br/>Cat0/Cat1] -. 安全回路 .-> MOT
+  WDG[心跳/指令丢失] -.-> FAULT[已知安全态<br/>放负载·抱闸]
+  SW -. 拒绝/降级 .-> FAULT
 ```
+
+*《图：安全边界——策略/模型输出必须先过软件安全层才进实时线程；急停与心跳丢失走的是不经软件的独立回路》*
 
 ```python
 # 软件安全层（放在模型输出与机器人驱动之间，独立于策略进程）

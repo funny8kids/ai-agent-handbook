@@ -26,11 +26,11 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F4EBFD","primaryBorderColor":"#9333EA","primaryTextColor":"#1F2937","secondaryColor":"#E7D2FA","tertiaryColor":"#FBF7FE","lineColor":"#C48FF3","actorBkg":"#F6EFFD","actorBorder":"#9333EA","actorTextColor":"#1F2937","signalColor":"#B370F0","noteBkgColor":"#ECDAFB","noteBorderColor":"#9333EA","noteTextColor":"#1F2937","labelBoxBkgColor":"#F4EBFD","labelBoxBorderColor":"#9333EA"}}}%%
 flowchart LR
-  M[发票邮件到达] --> U[LLM: 理解意图+抽取字段]
+  M[发票邮件到达] --> U[LLM 理解意图<br/>+抽取字段]
   U --> V{字段置信度?}
-  V -- 高 --> R[RPA 引擎: 录入ERP<br/>确定性执行]
+  V -- 高 --> R[RPA 引擎录入 ERP<br/>确定性执行]
   V -- 低 --> H[人工复核队列]
-  R --> A[审计日志: 全程留痕]
+  R --> A[审计日志<br/>全程留痕]
 ```
 
 ## 核心机制：置信度路由与期望成本
