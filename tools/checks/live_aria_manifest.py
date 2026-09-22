@@ -120,8 +120,8 @@ def formula_sources(text):
         in_block.update(range(a, b + 1))
         nested = [ln for ln in src.split("\n") if "$$" in ln]
         if nested:
-            defects.append("NESTED $$ inside a display block prints literally: %r"
-                           % nested[0].strip()[:70])
+            defects.append("NESTED $$ inside a display block (KaTeX eats the pair, the symbol "
+                           "loses math-italic): %r" % nested[0].strip()[:70])
     for para in re.split(r"\n\s*\n", "\n".join(ln for i, ln in enumerate(lines)
                                                if i not in in_block)):
         parts = para.split("$$")
@@ -138,8 +138,11 @@ def formula_counts(text):
 
     Two rules, both learned by comparing against this site's served HTML:
       * a $$ alone on a line opens/closes a display block, and everything between two such
-        delimiters is ONE formula — so a $$ nested inside it never starts a new formula, it
-        prints literally (round 57 found two pages doing exactly that);
+        delimiters is ONE formula — so a $$ nested inside it never starts a new formula. What it
+        does instead was measured with the site's own KaTeX (0.18.7): the pair is swallowed and
+        the symbol inside it loses math-italic, i.e. the author's `n` renders in the CJK text
+        font. Round 57 first wrote this up as "prints literal $$", which was an inference from
+        the pairing rule and is contradicted by the render — see the 第 57 次 entry;
       * the remaining $$ tokens pair up *within one paragraph*. Pairing them across the whole
         page is what made the changelog read 11 against 10 served: it quotes `$$` inside code
         spans, and every such quote flips the global parity while leaving its own paragraph fine.
