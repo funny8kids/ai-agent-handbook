@@ -110,5 +110,6 @@ flowchart LR
 
 - [Token、Embedding、上下文窗口](../03-llm/token-embedding-context.md)
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)
+- [长上下文退化与有效上下文窗口](long-context-degradation.md)
 - [缓存与成本优化](../11-engineering/caching-cost-optimization.md)
 

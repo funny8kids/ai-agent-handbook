@@ -142,4 +142,5 @@ $$\lambda$$ 是把 token 成本折成「任务失败损失」的换算系数。�
 
 - [Chain of Thought](chain-of-thought.md)
 - [Graph of Thoughts](graph-of-thoughts.md)
+- [推理预算与测试期计算](test-time-compute-reasoning-budget.md)
 

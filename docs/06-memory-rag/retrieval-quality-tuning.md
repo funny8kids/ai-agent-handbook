@@ -117,3 +117,4 @@ flowchart TD
 - [Embedding 与相似度检索](embedding-similarity.md)
 - [向量数据库](vector-database.md)
 - [上下文工程](context-engineering.md)
+- [长上下文退化与有效上下文窗口](long-context-degradation.md)

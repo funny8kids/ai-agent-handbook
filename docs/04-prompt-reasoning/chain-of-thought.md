@@ -90,4 +90,5 @@ flowchart LR
 
 - [Tree of Thoughts](tree-of-thoughts.md)
 - [ReAct](react.md)
+- [推理预算与测试期计算](test-time-compute-reasoning-budget.md)
 

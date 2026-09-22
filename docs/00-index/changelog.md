@@ -9,6 +9,17 @@ updated: 2026-09-22
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-22（第 30 次）整合轴·新页是否真被织进书里：抓出并修掉 2 个「近孤儿」新页
+
+第 27–29 轮连着加了 3 张新页。本轮立一条**整合轴**（不是内容缺陷，是导航质量）：新页若只被 `SUMMARY.md` 和章导读列到、却没有任何**同章正文页**链向它，读者在相关页里就永远「发现」不了它——等于半孤儿。量各新页的**正文入链**（排除 SUMMARY、changelog、章 README、自身）：
+
+- **睡眠时计算**：正文入链 3 条（长上下文页、推理预算页、ch06 导读）——整合良好，不动。
+- **长上下文退化**：正文入链 **0**（仅 ch06 导读）——近孤儿。
+- **推理预算与测试期计算**：正文入链 **0**（仅 ch04 导读）——近孤儿。
+- **修复（织回正文，非灌水）**：给两张近孤儿页各补 **2 条来自最相关正文页的 `相关知识点` 入链**——长上下文退化 ← [上下文工程](../06-memory-rag/context-engineering.md)（正是「为什么别贪多」的互补面）与 [RAG 检索质量调优](../06-memory-rag/retrieval-quality-tuning.md)（Top-k 预算/lost-in-the-middle）；推理预算 ← [Chain of Thought](../04-prompt-reasoning/chain-of-thought.md) 与 [Tree of Thoughts](../04-prompt-reasoning/tree-of-thoughts.md)（这两页本就一句带过 test-time compute，现给出去处）。断言复测：两页正文入链各 **0 → 2**。
+- **校验**：4 个被改的正文页围栏配平（0 破坏）、`updated` 仍为 2026-09-22（当天确有读者可见改动）、新链接目标文件均存在。**README 统计不动**——本轮只加正文互链，未新增页/图/图注/来源，任何计数口径都无变化，不硬凑数字。
+- **未做项 / 阻塞（诚实）**：第 17–30 轮提交仍未推上线（本沙箱后台 `git push` 无法完成 GitHub 交互式凭据），目标第 (5) 步线上抽查仍未闭环，需操作者本地 `git push origin main`。
+
 ## 2026-09-22（第 29 次）内容增强第三页：新增「推理预算与测试期计算」（ch04）
 
 继续补真空。扫描发现 `thinking budget|reasoning effort|test-time compute|思考预算` 只在 [Chain of Thought](../04-prompt-reasoning/chain-of-thought.md) 与 [Tree of Thoughts](../04-prompt-reasoning/tree-of-thoughts.md) 各**一句带过**，**无专页**——而「把『模型该想多久』变成可调算力旋钮」正是 2026 从 train-time 转向 test-time scaling 的核心，也是 Agent 每步都要做的资源分配决策。据此在 ch04 补一页，并与第 28 轮的睡眠时计算配成镜像（一个管查询当口值不值得现场多想，一个管把算力挪到查询前）。
