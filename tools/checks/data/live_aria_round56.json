@@ -1,0 +1,9 @@
+[
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/02-agent-ji-chu/perception-planning-action","ready":"complete","textlen":4494,"tabs":4,"tabpanels":4,"katex":15,"katexErr":0,"mermaid":2,"mermaid_unrendered":2,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/18-2026-qian-yan/claude-agent-sdk","ready":"complete","textlen":5552,"tabs":5,"tabpanels":5,"katex":2,"katexErr":0,"mermaid":3,"mermaid_unrendered":3,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/17-ju-shen-zhi-neng/action-representation-control","ready":"complete","textlen":3678,"tabs":5,"tabpanels":5,"katex":0,"katexErr":0,"mermaid":1,"mermaid_unrendered":1,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/04-prompt-yu-tui-li/tree-of-thoughts","ready":"complete","textlen":4504,"tabs":4,"tabpanels":4,"katex":33,"katexErr":0,"mermaid":2,"mermaid_unrendered":2,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/16-ai-ji-chu-she-shi/prefix-cache-context-engineering","ready":"complete","textlen":4511,"tabs":4,"tabpanels":4,"katex":18,"katexErr":0,"mermaid":2,"mermaid_unrendered":2,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/10-ping-gu-an-quan-yu-dui-qi/evaluation-metrics","ready":"complete","textlen":4102,"tabs":0,"tabpanels":0,"katex":29,"katexErr":0,"mermaid":1,"mermaid_unrendered":1,"leak":false,"viewport":[0,0]},
+ {"url":"https://violetnotes.gitbook.io/violetnotes-docs/03-llm-ji-chu/transformer-attention","ready":"complete","textlen":6620,"tabs":3,"tabpanels":3,"katex":87,"katexErr":0,"mermaid":1,"mermaid_unrendered":1,"leak":false,"viewport":[0,0]}
+]
