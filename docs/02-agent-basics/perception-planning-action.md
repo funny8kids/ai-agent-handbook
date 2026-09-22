@@ -2,7 +2,7 @@
 tags: [agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 感知—规划—行动循环
@@ -66,19 +66,109 @@ flowchart LR
 
 *《图：感知—规划—行动转一圈后只由「目标达成?」判定放行——判否就退回感知再读一次工具结果，判是才跳出，缺这条边循环就挂死》*
 
-## 最小实现（Python 伪代码）
+## 一轮循环里流动的三份报文
 
-```python
-messages = [system_prompt, user_goal]
-for step in range(MAX_STEPS):                  # 轮次熔断
-    resp = llm.chat(messages, tools=TOOLS)     # 思考
-    if not resp.tool_calls:                    # 没有工具调用 = 完成
-        return resp.text
-    for call in resp.tool_calls:               # 行动（可并行多个）
-        result = execute(call)                 # 执行工具
-        messages.append(tool_result(result))   # 感知：结果回填上下文
-raise BudgetExceeded("达到最大轮次仍未完成")
+把上面那个循环拆开，工程上要钉住的只有三样东西：**发出去的请求**、**模型回来的响应**、**回填进上下文的结构化观察**。字段名一旦定了，循环本身没有别的秘密。
+
+```json
+{
+  "loop_config": {
+    "messages_seed": ["system_prompt", "user_goal"],
+    "max_steps": 20,
+    "tool_registry": "TOOLS",
+    "budget_exceeded": "BudgetExceeded(\"达到最大轮次仍未完成\")",
+    "observation_truncate_tokens": 2000,
+    "no_progress_window_steps": 3
+  },
+  "request_per_step": {
+    "messages": "<到目前为止的全部 o_≤t>",
+    "tools": "TOOLS 的名称 + 描述 + 参数 schema"
+  },
+  "response_per_step": {
+    "text": "字符串，无工具调用时即为最终答案",
+    "tool_calls": [
+      { "id": "call_1", "name": "web_search", "arguments": { "query": "…" } },
+      { "id": "call_2", "name": "read_file", "arguments": { "path": "…" } }
+    ]
+  },
+  "observation_backfilled": [
+    { "tool_call_id": "call_1", "content": "检索摘要…", "truncated_at_tokens": 2000 },
+    { "tool_call_id": "call_2", "error": "FileNotFoundError: /tmp/a.txt" }
+  ]
+}
 ```
+
+两个判断规则写在字段形状里，不需要额外代码：**`tool_calls` 为空 → 这一轮的 `text` 就是最终答案，循环结束**；**`tool_calls` 有多个条目 → 一次模型调用派多个工具，全部执行完再统一回填**，这就是「把多个动作合并到一轮」的落点，也是省成本最有效的一刀。`tool_call_id` 必须回带，否则模型分不清哪条观察对应哪次调用。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F2EBFD","primaryBorderColor":"#7C3AED","primaryTextColor":"#1F2937","secondaryColor":"#E2D4FB","tertiaryColor":"#FAF7FE","lineColor":"#B793F5","actorBkg":"#F5EFFE","actorBorder":"#7C3AED","actorTextColor":"#1F2937","signalColor":"#A375F2","noteBkgColor":"#E7DCFC","noteBorderColor":"#7C3AED","noteTextColor":"#1F2937","labelBoxBkgColor":"#F2EBFD","labelBoxBorderColor":"#7C3AED"}}}%%
+sequenceDiagram
+    participant C as 循环调度
+    participant M as LLM
+    participant T as 工具
+    C->>M: messages(o_≤t) + tools
+    M-->>C: tool_calls[] 或 text
+    C->>T: execute(call) 并行
+    T-->>C: result / error
+    C->>C: 回填 messages，step += 1
+    Note over C,T: 每轮请求之前先做一次熔断检查
+```
+
+*《图：一轮 = 一次模型请求 + 一批工具执行 + 一次回填；熔断检查放在发请求之前，所以最坏情况是少跑一轮，而不是跑不完》*
+
+{% stepper %}
+{% step %}
+#### 第 1 步：装配上下文
+
+`messages` 从 `[system_prompt, user_goal]` 起步，之后每一轮把新的 assistant 轮和工具观察追加进去。这一步真正的成本在于「历史越长、每轮越贵」：第 10 轮的请求里装着前 9 轮的全部输出，所以观察必须清洗（截断、摘要、只留关键字段），否则窗口先撑不住的是上下文而不是模型能力。
+{% endstep %}
+{% step %}
+#### 第 2 步：先判熔断，再发请求
+
+进入循环体先看三样东西：`step > max_steps`（契约里是 20）、累计 token 是否越过预算、墙钟是否越过 `deadline`。顺序很重要——**熔断在发请求之前**，否则会多烧一次没人要的回答。三条都不触发才把 `messages + TOOLS` 交给模型。
+{% endstep %}
+{% step %}
+#### 第 3 步：模型决策——只回两样东西
+
+响应里只有 `tool_calls` 与 `text` 两种有效载荷。有 `tool_calls` 说明它认为还需要外部信息；没有就把 `text` 当最终答案返回。这里最容易埋雷的是第三种情况：模型既不调工具也没得出结论，只回一句「我需要更多信息」——按协议这算正常终止，按业务它是失败。要么在 schema 里强制它二选一，要么在退出前加一道「答案是否含待办」的检查。
+{% endstep %}
+{% step %}
+#### 第 4 步：行动——一批工具并行执行
+
+拿到 `tool_calls[]` 就逐个 `execute(call)`，彼此独立时可并行。这一步要兜住两件事：单个工具的异常不能炸掉整轮（捕获后转成 `error` 字段），以及每个结果都要带上自己的 `tool_call_id`。超长的 `stdout` 在回填前按 `observation_truncate_tokens`（契约里是 2000）截断，截断本身要写进观察，模型才知道自己在看半截内容。
+{% endstep %}
+{% step %}
+#### 第 5 步：感知——回填并推进 `step`
+
+`messages.append(tool_result(result))` 之后，这一轮才真正结束。回填的是**结构化观察**而不是人类可读的日志：错误要连类型带路径（`FileNotFoundError: /tmp/a.txt`）一起进去，模型下一轮才有东西可改。回填完回到第 1 步，`step` 加 1；`step` 越过 20 就抛 `BudgetExceeded("达到最大轮次仍未完成")`，并把已经回填的观察一并交出去——那份「跑到哪儿卡住了」的记录，正是人工接管时唯一有用的东西。
+{% endstep %}
+{% endstepper %}
+
+## 四种停法，各有各的防区（点标签切换）
+
+「有健壮循环」的准确定义是：四个出口都存在，而且各自防不同的失败。
+
+{% tabs %}
+{% tab title="正常终止：模型说完成" %}
+`tool_calls` 为空时把 `text` 交出去。这是唯一一条「任务真做完了」的路径，但**只有它的系统会在跑偏时无限循环**——模型完全可能自信地宣布完成而什么都没查到，所以要补一道完成度校验（关键产物是否存在、数字是否对得上）。
+{% endtab %}
+
+{% tab title="轮次熔断：step > 20" %}
+`max_steps` 防的是「每轮都在动、但永远不收敛」。20 这个数量级来自成本而不是理论：20 轮意味着 20 次完整模型调用加其间所有工具，Agent 的失败大多在前几轮就已注定，多给轮次只是多烧钱。抛 `BudgetExceeded` 时必须带上当前 `messages`，否则人工接手只能从零重问。
+{% endtab %}
+
+{% tab title="成本与时间熔断" %}
+`tokens > Budget` 与 `time > deadline` 是同一类：轮次不多但每轮很贵（长上下文、大输出），20 轮用不完、预算先用完。时间熔断还额外保护一件被低估的事——**上下文压缩本身要一次模型调用**，快超时的任务里，压缩窗口可能比压缩收益更贵（→ [Agent 状态管理](state-management.md)）。
+{% endtab %}
+
+{% tab title="无进展检测：连续 3 轮重复" %}
+前三个出口都数得出来，这一条要看得懂内容：连续 $$k$$ 轮（示例里 3 轮）的工具调用与观察高度重复，就判定陷入死循环并退出。典型形态是「同一个错误原文回填三次、模型三次给出同一份参数」——这时该做的不是再等一轮，而是升级错误处理：换提示、换工具，或按 [错误恢复与重试](../07-planning/error-recovery-retry.md) 上报人工。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**提示**：三个数字值得背下来——最大轮次 20、单次观察截断 2000 token、无进展窗口 3 轮。它们不是调参调出来的，各自对应一种失败模式：不收敛、窗口爆掉、原地打转。**少任何一个出口，剩下两个都会替它背锅**，最后表现成「Agent 很慢」而不是「Agent 卡死了」。
+{% endhint %}
 
 ## 源码案例
 
@@ -112,7 +202,7 @@ raise BudgetExceeded("达到最大轮次仍未完成")
 
 ## 小练习
 
-在最小实现里加三样东西：最多 20 轮的停止条件；工具输出超过 2000 token 时截断；连续 3 轮无新信息则退出。写出伪代码，说明每个熔断条件防的是哪种失败。
+本页的契约里已经写了最大轮次 20、观察截断 2000 token、无进展窗口 3 轮——现在给它们各配一个**反例**：说出哪种任务会在这三个地方分别失败，以及失败时日志上第一条异常是什么。再加两样东西：一个「完成度校验」（模型说完成时你凭什么信它），一个「熔断优先级」（轮次与预算同时到界时该报哪个）。想清楚这两样，循环才算写完。
 
 ## 参考资料
 

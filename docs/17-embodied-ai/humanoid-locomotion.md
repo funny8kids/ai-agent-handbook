@@ -86,7 +86,7 @@ flowchart TB
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TD
   A[支撑相 stance<br/>接触测力 feet_air_time] --> B[摆动相 swing<br/>action_rate 平滑]
   B --> C[落足 touchdown<br/>joint_pos_noise]
   C --> D{稳定?<br/>proj_gravity}

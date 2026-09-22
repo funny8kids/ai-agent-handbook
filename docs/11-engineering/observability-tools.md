@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # LangSmith、LangFuse、Phoenix、OpenTelemetry
@@ -122,18 +122,120 @@ flowchart TB
 | [Phoenix](https://github.com/Arize-ai/phoenix) | 开源 | RAG 评估强、trace 可视化 | RAG 重度项目 |
 | [OpenTelemetry](https://opentelemetry.io/docs/specs/semconv/gen-ai/) | 协议标准 | 厂商中立、接企业现有观测栈 | 大企业统一观测 |
 
-## LangFuse 接入示例（Python）
+## LangFuse 接入：换掉 import 之后线上流动的是什么
 
-```python
-from langfuse.openai import openai   # 一行替换, 自动 trace
+所谓「一行替换」，换的是 `openai` 这个包名：LangFuse 提供了一个同名包装模块，`chat.completions.create` 的调用形状、参数、返回结构全部保持原样，业务代码一行不用改。真正的改动发生在链路上——这次调用结束后，观测后端会收到一份报文。下面三段分别是**请求形状、落库的 span、语义约定的属性名**（数值是示意，字段名照两家文档的写法）：
 
-client = openai.OpenAI()
-resp = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "解释 MCP"}],
-    metadata={"trace_id": task_id},   # 关联业务任务
-)
+```json
+{
+  "request": {
+    "model": "gpt-4o-mini",
+    "messages": [{ "role": "user", "content": "解释 MCP" }],
+    "metadata": { "trace_id": "取业务侧的 task_id，不取 SDK 自动生成的 id" }
+  },
+  "exported_span": {
+    "traceId": "同一个 task_id",
+    "type": "generation",
+    "name": "chat gpt-4o-mini",
+    "startTime": "发起时刻",
+    "endTime": "收到最后一个 token 的时刻",
+    "input": "完整 messages，含 system prompt 与工具定义",
+    "output": "完整回复文本",
+    "usage": { "input": 1180, "output": 264, "total": 1444, "unit": "tokens" },
+    "metadata": { "user_id": "u_72", "tenant": "acme", "task_type": "explain", "prompt_version": "v12" }
+  },
+  "otel_attributes": {
+    "gen_ai.operation.name": "chat | execute_tool | invoke_agent",
+    "gen_ai.provider.name": "openai | anthropic | ...",
+    "gen_ai.request.model": "gpt-4o-mini",
+    "gen_ai.response.model": "服务端实际用的模型",
+    "gen_ai.usage.input_tokens": "成本归因的输入项",
+    "gen_ai.usage.output_tokens": "成本归因的输出项",
+    "gen_ai.conversation.id": "多轮串联的键",
+    "gen_ai.tool.name": "仅 execute_tool 类型带"
+  }
+}
 ```
+
+这份报文里有三处是**只有人能给、SDK 猜不出来**的，它们决定这条 trace 将来能不能被查到：
+
+- `trace_id` 绑业务任务。SDK 自己的 id 只对模型调用有意义，出事时你手里是工单号、任务号、订单号；绑错了，「这个客户那次没答上来」就检索不到。这是 `metadata={"trace_id": task_id}` 那一行的全部动机。
+- `metadata` 的四个业务维度：`user_id`、`tenant`、`task_type`、`prompt_version`。没有它们，trace 只能按时间浏览，回答不了「哪类用户受影响」「哪次 prompt 改动让成本翻倍」。**接个 SDK 就完事的观测，缺的正是这一格。**
+- `usage` 三项分开记。`input` 与 `output` 单价不同，前缀缓存命中部分还要再打折（→ [缓存与成本优化](caching-cost-optimization.md)），混成一个 `total` 之后就无法归因。
+
+`exported_span` 与 `otel_attributes` 是同一份数据的两种写法：前者是 LangFuse 的落库形状，后者是 OpenTelemetry GenAI 语义约定的属性命名。**用约定的名字不是为了好看，是为了换后端时不改埋点**——名字自定义一次，你就被锁死在一个厂商上，迁移成本从「改导出配置」变成「改每一处埋点代码」。
+
+## 分步演示：一次「解释 MCP」从埋点到定位问题
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：任务开始，先开一根 root span
+
+Agent 运行时为这次任务建一个 `agent run`（OTel 里对应 `gen_ai.operation.name = invoke_agent`），根上挂 `trace_id = task_id` 与四个业务维度。整棵树的父子关系从这里开始挂——**根 span 的 id 一定要用业务 id**，后面所有检索都靠它。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：模型调用落成 generation，输入输出全量存
+
+`gpt-4o-mini` 这次调用是根下的一个子 span，类型是 generation：带 `startTime`/`endTime`、`input`（含 system prompt 与工具定义）、`output`、`usage` 三项。之所以要全量而不是摘要：「为什么答错」这个问题只有原文能回答，摘要本身就是一次有损改写，你会在摘要之外找原因。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：工具执行与子 Agent 各自成节点
+
+一次检索、一次代码执行、一次子 Agent 派发，各自是一个 span（`execute_tool` / `invoke_agent`），带自己的起止时间与输入输出。这一步决定了「逐层定位」能不能做：是检索没召回、工具报错、还是模型自己跑偏，三者的修法完全不同。注意本页截图里那组数量对比——`SPAN` 与 `GENERATION` 差了三个量级，**数量在工具节点上，钱在生成节点上**，两边都要能按类型筛。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：采样在这里做决定，不在上报之后
+
+任务收尾时按结果决定留不留：错误与超时的 trace **全留**，成功请求按低比例采样。头部采样（请求进入时按比例定）实现简单但一定会漏掉罕见错误，尾部采样（先缓冲、按结果定）能保住错误与慢请求但要扛缓冲。全量保留不是稳妥，是破产——trace 里装着完整 prompt 与工具输出。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：按维度聚合，trace 的价值在群体里
+
+单个 trace 只能讲故事，指标才给结论：按 `task_type × model × prompt_version` 聚合出任务成功率、P95 延迟、单任务成本、Top 失败模式。周报四项就取自这里。**只看单次 trace 的观测等于没有观测**——你修的是最响的那条，不是最贵或最高频的那条。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：失败 trace 回流成评估集
+
+带错误分类标签的 trace 自动归档，挑代表性的进回归集（→ [持续评估](continuous-evaluation.md)）。这一步把「排障记录」变成「防回归资产」：下次 prompt 改动前先跑这批，历史故障才有不再复发的机会。
+{% endstep %}
+{% endstepper %}
+
+## 四条上报路线（点标签切换）
+
+同一批 span，送法不同，锁死的东西也不同。
+
+{% tabs %}
+{% tab title="LangSmith SaaS" %}
+深度绑定 LangChain / LangGraph 时最省事：trace、数据集、实验管理是一条闭环，不用自己搭。代价是 trace 数据出内网——prompt 里可能带 PII，厂商数据处理协议要逐条看，或者本地脱敏后再上报。已有 LangSmith 授权的团队，切换成本几乎只体现在「换框架时要重做埋点」。
+{% endtab %}
+
+{% tab title="LangFuse 自托管" %}
+数据主权换来自持存储：核心 MIT、多语言 SDK、按模型/用户/会话聚合成本。要自己扛的是那棵树的体积——全量保留必然失控，所以第 4 步的采样策略是这次部署的一部分，不是后续优化项。云版还能双轨导出到 OTel，迁移期两条腿走路，不必赌一家。
+{% endtab %}
+
+{% tab title="Phoenix" %}
+RAG 重度项目优先：检索命中与生成质量放在同一张联合 trace 视图里，「答非所问」能直接判出是检索阶段就错了还是生成跑偏。这个区别决定了你下一步是修索引与召回，还是修 prompt——选错方向的成本比多花几天搭面板大得多。
+{% endtab %}
+
+{% tab title="OTel 接企业现有栈" %}
+已有 Datadog / Grafana 时不要再造孤岛：埋点写一次、统一走 GenAI 语义约定，后端订阅现成告警与 SLO 体系。代价是**协议不带评估闭环**——数据集、实验、回归仍要另找地方（通常是自托管 LangFuse 或自建库）。大企业统一观测的默认答案，前提是有专人守语义约定的属性命名。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+**先定隐私，再定工具**：trace 的内容是完整 prompt 与工具输出，比业务数据库更容易含敏感文本。SaaS 方案要先回答三个问题——数据处理协议是否禁止用于训练、能不能按字段脱敏后再上报、保留期与删除请求怎么落地。这三问没答案就上生产，等于把第二条数据出口开在合规之外。
+{% endhint %}
 
 ## 源码案例
 

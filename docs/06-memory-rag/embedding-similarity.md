@@ -2,7 +2,7 @@
 tags: [rag, basics]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-23
 ---
 
 # Embedding 与相似度检索
@@ -88,19 +88,113 @@ flowchart TD
 
 语义空间像一座「意思之城」：意思相近的文本住在同一个街区。「如何部署模型」和「模型怎么上线」措辞不同但住在隔壁；「模型部署」和「军队部署」字面像却相距十万八千里——余弦相似度一眼看穿。
 
-## 最小示例
+## 最小示例：把三条文档排一次序
 
-```python
-from sentence_transformers import SentenceTransformer
-import numpy as np
+检索的一次调用只有四份数据：**语料**、**查询**、**编码选项**、**打分方式**。用三条短句做语料把它们补齐，语义搜索的骨架就完整了。
 
-model = SentenceTransformer("BAAI/bge-m3")   # 中文友好的开源模型
-docs = ["MCP 是工具接入协议", "RAG 用检索增强生成", "向量库存语义向量"]
-emb = model.encode(docs, normalize_embeddings=True)   # 归一化后内积=余弦
-query = model.encode("什么是RAG", normalize_embeddings=True)
-scores = emb @ query                          # 归一化向量的内积即余弦相似度
-print(docs[int(np.argmax(scores))])           # → RAG 用检索增强生成
+```json
+{
+  "encoder": {
+    "model": "BAAI/bge-m3",
+    "library": "sentence-transformers",
+    "dense_dim": 1024,
+    "encode_options": { "normalize_embeddings": true }
+  },
+  "corpus": [
+    { "id": 0, "text": "MCP 是工具接入协议" },
+    { "id": 1, "text": "RAG 用检索增强生成" },
+    { "id": 2, "text": "向量库存语义向量" }
+  ],
+  "query": { "text": "什么是RAG", "normalize_embeddings": true },
+  "scoring": {
+    "op": "emb @ query",
+    "why": "归一化之后内积就等于余弦相似度",
+    "select": "argmax(scores)",
+    "expect_top1": { "id": 1, "text": "RAG 用检索增强生成" }
+  }
+}
 ```
+
+`normalize_embeddings: true` 同时作用于语料与查询，是这份契约里唯一的「隐藏前提」：正因为每条向量都被拉回单位长度，`emb @ query` 这一个矩阵乘法才同时是余弦相似度，`scores` 才落在 $$[-1,1]$$ 这个可比区间里。少了它，打分仍然是数，只是不再等于你嘴上说的那个度量。
+
+`expect_top1` 是这条链路的最小验收项：问「什么是RAG」，命中 `id: 1` 那条（`RAG 用检索增强生成`）才算通；没命中时先怀疑两件事——查询与文档是不是走了同一套编码，以及归一化有没有漏在一侧。
+
+## 分步演示：一次向量检索的账
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
+flowchart TD
+  D["3 条文档"] --> E["bge-m3 编码<br/>3 × 1024"]
+  E --> N["L2 归一化<br/>每行长度 = 1"]
+  Q["查询「什么是RAG」"] --> QE["同模型编码 + 归一化<br/>1024 维"]
+  N --> S["emb @ query<br/>3 个分数"]
+  QE --> S
+  S --> R["argmax → 第 1 条命中"]
+```
+
+*《图：语料与查询必须走同一个模型、同一套归一化，才只剩下一次矩阵乘法；查询侧与文档侧走了不同的编码，是这类链路最常见的错法》*
+
+{% stepper %}
+{% step %}
+#### 第 1 步：模型加载 `BAAI/bge-m3`
+
+稠密向量是 1024 维，中文场景常用，且一个模型能同时出稠密、稀疏、多向量三路表示（见本页末尾）。查询与文档共用同一个编码器——如果模型卡说明它是**非对称**的（查询侧要加指令前缀），两侧就必须按各自的走法编码。
+{% endstep %}
+{% step %}
+#### 第 2 步：三条文档 → 3 × 1024 的矩阵
+
+`model.encode(docs, normalize_embeddings=True)` 一次批量编码，返回形状 `emb[3, 1024]`。`normalize_embeddings=True` 是逐行除以各自的 $$\|\mathbf u\|_2$$，于是每行长度都是 1。**这一步决定了后面所有分数的含义**：同样一次矩阵乘法，归一化前是点积、归一化后就是余弦。
+{% endstep %}
+{% step %}
+#### 第 3 步：查询走同一条编码路径
+
+`model.encode("什么是RAG", normalize_embeddings=True)` 得到形状 `[1024]` 的 $$\mathbf q$$。注意是**同一次 `encode` 调用**而不是另一套预处理，否则向量空间就不一致了。
+{% endstep %}
+{% step %}
+#### 第 4 步：`emb @ query` 得到三个分数
+
+$$3\times1024$$ 乘 $$1024$$ 得一个长度 3 的向量。因为 $$\|\mathbf u\|_2=\|\mathbf v\|_2=1$$，内积展开后正是 $$\cos(\mathbf u,\mathbf v)$$，三个分数可以直接当余弦相似度读，取值 $$[-1,1]$$。「MCP 是工具接入协议」与「向量库存语义向量」都只与问题沾边，所以契约里的 `expect_top1` 要求它们排在第二条之后——这三个数就是这条链路的全部输出。
+{% endstep %}
+{% step %}
+#### 第 5 步：`argmax` 取冠军，并写进验收集
+
+`docs[int(argmax(scores))]` → `RAG 用检索增强生成`。生产里这一步通常不取 1 而是取 $$k$$（3–5 个交给 RAG），并且**只有 `argmax` 命中才算这条链路通了**——所以这条 query–doc 对应作为一条最小评估样本存下来，改 embedding 模型或改切块策略时重跑，才能立刻看出是不是检索退化。
+{% endstep %}
+{% endstepper %}
+
+## 三种度量给出的排序并不一致（点标签切换）
+
+上面那次 L2 归一化不是可选的装饰——它决定「内积 = 余弦」这句话成不成立。为什么非要不可？用两个维度的手算例子看：**查询 $$\mathbf q=(1,1)$$，候选 A $$=(10,10)$$、B $$=(3,2)$$**。A 与 $$\mathbf q$$ 完全同向，只是模长大 10 倍；B 方向偏一点但长度接近。
+
+| 度量 | A 的得分 | B 的得分 | 谁排第一 |
+|---|---|---|---|
+| 余弦相似度（越大越近） | 1.000 | 0.981 | A |
+| 原始点积（越大越近） | 20 | 5 | A |
+| 欧氏距离（越小越近） | 12.73 | 2.24 | **B** |
+| L2 归一化后的点积 | 1.000 | 0.981 | A |
+| L2 归一化后的欧氏² | 0.000 | 0.039 | A |
+
+数值都能手验：$$\cos(\mathbf q,\mathbf A)=20/(\sqrt2\cdot\sqrt{200})=1$$；$$\cos(\mathbf q,\mathbf B)=5/(\sqrt2\cdot\sqrt{13})=0.981$$；$$\|\mathbf q-\mathbf A\|=\sqrt{81+81}=12.73$$，$$\|\mathbf q-\mathbf B\|=\sqrt{4+1}=2.24$$。归一化后 B 变成 $$(0.8321,\;0.5547)$$、$$\mathbf q$$ 变成 $$(0.7071,\;0.7071)$$，差向量的平方和 $$0.0156+0.0232=0.039$$，与 $$2-2\times0.981$$ 完全吻合。
+
+**未归一化的欧氏距离把「长度差」也当成「不相关」**，于是 A 被判成最不像——这是唯一一处会让结论翻盘的度量选择。
+
+{% tabs %}
+{% tab title="余弦相似度" %}
+只看方向：$$\cos(\mathbf u,\mathbf v)=\mathbf u\cdot\mathbf v/(\|\mathbf u\|_2\|\mathbf v\|_2)$$，取值 $$[-1,1]$$。语义检索的默认选择，因为「同义」表现为方向一致，与文本长短带来的模长差无关。代价：每次比较要两次除法，除非你提前归一化——归一化之后它就退化成一次内积，这也正是本页示例的做法。
+{% endtab %}
+
+{% tab title="内积（点积）" %}
+$$\mathbf u\cdot\mathbf v=\|\mathbf u\|_2\|\mathbf v\|_2\cos(\mathbf u,\mathbf v)$$：方向之外还乘上两个长度，因此它把「重要程度、出现频次」这类模长信息一并算了进去。归一化后与余弦完全等价，且是向量库最快的原语（MIPS），所以工程上最常见组合就是「离线归一化 + 在线内积」。不归一化直接用，就要接受它与余弦给出的排序不同。
+{% endtab %}
+
+{% tab title="欧氏距离" %}
+$$\|\mathbf u-\mathbf v\|_2^2=\|\mathbf u\|_2^2+\|\mathbf v\|_2^2-2\,\mathbf u\cdot\mathbf v$$：越小越近，比的是相似度度量的反方向。归一化后它随内积单调递减（上表最后两行就是这个关系），所以与余弦等价；**不归一化时它偏向短向量**，上面的 A 就输给了 B。选它的真实理由通常是索引兼容——多数距离型 ANN 索引只实现了 L2。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**提示**：分数只在「同一个模型、同一侧编码」之内可比。换 embedding 模型等于换尺子，原来调好的阈值必须重新标定；而归一化之所以要做，是因为它同时买到三样东西：余弦与内积等价、欧氏随内积单调、阈值变成有界且可解释的 $$[-1,1]$$。
+{% endhint %}
 
 ## 工程含义
 

@@ -2,7 +2,7 @@
 tags: [planning, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 错误恢复与重试
@@ -96,21 +96,95 @@ flowchart TD
 
 ## 重试模式
 
-```python
-import random, time
+一份重试策略说到底是三件事：**退避怎么算**、**每类异常走哪条出口**、**耗尽之后交给谁**。把它们写成一份配置，代码就没有别的秘密了。
 
-for attempt in range(1, MAX_ATTEMPTS + 1):
-    try:
-        return tool.run(args)
-    except RateLimitError:
-        delay = random.uniform(0, min(30.0, 0.5 * 2 ** (attempt - 1)))  # full jitter
-        time.sleep(delay)
-    except ValidationError as e:
-        return fix_with_llm(e)          # 参数错：让模型改参数，不盲目重试
-    except NonIdempotentError:
-        raise                           # 不可逆操作：绝不自动重试
-raise FatalError("重试次数耗尽：降级或上报人工")
+```json
+{
+  "retry_policy": {
+    "call": "tool.run(args)",
+    "max_attempts": "MAX_ATTEMPTS（由剩余时限反解，见上一节）",
+    "backoff": {
+      "kind": "full jitter",
+      "formula": "uniform(0, min(cap_s, base_s * factor ** (attempt - 1)))",
+      "base_s": 0.5,
+      "factor": 2,
+      "cap_s": 30.0
+    },
+    "on_rate_limit_error": "按上面的退避等待后重试（唯一真正重试的分支）",
+    "on_validation_error": "fix_with_llm(e)：错误原文回填模型改参数，不在框架层重试",
+    "on_non_idempotent_error": "raise：直接上抛，绝不自动重试",
+    "on_attempts_exhausted": "FatalError(\"重试次数耗尽：降级或上报人工\")"
+  }
+}
 ```
+
+退避上界是一条几何序列：`attempt` 从 1 开始，上界依次是 **0.5、1、2、4、8、16 秒**，第 7 次的裸值已是 $$0.5\times2^{6}=32$$ 秒，被 `cap_s: 30.0` 截住，之后每次都顶在 30 秒。前 7 次的**最坏累计等待是 61.5 秒**。full jitter 让等待在 `uniform(0, 上界)` 上均匀取值，所以平均只花掉一半：单次 0.5 秒的上界对应约 0.25 秒的期望退避。这半边不是可有可无的——它是防重试风暴的主力（见[错误处理、重试与降级](../11-engineering/error-handling-retry-fallback.md)）。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FAF3E6","primaryBorderColor":"#CA8A04","primaryTextColor":"#1F2937","secondaryColor":"#F3E5C8","tertiaryColor":"#FDFAF5","lineColor":"#E2BF75","actorBkg":"#FBF6EB","actorBorder":"#CA8A04","actorTextColor":"#1F2937","signalColor":"#DAAD4F","noteBkgColor":"#F5EAD2","noteBorderColor":"#CA8A04","noteTextColor":"#1F2937","labelBoxBkgColor":"#FAF3E6","labelBoxBorderColor":"#CA8A04"}}}%%
+flowchart TD
+  A["tool.run(args)"] --> B{"抛什么异常？"}
+  B -- RateLimitError --> C["上界 = min(30.0, 0.5·2^(attempt-1))<br/>在 [0, 上界) 均匀取值后 sleep"]
+  C --> D{"attempt < MAX_ATTEMPTS?"}
+  D -- 是 --> A
+  D -- 否 --> E["FatalError: 重试次数耗尽<br/>降级或上报人工"]
+  B -- ValidationError --> F["fix_with_llm(e)<br/>本轮不 sleep"]
+  B -- NonIdempotentError --> G["raise：立刻上抛<br/>副作用已发生"]
+```
+
+*《图：只有 `RateLimitError` 会回到 `tool.run`；另外两条异常根本不进重试计数，一个改参数、一个直接上抛》*
+
+{% stepper %}
+{% step %}
+#### 第 1 步：`tool.run(args)` 抛出 `RateLimitError`
+
+HTTP 429，带 `Retry-After` 也一样按瞬时处理。这是**唯一**该重试的分支：服务端只是没空，请求本身没错。循环走到 `except RateLimitError`，`attempt` 还是 1。
+{% endstep %}
+{% step %}
+#### 第 2 步：算上界，再抖一下
+
+上界是 $$\min(30.0,\;0.5\times2^{0})=0.5$$ 秒，实际等待在 `uniform(0, 0.5)` 上取值，可能是 0.03 秒，也可能是 0.49 秒。别嫌这点等待短：第 1 次失败的请求通常真的只要几十毫秒就能重投成功，而抖动的作用在第 100 个并发客户端同时失败时才显现——所有客户端的最坏节奏是 0.5、1、2、4 秒整齐叠加，正好把下游按同一节拍再次打满，而均匀抖动把这个尖峰摊平成一段噪声。
+{% endstep %}
+{% step %}
+#### 第 3 步：连败时上界指数抬升，第 7 次撞封顶
+
+第 2 到第 7 次的上界是 1、2、4、8、16、30 秒（第 7 次的裸值 32 秒被 `min` 截成 30）。到第 4 次，最坏累计等待 7.5 秒——**已经吃掉上一节那条预算 $$\beta=0.2$$ 在 30 秒任务上的全部额度**。所以「还剩多少墙钟」必须在每次退避前重算，而不是照着 `MAX_ATTEMPTS` 硬凑。
+{% endstep %}
+{% step %}
+#### 第 4 步：换成 `ValidationError`，一次都不该重试
+
+缺 `required` 字段、枚举值越界、1–5 的区间里填了 9——这类错误**重投同一份参数必然得到同一份报错**。代码走的是另一条出口：`fix_with_llm(e)`，把错误原文（形如 `ValidationError: unit 应为 celsius/fahrenheit`）连同已生成的参数一起回填给模型，让它改参数再发一次。框架层在这里的正确行为是「不 sleep、不重试、直接换回合」。
+{% endstep %}
+{% step %}
+#### 第 5 步：`NonIdempotentError` 立刻上抛，耗尽才降级
+
+已经扣过款、已经发过邮件的操作，重试等于重复执行。这条分支里唯一的动作是 `raise`：把失败原样交给上层，由上层决定是人工确认还是走补偿流程。而 `MAX_ATTEMPTS` 耗尽时抛的也不是普通异常，是带下一步指令的 `FatalError("重试次数耗尽：降级或上报人工")`——**报错文本要写清下一个动作**，这比堆栈对 Agent 更有用。
+{% endstep %}
+{% endstepper %}
+
+四条出口，四种结局（点标签切换）：
+
+{% tabs %}
+{% tab title="RateLimitError：退避后重投" %}
+唯一真正消耗重试预算的分支。等待在 `[0, min(30.0, 0.5·2^(attempt-1)))` 内均匀取值；第 1 次平均 0.25 秒、第 4 次上界 4 秒。若响应带了 `Retry-After: 2`，就按 2 秒等——**服务端的明示优先于本地公式**，硬套抖动只会多等或早到。
+{% endtab %}
+
+{% tab title="ValidationError：改参数，不重投" %}
+交给 `fix_with_llm(e)`，把校验器原文回填进对话。这一支花的不是重试预算而是**模型轮次预算**：多出来的上下文（错误原文 + 重生成的参数）要计入本页开头那条成本熔断 `tokens > Budget`，也要占一次循环轮次（→ [子目标规划](subgoal-planning.md)）。它比盲重试更可能收敛，因为改的是原因而不是时机。前提是你的报错够具体——只回 `"error"` 等于把问题原样丢回去。
+{% endtab %}
+
+{% tab title="NonIdempotentError：停下并上报" %}
+`raise` 出循环，不记入重试次数，也不给模型二次机会。要恢复只能靠**幂等键**（`run_id + step_id`，见[持久化执行](../16-ai-infrastructure/agent-runtime-durable-execution.md)）或人工确认。「转账失败但状态未知」的正确处理是查单，不是再转一次。
+{% endtab %}
+
+{% tab title="耗尽：降级或上报" %}
+`MAX_ATTEMPTS` 用尽后抛 `FatalError`，文案里直接写着下一条动作。此时应当**先看错误类型分布再决定重跑**：如果这 5 次里 4 次都是同一类 `ValidationError`，那说明问题在参数生成而不是网络，退避再多也只是延后失败。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**提示**：把 `cap_s: 30.0` 与 `base_s: 0.5` 放在一起看是个真实取舍——**封顶越高，单次失败恢复越慢；封顶越低，越容易在持续限流时把退避打成一串空转重试**。Agent 场景常用 `base_s=0.5`、`cap_s=30`、full jitter；再往上抬 `base_s` 收益很小，因为限制恢复速度的是服务端窗口，不是你的重试节奏。
+{% endhint %}
 
 ## 源码案例
 

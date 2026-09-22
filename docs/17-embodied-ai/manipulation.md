@@ -87,7 +87,7 @@ flowchart TD
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TD
   PER[感知<br/>点云+分割] --> CAND[128 候选打分]
   CAND --> APP[慢接近 safe]
   APP --> CLOSE[闭爪 25N]

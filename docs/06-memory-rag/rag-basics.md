@@ -2,7 +2,7 @@
 tags: [rag, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # RAG 基础
@@ -94,16 +94,94 @@ flowchart LR
 闭卷考试（纯 LLM）：全靠脑子，过时的、没学的都答不了还爱瞎编。
 开卷考试（RAG）：先翻书找到相关段落，照着书写答案并注明页码——又新又可查证。
 
-## 最小 RAG（5 行）
+## 最小 RAG：四步管线的三份数据
 
-```python
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+一个能跑的最小 RAG，接口面只有三份数据：**入库时喂什么**、**检索时问什么**、**回答里必须带回什么**。以「问公司年假政策」为例，四步链路各自的数据形状如下。
 
-docs = SimpleDirectoryReader("docs/").load_data()      # 读文档
-index = VectorStoreIndex.from_documents(docs)          # 切块+embedding+入库
-engine = index.as_query_engine(similarity_top_k=3)     # 检索+组装+生成
-print(engine.query("公司的年假政策是什么？"))            # 带引用的回答
+```json
+{
+  "ingest": {
+    "reader": "SimpleDirectoryReader",
+    "root": "docs/",
+    "call": "load_data()",
+    "index": "VectorStoreIndex.from_documents(docs)",
+    "hidden_steps": ["切块", "embedding", "入库"],
+    "stored_unit": {
+      "chunk_id": "string",
+      "text": "一个块的原文",
+      "embedding": "float[]，维度由模型决定",
+      "metadata": { "source_path": "docs/hr/leave.md", "page": 3, "section_path": "假期 > 年假" }
+    }
+  },
+  "query": {
+    "engine": "index.as_query_engine(similarity_top_k=3)",
+    "question": "公司的年假政策是什么？",
+    "recall": "语义最近的 3 个块"
+  },
+  "answer": {
+    "text": "只依据资料作答的自然语言回答",
+    "citations": [
+      { "chunk_id": "string", "source_path": "docs/hr/leave.md", "page": 3 }
+    ]
+  }
+}
 ```
+
+这份契约里最值得盯的是两处。**其一**，`from_documents` 一次调用背后藏着三个环节——切块决定检索粒度，embedding 决定「像不像」，入库决定能不能被找到；把它当黑盒，出错时就无从下手。**其二**，`metadata` 里的 `source_path` 与 `page` 必须在切块时就写好、跟着向量一路带到回答里，否则 `citations` 填不出来——「要能溯源」不是生成阶段的功夫，是索引阶段的债。另外注意 `similarity_top_k: 3` 在默认装配下**就是最终进 prompt 的块数**（检索到几个就塞几个）；生产上它更该被当作召回额度，后面挂一层重排、只把精排后的 Top-3~5 交给模型。
+
+{% stepper %}
+{% step %}
+#### 第 1 步：读文档，得到原始节点
+
+`SimpleDirectoryReader("docs/").load_data()` 把目录下每个文件变成一个文档节点，带上文件路径等元数据。这一步的坑在格式而非算法：PDF 里的表格、扫描件的图片文字、Markdown 里的代码块，读进来的形状完全不同，而下游切块是按字符长度下刀的。
+{% endstep %}
+{% step %}
+#### 第 2 步：切块 + embedding + 入库，一次调用打包
+
+`VectorStoreIndex.from_documents(docs)` 把每个文档切成 chunk（默认按句子边界累积到约一千 token 上下）、逐块编码、写入向量存储。每块都保留 `metadata`，这是后面 `citations` 唯一的来源。**块长是一次权衡**：块小召回准但缺上下文，块大信息全但语义被稀释、还多占生成预算。
+{% endstep %}
+{% step %}
+#### 第 3 步：检索——`similarity_top_k: 3` 取回最近邻
+
+`as_query_engine(similarity_top_k=3)` 里同时装配了「检索 + 组装 + 生成」三件事，一次提问就走完整条在线链路：问题编码成向量、在索引里取语义最近的 3 个块。命中质量取决于第 2 步的切块与 embedding，模型再强也补不回来——这正是「失败大多不在模型」的具体含义。
+{% endstep %}
+{% step %}
+#### 第 4 步：组装 prompt——把 3 个块塞进上下文
+
+提示模板里通常包含：系统约束（「只依据下列资料作答，资料里没有就说不知道」）、3 个块及其编号、原始问题。编号是给引用用的：模型答完要能指回「依据资料 2」，而这一步的 token 开销也直接由 `similarity_top_k` 决定。
+{% endstep %}
+{% step %}
+#### 第 5 步：生成回答，带回引用
+
+输出是 `answer.text` 加一组 `citations`（`chunk_id`、`source_path`、`page`）。引用不只是给用户看的装饰：它是**唯一能自动核验「模型有没有照着资料说」的钩子**——有了它，忠实度指标才能把答案拆成陈述、逐条回查上下文。
+{% endstep %}
+{% endstepper %}
+
+## `similarity_top_k` 是成本旋钮，不是准确度旋钮（点标签切换）
+
+同一个「公司的年假政策是什么？」，只改这一个参数会怎样：
+
+{% tabs %}
+{% tab title="top_k = 1：赌检索一次命中" %}
+上下文最省、幻觉面最小，但只要答案横跨两块（年假天数在总则、折算规则在附则）就必然漏。适合「一问一答、事实单点」的封闭库，比如产品型号参数查询。
+{% endtab %}
+
+{% tab title="top_k = 3：默认起点" %}
+够覆盖跨段落的政策问题，上下文占用约为单块的 3 倍。这个量级的意义在于**它是重排前的召回额度**：真正交给模型的应该是精排后的 3~5 个块，而不是原始邻居。
+{% endtab %}
+
+{% tab title="top_k = 10：噪声开始吃掉注意力" %}
+多出来的 7 块里通常只有 1–2 块真的相关，其余是同主题的邻近段落。低相关块会稀释有效信息并诱发幻觉（模型会把它们也当成依据），成本按块数线性上涨。想靠「多给点总不会错」提高准确率，方向就错了：这是**召回换精度**的活，该交给重排。
+{% endtab %}
+
+{% tab title="两阶段：召回 Top-50 → 精排取 5" %}
+向量检索负责「别漏」，重排模型负责「挑准」，交给 LLM 的只有 5 个高相关块。代价是每次查询多一次重排调用，在线延迟增加几十到几百毫秒量级（→ [向量数据库](vector-database.md) 的索引取舍）。政策问答、工单检索这类答错有代价的场景，这是默认配置。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+**注意**：`top_k` 同时决定**答案覆盖率**和**每次查询的 token 成本**，两者都随它线性上涨，而准确率不是。先把召回与生成分开量（Recall@k 与忠实度），再动这个数字。
+{% endhint %}
 
 ## 工程含义
 
@@ -113,7 +191,7 @@ print(engine.query("公司的年假政策是什么？"))            # 带引用�
 
 ## 源码案例
 
-- **LlamaIndex**（[GitHub](https://github.com/run-llama/llama_index)）：为 RAG 而生的框架，上面 5 行就是完整管线；进阶看它的 `SentenceWindowNodeParser`（句窗检索）与 `AutoMergingRetriever`（自动合并父块）——两个经典「切块两难」解法
+- **LlamaIndex**（[GitHub](https://github.com/run-llama/llama_index)）：为 RAG 而生的框架，上面那四步契约就是它的全部主线（读文档 → `from_documents` 建索引 → `as_query_engine(similarity_top_k=3)` → 提问）；进阶看它的 `SentenceWindowNodeParser`（句窗检索）与 `AutoMergingRetriever`（自动合并父块）——两个经典「切块两难」解法
 - **LangChain 的 RAG 教程**（[文档](https://python.langchain.com/docs/tutorials/rag/)）：生产级管线模板（加载→切分→存储→检索→生成），适合对照理解每个环节的可替换点
 - **Anthropic 的多 Agent 研究系统**（[工程博客](https://www.anthropic.com/engineering/built-multi-agent-research-system)）：其 Lead Agent 把「搜索」拆给多个子 Agent 并行 RAG，披露了 token 消耗与准确率的真实权衡——RAG 与多 Agent 组合的一手工程数据
 
