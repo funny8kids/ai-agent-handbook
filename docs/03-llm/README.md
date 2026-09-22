@@ -47,6 +47,7 @@ flowchart TD
 - [Token、Embedding、上下文窗口](token-embedding-context.md)
 - [预训练、微调与指令微调](pretraining-finetuning.md)
 - [RLHF、DPO 与对齐](rlhf-dpo-alignment.md)
+- [用轨迹微调 Agent](agent-traj-finetuning.md)
 - [多模态模型](multimodal.md)
 - [推理、量化、蒸馏与部署](inference-quantization-deployment.md)
 

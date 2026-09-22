@@ -43,6 +43,7 @@ flowchart LR
 - [Embedding 与相似度检索](embedding-similarity.md)
 - [向量数据库](vector-database.md)
 - [RAG 基础](rag-basics.md)
+- [RAG 检索质量调优](retrieval-quality-tuning.md)
 - [GraphRAG](graphrag.md)
 - [知识图谱](knowledge-graph.md)
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)

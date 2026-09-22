@@ -33,6 +33,7 @@
 * [Token、Embedding、上下文窗口](03-llm/token-embedding-context.md)
 * [预训练、微调与指令微调](03-llm/pretraining-finetuning.md)
 * [RLHF、DPO 与对齐](03-llm/rlhf-dpo-alignment.md)
+* [用轨迹微调 Agent](03-llm/agent-traj-finetuning.md)
 * [多模态模型](03-llm/multimodal.md)
 * [推理、量化、蒸馏与部署](03-llm/inference-quantization-deployment.md)
 
@@ -64,6 +65,7 @@
 * [Embedding 与相似度检索](06-memory-rag/embedding-similarity.md)
 * [向量数据库](06-memory-rag/vector-database.md)
 * [RAG 基础](06-memory-rag/rag-basics.md)
+* [RAG 检索质量调优](06-memory-rag/retrieval-quality-tuning.md)
 * [GraphRAG](06-memory-rag/graphrag.md)
 * [知识图谱](06-memory-rag/knowledge-graph.md)
 * [记忆压缩、遗忘与摘要](06-memory-rag/memory-compression-forgetting.md)
@@ -126,6 +128,7 @@
 * [部署与扩缩容](11-engineering/deployment-scaling.md)
 * [缓存与成本优化](11-engineering/caching-cost-optimization.md)
 * [持续评估](11-engineering/continuous-evaluation.md)
+* [Agent 失败模式图鉴与调试手册](11-engineering/agent-failure-playbook.md)
 
 ## 💼 12 应用案例
 * [本章导读](12-applications/README.md)

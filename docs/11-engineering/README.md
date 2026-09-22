@@ -51,6 +51,7 @@ flowchart TB
 - [部署与扩缩容](deployment-scaling.md)
 - [缓存与成本优化](caching-cost-optimization.md)
 - [持续评估](continuous-evaluation.md)
+- [Agent 失败模式图鉴与调试手册](agent-failure-playbook.md)
 
 ## 读完能做到
 
