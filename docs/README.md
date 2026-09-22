@@ -15,7 +15,7 @@ updated: 2026-09-22
 
 > **中文**：一本持续更新的开源 AI Agent 手册与资源库：193 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 193 pages across 19 chapters, including a 2026 frontier chapter, 105 of them carrying formulas, 6 offline-runnable hands-on labs, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 193 pages across 19 chapters, including a 2026 frontier chapter, 106 of them carrying formulas, 6 offline-runnable hands-on labs, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
 
 ## 快速开始 · Quick start
 
@@ -86,7 +86,7 @@ updated: 2026-09-22
 ## 关于这本手册 · About this handbook
 
 - **193 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 193 pages across 19 chapters
-- **105 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 105 pages carry rendered formulas
+- **106 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 106 pages carry rendered formulas
 - **数字与结论都能点回一手来源**，文末「参考资料」只放外部来源 · every claim links back to a primary source
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
 - **212 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现（逐文件点数，代码块与行内代码里的写法示例不计入）
