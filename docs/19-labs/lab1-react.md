@@ -2,17 +2,17 @@
 tags: [lab, react, hands-on]
 type: lab
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Lab 1：最小 ReAct 闭环
 
 {% hint style="info" %}
-**一句话**：用 100 行纯标准库 Python 把「想一步、做一步、看结果、再想」写出来跑通——这是全书反复出现的那个 while 循环的本体。
+**一句话**：这张卡片式演示把「想一步、做一步、看结果、再想」拆成可以点着走的五步——你能看见每一圈 prompt 到底长成什么样，这是全书反复出现的那个循环的本体。
 {% endhint %}
 
-- 源码：仓库根目录 [`labs/lab1_react.py`](https://github.com/funny8kids/ai-agent-handbook/blob/main/labs/lab1_react.py)
-- 运行：`python lab1_react.py`（零依赖、零 API key）
+- 可运行脚本仍在仓库里：[`labs/lab1_react.py`](https://github.com/funny8kids/ai-agent-handbook/blob/main/labs/lab1_react.py)（零依赖、零 API key，`python lab1_react.py` 就能复现下面每一步的真实输出）
+- 下面所有状态与输出都是**本机 Python 3.13 真跑截取**，不是示意；改参数的两个标签同样是真跑结果
 - 前置阅读：[ReAct](../04-prompt-reasoning/react.md)、[什么是 Agent](../02-agent-basics/what-is-agent.md)
 
 ## 这个实验在搭什么
@@ -30,130 +30,100 @@ flowchart LR
 
 任务是一道多跳题：「甲公司和乙公司谁的 2025 年营收更高？」——甲公司给的是「4800 万元」，乙公司给的是「0.62 亿元」，单位不一样，必须**先查两份资料、再做一次换算**才能回答。纯 CoT 会在这里编数字，ReAct 循环会用工具把数字钉死。
 
-## 完整代码（复制即跑）
+## 分步演示：跟着循环走四圈
 
-```python
-# -*- coding: utf-8 -*-
-"""Lab 1 最小 ReAct 闭环：Thought -> Action -> Observation，直到 Final Answer。
+![ReAct 循环动画：亮起来的一格就是模型当前能看到的全部](../.gitbook/assets/19-lab-react-loop-animated.svg)
 
-零依赖，纯标准库，无需 API key：LLM 由一个"脚本化 MockLLM"扮演，
-它根据当前轨迹（trajectory）决定下一步说什么——和真模型的行为接口完全一致，
-换成真实模型只需替换 MockLLM 类（见 lab6 与页面说明）。
+*《图：动画只帮你把节奏看清——每一圈亮起的格子，就是模型此刻能看到的全部上下文》*
 
-运行：python lab1_react.py
-"""
-import ast
-import operator
-import sys
+{% stepper %}
+{% step %}
 
-sys.stdout.reconfigure(encoding="utf-8")  # Windows 控制台默认 GBK，中文输出会乱码
-
-# ---------- 工具层：Agent 的"手" ----------
-
-def calculator(expr: str) -> str:
-    """安全四则运算：只允许数字与 + - * / ( )，不用 eval 裸跑。"""
-    allowed = {ast.BinOp, ast.UnaryOp, ast.Expression, ast.Constant, ast.Load}
-    ops = {ast.Add: operator.add, ast.Sub: operator.sub,
-           ast.Mult: operator.mul, ast.Div: operator.truediv,
-           ast.USub: operator.neg}
-
-    def _ev(node):
-        if type(node) not in allowed:
-            raise ValueError(f"非法表达式: {expr}")
-        if isinstance(node, ast.Expression):
-            return _ev(node.body)
-        if isinstance(node, ast.Constant):
-            return node.value
-        if isinstance(node, ast.UnaryOp):
-            return ops[type(node.op)](_ev(node.operand))
-        return ops[type(node.op)](_ev(node.left), _ev(node.right))
-
-    return str(_ev(ast.parse(expr, mode="eval")))
-
-
-DOCS = {
-    "财报-甲公司": "甲公司 2025 年营收 4800 万元，同比增长 12%。",
-    "财报-乙公司": "乙公司 2025 年营收 0.62 亿元，同比增长 5%。",
-    "汇率": "2025 年参考汇率：1 美元 ≈ 7.2 元人民币。",
-}
-
-def search(query: str) -> str:
-    """玩具搜索：按关键词命中返回文档，否则返回未找到。"""
-    hits = [doc for key, doc in DOCS.items() if any(w in key for w in query.split())]
-    return "\n".join(hits) if hits else "未找到相关结果"
-
-
-TOOLS = {"calculator": calculator, "search": search}
-
-# ---------- LLM 层：Agent 的"脑" ----------
-
-class MockLLM:
-    """脚本化模型：读入完整 prompt（含历史轨迹），输出下一段文本。
-
-    输出协议与 ReAct 论文一致：
-      Thought: ...
-      Action: 工具名(参数)
-    或
-      Thought: ...
-      Final Answer: ...
-    """
-
-    def __init__(self):
-        self.step = 0
-
-    def __call__(self, prompt: str) -> str:
-        q = prompt.split("Question:", 1)[1].split("Thought:", 1)[0].strip()
-        seen = prompt
-        if "Action: search" not in seen:
-            return f"Thought: 要比较两家公司营收，先查甲公司的财报。\nAction: search(财报-甲公司)"
-        if "Action: calculator" not in seen:
-            if "0.62" not in seen:
-                return f"Thought: 甲公司数据已到手，再查乙公司。\nAction: search(财报-乙公司)"
-            return ("Thought: 甲公司 4800 万元，乙公司 0.62 亿元=6200 万元，"
-                    "用计算器换算确认。\nAction: calculator(0.62*10000)")
-        return ("Thought: 6200 万元 > 4800 万元，乙公司营收更高。\n"
-                f"Final Answer: 乙公司营收更高（约 6200 万元 vs 4800 万元），问题「{q}」已解决。")
-
-# ---------- Agent 循环：本书反复出现的那个 while ----------
-
-def run_agent(question: str, llm, max_steps: int = 6) -> str:
-    prompt = f"Question: {question}\n"
-    for i in range(1, max_steps + 1):
-        out = llm(prompt)                       # 1. 模型基于全部历史生成下一步
-        prompt += out + "\n"
-        print(f"\n[step {i}] {out}")
-        if "Final Answer:" in out:              # 2. 终止条件一：模型自己宣布完成
-            return out.split("Final Answer:", 1)[1].strip()
-        if "Action:" in out:                    # 3. 终止条件二之前，永远先执行工具
-            call = out.split("Action:", 1)[1].strip()
-            name, args = call.split("(", 1)
-            args = args.rstrip(")")
-            try:
-                obs = TOOLS[name.strip()](args)
-            except Exception as e:              # 工具报错也要回流，不能炸循环
-                obs = f"工具错误: {e}"
-            prompt += f"Observation: {obs}\n"
-            print(f"          -> Observation: {obs}")
-    return "到达 MAX_STEPS 兜底退出（防止一直转圈）"
-
-
-if __name__ == "__main__":
-    print("=" * 62)
-    print("Lab 1：最小 ReAct 闭环（甲公司 vs 乙公司谁营收更高？）")
-    print("=" * 62)
-    answer = run_agent("甲公司和乙公司谁的 2025 年营收更高？", MockLLM())
-    print("\n最终答案:", answer)
-```
-
-## 真实运行输出
-
-本机 Python 3.13 原样输出：
+#### 起点：模型的上下文里只有问题
 
 ```text
-==============================================================
-Lab 1：最小 ReAct 闭环（甲公司 vs 乙公司谁营收更高？）
-==============================================================
+Question: 甲公司和乙公司谁的 2025 年营收更高？
+```
 
+没有任何历史、没有中间结论。工具清单与输出协议在系统提示里（这里省略）。
+
+**要点**：Agent 没有记忆，它的「状态」就是这段字符串。后面每一步看到的变化，全都是往这个字符串里追加内容。
+{% endstep %}
+
+{% step %}
+
+#### 第 1 圈：模型先决定去查甲公司
+
+模型输出（协议固定为 `Thought:` + `Action:`）：
+
+```text
+Thought: 要比较两家公司营收，先查甲公司的财报。
+Action: search(财报-甲公司)
+```
+
+运行时把 `Action` 解析成一次真实调用 `search("财报-甲公司")`，拿回结果后**两句一起**拼回上下文：
+
+```text
+Question: 甲公司和乙公司谁的 2025 年营收更高？
+Thought: 要比较两家公司营收，先查甲公司的财报。
+Action: search(财报-甲公司)
+Observation: 甲公司 2025 年营收 4800 万元，同比增长 12%。
+```
+
+**要点**：一圈让 prompt 变长两次——模型说的话 + 工具给的事实。缺了后者，模型下一圈只能凭想象继续。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 圈：同样的动作，换一家公司
+
+```text
+Thought: 甲公司数据已到手，再查乙公司。
+Action: search(财报-乙公司)
+Observation: 乙公司 2025 年营收 0.62 亿元，同比增长 5%。
+```
+
+此刻上下文里已经有了 4800 万元和 0.62 亿元两个数字，**但单位还没统一**。模型如果直接比大小就会得出「4800 > 0.62，甲公司更高」的错误结论——它没有这个自由，因为下一圈还得给出依据。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 圈：数字必须由工具算出来
+
+```text
+Thought: 甲公司 4800 万元，乙公司 0.62 亿元=6200 万元，用计算器换算确认。
+Action: calculator(0.62*10000)
+Observation: 6200.0
+```
+
+**要点**：`6200.0` 是计算器返回的，不是模型编的。要求关键数字来自工具输出，是压幻觉的第一杠杆——这也是第 10 章「可验证性」的最小实现。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 圈：模型自己宣布结束
+
+```text
+Thought: 6200 万元 > 4800 万元，乙公司营收更高。
+Final Answer: 乙公司营收更高（约 6200 万元 vs 4800 万元），
+              问题「甲公司和乙公司谁的 2025 年营收更高？」已解决。
+```
+
+出现 `Final Answer:` 就是循环的第一道终止闸门。整段轨迹共 4 圈、3 次工具调用，最终答案原样返回：
+
+```text
+最终答案: 乙公司营收更高（约 6200 万元 vs 4800 万元），问题「甲公司和乙公司谁的 2025 年营收更高？」已解决。
+```
+{% endstep %}
+{% endstepper %}
+
+## 两个开关，两种结局（点标签切换，均为真跑输出）
+
+{% tabs %}
+{% tab title="把步数上限压到 2" %}
+只允许两圈，循环连换算都来不及做就撞上第二道闸门：
+
+```text
 [step 1] Thought: 要比较两家公司营收，先查甲公司的财报。
 Action: search(财报-甲公司)
           -> Observation: 甲公司 2025 年营收 4800 万元，同比增长 12%。
@@ -162,38 +132,54 @@ Action: search(财报-甲公司)
 Action: search(财报-乙公司)
           -> Observation: 乙公司 2025 年营收 0.62 亿元，同比增长 5%。
 
-[step 3] Thought: 甲公司 4800 万元，乙公司 0.62 亿元=6200 万元，用计算器换算确认。
+最终答案: 到达 MAX_STEPS 兜底退出（防止一直转圈）
+```
+
+两圈用完时，上下文里**只有两个还没统一的数字**，没有任何结论。兜底退出必须返回一个明确的状态，而不是硬编一个答案——否则下游会把「超时」当成「答完」。
+{% endtab %}
+
+{% tab title="让模型第一次算错" %}
+把第 3 圈的表达式换成带单位的 `0.62*亿元`，计算器按 AST 白名单拒绝执行，错误被当成 Observation 回流：
+
+```text
+[step 3] Thought: 甲公司 4800 万元，乙公司 0.62 亿元，换算成万元。
+Action: calculator(0.62*亿元)
+          -> Observation: 工具错误: 非法表达式: 0.62*亿元
+
+[step 4] Thought: 刚才表达式里混进了单位，改成纯数字再算一次。
 Action: calculator(0.62*10000)
           -> Observation: 6200.0
 
-[step 4] Thought: 6200 万元 > 4800 万元，乙公司营收更高。
+[step 5] Thought: 6200 万元 > 4800 万元，乙公司营收更高。
 Final Answer: 乙公司营收更高（约 6200 万元 vs 4800 万元），问题「甲公司和乙公司谁的 2025 年营收更高？」已解决。
-
-最终答案: 乙公司营收更高（约 6200 万元 vs 4800 万元），问题「甲公司和乙公司谁的 2025 年营收更高？」已解决。
 ```
 
-## 盯住输出里的三个细节
+**这就是自纠错的全部机制**：没有额外的「反思模块」，只是错误信息进了上下文，模型下一圈看见了。第 07 章的重试策略、第 11 章的错误处理，落到最小处就是这一行 `except` 把异常转成 Observation。
+{% endtab %}
+{% endtabs %}
 
-1. **每一步的 prompt 都在变长**：`prompt += out` 再 `+= Observation`——模型的"记忆"完全来自这个字符串，这就是「API 无状态、上下文工程才有状态」（第 03 章）的最小实证。
-2. **Observation 是事实回流**：step 3 的 6200.0 是计算器给的，不是模型编的。要求数字来自工具，是压幻觉的第一杠杆。
-3. **两道终止闸门**：模型自己说 `Final Answer`（正常收敛），或 `max_steps` 兜底（防转圈）。生产系统两个都必须有，缺一个就敢上线的团队都吃过深夜告警。
+## 盯住这段轨迹的三个细节
+
+1. **每一步的上下文都在变长**：输出拼一次、Observation 再拼一次——模型的「记忆」完全来自这个字符串。这就是「API 无状态、上下文工程才有状态」（第 03 章）的最小实证。
+2. **Observation 是事实回流**：`6200.0` 出现在上下文里，之后模型才敢引用它。顺序反了（先给结论再查）就是编造。
+3. **两道终止闸门**：模型自己说 `Final Answer`（正常收敛），或步数上限兜底（防转圈）。生产系统两个都必须有——缺后一个的 Agent 会在凌晨把 token 烧穿。
 
 {% hint style="tip" %}
-`calculator` 用 AST 白名单而不是 `eval`：Agent 生成的表达式是**不可信输入**，`eval("__import__('os').system('rm -rf /')")` 就是教科书级事故。工具层的每一行参数校验都不是多余的。
+计算器工具用 AST 白名单而不是裸 `eval`：Agent 生成的表达式是**不可信输入**，`eval("__import__('os').system('rm -rf /')")` 就是教科书级事故。工具层对每一个参数做校验，永远不是多余的。
 {% endhint %}
 
-## 动手改（由易到难）
+## 自己改着玩（不用看源码也能改）
 
-1. 把 `max_steps` 改成 2 再跑：观察兜底退出长什么样，答案质量掉了多少。
-2. 给 `DOCS` 加一条「丙公司 2025 年营收 5500 万元」，把 MockLLM 的剧本改成三家比较——你会自然理解为什么轨迹一长，脚本化剧本就写不动了（这就是真模型存在的意义）。
-3. 把解析从 `if "Action:" in out` 升级为正则提取 `Action: name(arg1, arg2)`，支持多参数。真实框架里这一步叫「输出解析器」，它脆弱与否直接决定系统稳定性。
+1. **改任务**：把问题换成「三家谁最高」，在资料里补一条「丙公司 2025 年营收 5500 万元」。你会立刻发现：得给「剧本」再加一个分支才能查第三家——**轨迹一长，写死的规则就维护不动了**，这正是真模型存在的理由。
+2. **改工具返回**：让乙公司的资料故意返回「未找到相关结果」。观察循环怎么在没有事实的情况下继续，以及它是否会开始编数字——这一条是第 10 章幻觉评测的手感来源。
+3. **改解析严格度**：现在只认 `Action: 名字(参数)` 这一种形状。让模型输出 `Action: search["财报-甲公司"]`，看它怎么卡住。真实框架里这一步叫「输出解析器」，它脆弱与否直接决定系统稳定性（第 04 章结构化输出）。
 
 ## 排错备忘
 
 | 症状 | 原因 | 解法 |
 |---|---|---|
-| 满屏乱码 | Windows 控制台 GBK | 别删脚本开头的 `reconfigure(encoding="utf-8")` |
-| `ValueError: 非法表达式` | 模型给了带变量/函数的表达式 | 正常——错误被 catch 成 Observation 回流，模型会改；若循环转圈就查剧本 |
-| 永远到不了 Final Answer | MockLLM 分支条件与 prompt 内容对不上 | 打印 `prompt` 看实际累积了什么，99% 是解析/拼接错位 |
+| 满屏乱码 | Windows 控制台默认 GBK | 脚本开头已把标准输出切成 UTF-8，别删那行 |
+| `ValueError: 非法表达式` | 模型给的表达式里有变量或函数 | 正常——错误会被转成 Observation 回流让模型自纠；若一直转圈就查剧本分支 |
+| 永远到不了 Final Answer | 「剧本」的判断条件与实际累积的上下文对不上 | 把每圈的 prompt 原样打印出来看，99% 是解析或拼接错位 |
 
 下一站：[Lab 2 手写迷你 RAG →](lab2-rag.md)
