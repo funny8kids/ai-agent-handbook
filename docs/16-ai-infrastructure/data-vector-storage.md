@@ -2,7 +2,7 @@
 tags: [infrastructure, rag, memory]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 数据与检索基础设施
@@ -57,7 +57,9 @@ flowchart LR
 | 图索引 | Neo4j、Kuzu、LightRAG 类 | 多跳关系问题（谁依赖谁、影响面分析） | 图谱构建没做实体消歧，检索到「幽灵关系」 |
 | 特征/数据版本 | DVC、lakeFS、自研 manifest | 训练与评测要可复现 | 数据每天在变，评估分数无法横向比较 |
 
-> 💡 **提示**：先跑「无 RAG 基线」和「只有关键词检索基线」，再上向量与重排——很多团队发现自己缺的是**清洗**，不是**模型**。
+{% hint style="tip" %}
+先跑「无 RAG 基线」和「只有关键词检索基线」，再上向量与重排——很多团队发现自己缺的是**清洗**，不是**模型**。混合检索 + 重排那 10–30 个百分点的端到端差距，只有在基线立起来之后才量得出来。
+{% endhint %}
 
 ## 工程要点清单
 
@@ -75,14 +77,21 @@ flowchart LR
   "text": "…",
   "source": "https://wiki/ops/runbook-42",
   "title": "数据库主从切换手册",
-  "acl": ["team:ops", "role:sre"],       // 检索层强制过滤
+  "acl": ["team:ops", "role:sre"],
   "tenant": "acme",
-  "updated_at": "2026-08-11T02:00:00Z",  // 用于时效性排序与失效
-  "version": "sha1:9f3c…",               // 与索引对齐，删除/更新幂等
+  "updated_at": "2026-08-11T02:00:00Z",
+  "version": "sha1:9f3c…",
   "token_len": 412,
-  "embedding_model": "embed-v3@2026-05"  // 换模型后必须重建，字段用于校验
+  "embedding_model": "embed-v3@2026-05"
 }
 ```
+
+四个字段是这套元数据真正的承重墙，缺一个就会出事：
+
+- `acl`：检索层强制过滤的依据，缺失等于把越权内容交给召回排序去守
+- `updated_at`：时效性排序与过期失效都读它，没有就只能全库一起变旧
+- `version`：与索引对齐的幂等键，删除/更新靠它才不会重复或漏删
+- `embedding_model`：换模型后必须重建，留着这个字段才能校验库里是不是混了两代向量
 
 **增量更新与失效**
 
@@ -103,36 +112,128 @@ flowchart LR
 
 ## 一个能上线的最小检索栈
 
-```python
-# Postgres 单栈起步：pgvector + tsvector 混合 + RRF 融合，够撑到千万级
-import psycopg
+这条管线从 Postgres 单栈起步（pgvector + tsvector）够撑到千万级。不用背 SQL，但每一站的**参数契约**要钉死：稠密与稀疏两路并行召回、过滤下推、RRF 按名次融合、重排截断。一次查询长这样：
 
-SQL = """
-WITH dense AS (
-  SELECT id, 1 - (embedding <=> %(qvec)s) AS score,
-         row_number() OVER (ORDER BY embedding <=> %(qvec)s) AS r
-  FROM chunks WHERE tenant = %(t)s AND acl && %(groups)s
-  ORDER BY embedding <=> %(qvec)s LIMIT 50
-),
-sparse AS (
-  SELECT id, ts_rank(tsv, websearch_to_tsquery('simple', %(q)s)) AS score,
-         row_number() OVER (ORDER BY ts_rank(tsv, websearch_to_tsquery('simple', %(q)s)) DESC) AS r
-  FROM chunks WHERE tsv @@ websearch_to_tsquery('simple', %(q)s) AND tenant = %(t)s
-    AND acl && %(groups)s
-  ORDER BY r LIMIT 50
-)
-SELECT id, sum(1.0/(60 + r)) AS rrf FROM (
-  SELECT id, r FROM dense UNION ALL SELECT id, r FROM sparse
-) u GROUP BY id ORDER BY rrf DESC LIMIT 8;
-"""
-
-with psycopg.connect(DSN) as conn:
-    hits = conn.execute(SQL, {"qvec": qvec, "q": query, "t": tenant,
-                              "groups": user.groups}).fetchall()
-# 之后：拿 hits 去 rerank（top-8 → top-3），再用父块 + 面包屑拼上下文喂给模型
+```json
+{
+  "request": {
+    "tenant": "acme",
+    "user_groups": ["team:ops", "role:sre"],
+    "query": "数据库主从切换的前提条件",
+    "query_embedding": "embed-v3@2026-05 产出，必须与块里 embedding_model 字段同模型"
+  },
+  "stages": [
+    {
+      "stage": "dense_recall",
+      "operator": "<=>（余弦距离升序）",
+      "top_k": 50,
+      "pre_filter": "tenant = 'acme' AND acl && user_groups"
+    },
+    {
+      "stage": "sparse_recall",
+      "operator": "tsv @@ websearch_to_tsquery('simple', query)，ts_rank 打分",
+      "top_k": 50,
+      "pre_filter": "同样先过 tenant + ACL，过滤发生在打分之前"
+    },
+    {
+      "stage": "fuse",
+      "method": "RRF",
+      "formula": "score(id) = Σ 1/(k + rank)",
+      "k": 60,
+      "output_top_n": 8
+    },
+    {
+      "stage": "rerank",
+      "model": "cross-encoder（bge-reranker / Cohere Rerank 一类）",
+      "input_top_n": 8,
+      "output_top_n": 3
+    },
+    {
+      "stage": "assemble",
+      "context": "父块 + 面包屑（文档 > 章节 > 小节）",
+      "attach": ["source", "updated_at", "version"]
+    }
+  ]
+}
 ```
 
-**为什么用 RRF（倒数排名融合）**：稠密与稀疏分数不可比，用名次而不是分数融合，一行公式解决「权重调参地狱」（`k=60` 是常用平滑值）。
+这份契约里有三条铁律：**ACL 是 `pre_filter` 不是 post_filter**——召回后再筛等于把敏感内容先捞到应用层，审计不合规；**融合只用名次不用分数**——余弦相似度与 `ts_rank` 根本不在一个量纲上，按分数加权就是调参地狱；**条数是合同**（50/50 → 8 → 3），每一档改动都有可观测的后果，动了就要在评估集上重测。
+
+**为什么用 RRF（倒数排名融合）**：稠密与稀疏分数不可比，用名次而不是分数融合，一行公式解决「权重调参地狱」（`k=60` 是常用平滑值）。`k` 调大，头部名次差异被压平、两路更平均；`k` 调小，第 1 名的优势被放大、更信头部。60 是社区默认，动它要在自己的评估集上验证。
+
+## 索引参数：建库时就锁死的契约
+
+```json
+{
+  "index": {
+    "algorithm": "hnsw",
+    "m": 16,
+    "ef_construction": 64,
+    "ef_search": 100,
+    "metric": "cosine",
+    "quantization": "none | sq8 | fp8 | pq",
+    "partial_index": "按租户 / ACL 分片，防「大租户饿死小租户」"
+  }
+}
+```
+
+`m` 与 `ef_construction` 是建库时一次付清的钱：调大图谱质量好、构建慢、更吃内存；`ef_search` 是每次查询都在付的钱，是线上延迟/召回的第一旋钮——**`ef_search`/`M` 不调就上线，延迟与召回双输**是最常见的事故形态。embedding 模型输出归一化时，`<=>`（cosine）、`<#>`（负内积）、`<->`（L2）三种度量的排序基本等价；没做归一化就不等价——所以 `metric` 必须写进建库契约，而不是查询时凭手感换。量化（SQ8/PQ/FP8）能把向量存储压到 1/4–1/8，代价是召回下降，必须在评估集上量过才敢推生产。
+
+## 不同索引与度量的取舍（点标签切换）
+
+{% tabs %}
+{% tab title="HNSW 全内存（默认）" %}
+`ef_search: 100 → 200`：recall@50 涨几个点，p95 几乎线性上去——HNSW 的速度是拿内存和遍历宽度换的。≤千万级 pgvector + HNSW 足够，别为想象中的规模先上专用库；真正该先做的是清洗与切块。
+{% endtab %}
+
+{% tab title="IVF-PQ / 量化省内存" %}
+`nlist=4096, nprobe=16`：内存降一个量级，recall 掉 3–8 个点，且 `nprobe` 每次调都同时动延迟和召回。量化参数（PQ 子空间数、8-bit）与切块策略一样，是「上线前必须在评估集上重测」的那类改动——省下的显存是真的，丢掉的召回也是真的。
+{% endtab %}
+
+{% tab title="DiskANN 冷热混合" %}
+热集合常驻内存、冷集合放盘：单位成本最低，冷查询多 1–2 次 SSD 往返。多租户库的典型形态——按租户分片后，长尾租户的数据没必要占内存；但要配 SLA：冷查询的 p95 单独盯，混在全局分位数里看不见。
+{% endtab %}
+
+{% tab title="暴力精确扫描" %}
+百万行以内，精确检索常常比调好的近似还快，而且 recall=100%、没有旋钮要调。陷阱在过滤：ACL 过滤会把暴力扫描打爆——敏感块占比高的库，先看带过滤的延迟再谈「我们数据量小」。
+{% endtab %}
+{% endtabs %}
+
+## 一次文档更新，怎么传遍全链
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：发现变更，先立版本
+
+采集器 diff 出 `runbook-42` 变了，算出新 `version`（`sha1:9f3c…`）。幂等键 `(source, version)` 从这一刻定下：重跑采集不产生重复块——重复块会同时污染召回与统计。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：重新切块与 embedding
+
+同一套切块策略重跑：语义边界、块内面包屑、表格与代码单独成块；`embedding_model` 字段（示例里 `embed-v3@2026-05`）必须与查询侧一致，不一致就是在拿新旧向量做减法。原文快照进对象存储，这是「引用可回溯」的底账。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：三处索引同步 upsert
+
+向量、全文（tsvector）、图谱，一个都不能少；只删主库是常见事故源——文档撤了，向量索引还在把它排进 top-3。upsert 按幂等键执行，中途失败重跑整个管线也不会有脏块。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：失效传播与引用兜底
+
+`updated_at` 推进旧的派生块；策略类文档要能回答「这条引用过期了没有」——知识库里最危险的错误不是答得不像，是引用了昨天的过期政策。embedding 模型或切块策略升级则是全量重建到新集合、alias 原子切换，绝不新旧混库。
+
+{% endstep %}
+{% endstepper %}
 
 ## 工程现场笔记
 

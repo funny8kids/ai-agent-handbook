@@ -2,7 +2,7 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 训练与微调基础设施
@@ -65,47 +65,123 @@ flowchart LR
 
 ## 最小可跑的 LoRA 微调 + 上线
 
-```python
-# 训练：peft + 4-bit 底座（QLoRA 思路）
-from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
-                          TrainingArguments, Trainer)
-from peft import LoraConfig, TaskType, get_peft_model
-import torch, json
+不用背训练脚本，但要看得懂一个训练任务的**配置契约**：不管是 TRL、DeepSpeed 还是 LLaMA-Factory 系启动器，接受的都是一份同形状的声明式配置。下面是一个单机 QLoRA 任务的全量参数，开训时这份文件会连同 commit hash、镜像 digest、seed 一起进实验追踪（MLflow / W&B / 自家 table 都行）——**可复现靠这份文件，不靠「我记得是 3e-5」**：
 
-bnb = BitsAndBytesConfig(load_in_4bit=True,
-                         bnb_4bit_compute_dtype=torch.bfloat16,
-                         bnb_4bit_quant_method="nf4")
-tok = AutoTokenizer.from_pretrained("your-base-model")
-model = AutoModelForCausalLM.from_pretrained(
-    "your-base-model", quantization_config=bnb, device_map="auto")
-
-lora = LoraConfig(r=16, lora_alpha=32, lora_dropout=0.05,
-                  target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-                  task_type=TaskType.CAUSAL_LM)
-model = get_peft_model(model, lora)
-model.print_trainable_parameters()          # 通常 <1% 参数可训
-
-ds = [json.loads(l) for l in open("sft.jsonl")]     # {"messages": [...]}
-args = TrainingArguments(
-    output_dir="out/lora-$(date +%s)",
-    per_device_train_batch_size=1, gradient_accumulation_steps=16,
-    learning_rate=2e-4, num_train_epochs=3,
-    bf16=True, save_strategy="steps", save_steps=100, save_total_limit=3,
-    logging_steps=10, seed=42,
-)
-# Trainer(train_dataset=..., args=args, model=model, processing_class=tok).train()
+```yaml
+# 一次训练 = 一份配置快照；禁止「本地攒 jsonl、参数靠记忆」
+base_model: your-base-model
+quantization:                # QLoRA：4-bit 底座，把 7B–70B 级模型拉回单卡/少数卡可训
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: bfloat16
+  bnb_4bit_quant_method: nf4
+peft:                        # 只训低秩增量适配器，可训参数通常 <1%
+  task_type: CAUSAL_LM
+  r: 16
+  lora_alpha: 32             # 常用约定 alpha = 2 × r
+  lora_dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]   # 只挂注意力四个投影
+dataset:
+  path: sft.jsonl            # 每行 {"messages": [...]}，与推理请求同形状
+training:
+  output_dir: "out/lora-<unix时间戳>"    # 一次训练一个目录，不覆盖旧产物
+  device_map: auto                       # 多卡时自动摆放
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16        # 单卡有效 batch = 1 × 16 = 16
+  learning_rate: 2.0e-4
+  num_train_epochs: 3
+  bf16: true
+  save_strategy: steps
+  save_steps: 100
+  save_total_limit: 3        # 只留最近 3 个 checkpoint，断点续训靠它们
+  logging_steps: 10
+  seed: 42
 ```
 
-```bash
-# 上线：vLLM 多 LoRA 热挂载，不改底座副本
-vllm serve your-base-model --enable-lora \
-  --lora-modules agent-v3=/mnt/adapters/agent-v3 \
-  --max-loras 4 --max-lora-rank 32
-# 请求侧只换 model 名即可切换适配器
-curl :8000/v1/chat/completions -d '{"model":"agent-v3","messages":[...]}'
+四个数字最容易被看漏：**有效 batch 是 16 不是 1**，梯度交流存换稳定；**`save_steps: 100` 与 `save_total_limit: 3` 是一对**，缺了这对，Spot 抢占一次就白训一截；**`seed: 42` 不是仪式感**，是为了让两个人跑出同一个分数；**`2e-4` 是 LoRA 的量级**，比全参微调高一个数量级，拿全参学习率来训 LoRA，loss 第一epoch 就飞。
+
+## 从训练到上线：五步，每步带失败原因
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：数据准备——先写 manifest，再谈训练
+
+训练集落成 manifest（文件哈希 + 条数 + 配比 + 来源许可），SFT 通常 500–5k 条就够（见上文选型对照）。三件事必做：**与评估集去重**——重叠样本会让分数虚高，评估直接失效；**失败轨迹保留 10–30%**——只喂成功样本的模型遇到第一个错误就懵；**`messages` 形状与线上推理请求一致**——训练用的 chat template 和上线差一行，格式合法率就会在上线当天崩掉。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：训练——按配置契约执行，不凭手感改参
+
+照上面那份 yaml 跑：`nf4` 4-bit 底座 + `bfloat16` 计算，四个 `q/k/v/o_proj` 可训，`lr=2e-4`、3 个 epoch、有效 batch 16，单卡数小时量级。每 `logging_steps: 10` 步看一眼 loss：若第 3 个 epoch 后段 loss 抬头，就在最近的 `save_steps=100` 检查点处停手、单独评估那一版，而不是训完再说——checkpoint 只留 3 个，晚发现就没了。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：评估门禁——新能力 + 回归，两套一起跑
+
+固定任务集 30–200 例足够，一次跑完必须 ≤30 分钟，否则 CI 里没人愿意跑。两套集子缺一不可：**新能力集**（你训的事成了没有）和**回归集**（原来会的事坏没坏——工具调用格式、拒答边界最有代表性）。两条硬约束：阈值必须**高于噪声地板**（同一模型同一数据跑两遍的分数差就是地板）；评估必须在**上线配置**下跑——训练用 bf16、上线用 FP8/INT4 却不重测，等于裸奔。不过就回第 1 步修数据，而不是去改阈值。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：适配器注册——产物不是一个目录，是一条记录
+
+底座 digest、适配器路径、评测分（新能力 + 回归两列）、责任人、merge 决策，五样一起入库。merge 决策这步绕不开：合并进底座（`merge_and_unload`）省推理开销但失去热切换；不合并且保留多适配器路由——同一个底座服务多个租户。注册表里写清选了哪种，否则半年后没人解释得了「这版为什么切不动」。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：上线——一个底座热挂多个适配器，请求只换 model 名
+
+vLLM/SGLang 多 LoRA 热挂载，底座副本零改动：
+
+```json
+{
+  "server": {
+    "engine": "vLLM",
+    "base_model": "your-base-model",
+    "enable_lora": true,
+    "lora_modules": { "agent-v3": "/mnt/adapters/agent-v3" },
+    "max_loras": 4,
+    "max_lora_rank": 32
+  },
+  "route": {
+    "endpoint": ":8000/v1/chat/completions",
+    "switch_key": "model",
+    "example": { "model": "agent-v3", "messages": ["…"] }
+  }
+}
 ```
 
-> 💡 **提示**：QLoRA 训练出的适配器上线前，要把 merge 与否想清楚——合并进底座（merge_and_unload）省推理开销但失去热切换能力；不合并保留多适配器路由能力。
+三个字段决定上线行为：`max_loras: 4` 表示同时常驻 4 个适配器，第 5 个租户的请求要现场加载、延迟会抖；`max_lora_rank: 32` 必须 ≥ 训练时的 `r: 16`，配小了适配器直接加载失败（报错信息还很隐晦）；请求侧只改 `model` 字段就完成切换——这就是灰度的实现方式：新旧适配器同时常驻，切流量只是改一个字段。先影子流量（同一请求同时打旧/新模型，只记录不返回），再按租户灰度；回滚 = 把 `model` 切回上一版名字，目标 < 5 分钟，比训练快更重要。
+
+{% endstep %}
+{% endstepper %}
+
+## 门禁不过的三种结局（点标签切换）
+
+{% tabs %}
+{% tab title="新能力不达标" %}
+评测分与底座持平。先别怀疑「模型学不会」，先怀疑**数据**：500 条对窄场景都嫌少，泛化自然差；补到 2k–5k 条再谈调参。第二顺位才是把 `r: 16 → 32`——适配器容量翻倍，表达力强了但小数据上过拟合更快，看 train/eval 分叉再决定，不要一步跳到调大 r。
+{% endtab %}
+
+{% tab title="回归集失败" %}
+新能力过了，工具调用格式合法率却掉了、或拒答率变了——原来会的事被做坏了。原因几乎总在**数据配比**：领域数据占比过高，通用与工具轨迹行为被稀释。回炉重训改配比；最不该做的是把回归集里「太严的几例」删掉——那是自欺，下次退化没人报警。
+{% endtab %}
+
+{% tab title="分数抖动没法判" %}
+这版高 0.01、下版低 0.02，红灯天天亮。把同一模型同一数据跑两遍，**差值就是噪声地板**：门禁阈值低于它，工程师很快学会忽略红灯——定期退化就是这么开始的。要么把阈值抬到噪声地板之上，要么把评估集扩到 200 例压方差，也别一次扫 30 个超参却没有固定评估协议——那只是随机走了 30 遍，赢的那个仍是过拟合。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+QLoRA 训练出的适配器上线前，要把 merge 与否想清楚——合并进底座（`merge_and_unload`）省推理开销但失去热切换能力；不合并保留多适配器路由能力。判据就一条：这个适配器是给「全量流量」用的，还是给「某个租户」用的。
+{% endhint %}
 
 ## 工程现场笔记
 

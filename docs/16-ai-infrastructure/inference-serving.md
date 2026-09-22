@@ -2,7 +2,7 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 推理服务化：引擎、批处理与延迟指标
@@ -58,45 +58,139 @@ flowchart LR
 | Prefill / Decode 分离 | 两阶段资源画像冲突 | NVIDIA Dynamo + NIXL、llm-d、SGLang P/D | 大规模部署（几十卡起）才有意义 |
 | 约束解码 / 结构化输出 | JSON 合法率与解析失败重试 | xgrammar、outlines、guided decoding | Agent 工具调用参数不再「偶尔抽风」 |
 
-## 先量一把：TTFT / TPOT 的最小压测脚本
+## 先量一把：TTFT / TPOT 的最小压测口径
 
-选型之前先有基线，否则所有「优化」都是玄学。
+选型之前先有基线，否则所有「优化」都是玄学。基线的本体不是一段代码，而是**一份写清楚就能复现的跑批契约**：同一条业务 prompt、流式返回、固定并发、先预热再计数、按百分位收数。下面这份 JSON 把原来那段压测脚本的全部信息压成了数据——字段、阈值、公式与示例读数一一对应，照抄就能让任何人给你跑出可比的数。
 
-```python
-import asyncio, time, statistics
-from openai import AsyncOpenAI
-
-CLIENT = AsyncOpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
-PROMPT = "用 300 字解释 RAG 与微调的取舍。"   # 换成你真实的业务 prompt
-
-async def one():
-    t0 = time.perf_counter(); ttft = None; n = 0
-    async with await CLIENT.chat.completions.create(
-        model="your-model", messages=[{"role": "user", "content": PROMPT}],
-        max_tokens=300, stream=True,
-    ) as stream:
-        async for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content:
-                if ttft is None:
-                    ttft = time.perf_counter() - t0
-                n += 1
-    total = time.perf_counter() - t0
-    return ttft, (total - ttft) / max(n - 1, 1), n
-
-async def main(concurrency=16):
-    for _ in range(3):                      # 预热，别把冷启动算进去
-        await asyncio.gather(*[one() for _ in range(concurrency)])
-    res = await asyncio.gather(*[one() for _ in range(concurrency * 5)])
-    p50 = lambda xs: statistics.quantiles(xs, n=100)[49]
-    p99 = lambda xs: statistics.quantiles(xs, n=100)[98]
-    print(f"TTFT p50 {p50([r[0] for r in res]):.3f}s  p99 {p99([r[0] for r in res]):.3f}s")
-    print(f"TPOT p50 {p50([r[1] for r in res])*1000:.1f}ms  p99 {p99([r[1] for r in res])*1000:.1f}ms")
-    print(f"输出 tokens 合计 {sum(r[2] for r in res)}")
-
-asyncio.run(main())
+```json
+{
+  "target": {
+    "base_url": "http://127.0.0.1:8000/v1",
+    "api_key": "EMPTY",
+    "model": "your-model"
+  },
+  "request": {
+    "messages": [{ "role": "user", "content": "用 300 字解释 RAG 与微调的取舍。" }],
+    "max_tokens": 300,
+    "stream": true,
+    "note": "prompt 换成你真实的业务 prompt，否则测出来的 prefill/decode 比例没有参考价值"
+  },
+  "load_plan": {
+    "concurrency": 16,
+    "warmup_rounds": 3,
+    "measured_requests": 80,
+    "formula": "measured_requests = concurrency * 5；预热 3 轮整批丢弃，不写进统计"
+  },
+  "metric_definitions": {
+    "ttft_s": "t0 起算，到第一个 delta.content 非空的 chunk 到达为止（chunk.choices[0].delta.content）",
+    "tpot_ms": "(total_s - ttft_s) / max(n - 1, 1) * 1000，n 为收到的内容 chunk 数",
+    "output_tokens_total": "sum(n)，吞吐的分母",
+    "percentiles": "p50 = statistics.quantiles(xs, n=100)[49]，p99 = 同数组的 [98]"
+  },
+  "report_example": {
+    "TTFT": { "p50_s": 0.412, "p99_s": 1.86 },
+    "TPOT": { "p50_ms": 21.4, "p99_ms": 58.7 },
+    "output_tokens_total": 23180
+  }
+}
 ```
 
 **读法**：TTFT 高 → prefill 撑不住（开 chunked prefill、缩 prompt、加卡）；TPOT 高 → decode 带宽/并发问题（量化 KV、减并发、上分离部署）；只有 p99 炸 → 排队问题，看调度而不是算力。
+
+预热为什么必须有：权重加载到显存要几十秒，第一批请求还要现场分配 KV block，这两笔一次性开销如果计入 p99，你会得出「引擎不行」的错误结论。按机制算也知道冷启动首请求会明显更慢——问题不在引擎慢，而在两笔一次性开销被计进了同一个样本。
+
+## 分步演示：一条请求从入队到吐出最后一个 token
+
+契约里那两个数各自在哪个瞬间被定格，看这条时间线就清楚了。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
+flowchart TB
+  Q[入队 waiting] --> PF[prefill 算力瓶颈]
+  KV[(KV block 池<br/>16 token 一块)] -. 命中即跳过 .-> PF
+  PF --> F[首个内容 chunk<br/>→ TTFT 定格]
+  F --> D[decode step<br/>→ TPOT 计时]
+  D --> D
+  D --> E[序列结束<br/>block 立刻回收]
+  E --> N[waiting 头部请求插队]
+  N -. 下一批 .-> D
+```
+
+*《图：TTFT 在第一个非空 chunk 处定格，TPOT 是此后每个 step 的平均间隔；「回收—插队」这条回头边就是连续批处理的全部秘密》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：入队——TTFT 从这一毫秒开始计时
+
+请求带着 `max_tokens=300` 和 `stream=true` 到达，进的是 waiting 队列而不是 GPU。调度器先估两件事：这条 prompt prefill 完需要多少 KV block、现有空闲 block 凑不凑得出来。凑不出来就继续排队，**排队时间 1:1 记进 TTFT**。所以「p50 正常 0.41s、p99 炸到 1.86s」这种曲线，问题多半在这一步，而不是算力不够。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：prefill——算力瓶颈，也是前缀缓存唯一能救的地方
+
+整段 prompt 过一遍前向，逐层写出 KV。引擎按固定块粒度比对已缓存前缀（vLLM 默认 block size 16 token），命中的块直接引用、跳过计算。示例里那条几 KB 的系统前缀若命中，TTFT 从 0.4s 量级掉到 0.1s 以下；全不命中就每轮从头算——这正是 [前缀缓存与上下文工程](prefix-cache-context-engineering.md) 那一页值回票价的地方。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：chunked prefill——别让一条长 prompt 毒害整个批次
+
+一条 50k token 的 RAG 请求若一次性 prefill，会把同批次所有人的 TPOT 顶上去。开启 chunked prefill 后 prompt 切成若干块，每个 step 只喂一块，并与正在 decode 的序列混跑：短请求的每 token 间隔稳住了，长请求自己的 TTFT 变长。**这是明确的取舍，不是免费午餐**，混合负载下不开它等于把长尾用户当祭品。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：第一个内容 chunk 到达，TTFT 在这里定格
+
+流式响应的头几个 chunk 可能是空壳（只有 role，或者纯粹的心跳），所以计时点必须卡在**第一个 `delta.content` 非空的 chunk**。这个定义差之毫厘，两拨人测出来的 TTFT 就不可比——把口径写进契约，比把脚本传来传去更靠谱。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：decode 循环——带宽瓶颈，连续批处理在这里补位
+
+之后每个 step 每条序列只产 1 token，却要读一遍权重加上不断变长的 KV，瓶颈从算力切到显存带宽。调度器每一步都重算批次：生成完的序列立刻退出、block 回收，waiting 头部的请求立刻插队补位。静态批处理得等同批最长那条 300 token 全吐完，连续批处理让早收口的先走——开头那条「5–10 倍吞吐」的差就是这么来的。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：80 条样本收数，别用平均值汇报
+
+并发 16、测量 80 条（= `concurrency * 5`，预热 3 轮丢弃），逐条算 `ttft` 与 `tpot`，再取 p50（100 分位的第 49 格）与 p99（第 98 格），输出 token 加总成吞吐。同一个服务，**报「平均 0.5s」和报「p99 1.86s」，做出的容量决策完全不同**：SLO 写 p99，账单看吞吐，两边都要 goodput（满足 SLO 的那部分吞吐）兜底。
+
+{% endstep %}
+{% endstepper %}
+
+## 同一份契约，四种负载（点标签切换）
+
+{% tabs %}
+{% tab title="并发 1：单流基线" %}
+TTFT p50 0.28s、TPOT p50 14ms。这一档没有任何排队，也没有带宽竞争，是**你理论上能承诺的下限**。它的用途是减法：并发拉高后涨出来的部分，才是调度与带宽的代价。如果并发 1 就慢得离谱，先怀疑没走流式、或者网关那一层在缓冲。
+{% endtab %}
+
+{% tab title="并发 8：甜区" %}
+吞吐接近线性（单卡 8 路大约能到单流的 5.5–6.5 倍），TTFT 只涨到 0.35s，TPOT 17ms。GPU 还没喂饱，连续批处理的补位几乎不排队。**多数 Agent 服务应该守在这一档左边**，用多副本横向扩，而不是把单副本的并发往上限顶。
+{% endtab %}
+
+{% tab title="并发 32：撞上带宽墙" %}
+吞吐还在涨但斜率明显变平（约 8–9 倍，远不是 32 倍），TPOT 从 17ms 跳到 45ms，p99 2.3s。每个 step 要读的 KV 总量正比于批内序列数，**先到顶的是带宽不是算力**。对策是量化 KV（FP8）、限制单副本并发、把 `max_num_seqs` 往「吞吐/延迟」拐点左边收，而不是继续加批。
+{% endtab %}
+
+{% tab title="混入一条 50k 长请求" %}
+不开 chunked prefill 时，一条 50k prompt 能把同批次所有人的 TPOT 顶到 120ms 以上——短请求的用户最先感受到「卡死」。开了之后短请求回到 45ms 附近，代价是长请求自己的 TTFT 涨到 3s 量级。混合负载的正解是**按长度分池路由**，长请求单独一档 SLO（→ [GPU 调度与多租户](gpu-scheduling-multitenancy.md)）。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**本轮取舍**：并发 1 / 8 / 32 三档跑同一份契约，拐点落在 8 与 32 之间——继续加并发的收益已经抵不上 p99 的恶化，加副本比加批划算。另外，把同一个引擎的批处理参数、KV 量化、chunked prefill 认真调一轮拿到的提升，通常不小于在两个主流引擎之间迁移的收益，而迁移还要重踩一遍坑：**选型会开三天，调参往往三天回本**。
+{% endhint %}
 
 ## 工程现场笔记
 
@@ -136,7 +230,7 @@ $$
 
 ## 小练习
 
-用上面脚本对同一模型分别测 `max_tokens=1`（纯 prefill）、`max_tokens=300`（prefill+decode）、并发 1 / 8 / 32 三档，画出 TTFT 与 TPOT 随并发的曲线，判断你的瓶颈落在哪一档并发。
+按上面那份压测契约（`load_plan` 与 `metric_definitions` 保持不动）对同一模型分别测 `max_tokens=1`（纯 prefill）、`max_tokens=300`（prefill+decode），并发 1 / 8 / 32 三档，画出 TTFT 与 TPOT 随并发的曲线，判断你的瓶颈落在哪一档并发。两条曲线的拐点如果不重合，说明两个阶段的资源画像真的冲突——那就是分离式部署唯一的入场理由。
 
 ## 实战手记
 

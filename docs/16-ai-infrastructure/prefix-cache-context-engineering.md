@@ -70,36 +70,112 @@ $$
 
 ## 命中率怎么量
 
-```python
-import time
-from openai import OpenAI
+命中率不是感觉，是响应里的两个字段相除。下面这份 JSON 把「装配顺序决定命中率」摊开：请求体的 `messages` 数组顺序、要读的计数字段，以及同一 prompt 家族连跑三轮的**设数样例**（数值是编的，读法是通用的——换成你网关回包里的 `cached_tokens / prompt_tokens` 就是真相）。三轮唯一的变量是前缀有没有被动过。
 
-c = OpenAI()   # 或指向自建 vLLM/SGLang 的 base_url
-SYSTEM = open("agent_system.md").read()   # 稳定前缀：几 KB 起
-
-def turn(history, tag):
-    r = c.chat.completions.create(
-        model="your-model",
-        messages=[{"role": "system", "content": SYSTEM}, *history],
-        max_tokens=200,
-    )
-    u = r.usage
-    cached = getattr(u, "prompt_tokens_details", None)
-    cached = getattr(cached, "cached_tokens", 0) if cached else getattr(u, "cache_read_input_tokens", 0)
-    hit = cached / max(u.prompt_tokens, 1)
-    print(f"[{tag}] prompt={u.prompt_tokens} cached={cached} 命中率={hit:.0%}")
-    return r
-
-t0 = time.perf_counter()
-h = [{"role": "user", "content": "列出这个仓库的三个模块"}]
-turn(h, "第 1 轮（冷）")
-h += [{"role": "assistant", "content": "..."}, {"role": "user", "content": "再深入讲讲第二个"}]
-turn(h, "第 2 轮（应命中）")
-h[0]["content"] = SYSTEM + f"\n<!-- {time.perf_counter()-t0:.1f}s -->"   # 故意污染前缀
-turn(h, "第 3 轮（故意加了时间戳 → 命中率掉下去）")
+```json
+{
+  "request_shape": {
+    "model": "your-model",
+    "max_tokens": 200,
+    "messages": [
+      { "role": "system", "content": "<agent_system.md 全文，几 KB 起，逐轮一字不变>" },
+      { "role": "user", "content": "列出这个仓库的三个模块" }
+    ],
+    "base_url": "托管 API 或自建 vLLM / SGLang 的 /v1"
+  },
+  "usage_fields": {
+    "prompt_tokens": "本轮输入总量",
+    "prompt_tokens_details.cached_tokens": "OpenAI 口径：命中前缀的 token 数",
+    "cache_read_input_tokens": "Anthropic 口径：缓存读取的 token 数",
+    "字段说明": "两家字段名不同，取到哪个用哪个；自建引擎看引擎侧的 prefix cache hit 指标"
+  },
+  "hit_ratio": "cached_tokens / max(prompt_tokens, 1)",
+  "three_turns": [
+    { "turn": 1, "tag": "第 1 轮（冷）", "prompt_tokens": 5200, "cached_tokens": 0, "hit": "0%", "ttft_s": 1.9 },
+    { "turn": 2, "tag": "第 2 轮（应命中）", "prompt_tokens": 6400, "cached_tokens": 5100, "hit": "80%", "ttft_s": 0.4 },
+    { "turn": 3, "tag": "第 3 轮（故意加了时间戳 → 命中率掉下去）", "prompt_tokens": 6412, "cached_tokens": 0, "hit": "0%", "ttft_s": 2.0 }
+  ],
+  "polluted_system": "<agent_system.md 全文>\n<!-- 4.1s -->",
+  "turn2_history_appended": [
+    { "role": "assistant", "content": "…" },
+    { "role": "user", "content": "再深入讲讲第二个" }
+  ]
+}
 ```
 
 **判据**：多轮 Agent 稳态命中率应当 ≥ 70%；长期低于 40% 说明 prompt 结构有问题，先去改结构，别急着换模型。
+
+## 分步演示：同一个会话跑三轮，看命中率怎么涨上去又摔下来
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
+flowchart TB
+  S[system 5.0k tok] --> TL[tools 按名字典序 0.6k]
+  TL --> H[历史 只追加 0.8k]
+  H --> NEW[本轮输入 1.3k]
+  NEW --> HIT[命中边界 = 第一个分歧 token 之前]
+  S -. 某轮把耗时戳拼进 system .-> MISS[分歧之后全部重算<br/>cached_tokens 归零]
+```
+
+*《图：命中长度由「第一个分歧 token」一次性决定——分歧出现在第 12 个 token，后面 6.4k 全部白算，哪怕它们逐字未变》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 轮：冷启动，无缓存可用
+
+`messages` 是 `[system, user]` 两段，system 取 `agent_system.md` 全文（几 KB 起，对应约 5.0k token）。服务商侧还没有这段前缀的 KV，`prompt_tokens=5200`、`cached_tokens=0`、命中率 0%，TTFT 1.9s。**这一轮不该进任何基线**——它是冷启动，不是稳态。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 轮：只动尾部，命中立刻出现
+
+历史按 `assistant → user` 顺序**追加**（`再深入讲讲第二个`），前缀那 5.1k token 逐 token 与上一轮相同。响应里 `cached_tokens=5100`、`prompt_tokens=6400`，命中率 80%，TTFT 掉到 0.4s——省掉的正是命中段的 prefill，账单上还有一笔折扣（常见 `d=0.1`）。同一条纪律用在批量评测上：`tools` 数组先按名字典序排好再拼进 prompt。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 轮：污染实验，把耗时戳拼进 system
+
+只加了一行 `<!-- 4.1s -->` 注释，位置在 system 文本的末尾——但它在整段 prompt 的第 12 个 token 附近，**从那里往后的 6.4k 全部不再匹配**：`cached_tokens=0`、TTFT 回到 2.0s。改一个字节和改一千个字节，代价是同一个量级，这就是「前缀不可变」值得写成纪律的原因。
+
+{% endstep %}
+
+{% step %}
+
+#### 收尾：把 `turn3` 的污染删掉，命中率立刻回升
+
+修复不需要重建缓存结构，只要把时间戳、会话 ID、AB 实验标记挪回尾部。同一份 `messages` 再跑一轮，`cached_tokens` 回到 5100 以上。**这笔账是逐轮累计的**：按上文那条公式（`d=0.1`），命中率 80% 时输入侧成本系数是 `0.2+0.08=0.28`，命中率 30% 时是 `0.7+0.03=0.73`——一个 40 步的编码 Agent，等于白付一倍多的输入钱。
+
+{% endstep %}
+{% endstepper %}
+
+## 改一处会怎样（点标签切换）
+
+{% tabs %}
+{% tab title="时间戳 / request id 进了 system" %}
+命中率直接归零，每一轮都当成新 prompt 全量 prefill。典型表现是 `cached_tokens=0` 且 TTFT 恒定不降——**这个曲线形状比看平均值更能暴露问题**。修法只有一条：动态量一律移到消息尾部，或者移到 `tools` 之后的独立块。
+{% endtab %}
+
+{% tab title="工具列表按连接顺序拼" %}
+MCP 挂了三个 Server，每轮拼接顺序随连接时序变化，命中率在 20%–70% 之间抖动，看起来「时好时坏」。排序键换成工具名字典序（多 Server 也要归一化）之后抖动消失、稳定在 80% 上下。**顺序抖动是最难查的一类**，因为它每次都「差不多」。
+{% endtab %}
+
+{% tab title="历史被压缩改写了" %}
+做摘要、裁剪、重排都算改写历史：分歧点前移到被改写的那条消息，后面整段作废。正确姿势是**截断 + 把摘要块追加在尾部**，旧的前缀保持不动（参考 [Claude Code 的压缩策略](../06-memory-rag/memory-compression-forgetting.md)：压缩是打断点，不是每次微调）。代价是命中率会掉一个台阶，但只掉一次，而不是每轮都掉。
+{% endtab %}
+
+{% tab title="换了模型或参数" %}
+`temperature`、`max_tokens`、`tools` 列表变动，服务商侧可能整段缓存作废（各家口径不同，以官方文档为准）。所以把这些固定成「一套档位」而不是每请求现算：评测跑批中途改 `max_tokens`，前 2000 条数据的缓存收益全部清零。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**一笔能算出来的账**：一个每轮都往 system 末尾拼 request id 的 Agent，可缓存前缀被这一行字截断，命中率会掉到「只剩 system 那一段」的量级；把 id 移到消息尾部，命中率能抬到接近整段对话的比例。按上面那条公式代一下：$$h$$ 从 0.2 提到 0.8、$$d=0.1$$，输入成本系数从 $$0.82$$ 掉到 $$0.28$$，**同一份 prompt 每轮只花约三分之一的钱**。**没换模型、没改 prompt 内容，只改了顺序**——这就是本页全部的投资回报率。你自己的 Agent 命中了多少，看网关回包里的 `cached_tokens / prompt_tokens` 就能量出来。
+{% endhint %}
 
 ## 常见误区
 

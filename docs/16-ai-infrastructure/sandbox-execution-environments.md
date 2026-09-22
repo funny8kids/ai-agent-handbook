@@ -2,7 +2,7 @@
 tags: [infrastructure, safety, tooling, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 沙箱与执行环境
@@ -58,24 +58,156 @@ services:
     stop_grace_period: 2s
 ```
 
-```python
-# 执行层的风险闸门（放在工具调用管道里，不放 prompt 里）
-EGRESS_ALLOW = {"pypi.org", "files.pythonhosted.org"}   # 白名单，而不是黑名单
+上面那份 YAML 只管「环境长什么样」，还差一半：**谁被允许进去跑**。风险闸门是执行管道里的一张决策表，输入是一次工具调用，输出是 `allow` / `deny` 加一份运行预算。整段逻辑就下面这一份 JSON，没有隐藏分支。
 
-def before_execute(call):
-    if call.risk == "high" and not call.approved:
-        return deny("需要人工确认")                       # Human-in-the-loop
-    if call.type == "shell":
-        hosts = extract_hosts(call.code)
-        if hosts - EGRESS_ALLOW:
-            return deny(f"出口未授权: {hosts - EGRESS_ALLOW}")
-    return allow(
-        env={"HOME": "/tmp"},                            # 不挂任何密钥
-        timeout=60,                                       # 硬超时
-        max_output=200_000,                               # 输出截断，防上下文炸
-        audit={"agent": call.agent_id, "sha": hash_src(call.code)},  # 留证据
-    )
+```json
+{
+  "egress_allowlist": ["pypi.org", "files.pythonhosted.org"],
+  "input_call": {
+    "agent_id": "agent_7c31",
+    "type": "shell | python | read | write",
+    "risk": "low | medium | high",
+    "approved": false,
+    "hosts_referenced": ["pypi.org", "webhook.site"],
+    "code_sha256": "取自 hash_src(代码原文)"
+  },
+  "rules_in_order": [
+    {
+      "when": "risk == high 且 approved == false",
+      "decision": "deny",
+      "reason_code": "needs_approval",
+      "message": "需要人工确认"
+    },
+    {
+      "when": "type == shell 且 hosts_referenced - egress_allowlist 非空",
+      "decision": "deny",
+      "reason_code": "egress_denied",
+      "message": "出口未授权: <差集，逐个列出被挡的域名>"
+    },
+    {
+      "when": "以上都不成立",
+      "decision": "allow",
+      "budget": {
+        "env": { "HOME": "/tmp" },
+        "secrets_injected": false,
+        "timeout_s": 60,
+        "max_output_bytes": 200000,
+        "audit": { "agent_id": "agent_7c31", "sha": "code_sha256" }
+      }
+    }
+  ]
+}
 ```
+
+闸门放行之后，沙箱回给 Agent 的东西必须**机器可判定**——和 [把 Agent 接进机器人](../17-embodied-ai/agent-to-robot-bridge.md) 那页的回单是同一个道理：只有 `stdout` 没有结论的执行层，会让 Agent 一路自信地往下错。
+
+```json
+{
+  "ok": false,
+  "exit_code": 124,
+  "reason": "timeout",
+  "stdout": "…截断到 200000 字节…",
+  "stdout_truncated": true,
+  "stderr": "…同样截断…",
+  "duration_ms": 60021,
+  "sandbox_id": "sbx_2f9a",
+  "artifacts": [{ "path": "/tmp/out.parquet", "object_store_key": "sbx_2f9a/out.parquet", "redacted": true }],
+  "egress_blocked_hosts": ["webhook.site"],
+  "reason_enum": ["ok", "timeout", "needs_approval", "egress_denied", "missing_dependency", "oom_killed", "pid_limit", "escape_suspected"]
+}
+```
+
+`reason` 是**枚举而不是自由文本**：`oom_killed` 该减内存或换镜像，`missing_dependency` 该往 golden snapshot 里加包，`egress_denied` 要么走审批要么改代码——把失败类别分派清楚，Agent 才有机会自己修对。
+
+## 分步演示：把上面那四道闸门拆成六步
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
+flowchart TB
+  C[工具调用] --> G1[① 权限管道<br/>风险级 + 出网白名单]
+  G1 --> G2[② 隔离层启动<br/>快照克隆]
+  G2 --> G3[③ 执行<br/>cgroup 限额 + 60s 硬超时]
+  G3 --> G4[④ 回流<br/>截断 + 脱敏 + 留证]
+  G4 --> R[(结果契约<br/>ok / reason)]
+  G1 -. deny .-> X[未启动即拒<br/>零成本]
+  G3 -. 超时 .-> X
+```
+
+*《图：四道闸门的排序有讲究——deny 越靠前越便宜，①挡下的调用一个进程都没起；走到 ③ 之后才暴露的问题，已经花掉一份 CPU 配额和一块 tmpfs》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：先看风险级，不看代码内容
+
+决策表的第一条规则只读 `risk` 与 `approved` 两个字段：`high` 且没有人工确认，直接 `deny`，`reason=needs_approval`、`message=需要人工确认`。**风险级写在工具注册表里，不写在 prompt 里**——prompt 里的「请先询问用户」是建议，管道里的判断才是边界（→ [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：出网在启动前校验，白名单不是黑名单
+
+`extract_hosts(call.code)` 把代码里出现的域名抽出来，与 `{pypi.org, files.pythonhosted.org}` 求差集，非空即 `deny`，返回消息里点名被挡的 host。为什么这条比文件系统的规矩重要：真正出事故的几乎都是**外带**——`curl metadata.google.internal` 拿凭证、把私钥贴进请求体，而不是往容器里写文件。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：环境从快照克隆，不现场装包
+
+上面那份 YAML 在这里落地：根文件系统 `read_only`、`cap_drop: [ALL]`、`no-new-privileges` + seccomp 白名单、`network_mode: none`、唯一可写区是 tmpfs `/tmp`（`size=256m,mode=1777`）、`user: 65534:65534`。依赖来自预装的 golden snapshot，克隆比运行时 `pip install` 快 1–2 个数量级，顺手也关掉了「装到被投毒的包」这条路径。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：跑起来之后由 cgroup 数着
+
+`cpus: 1.0`、`memory: 1g`、`pids: 128`，`HOME=/tmp`，**没有任何密钥进环境变量**。pids 上限专治 fork 炸弹：进程数一超就直接以 `pid_limit` 收摊，不用等 60 秒硬超时——这一条在真实事故里最容易被忘，因为「不限制也能跑」。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：硬超时必须真的把进程杀掉
+
+`timeout_s: 60` 到点，先发信号、留 `stop_grace_period: 2s` 做清理，然后连**整个进程组**一起回收，tmpfs 一并销毁，回 `exit_code=124 / reason=timeout`（示例里 `duration_ms=60021`，超掉的 21ms 是杀与回收）。只杀主进程等于放生子进程继续跑——这类「沙箱没了但代码还在跑」的 bug 和机器人那页「上层放弃了机械臂还在动」是同一族。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：回流之前截断、脱敏、留证
+
+`stdout` 截到 `max_output_bytes=200000` 并置 `stdout_truncated=true`，防止一次 `cat` 大文件把上下文炸掉；`artifacts` 落对象存储，截图/下载件按字段脱敏（一张带身份证的截图，落盘即数据泄露）；`audit` 写 `agent_id` 与 `code_sha256`，事后能回答「这个沙箱跑过什么、是谁让它跑的」。
+
+{% endstep %}
+{% endstepper %}
+
+## 四类结局，四条分支（点标签切换）
+
+{% tabs %}
+{% tab title="成功" %}
+`ok=true`、`exit_code=0`、`reason=ok`，`stdout` 未截断、`artifacts` 两三个文件。别急着往下走：**再确认 `egress_blocked_hosts` 是空数组**。最常见的假成功是代码被网络策略挡了一半，`try/except` 吞掉异常后返回了个「看起来完成」的结果。
+{% endtab %}
+
+{% tab title="超时" %}
+`exit_code=124`、`reason=timeout`。八成是死循环，或者代码在偷偷装包。同一份 `code_sha256` 的重试预算给 1 次，**超时不自动重放**（重放只会再烧 60 秒）；连超两次就把截断后的 `stdout` 前 2000 字节连同代码哈希交给人。
+{% endtab %}
+
+{% tab title="越权被拒" %}
+`reason=needs_approval` 或 `egress_denied`，都发生在启动之前，沙箱一个进程都没起——最省钱的结局。反过来，如果 `exit_code=0` 但 `egress_blocked_hosts` 非空，说明代码在探测未授权域名，直接标 `escape_suspected`：销毁沙箱、吊销该会话凭证、拉审计记录复盘。
+{% endtab %}
+
+{% tab title="依赖缺失" %}
+`exit_code=1`、`reason=missing_dependency`，`stderr` 里是一行 `ModuleNotFoundError`。因为镜像禁止运行时装包，**正确修法是往 golden snapshot 里加包**，而不是为这次失败放开网络——网络一开，前面四道闸门当场全废。可以把 `missing_dependency` 的发生率做成运营指标，它直接说明快照该更新了。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**本轮取舍**：`max_output_bytes=200000` 是**上限不是目标值**——一次真实的 `pip install` 日志就有 60KB 上下，再小的截断线会把报错那几行一起切掉；而 200000 字节折算约 5 万 token，真给满一次就吃掉大半上下文窗口（长上下文对 TPOT 的杀伤见 [推理服务化](inference-serving.md)）。所以截断必须配 `stdout_truncated=true` 一起返回，让 Agent 明确知道自己在看节选；完整日志走 `artifacts` 落对象存储，按需读片段，而不是整坨塞回 prompt。
+{% endhint %}
 
 **四条硬要求**（少一条都会在真实事故里补上）：① 无密钥进沙箱；② 默认断网；③ 硬超时 + 资源上限（含 pid/磁盘）；④ 每个沙箱有唯一 ID 并留下「跑了什么代码」的可查记录。
 
@@ -107,7 +239,7 @@ def before_execute(call):
 
 ## 小练习
 
-给你的执行层写一份「威胁清单」并逐条验证：① 能不能读到宿主 `/etc/passwd`？② 能不能出网？③ 能不能 fork 到卡死？④ 能不能写满磁盘？⑤ 能不能拿到别人的会话文件？每条给出「已挡 / 靠自觉 / 未挡」的结论——「靠自觉」的都要变成代码。
+给你的执行层写一份「威胁清单」并逐条验证：① 能不能读到宿主 `/etc/passwd`？② 能不能出网？③ 能不能 fork 到卡死？④ 能不能写满磁盘？⑤ 能不能拿到别人的会话文件？每条给出「已挡 / 靠自觉 / 未挡」的结论——**「靠自觉」的都要变成管道里的判定或内核层的限额**，凡是依赖模型听话的防线，都按未挡处理。
 
 ## 参考资料
 

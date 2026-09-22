@@ -52,42 +52,128 @@ flowchart TD
 
 ## 最小埋点：run → step → tool 三层 span
 
-```python
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider   # 配 OTLP exporter 指向平台
-tracer = trace.get_tracer("agent")
+埋点 SDK 的 API 不用背，但一份**合规 trace 长什么样**必须心里有数。下面是一次 Agent run 真实形状的 span 集：一个 `agent.run` 做父，`llm.chat` 与 `tool.search_orders` 挂在下面，字段名全部走 OTel 的 `gen_ai.*` 语义约定——**字段名统一的价值就在这里：平台、告警、评估、仪表盘不必为每个框架重写一遍**：
 
-def traced_llm(messages, model, meta):
-    with tracer.start_as_current_span("llm.chat") as sp:
-        sp.set_attribute("gen_ai.operation.name", "chat")
-        sp.set_attribute("gen_ai.request.model", model)
-        sp.set_attribute("gen_ai.agent.run_id", meta["run_id"])
-        sp.set_attribute("gen_ai.agent.step", meta["step"])
-        r = client.chat.completions.create(model=model, messages=messages)
-        u = r.usage
-        sp.set_attribute("gen_ai.usage.input_tokens", u.prompt_tokens)
-        sp.set_attribute("gen_ai.usage.output_tokens", u.completion_tokens)
-        cached = getattr(getattr(u, "prompt_tokens_details", None), "cached_tokens", 0)
-        sp.set_attribute("gen_ai.usage.cached_tokens", cached)
-        sp.set_attribute("agent.prompt_hash", sha(messages))    # 便于聚合同前缀请求
-        return r
-
-def traced_tool(name, args, fn):
-    with tracer.start_as_current_span(f"tool.{name}") as sp:
-        sp.set_attribute("tool.name", name)
-        sp.set_attribute("tool.args_redacted", redact(args))    # 落盘前脱敏！
-        t0 = perf_counter()
-        try:
-            out = fn(**args)
-            sp.set_attribute("tool.ok", True)
-            return out
-        except Exception as e:
-            sp.set_attribute("tool.ok", False); sp.record_exception(e); raise
-        finally:
-            sp.set_attribute("tool.ms", int((perf_counter()-t0)*1000))
+```json
+{
+  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "spans": [
+    {
+      "name": "agent.run",
+      "span_id": "00f067aa0ba902b7",
+      "parent_id": null,
+      "attributes": {
+        "gen_ai.agent.run_id": "run-20260923-017",
+        "prompt_version": "v14",
+        "model": "your-model@2026-08",
+        "tool_set_hash": "sha1:4d9e1a"
+      }
+    },
+    {
+      "name": "llm.chat",
+      "span_id": "53995c3f42cd8ad8",
+      "parent_id": "00f067aa0ba902b7",
+      "attributes": {
+        "gen_ai.operation.name": "chat",
+        "gen_ai.request.model": "your-model@2026-08",
+        "gen_ai.agent.run_id": "run-20260923-017",
+        "gen_ai.agent.step": 2,
+        "gen_ai.usage.input_tokens": 3820,
+        "gen_ai.usage.output_tokens": 214,
+        "gen_ai.usage.cached_tokens": 3584,
+        "agent.prompt_hash": "sha1:ab12cd"
+      }
+    },
+    {
+      "name": "tool.search_orders",
+      "span_id": "b7c1f18f0d2e4a55",
+      "parent_id": "53995c3f42cd8ad8",
+      "attributes": {
+        "tool.name": "search_orders",
+        "tool.args_redacted": "{\"order_id\": \"ORD-8**-**\"}",
+        "tool.ok": true,
+        "tool.ms": 240
+      }
+    }
+  ]
+}
 ```
 
-**要点**：`redact()` 必须在埋点里，不在平台里。trace 是数据落盘点，明文密钥与 PII 一旦进去就很难追回。
+这份 payload 里五个要点，缺一个都会瞎一块：
+
+- **父子链是命根子**：run → step → tool 靠 `parent_id` 一层层挂上去，「为什么慢、为什么错」沿父链查；只记 prompt/response 就没有这个视角，也做不出「首次失败步骤」直方图。
+- **token 计量必须带 `gen_ai.usage.cached_tokens`**：示例里 3584/3820 ≈ 94% 命中。没有这个字段，「成本涨了是因为前缀缓存失效」这种结论既算不出也告不了警。
+- **`agent.prompt_hash` 聚合同前缀请求**：prompt 改版出回归时，按哈希分组就能定位「v15 毒害了哪批请求」，不用一条条翻原文。
+- **`tool.ok` 是布尔不是异常**：工具抛异常时 `record_exception` 记完还要向上抛，trace 保持完整——「一抛异常就丢埋点」是监控盲区的第一来源。
+- **`tool.ms` 无论成败都要落**（在 finally 语义里写，示例是 240 ms）：没有它，「模型慢」和「工具慢」永远混在一个端到端数字里分不清。
+
+{% hint style="warning" %}
+`redact()` 必须**在埋点里，不在平台里**。trace 是数据落盘点，明文密钥与 PII 一旦进去就很难追回——`tool.args_redacted` 落盘时就已完成脱敏。强合规栈还要在这之前叠加采样、分级脱敏与 TTL：DB 只存哈希与元数据，全文放加密对象存储。
+{% endhint %}
+
+## 从一次请求到一条评估用例：五步流水线
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：run 创建——身份四件套先钉死
+
+`run_id` 生成的同时挂上 `prompt_version`、`model`、`tool_set_hash`。三个月后有人问「为什么 6 月好用、7 月变差」，靠的就是这三个字段做横向对比——最常见的答案是某天加了 12 个 MCP 工具把选择面撑大了，而 `tool_set_hash` 的变化能直接证明这一点。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：每次模型调用发一个 `llm.chat`
+
+span 上带 `gen_ai.operation.name=chat`、模型名、`run_id` 和当前 `gen_ai.agent.step` 序号；响应回来后把 `input_tokens`/`output_tokens`/`cached_tokens` 三个计量挂上，顺带记 TTFT。步序号是给分析用的：「首次失败发生在第几步」直方图就按它分桶。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：每次工具调用发一个 `tool.{name}`
+
+span 名直接带工具名（如 `tool.search_orders`），参数先过 `redact()` 再落 `tool.args_redacted`；成功置 `tool.ok=true`，失败记异常并向上抛；无论哪种结局，`tool.ms` 都要写进去。工具选择分布漂移（哪个工具被点得越来越多）也只有靠这层 span 才统计得出来。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：平台按指标字典聚合，过线告警
+
+trace 进 Collector（Langfuse / Phoenix / ClickHouse）后聚合成仪表盘与告警：质量任一指标相对基线 ↓3pp（滚动 7 日）、TTFT p95 > SLO×1.5 持续 10 分钟、重试率 >2%、最大步数触顶率 >5%、单请求 token 异常——每条告警线都要能直接点回一组具体 span，否则等于没告警。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：失败样本沉淀进评估集，闭环才算合上
+
+用户差评、`tool.ok=false` 的重试、格式校验失败的 run 自动进候选池 → 人工确认 → 进评估集（30–500 例）→ CI 门禁每次改 prompt / 换模型前跑一遍、不过不放行。评估集「永远不过时」只有这一条机制；绿灯只代表老场景没问题，新场景没跟上就是自欺。
+
+{% endstep %}
+{% endstepper %}
+
+## 四条告警线，四种结局（点标签切换）
+
+{% tabs %}
+{% tab title="格式合法率 ↓3pp" %}
+拉出失败样本按 `prompt_hash` 分组，发现一半的输出在同一位置被截断——`max_tokens` 被网关改配置时调小了。处置：回滚配置 + 把这条样本按原形状补进评估集。教训是**行为类指标必须由 span 级证据兜底**，光看聚合曲线只会看到「莫名其妙掉了一截」。
+{% endtab %}
+
+{% tab title="单请求 token 异常" %}
+一个 run 里 `llm.chat` 数量远超平均，且 `gen_ai.agent.step` 一路递增、`input_tokens` 单调上涨——上下文不压缩导致的循环，「最大步数触顶率」同步抬头。修的是循环检测与压缩策略，不是换模型；「没有异常抛出但把用户的活干成 0 件」正是这类 run 的画像。
+{% endtab %}
+
+{% tab title="TTFT p95 超标 10 分钟" %}
+trace 显示慢只发生在模型调用段、工具 span 正常，再比 `cached_tokens`：从 94% 掉到接近 0——系统 prompt 改了一个字符把前缀缓存打失效了。缓存失效的代价先出现在延迟告警上，然后才出现在账单上；不埋 `cached_tokens`，你只能看到「莫名其妙变慢了」。
+{% endtab %}
+
+{% tab title="越权调用被拒突增" %}
+`tool.ok=false` 集中在写操作，且 `tool.args_redacted` 里出现跨租户参数——要么外部攻击，要么 prompt 退化把工具 schema 泄了出去。第一步是网关熔断该工具，第二步才回看 trace 定位注入路径（→ [模型网关与路由](model-gateway.md)）。被拒次数突增本身就是「防线在响」，比出事后查审计日志便宜两个数量级。
+{% endtab %}
+{% endtabs %}
 
 ## 平台层怎么选
 
@@ -108,7 +194,9 @@ def traced_tool(name, args, fn):
 4. **端到端 + 分步双轨**：整体成功率之外，统计「首次失败发生在第几步」（工具选择错 / 参数错 / 检索没召回 / 推理错）。定位不同，修的东西完全不同。
 5. **回归门禁的阈值来自基线波动**：同一模型同一数据跑两遍的分数差就是噪声地板，门禁要比它高，否则天天红灯。
 
-> ✅ **最佳实践**：每条 trace 都存 `prompt_version` + `model` + `tool_set_hash`。三个月后有人问「为什么 6 月好用、7 月变差」，你能立刻回答——多半是某天加了 12 个 MCP 工具把选择面撑大了（→ [工具注册中心](../11-engineering/tool-registry.md)）。
+{% hint style="info" %}
+**最佳实践**：每条 trace 都存 `prompt_version` + `model` + `tool_set_hash`。三个月后有人问「为什么 6 月好用、7 月变差」，你能立刻回答——多半是某天加了 12 个 MCP 工具把选择面撑大了（→ [工具注册中心](../11-engineering/tool-registry.md)）。
+{% endhint %}
 
 ## 常见误区
 

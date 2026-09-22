@@ -61,51 +61,153 @@ sequenceDiagram
 
 ## 最小可用的路由 + 降级
 
-```python
-from dataclasses import dataclass
-import asyncio, time
+路由策略真正需要人维护的部分只有两块：**池子规格**和**降级顺序**。它们是配置、不是代码——应该进版本库、由 SRE 审、能按租户灰度。业务侧只看到一个逻辑别名（`agent-cheap` / `agent-strong`），永远不接触池名、密钥和单价。下面这份契约就是全部输入，字段值取自生产上那条 `chat` / `extract` 双路由。
 
-@dataclass
-class Pool:
-    name: str
-    client: object
-    max_input_tokens: int
-    tpm_budget: int          # tokens/分钟
-    timeout: float
-
-POLICIES = {
-    "chat":     [Pool("small", SMALL,  32_000, 600_000, 8.0),
-                 Pool("large", LARGE, 128_000, 150_000, 20.0)],
-    "extract":  [Pool("small-json", SMALL, 16_000, 600_000, 6.0),
-                 Pool("large", LARGE, 128_000, 150_000, 20.0)],
+```json
+{
+  "pools": {
+    "small": {
+      "alias": "agent-cheap",
+      "max_input_tokens": 32000,
+      "tpm_budget": 600000,
+      "timeout_s": 8.0,
+      "constrained_decode": false
+    },
+    "small-json": {
+      "alias": "agent-cheap",
+      "max_input_tokens": 16000,
+      "tpm_budget": 600000,
+      "timeout_s": 6.0,
+      "constrained_decode": true
+    },
+    "large": {
+      "alias": "agent-strong",
+      "max_input_tokens": 128000,
+      "tpm_budget": 150000,
+      "timeout_s": 20.0,
+      "constrained_decode": true
+    }
+  },
+  "routes": {
+    "chat": ["small", "large"],
+    "extract": ["small-json", "large"]
+  },
+  "request_shape": {
+    "messages": "必填，多轮原样透传",
+    "model": "填池别名，不填真实模型名",
+    "response_format": "带 schema 时注入 {type: json_schema, json_schema: {name: out, schema: ...}}"
+  },
+  "retry": {
+    "max_retry": 2,
+    "backoff": "min(2 ** attempt, 8) + jitter",
+    "retry_same_pool": ["TimeoutError", "RateLimitError"],
+    "switch_pool_immediately": ["TransientServerError"]
+  },
+  "metrics": {
+    "gateway.escalated": ["pool"],
+    "gateway.retry": ["pool", "err"]
+  }
 }
-
-async def call(pool, messages, schema=None):
-    async with asyncio.timeout(pool.timeout):
-        kw = {"model": pool.name}
-        if schema:      # 需要合法 JSON 的任务优先走支持约束解码的池
-            kw["response_format"] = {"type": "json_schema",
-                                     "json_schema": {"name": "out", "schema": schema}}
-        return await pool.client.chat.completions.create(messages=messages, **kw)
-
-async def route(task: str, messages, schema=None, max_retry=2):
-    approx = sum(len(m["content"]) for m in messages) // 3
-    for i, pool in enumerate(POLICIES[task]):
-        if approx > pool.max_input_tokens:            # 上下文放不下 → 换池，不是失败
-            continue
-        for attempt in range(max_retry + 1):
-            try:
-                r = await call(pool, messages, schema)
-                if i > 0:                             # 记录「升级」事件，用于优化 prompt/小模型
-                    metrics.incr("gateway.escalated", tags={"pool": pool.name})
-                return r
-            except (TimeoutError, RateLimitError) as e:
-                await asyncio.sleep(min(2 ** attempt, 8) + random())   # 退避 + jitter
-                metrics.incr("gateway.retry", tags={"pool": pool.name, "err": type(e).__name__})
-            except TransientServerError:
-                break                                  # 立刻降级到下一个池，别耗重试预算
-    raise ServiceDegraded("所有池均不可用：请走人工/缓存兜底")
 ```
+
+四个字段值得单独解释，它们决定了线上会不会出事故：
+
+- **`max_input_tokens` 是换池条件，不是错误码**。请求进来先估一把长度（`sum(len(content) for m in messages) // 3`，字符数除以 3 近似 token 数），超过当前池上限就跳过它去下一个池——上下文放不下是**路由问题**。一进门就报 413，等于把自家调度失败推给调用方。
+- **`timeout_s` 按池配，不搞全局值**。`small` 8 秒、`small-json` 6 秒、`large` 20 秒：小模型池服务低延迟对话，超时就降级；大模型池承担长输出，必须给它 20 秒。全局 30 秒超时是最常见的写法，也是同时杀死「快请求」和「长任务」的最快办法。
+- **`constrained_decode` 是池的能力，不是愿望**。带 `schema` 的任务必须落到真正支持约束解码的池，请求体里塞 `response_format`，让模型「只能吐出合法 JSON」。让不支持的池「尽量输出 JSON」，等于把解析失败和重试成本推到线上。
+- **两类错误两种待遇**。`TimeoutError` / `RateLimitError` 说明这个池还活着，退避后值得再试（同池最多 `max_retry + 1 = 3` 次）；`TransientServerError`（5xx）说明它自己都在漏水，**立刻降级到下一个池，一次重试预算都不给它花**——这一条是防止重试风暴的核心开关。
+
+把上面这份契约跑起来，判定顺序长这样。注意图里有两条回路：退避回路回到「发起调用」，换池回路回到「取队首」。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
+flowchart TB
+  R[请求进入<br/>task + messages] --> EST[估算输入 token<br/>字符数 ÷ 3]
+  EST --> PICK[取路由队首的池]
+  PICK --> FIT{放得进该池<br/>max_input_tokens}
+  FIT -- 否·换池不算失败 --> MORE{队列还有下一个池}
+  FIT -- 是 --> CALL[发起调用<br/>超时取该池 timeout_s]
+  CALL -- 成功 --> OUT[返回结果与 usage<br/>非队首则记 escalated]
+  CALL -- 429 或超时 --> BUD{重试预算未用尽}
+  BUD -- 是 --> BACK[退避 2 的 n 次方 + jitter<br/>封顶 8 秒]
+  BACK --> CALL
+  BUD -- 否 --> MORE
+  CALL -- 服务端 5xx --> MORE
+  MORE -- 是·降级换池 --> PICK
+  MORE -- 否·全部不可用 --> DEG[ServiceDegraded<br/>走缓存或人工兜底]
+```
+
+*《图：三条出口对应三种病因——429 与超时吃本池重试预算、5xx 直接换池、池队列耗尽才抛 ServiceDegraded》*
+
+## 分步演示：一次 `extract` 请求的六道判断
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：进门先验身份，密钥留在这里
+
+业务带服务身份进来，网关换出对应供应商密钥（KMS/Vault 托管，按池隔离）。同一道把 PII 脱敏和 prompt 注入检测也做掉——**必须在派单之前**：一旦原文到了上游，你的合规边界就已经被越过了。此处的产出是一个内部上下文：`tenant` + `task=extract` + 预算档位。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：配额闸——超了排队，不是失败
+
+按池的 `tpm_budget`（`small` / `small-json` 各 600_000 token/分钟，`large` 只有 150_000）和该租户的当日累计做判定。配额打满时**排队而不是返回 429**：429 会让客户端立刻重试，把「限流」放大成「把上游继续打死」。排队窗口另设超时，等不到才降级到 `large` 或直接拒绝。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：缓存查询——两种缓存的适用面完全不同
+
+前缀缓存靠会话亲和命中同一副本（自建 vLLM/SGLang 时这是路由的一部分，不是可选优化）；语义缓存只对幂等查询开，`extract` 这类「同一份文档问同一个字段」命中率很高，而开放式 `chat` 一律跳过。miss 才继续往下走。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：长度预判，然后才轮到「谁便宜」
+
+这条请求带了 6 万字的文档，估算 `60000 // 3 = 20000` token。`extract` 的队首是 `small-json`，上限 16_000——放不下，**跳过它不算错误**。下一个 `large` 上限 128_000，装得下，派单。因为 `large` 不是队首池，这一步要打一个 `gateway.escalated{pool=large}` 计数：没有它，你会一直以为小模型池够用。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：约束解码 + 出口校验
+
+请求体里注入 `response_format = {"type": "json_schema", "json_schema": {"name": "out", "schema": ...}}`，`timeout_s` 取该池的 20.0。返回后网关**自己再校验一次 schema**：上游声称支持约束解码不代表一定合法。校验失败按换池处理（记 `gateway.retry{err=schema_validation}`），而不是把脏 JSON 交给业务去 try/except。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：计量、审计、指标三件事一起收尾
+
+in / out / cached 三类 token **分开记账**（cached 通常按输入价 1 折计费，混在一起就算不出缓存的真实回报），落到租户账单；审计日志只落脱敏后的正文并按级别采样；指标出 `gateway.retry` 的池维度重试率与超时率。这三件事业务侧一件也做不了——网关是唯一能同时看清「哪个池在漏水」和「哪个租户在烧钱」的位置。
+{% endstep %}
+{% endstepper %}
+
+## 四种失败形状，四条分支（点标签切换）
+
+{% tabs %}
+{% tab title="上下文放不下" %}
+`approx > pool.max_input_tokens` → 换池，不算失败，不进熔断计数。`chat` 走 `small`(32k) → `large`(128k)。若队尾池也放不下，**这时才回 413**，并把 `approx` 和上限一起带回去，让运行时去做压缩或截断——网关只做无状态判定，压缩是语义决策，在这里做了调试会痛不欲生。
+{% endtab %}
+
+{% tab title="429 限流" %}
+`RateLimitError` 说明池还活着，只是配额到顶。同池按 `min(2 ** attempt, 8) + jitter` 退避，最多 3 次尝试（`max_retry = 2`）：三次尝试之间只睡两次，第 1 次 1–2 秒、第 2 次 2–3 秒——公式里那个 8 秒上限要 `max_retry` 调到 3 以上才碰得到，它是给更大重试预算留的天花板。预算用尽才降级到下一个池。429 时最不该做的是「立刻重试」——供应商侧恢复要时间，你只是在排队互相踩。
+{% endtab %}
+
+{% tab title="上游 5xx" %}
+`TransientServerError` 走完全相反的路：**不重试、不进退避循环，`break` 换池**。理由是重试预算是全局稀缺资源，花在一个正在漏水的池上是纯浪费。副作用是每个池都得配独立并发上限和独立熔断窗口，否则一个供应商抖动会把整条链的槽位占满。
+{% endtab %}
+
+{% tab title="所有池都不行" %}
+抛出 `ServiceDegraded("所有池均不可用：请走人工/缓存兜底")`，对外是 503 + `Retry-After`。此时真正该发生的是**兜底而非死循环**：命中的语义缓存直接回、回不去给降级文案、把这条链路记为「降级中」并升级给值班。一个只在 happy path 上工作的网关，在供应商区域故障时会让全站 500——这就是 fallback 链要写 timeout 和预算的原因。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**验收怎么打**：把 `gateway.escalated` 拉出来看一周。队首池的真实命中率如果低于 80%，说明路由档位判得太保守（你在为不需要强模型的问题付 `large` 的钱）；如果某个池的 `gateway.retry` 超过 2%，先怀疑它的配额配置（本页里 `large` 的 150_000 TPM 只有 `small` 的 1/4），而不是先怀疑模型质量。
+{% endhint %}
 
 > ✅ **最佳实践**：给每个租户一个「本月 token 预算 + 超预算策略（降级到小模型 / 排队 / 拒绝）」，把成本治理写进网关而不是写进月度复盘邮件。
 
@@ -126,7 +228,7 @@ async def route(task: str, messages, schema=None, max_retry=2):
 
 ## 小练习
 
-写一个 60 行的网关中间件：拦截所有 LLM 调用，输出 (a) 每条请求的 in/out/cached token 与费用估算，(b) 每个租户的当日累计，(c) 每个池的重试率与超时率。跑一周后回答：哪 3 个池的重试率超过 2%？哪 20% 的请求消耗了 80% 的成本？
+给上面那份契约补一个 60 行左右的网关中间件：拦截所有 LLM 调用，输出 (a) 每条请求的 in/out/cached token 与费用估算，(b) 每个租户的当日累计，(c) 每个池的重试率与超时率。跑一周后回答：哪 3 个池的重试率超过 2%？哪 20% 的请求消耗了 80% 的成本？
 
 ## 参考资料
 
