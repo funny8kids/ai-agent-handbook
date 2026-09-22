@@ -45,6 +45,7 @@ flowchart TD
 - [ReAct](react.md)
 - [Reflexion](reflexion.md)
 - [Self-Refine](self-refine.md)
+- [推理预算与测试期计算](test-time-compute-reasoning-budget.md)
 
 ## 读完能做到
 

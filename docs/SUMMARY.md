@@ -47,6 +47,7 @@
 * [ReAct](04-prompt-reasoning/react.md)
 * [Reflexion](04-prompt-reasoning/reflexion.md)
 * [Self-Refine](04-prompt-reasoning/self-refine.md)
+* [推理预算与测试期计算](04-prompt-reasoning/test-time-compute-reasoning-budget.md)
 
 ## 🔌 05 工具调用与协议
 * [本章导读](05-tool-protocol/README.md)

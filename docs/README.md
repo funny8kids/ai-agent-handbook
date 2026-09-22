@@ -13,9 +13,9 @@ updated: 2026-09-22
 
 **From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · **2026 frontier**
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：192 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：193 页 / 19 章，含 2026-09 前沿（GPT-6 Astra、Agents API、Claude Fable 5.1）与 6 个可离线真实运行的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 192 pages across 19 chapters, including a 2026 frontier chapter, 100 of them carrying formulas, 6 offline-runnable hands-on labs, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 193 pages across 19 chapters, including a 2026 frontier chapter, 100 of them carrying formulas, 6 offline-runnable hands-on labs, plus an index of 323 open-source projects. Every page has to show its work: principles come with derivations, claims link to primary sources, cases point at real source paths.
 
 ## 快速开始 · Quick start
 
@@ -85,16 +85,16 @@ updated: 2026-09-22
 
 ## 关于这本手册 · About this handbook
 
-- **192 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 192 pages across 19 chapters
+- **193 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 193 pages across 19 chapters
 - **104 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 104 pages carry rendered formulas
 - **数字与结论都能点回一手来源**，文末「参考资料」只放外部来源 · every claim links back to a primary source
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
 - **212 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现（逐文件点数，代码块与行内代码里的写法示例不计入）
-- **全书 185 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
-- **149 篇知识/资源页全部有「参考资料」**：326 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
+- **全书 186 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
+- **150 篇知识/资源页全部有「参考资料」**：328 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **225 张页内配图**：185 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 225 in-page figures, parser-verified diagrams + real product UI screenshots。另有 2 张自绘 SVG 用作 GitBook 站标，不在页面正文里，故不计入配图数
-- **179 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；42 张内容图（SVG/截图）全部配注，185 张 Mermaid 里 137 张带图注、48 张由图前实质引导语解释，**没有一张图是「如下图所示」四个字打发的**
+- **226 张页内配图**：186 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 226 in-page figures, parser-verified diagrams + real product UI screenshots。另有 2 张自绘 SVG 用作 GitBook 站标，不在页面正文里，故不计入配图数
+- **180 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；42 张内容图（SVG/截图）全部配注，186 张 Mermaid 里 138 张带图注、48 张由图前实质引导语解释，**没有一张图是「如下图所示」四个字打发的**
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。
