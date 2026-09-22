@@ -73,6 +73,7 @@
 * [记忆固化与睡眠时计算](06-memory-rag/sleep-time-memory-consolidation.md)
 * [长上下文退化与有效上下文窗口](06-memory-rag/long-context-degradation.md)
 * [Text-to-SQL：让 Agent 查结构化数据](06-memory-rag/text-to-sql.md)
+* [Embedding 微调：让检索跟上你的领域](06-memory-rag/embedding-finetuning.md)
 
 ## 🗺️ 07 规划与任务执行
 * [本章导读](07-planning/README.md)

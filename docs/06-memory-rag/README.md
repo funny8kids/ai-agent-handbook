@@ -50,6 +50,7 @@ flowchart LR
 - [记忆固化与睡眠时计算](sleep-time-memory-consolidation.md)
 - [长上下文退化与有效上下文窗口](long-context-degradation.md)
 - [Text-to-SQL：让 Agent 查结构化数据](text-to-sql.md)
+- [Embedding 微调：让检索跟上你的领域](embedding-finetuning.md)
 
 ## 读完能做到
 
