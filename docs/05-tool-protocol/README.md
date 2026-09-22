@@ -2,10 +2,10 @@
 tags: [tooling]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 05 工具调用与协议
+# 05 工具调用与协议 · 本章导读
 
 {% hint style="info" %}
 **一句话**：工具是 Agent 的手脚，协议是手脚的接法。本章从 Function Calling 原理讲到 MCP/A2A 两大协议，再到权限、沙箱与 Computer Use。

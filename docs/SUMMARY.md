@@ -1,6 +1,6 @@
 # Summary
 
-* [首页](README.md)
+* [AI Agent 手册 · AI Agent Handbook](README.md)
 
 ## 🧭 导航与索引
 * [总导航](00-index/README.md)
@@ -10,14 +10,14 @@
 * [更新日志](00-index/changelog.md)
 
 ## 🌱 01 AI 基础
-* [本章导读](01-ai-basics/README.md)
+* [01 AI 基础 · 本章导读](01-ai-basics/README.md)
 * [AI、ML、DL 的关系](01-ai-basics/ai-ml-dl.md)
 * [人工智能发展简史](01-ai-basics/ai-history.md)
 * [机器学习基础](01-ai-basics/machine-learning-basics.md)
 * [深度学习基础](01-ai-basics/deep-learning-basics.md)
 
 ## 🤖 02 Agent 基础
-* [本章导读](02-agent-basics/README.md)
+* [02 Agent 基础 · 本章导读](02-agent-basics/README.md)
 * [什么是 AI Agent](02-agent-basics/what-is-agent.md)
 * [Agent 与 Workflow、Chatbot、Copilot 的区别](02-agent-basics/agent-vs-workflow-chatbot-copilot.md)
 * [Agent 核心组件](02-agent-basics/core-components.md)
@@ -27,7 +27,7 @@
 * [Human-in-the-loop](02-agent-basics/human-in-the-loop.md)
 
 ## 🧠 03 LLM 基础
-* [本章导读](03-llm/README.md)
+* [03 LLM 基础 · 本章导读](03-llm/README.md)
 * [LLM 是什么](03-llm/what-is-llm.md)
 * [Transformer 与 Attention](03-llm/transformer-attention.md)
 * [Token、Embedding、上下文窗口](03-llm/token-embedding-context.md)
@@ -38,7 +38,7 @@
 * [推理、量化、蒸馏与部署](03-llm/inference-quantization-deployment.md)
 
 ## 💬 04 Prompt 与推理
-* [本章导读](04-prompt-reasoning/README.md)
+* [04 Prompt 与推理 · 本章导读](04-prompt-reasoning/README.md)
 * [Prompt Engineering](04-prompt-reasoning/prompt-engineering.md)
 * [结构化输出](04-prompt-reasoning/structured-output.md)
 * [Chain of Thought](04-prompt-reasoning/chain-of-thought.md)
@@ -50,7 +50,7 @@
 * [推理预算与测试期计算](04-prompt-reasoning/test-time-compute-reasoning-budget.md)
 
 ## 🔌 05 工具调用与协议
-* [本章导读](05-tool-protocol/README.md)
+* [05 工具调用与协议 · 本章导读](05-tool-protocol/README.md)
 * [Function Calling](05-tool-protocol/function-calling.md)
 * [Tool Use](05-tool-protocol/tool-use.md)
 * [MCP：Model Context Protocol](05-tool-protocol/mcp.md)
@@ -60,7 +60,7 @@
 * [Computer Use / Browser Use](05-tool-protocol/computer-use-browser-use.md)
 
 ## 📚 06 记忆与 RAG
-* [本章导读](06-memory-rag/README.md)
+* [06 记忆与 RAG · 本章导读](06-memory-rag/README.md)
 * [记忆类型：短期、长期、情景、语义、程序](06-memory-rag/memory-types.md)
 * [上下文工程](06-memory-rag/context-engineering.md)
 * [Embedding 与相似度检索](06-memory-rag/embedding-similarity.md)
@@ -76,7 +76,7 @@
 * [Embedding 微调：让检索跟上你的领域](06-memory-rag/embedding-finetuning.md)
 
 ## 🗺️ 07 规划与任务执行
-* [本章导读](07-planning/README.md)
+* [07 规划与任务执行 · 本章导读](07-planning/README.md)
 * [任务分解](07-planning/task-decomposition.md)
 * [Plan-and-Execute](07-planning/plan-and-execute.md)
 * [子目标规划](07-planning/subgoal-planning.md)
@@ -85,7 +85,7 @@
 * [工作流编排](07-planning/workflow-orchestration.md)
 
 ## 👥 08 多智能体
-* [本章导读](08-multi-agent/README.md)
+* [08 多智能体 · 本章导读](08-multi-agent/README.md)
 * [多 Agent 协作](08-multi-agent/multi-agent-collaboration.md)
 * [角色分配](08-multi-agent/role-assignment.md)
 * [通信协议](08-multi-agent/communication-protocol.md)
@@ -96,7 +96,7 @@
 * [多 Agent 编排](08-multi-agent/multi-agent-orchestration.md)
 
 ## 🧰 09 框架与生态
-* [本章导读](09-frameworks/README.md)
+* [09 框架与生态 · 本章导读](09-frameworks/README.md)
 * [LangChain](09-frameworks/langchain.md)
 * [LangGraph](09-frameworks/langgraph.md)
 * [LlamaIndex](09-frameworks/llamaindex.md)
@@ -109,7 +109,7 @@
 * [向量数据库生态](09-frameworks/vector-databases.md)
 
 ## 📊 10 评估、安全与对齐
-* [本章导读](10-evaluation-safety/README.md)
+* [10 评估、安全与对齐 · 本章导读](10-evaluation-safety/README.md)
 * [Agent 评估指标](10-evaluation-safety/evaluation-metrics.md)
 * [基准测试总览](10-evaluation-safety/benchmarks.md)
 * [AgentBench、WebArena、SWE-bench、GAIA、ToolBench](10-evaluation-safety/agentbench-webarena-swebench-gaia-toolbench.md)
@@ -120,10 +120,10 @@
 * [数据隐私](10-evaluation-safety/data-privacy.md)
 * [对齐与安全](10-evaluation-safety/alignment-safety.md)
 * [可解释性](10-evaluation-safety/explainability.md)
-* [2026 安全现实](10-evaluation-safety/safety-incidents-2026.md)
+* [2026 安全现实：事故、阈值与监控](10-evaluation-safety/safety-incidents-2026.md)
 
 ## 🚀 11 工程化与可观测性
-* [本章导读](11-engineering/README.md)
+* [11 工程化与可观测性 · 本章导读](11-engineering/README.md)
 * [Agent 工作流编排](11-engineering/workflow-orchestration.md)
 * [状态机与事件驱动](11-engineering/state-machine-event-driven.md)
 * [工具注册中心](11-engineering/tool-registry.md)
@@ -136,7 +136,7 @@
 * [Agent 失败模式图鉴与调试手册](11-engineering/agent-failure-playbook.md)
 
 ## 💼 12 应用案例
-* [本章导读](12-applications/README.md)
+* [12 应用案例 · 本章导读](12-applications/README.md)
 * [编程 Agent](12-applications/coding-agent.md)
 * [数据分析 Agent](12-applications/data-analysis-agent.md)
 * [客服 Agent](12-applications/customer-service-agent.md)
@@ -152,21 +152,21 @@
 * [企业知识库](12-applications/enterprise-knowledge-base.md)
 
 ## 🔗 13 资源库
-* [资源库说明](13-resources/README.md)
+* [13 资源库 · 本章导读](13-resources/README.md)
 * [论文](13-resources/papers/README.md)
   * [ReAct 论文](13-resources/papers/react.md)
   * [Toolformer 论文](13-resources/papers/toolformer.md)
   * [Reflexion 论文](13-resources/papers/reflexion.md)
 * [课程](13-resources/courses/README.md)
   * [AI Agents for Beginners](13-resources/courses/ai-agents-for-beginners.md)
-* [开源项目](13-resources/projects/README.md)
+* [开源项目索引](13-resources/projects/README.md)
   * [LangChain](13-resources/projects/langchain.md)
   * [LangGraph](13-resources/projects/langgraph.md)
-  * [AutoGen](13-resources/projects/autogen.md)
+  * [AutoGen / Microsoft Agent Framework](13-resources/projects/autogen.md)
   * [CrewAI](13-resources/projects/crewai.md)
   * [OpenHands](13-resources/projects/openhands.md)
   * [DeepSeek Harness](13-resources/projects/deepseek-harness.md)
-  * [Pi Agent](13-resources/projects/pi.md)
+  * [Pi Agent（earendil-works/pi）](13-resources/projects/pi.md)
 * [工具](13-resources/tools/README.md)
   * [MCP Servers](13-resources/tools/mcp-servers.md)
   * [LangFuse](13-resources/tools/langfuse.md)
@@ -188,7 +188,7 @@
 * [术语表](15-glossary/README.md)
 
 ## 🏗️ 16 AI 基础设施
-* [本章导读](16-ai-infrastructure/README.md)
+* [16 AI 基础设施 · 本章导读](16-ai-infrastructure/README.md)
 * [推理服务化：引擎、批处理与延迟指标](16-ai-infrastructure/inference-serving.md)
 * [前缀缓存与上下文工程](16-ai-infrastructure/prefix-cache-context-engineering.md)
 * [GPU 调度与多租户](16-ai-infrastructure/gpu-scheduling-multitenancy.md)
@@ -201,38 +201,38 @@
 * [推理经济学与部署形态](16-ai-infrastructure/inference-economics-deployment.md)
 
 ## 🦾 17 具身智能
-* [本章导读](17-embodied-ai/README.md)
+* [17 具身智能 · 本章导读](17-embodied-ai/README.md)
 * [什么是具身智能](17-embodied-ai/what-is-embodied-ai.md)
 * [机器人基础模型谱系](17-embodied-ai/robot-foundation-models.md)
-* [VLA 模型架构](17-embodied-ai/vla-models.md)
+* [VLA 模型架构：视觉—语言—动作怎么接起来](17-embodied-ai/vla-models.md)
 * [动作表示与分层控制](17-embodied-ai/action-representation-control.md)
 * [数据引擎：机器人数据从哪来](17-embodied-ai/data-engine.md)
 * [仿真与 Sim-to-Real](17-embodied-ai/simulation-sim2real.md)
 * [世界模型与视频预训练](17-embodied-ai/world-models-video.md)
 * [灵巧操作：抓取、接触与触觉](17-embodied-ai/manipulation.md)
 * [人形与腿足运动](17-embodied-ai/humanoid-locomotion.md)
-* [评估与基准](17-embodied-ai/evaluation-benchmarks.md)
+* [评估与基准：怎么证明机器人真的行](17-embodied-ai/evaluation-benchmarks.md)
 * [硬件、实时与安全](17-embodied-ai/hardware-realtime-safety.md)
-* [把 Agent 接进机器人](17-embodied-ai/agent-to-robot-bridge.md)
+* [把 Agent 接进机器人：技能库 + ROS 2 桥](17-embodied-ai/agent-to-robot-bridge.md)
 
 ## 🛰️ 18 2026 前沿
-* [本章导读](18-frontier-2026/README.md)
+* [18 2026 前沿 · 本章导读](18-frontier-2026/README.md)
 * [2026 前沿模型地图](18-frontier-2026/frontier-models-2026.md)
 * [OpenAI Agents API](18-frontier-2026/openai-agents-api.md)
 * [Claude Agent SDK](18-frontier-2026/claude-agent-sdk.md)
 * [模型原生 vs 自建 Harness](18-frontier-2026/model-native-vs-harness.md)
-* [System One 决策模型：Jev](18-frontier-2026/system-one-decision-models.md)
+* [System One 决策模型：不生成文字的 Jev](18-frontier-2026/system-one-decision-models.md)
 * [Computer Use 2026](18-frontier-2026/computer-use-2026.md)
 * [评估 2026：基准代际](18-frontier-2026/eval-2026.md)
-* [2026 协议栈](18-frontier-2026/protocol-stack-2026.md)
+* [2026 协议栈：MCP · A2A · AG-UI · Skills](18-frontier-2026/protocol-stack-2026.md)
 
 ## 🧪 19 动手实验
-* [本章导读](19-labs/README.md)
+* [19 动手实验 · 本章导读](19-labs/README.md)
 * [Lab 1 最小 ReAct 闭环](19-labs/lab1-react.md)
 * [Lab 2 手写迷你 RAG](19-labs/lab2-rag.md)
 * [Lab 3 手写迷你 MCP](19-labs/lab3-mcp.md)
-* [Lab 4 三角色协作](19-labs/lab4-multi-agent.md)
-* [Lab 5 评测与可观测](19-labs/lab5-eval-trace.md)
+* [Lab 4：三角色协作（Planner / Executor / Reviewer）](19-labs/lab4-multi-agent.md)
+* [Lab 5：评测与可观测（pass@1 + trace 瀑布）](19-labs/lab5-eval-trace.md)
 * [Lab 6 护栏与真模型切换](19-labs/lab6-guardrails.md)
 
 ## 🤝 99 关于

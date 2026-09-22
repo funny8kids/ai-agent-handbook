@@ -2,10 +2,10 @@
 tags: [agent, basics]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 02 Agent 基础
+# 02 Agent 基础 · 本章导读
 
 {% hint style="info" %}
 **一句话**：本章回答最核心的问题：Agent 是什么、由什么组成、怎么循环、自主到什么程度、状态放在哪、人什么时候介入。

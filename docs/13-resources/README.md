@@ -2,10 +2,10 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 13 资源库
+# 13 资源库 · 本章导读
 
 {% hint style="info" %}
 **一句话**：全书推荐资源的分类收藏地：论文、课程、开源项目、工具、数据集、基准测试、博客、社区、Awesome 列表——每个资源一张卡片页，双向链接回知识点。

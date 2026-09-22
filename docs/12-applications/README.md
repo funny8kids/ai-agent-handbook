@@ -2,10 +2,10 @@
 tags: [application]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 12 应用案例
+# 12 应用案例 · 本章导读
 
 {% hint style="info" %}
 **一句话**：Agent 落地的难度排序大致是：编程 < 数据分析 < 客服 < 研究 < 行业关键业务——验证手段越客观，Agent 越早可用。本章逐场景拆解模式、代表项目与落地要点。

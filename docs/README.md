@@ -94,7 +94,7 @@ updated: 2026-09-23
 - **全书 217 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
 - **154 篇知识/资源页全部有「参考资料」**（按 frontmatter `type` 统计，不是靠肉眼挑）：339 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **257 张页内配图**：217 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 257 in-page figures, parser-verified diagrams + real product UI screenshots。按**放置次数**算是 262 处，差的那 5 处是 4 张 SVG 与 1 张截图跨页复用；另有 3 张自绘 SVG（封面与两枚站标）只在站点设置与仓库 README 里用，不在正文页，故不计入配图数
+- **257 张页内配图**：217 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含站内横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 257 in-page figures, parser-verified diagrams + real product UI screenshots。按**放置次数**算是 262 处，差的那 5 处是 4 张 SVG 与 1 张截图跨页复用；另有 3 张自绘 SVG（封面与两枚站标）只在站点设置与仓库 README 里用，不在正文页，故不计入配图数
 - **215 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；45 处图片放置里 44 处带注（另 1 处是首页装饰横幅），217 张 Mermaid **171 张带图注、46 张由图前或图后实质引导语解释，逐块量过：0 张裸图**，**没有一张图是「如下图所示」四个字打发的**
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、System One 决策模型（Jev）、Terminal-Bench 4.0
 

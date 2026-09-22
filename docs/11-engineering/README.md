@@ -2,10 +2,10 @@
 tags: [engineering]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 11 工程化与可观测性
+# 11 工程化与可观测性 · 本章导读
 
 {% hint style="info" %}
 **一句话**：从 Demo 到生产隔着一条工程鸿沟：编排、状态机、工具注册、追踪监控、错误处理、部署扩容、成本优化、持续评估——本章就是过桥的图纸。

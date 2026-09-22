@@ -2,10 +2,10 @@
 tags: [engineering, infrastructure, advanced]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 16 AI 基础设施
+# 16 AI 基础设施 · 本章导读
 
 {% hint style="info" %}
 **一句话**：Agent 产品的体验上限，往往不在 prompt，而在基础设施——推理引擎决定「多快多贵」，缓存决定「上下文能做多长」，沙箱决定「你敢让 Agent 干什么」，网关与运行时决定「崩了能不能救回来」。

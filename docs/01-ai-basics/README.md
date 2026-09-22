@@ -2,10 +2,10 @@
 tags: [basics, beginner]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 01 AI 基础
+# 01 AI 基础 · 本章导读
 
 {% hint style="info" %}
 **一句话**：本章用最少的数学，讲清 AI、机器学习、深度学习和 LLM 的关系，为理解 Agent 打地基。

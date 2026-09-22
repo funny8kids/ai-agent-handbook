@@ -2,10 +2,10 @@
 tags: [llm, basics]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 03 LLM 基础
+# 03 LLM 基础 · 本章导读
 
 {% hint style="info" %}
 **一句话**：LLM 是 Agent 的大脑。本章讲清它是什么、怎么被训练出来、怎么被压缩部署——以及这些特性如何约束 Agent 的设计。

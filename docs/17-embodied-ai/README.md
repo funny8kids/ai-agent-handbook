@@ -2,10 +2,10 @@
 tags: [embodied-ai, agent, index]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 17 具身智能
+# 17 具身智能 · 本章导读
 
 {% hint style="info" %}
 **一句话**：具身智能（Embodied AI）是把「会想的大脑」接进「会动的身体」——难点不在让模型说出步骤，而在把 5Hz 的语义决策变成 50–1000Hz 的电机指令，同时还能承受真实世界的噪声、磨损与安全事故。

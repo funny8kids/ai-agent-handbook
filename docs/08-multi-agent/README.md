@@ -2,10 +2,10 @@
 tags: [multi-agent]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 08 多智能体
+# 08 多智能体 · 本章导读
 
 {% hint style="info" %}
 **一句话**：多个 Agent 协作能换來更强的能力面与并行度，代价是通信成本、错误传播与调试复杂度——本章讲清协作模式与治理方法。

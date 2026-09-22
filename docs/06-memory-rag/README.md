@@ -2,10 +2,10 @@
 tags: [memory, rag]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 06 记忆与 RAG
+# 06 记忆与 RAG · 本章导读
 
 {% hint style="info" %}
 **一句话**：上下文窗口是 Agent 唯一的工作记忆。本章讲「记什么、怎么存、怎么找、怎么省」：记忆分类、上下文工程、向量检索、RAG 管线与图谱增强。

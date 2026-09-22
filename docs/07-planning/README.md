@@ -2,10 +2,10 @@
 tags: [planning]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 07 规划与任务执行
+# 07 规划与任务执行 · 本章导读
 
 {% hint style="info" %}
 **一句话**：会规划才叫「做事」而不是「碰运气」：任务分解、计划-执行分离、子目标管理、工具路由、错误恢复与工作流编排。

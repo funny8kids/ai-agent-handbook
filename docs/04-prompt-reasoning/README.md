@@ -2,10 +2,10 @@
 tags: [prompt]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 04 Prompt 与推理
+# 04 Prompt 与推理 · 本章导读
 
 {% hint style="info" %}
 **一句话**：本章讲「怎么把 LLM 用聪明」：从 prompt 工程的基本功，到 CoT/ToT 等推理模式，再到 Agent 循环的灵魂 ReAct 与自我改进三兄弟。

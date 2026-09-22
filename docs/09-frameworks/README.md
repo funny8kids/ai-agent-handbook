@@ -2,10 +2,10 @@
 tags: [framework]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 09 框架与生态
+# 09 框架与生态 · 本章导读
 
 {% hint style="info" %}
 **一句话**：框架是前人踩坑的结晶，但也是约束。本章横向对比主流框架的定位与适用场景，帮你「选得准、用得薄、走得出去」。

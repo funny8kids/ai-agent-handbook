@@ -2,10 +2,10 @@
 tags: [evaluation, safety]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# 10 评估、安全与对齐
+# 10 评估、安全与对齐 · 本章导读
 
 {% hint style="info" %}
 **一句话**：Agent 不评估 = 裸奔上线；不设防 = 等着被提示注入。本章覆盖评估指标、基准测试、幻觉治理、攻击面防御与对齐安全。
