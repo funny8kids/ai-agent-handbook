@@ -22,7 +22,7 @@ updated: 2026-09-22
 它们本质相同——用更多测试期计算换更高成功率——只是拧的旋钮不同：
 
 - **内化思考链**：推理模型用 RL 把 CoT 练进权重，输出前先「想」一段隐藏 token；旋钮是**思考预算 / effort 档位**。
-- **重复采样**：同一题独立采样 N 次再投票或选优（self-consistency、Best-of-N、[思维树](tree-of-thoughts.md) 的分支搜索）。旋钮是**样本数 N**。
+- **重复采样**：同一题独立采样 N 次再投票或选优（self-consistency、Best-of-N、[思维树](tree-of-thoughts.md) 的分支搜索）。旋钮是**样本数 N**；「采样越多、覆盖越广」的定量关系就是 pass@k 的无偏估计，其数学见 [Agent 评估指标](../10-evaluation-safety/evaluation-metrics.md)。
 - **迭代自我修正**：生成→检查→改，跑多轮（Reflexion / Self-Refine）。旋钮是**修正轮数**。
 
 「Large Language Monkeys」的核心发现很反直觉：**光是反复采样**（不引入任何更聪明的搜索），很多题的覆盖率就会随 N 稳步上升——算力本身就是有效资源。而 s1 证明：只需在结尾**强制续写「Wait, let me reconsider」**，不训练也能把思考「拉长」换准确率——即 **budget forcing**。
