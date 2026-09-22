@@ -2,7 +2,7 @@
 tags: [tooling, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Function Calling
@@ -95,40 +95,151 @@ sequenceDiagram
 
 ## 最小示例
 
-```python
-# 1) 注册工具 schema（发给模型）
-tools = [{
+工具从注册到跑完一次，模型侧与 Agent 侧之间流动的只有三份 JSON：**注册时发给模型的 schema**、**模型回给你的 `tool_use` 调用**、**你回填给模型的 `tool_result`**。下面这三段契约就是那条 while 循环的全部——把循环体拆开看，每一步都在搬运这三份报文之一。
+
+**① 工具 schema（你 → 模型，每一轮都重复发）**
+
+```json
+{
   "name": "get_weather",
   "description": "查询指定城市的实时天气。已知不需要实时数据时不要调用我。",
   "input_schema": {
     "type": "object",
     "properties": {
-      "city": {"type": "string", "description": "城市名，如 '台北'"},
-      "unit": {"type": "string", "enum": ["celsius", "fahrenheit"], "default": "celsius"}
+      "city": { "type": "string", "description": "城市名，如 '台北'" },
+      "unit": { "type": "string", "enum": ["celsius", "fahrenheit"], "default": "celsius" }
     },
     "required": ["city"]
   }
-}]
-
-# 2) 往返循环：模型出调用 → 你执行 → 回填
-messages = [{"role": "user", "content": "台北现在多少度？"}]
-while True:
-    resp = client.messages.create(model=MODEL, messages=messages, tools=tools)
-    if resp.stop_reason != "tool_use":
-        break
-    messages.append({"role": "assistant", "content": resp.content})
-    results = []
-    for call in [b for b in resp.content if b.type == "tool_use"]:
-        try:
-            validate(call.input)                 # 执行前校验参数
-            out = execute(call.name, call.input)  # 自己实现，可加权限/沙箱
-            results.append({"type": "tool_result", "tool_use_id": call.id,
-                            "content": json.dumps(out, ensure_ascii=False)})
-        except Exception as e:
-            results.append({"type": "tool_result", "tool_use_id": call.id,
-                            "is_error": True, "content": f"{type(e).__name__}: {e}"})
-    messages.append({"role": "user", "content": results})
+}
 ```
+
+**② `tool_use` 调用（模型 → 你）**：当返回的 `stop_reason == "tool_use"`，`content` 里就带出这次调用。`id` 用来跟回包对账，`name` 是工具名，`input` 是模型填好的参数。
+
+```json
+{
+  "role": "assistant",
+  "stop_reason": "tool_use",
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_01A",
+      "name": "get_weather",
+      "input": { "city": "台北", "unit": "celsius" }
+    }
+  ]
+}
+```
+
+**③ `tool_result` 回包（你 → 模型，装进一条 `role:"user"` 消息）**：正常回包把执行结果 `json.dumps(..., ensure_ascii=False)` 成字符串塞进 `content`；出错的回包多带一个 `is_error: true`，并把异常类型与原因原文写进 `content`——模型靠这行字自我修正。
+
+```json
+{
+  "role": "user",
+  "content": [
+    {
+      "type": "tool_result",
+      "tool_use_id": "toolu_01A",
+      "content": "{\"temp\": 31, \"condition\": \"晴\"}"
+    },
+    {
+      "type": "tool_result",
+      "tool_use_id": "toolu_01B",
+      "is_error": true,
+      "content": "ValidationError: 'city' is a required property"
+    }
+  ]
+}
+```
+
+循环的停止条件只有一句：`stop_reason != "tool_use"` 就 `break`；否则把这条 assistant 消息与刚拼出的 `tool_result` 一路 `append` 回 `messages`，再发下一轮。整条链路没有别的魔法，全部状态都在这三份报文之间传递。
+
+## 分步演示：一次 `get_weather` 从出调用到续跑
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
+flowchart LR
+  S[schema 每轮发] --> C[模型出 tool_use]
+  C --> V[参数校验]
+  V --> P[权限判定]
+  P --> E[进程内执行]
+  E --> R[tool_result 回包]
+  R --> N{stop_reason?}
+  N -->|仍 tool_use| C
+  N -->|结束| D[终答]
+```
+
+*《图：模型只负责出 call，校验、权限、执行、回包全在你这侧；回包后再问一次，直到 `stop_reason` 不再是 tool_use》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：模型只出「调谁 + 填什么」
+
+Agent 带着 `messages` 与 `tools` 发一轮请求，模型返回 `stop_reason="tool_use"`，`content` 里给出 `toolu_01A` / `get_weather` / `{"city":"台北","unit":"celsius"}`。到这一步为止，**没有任何函数被执行**，模型只是把意图写成了 JSON。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：执行前先拿 schema 校验参数
+
+用契约①里的 `input_schema` 过一遍：`required` 里的 `city` 在不在、`unit` 是否落在 `enum ["celsius","fahrenheit"]`、类型对不对。不合 schema 的调用根本不进执行——宁可回填错误让模型改，也不要拿脏参数往下跑。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：权限判定，安全策略的落点
+
+`get_weather` 是只读低风险，直接放行；换成写类工具，这一步查「谁能调、要不要审批」（见 [工具注册中心](../11-engineering/tool-registry.md)）。正因为校验与权限都在你的进程里做，「模型说删库、代码可以不执行」才成立。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：在你自己的函数里执行，LLM 不参与
+
+真正调 `get_weather("台北")`，外面包上超时、沙箱、资源上限。它返回 `{"temp": 31, "condition": "晴"}`。这一整步模型完全不知情——它既看不到你查了哪个 API，也无法干预执行过程。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：把结果 `json.dumps` 成 `tool_result` 回填
+
+执行结果序列化成字符串（`ensure_ascii=False` 保住中文），配上 `tool_use_id: "toolu_01A"`，包成契约③那种 `type:"tool_result"` 项，放进一条 `role:"user"` 消息。出错走另一条：`is_error:true` + 异常类型与原因。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：带回包再发一轮，直到 `stop_reason` 收敛
+
+把回包 append 回 `messages` 再发一次，模型看到 `temp:31, condition:晴`，产出终答「台北今天 31 度，晴天」，此时 `stop_reason` 不再等于 `tool_use`，循环 `break`。回填的是原料不是答案——别把工具结果当最终回复直接给用户。
+{% endstep %}
+{% endstepper %}
+
+## 四种结局，四条分支（点标签切换）
+
+同一次调用，卡在哪一步就回哪一包的错。四个标签对应四种典型收场。
+
+{% tabs %}
+{% tab title="参数不合 schema" %}
+模型漏填了 `city`（或把 `unit` 写成 `"度"`）。你在第 2 步拦下，不执行，回填一条 `is_error:true`、`content:"ValidationError: 'city' is a required property"`。模型下一轮补齐 `city` 再调。**别替它填默认值**——你猜的默认常常正是它漏掉的那个关键参数。
+{% endtab %}
+
+{% tab title="工具执行报错" %}
+参数合法，但天气 API 超时或抛了异常。你在第 4 步的 `except` 里捕获，回包写 `is_error:true` + `f"{type(e).__name__}: {e}"`（例如 `TimeoutError: connect timeout after 10s`）。有具体原因，模型才会换城市、换参数或改走别的路；只回一个光秃秃 `"error"` 等于没告诉它怎么修。
+{% endtab %}
+
+{% tab title="需要人工批准" %}
+换成 `risk="high"` 的工具（如退款），第 3 步权限判定不放行，循环在此挂起：把这次调用的 `name` 与 `input` 摊给人看，批准才继续执行、驳回就回填一条 `is_error:true` 的拒绝原因。**审批是数据分支不是异常**，模型收到拒绝能改提别方案。
+{% endtab %}
+
+{% tab title="成功回填并续跑" %}
+走完整六步：`temp:31` 回填、`stop_reason` 收敛为结束、模型出终答。唯一容易忘的点——把工具结果当作「又喂回模型的原料」而非最终答案；直接原样抛给用户，就丢掉了模型基于结果再推理那一层价值。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**上下文成本要算在选型前面**：契约①那份 schema 每轮都重发。一个约 120 token 的工具挂满 30 个、跑 10 轮，光 schema 就 ~36000 token 打底，还没算正文。工具面越宽越贵、也越容易选错——这是「延迟加载（先只给名字，选中再取完整 schema）」的全部动机。
+{% endhint %}
 
 ## 高级特性
 

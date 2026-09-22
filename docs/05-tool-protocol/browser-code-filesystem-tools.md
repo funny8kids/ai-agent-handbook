@@ -2,7 +2,7 @@
 tags: [tooling]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 浏览器、代码、文件系统工具
@@ -26,16 +26,112 @@ updated: 2026-09-22
 | 代码执行 | 超时、内存上限、无网络默认 | 任意代码执行、资源耗尽 | 沙箱（容器/microVM）、egress 白名单 |
 | 浏览器 | 等待策略、DOM 精简提取 | 网页内容注入恶意指令 | 内容当数据不当指令、域名白名单 |
 
+{% hint style="tip" %}
+**回填的永远是摘要不是全量**：这三类工具共享同一条铁律——输出可控。编码 Agent 类工具把 stdout 截断阈值硬编码在工具层（常见 30000 字符上限），Playwright MCP 用结构化 DOM 快照而非截图能省 10 倍以上 token。网页抓取动辄几十万 token，先提取正文/相关片段再回填，否则一轮就把上下文吃光。
+{% endhint %}
+
 ## 文件编辑的安全模式
 
-```python
-def edit_file(path, old_text, new_text):
-    content = read(path)
-    if content.count(old_text) != 1:
-        return "错误：匹配 0 或多处，请提供更长的上下文片段"  # 防误伤
-    write(path, content.replace(old_text, new_text))
-    return "已修改，修改后片段预览：" + preview(new_text)
+`edit_file(path, old_text, new_text)` 对外只吃三个字段，回包却分两种形状——改没改成，全看 `old_text` 在文件里匹配几处。下面是模型视角看到的一次调用与它的两种收场。
+
+**模型发起的一次 edit 调用**：`path` 走工作目录白名单校验，`old_text` 是锚点，`new_text` 是替换后的内容。
+
+```json
+{
+  "name": "edit_file",
+  "input": {
+    "path": "src/weather.py",
+    "old_text": "temp = 30",
+    "new_text": "temp = 31"
+  }
+}
 ```
+
+**回包 A：匹配数不是 1 → 拒绝，一个字都不写**（`matched_count` 为 0 或 >1 都走这条）
+
+```json
+{
+  "status": "rejected",
+  "matched_count": 0,
+  "message": "错误：匹配 0 或多处，请提供更长的上下文片段",
+  "hint": "先 read 该文件，再带上唯一锚点重试"
+}
+```
+
+**回包 B：唯一匹配 → 替换、落盘、回预览**
+
+```json
+{
+  "status": "modified",
+  "matched_count": 1,
+  "message": "已修改，修改后片段预览：",
+  "preview": "temp = 31"
+}
+```
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：模型只出「改哪儿的旧文 → 换成什么」
+
+调用里给的是 `path` + `old_text` + `new_text` 三个字段。凭记忆直接改文件是幻觉覆盖的高发区（它「以为」文件里有某段代码），所以这个工具从设计上就不接受「整文件覆盖」，只接受精确锚点替换。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：先过路径白名单，越界连读都不读
+
+执行 `read` 之前先验 `path`：必须落在工作目录白名单内、目标不在只读区。不在范围内直接拒，回一条拒绝原因——越权读写比改错内容更危险。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：先 `read` 当前内容，挡住幻觉记忆
+
+`content = read(path)` 把「模型以为的文件」拉回磁盘上的真实文件。这一步是「先读后写」硬规则的技术实现，也是主流编码 Agent 系统提示里反复强调的一条。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：数 `old_text` 命中几处，必须恰好 1 处
+
+`content.count(old_text) != 1` 就回 `status:"rejected"`。命中 0 处说明锚点没对上（模型记错了），命中多处说明锚点太短会误伤别处——两种都拒绝，绝不猜。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：唯一匹配才替换并生成预览
+
+`content.replace(old_text, new_text)`，把改动做成 diff/预览。只回预览或摘要、不回整文件，既省上下文也让人一眼能审这处变更。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：写盘成功回预览，失败恢复原文件保持可回滚
+
+`write` 成功就返回 `status:"modified"` + `preview`；写盘失败（权限、磁盘）要恢复原文件，让这次 edit 保持可回滚。「先 diff 后写 + 可回滚」是文件系统工具区别于其它两类的地方。
+{% endstep %}
+{% endstepper %}
+
+## 四种匹配结局（点标签切换）
+
+{% tabs %}
+{% tab title="命中 0 处" %}
+模型凭记忆写的 `old_text` 文件里根本没有 → `matched_count:0`，`status:"rejected"`。正确处理是让它先 `read` 再带着真实锚点重试，而不是你替它模糊匹配。这多半意味着模型对文件状态的认知已经过期。
+{% endtab %}
+
+{% tab title="命中多处" %}
+`old_text` 太短（比如就一个 `}` 或 `return`），命中好几处 → `matched_count>1`，同样 `rejected`。这一支防的是**误伤**：替换会把别处也改掉。要求「更长的上下文片段」就是逼模型把锚点扩到唯一。
+{% endtab %}
+
+{% tab title="唯一匹配成功" %}
+`matched_count:1`，替换落盘，回 `status:"modified"` + `message:"已修改，修改后片段预览："` + `preview:"temp = 31"`。回执里保留改后片段，用户无需重开文件就能确认，且这次改动仍可回滚。
+{% endtab %}
+
+{% tab title="越权或只读" %}
+`path` 不在工作目录白名单、或目标处于只读区 → 第 2 步就拒，`read` 都不执行。回一条越权/只读的拒绝原因，让模型换合法路径或改提别的方案，而不是硬写。
+{% endtab %}
+{% endtabs %}
 
 「旧文匹配替换」是 Claude Code Edit 工具与 Pi edit 工具的共同设计：强迫模型先读后改、精确锚定，杜绝「幻觉覆盖」。
 

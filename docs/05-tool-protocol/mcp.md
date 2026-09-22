@@ -2,7 +2,7 @@
 tags: [mcp, tooling]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # MCP：Model Context Protocol
@@ -96,19 +96,133 @@ flowchart LR
 **提示**：Tools 由**模型**控制（它决定何时调），Resources 由**应用**控制（它决定何时注入），Prompts 由**用户**控制（它决定何时用）。这个「控制方」划分是理解三大原语的关键。
 {% endhint %}
 
-## 最小 Server（TypeScript）
+## 最小 Server 只暴露三份 JSON-RPC 报文
 
-```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+一个「查天气」Server 对客户端能说的全部话，就是握手、`tools/list`、`tools/call` 三份报文。Server 名叫 `weather`、版本 `1.0.0`、走 stdio 传输；`get_weather` 只有一个必填参数 `city`。
 
-const server = new McpServer({ name: "weather", version: "1.0.0" });
-server.tool("get_weather", { city: z.string() },
-  async ({ city }) => ({ content: [{ type: "text", text: `${city}: 晴 31°C` }] }));
-
-await server.connect(new StdioServerTransport());
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
+sequenceDiagram
+    participant C as MCP Client
+    participant S as weather Server
+    C->>S: initialize（协议版本 + 能力）
+    S-->>C: capabilities.tools=true, resources=false
+    C->>S: tools/list
+    S-->>C: get_weather{city: string, required}
+    C->>S: tools/call {name:"get_weather", arguments:{city:"Boston"}}
+    S-->>C: content[0].text = "Boston: 晴 31°C"
 ```
+
+*《图：一次 Server 生命周期里 Client 主动发三种请求；Server 的 `tools/call` 回包里只有一块 `type:"text"`，其余全是 Client 侧的事》*
+
+**握手与能力协商**：`initialize` 双向交换协议版本与支持的能力，Server 可声明「我有 tools、没有 resources」，Client 据此决定后续调用哪些方法。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-06-18",
+    "clientInfo": { "name": "claude-code", "version": "1.0" },
+    "capabilities": { "tools": true, "resources": false }
+  }
+}
+```
+
+**`tools/list` 的返回**：这份 `inputSchema` 会直接投影成模型看到的工具说明书——`city` 是 `string`、`required` 里必须有它。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "tools": [
+      {
+        "name": "get_weather",
+        "description": "查询指定城市的实时天气",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "city": { "type": "string" } },
+          "required": ["city"]
+        }
+      }
+    ]
+  }
+}
+```
+
+**`tools/call` 的请求与回包**：请求带 `name` + `arguments`；回包的 `content` 是一个块数组，本例只有一块 `type:"text"`，`isError:false`。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": { "name": "get_weather", "arguments": { "city": "Boston" } }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "content": [ { "type": "text", "text": "Boston: 晴 31°C" } ],
+    "isError": false
+  }
+}
+```
+
+## 分步演示：从拉起 Server 到结果落地
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：Client 把 Server 当子进程拉起来
+
+本地 Server 走 stdio：Client 启动 Server 进程，双方靠标准输入输出收发 JSON-RPC 报文。无端口、无网络暴露、天然进程隔离——这也是「本地工具优先 stdio」的原因。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：`initialize` 握手，先谈能力再谈调用
+
+双方交换协议版本（示例里 `2025-06-18`）与 `capabilities`。Server 声明支持哪些原语，Client 就不会去调它不认识的方法。能力协商让协议能渐进演进而不破坏兼容——这是 MCP 敢在规范里加新原语的底气。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：`tools/list` 拿到工具清单
+
+Client 发出 `tools/list`，Server 返回上面那份带 `inputSchema` 的清单。清单里的 `description` 与参数约束会原样进模型的上下文，所以 Server 作者写工具描述，本质是在写模型的行为边界。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：模型选中工具，Client 发 `tools/call`
+
+模型决定「查天气」，Client 组装 `params: {name:"get_weather", arguments:{city:"Boston"}}`。注意 Client 只负责把参数搬过去，**不保证参数合法**——校验得 Server 自己做。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：Server 执行，回一个 `content` 块数组
+
+Server 侧做输入校验与真正的查询，返回 `content:[{type:"text", text:"Boston: 晴 31°C"}]` 且 `isError:false`。失败也要走同一条通道：`isError:true` + 说明文字，而不是抛个 JSON-RPC 协议错——那会让 Client 无法把「工具报错」当成正常结果喂回模型。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：`content` 交回模型续跑
+
+Client 把这块文本当作工具结果并回对话，模型据此续答。到这一步 MCP 的职责就结束了：循环、记忆、编排都还是 harness 的事，MCP 只管「工具从哪来、怎么描述、怎么调」。
+{% endstep %}
+{% endstepper %}
+
+{% hint style="warning" %}
+**Server 的输入校验不能省**：`tools/list` 里 `city` 写成 `z.string()` 是 Server 内部的约束，Client 传来的 `arguments` 并不会自动被 zod 卡住。第三方 Client 完全可能发来 `{city: 123}` 或缺字段的报文——Server 侧同样要跑一遍 schema 校验与权限判断，别信「对面一定是我的官方客户端」。
+{% endhint %}
 
 ## 源码案例
 

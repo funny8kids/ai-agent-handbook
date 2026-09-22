@@ -2,7 +2,7 @@
 tags: [engineering, tooling]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 工具注册中心
@@ -72,20 +72,131 @@ flowchart TB
 
 ## 注册表最小实现
 
-```python
-TOOLS = {}
+注册中心对外的全部状态，就是下面这张表：每个工具一条目，`schema` 描述怎么调、`risk` 描述多危险、`version` 是契约版本、`owner`/`sla_ms` 供治理与统计用。新增一个工具 = 往表里加一条，不改任何执行层代码。
 
-def tool(name, description, schema, risk="low", version="1.0.0"):
-    def deco(fn):
-        TOOLS[name] = {"fn": fn, "description": description,
-                       "schema": schema, "risk": risk, "version": version}
-        return fn
-    return deco
-
-@tool("refund", "对订单执行退款", {...}, risk="high")
-async def refund(order_id: str, amount: float):
-    ...   # 注册时声明风险级 → 执行管道按级走审批
+```json
+{
+  "tools": {
+    "get_weather": {
+      "description": "查询指定城市的实时天气",
+      "schema": {
+        "type": "object",
+        "properties": { "city": { "type": "string" } },
+        "required": ["city"]
+      },
+      "risk": "low",
+      "version": "1.0.0",
+      "owner": "platform-team",
+      "sla_ms": 800
+    },
+    "refund": {
+      "description": "对订单执行退款",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "order_id": { "type": "string" },
+          "amount": { "type": "number" }
+        },
+        "required": ["order_id", "amount"]
+      },
+      "risk": "high",
+      "version": "1.0.0",
+      "owner": "payments-team",
+      "sla_ms": 1500
+    }
+  }
+}
 ```
+
+`risk` 缺省是 `low`、`version` 缺省 `1.0.0`——和原来那段 `@tool(name, description, schema, risk="low", version="1.0.0")` 注册器的默认值一致。区别只在于：注册器把这五个字段写进 `TOOLS[name]` 这个字典，而这张 JSON 表把同一批字段暴露给治理层读。`refund` 特意标了 `risk:"high"`，退款是真花钱的写操作，必须走审批。
+
+{% hint style="tip" %}
+**元数据不是注释，是决策输入**：给每个条目挂上 `owner` / `risk` / `version` / `sla_ms` 才谈得上治理。经验阈值——90 天零调用的工具直接下线或归档，别让它继续稀释模型选择面；调用量高但成功率低的（`refund` 类尤其危险）优先修 `description` 或实现，而不是急着换模型。缺了用量可见性，工具面就会随团队扩张腐烂成重复工具 + 影子工具一堆。
+{% endhint %}
+
+## 执行管道如何按 risk 分派
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
+flowchart TD
+  A["调用：name + args + caller"] --> B{"注册表里有这个工具吗？"}
+  B -->|"查不到"| X["拒：影子权限，告警"]
+  B -->|"命中"| C["按 version 的 schema 校验参数"]
+  C -->|"不合规"| Y["回填具体不匹配字段"]
+  C -->|"通过"| D{"caller 有权调吗？"}
+  D -->|"无权"| Z["拒：越权调用"]
+  D -->|"有权"| E{"risk 级？"}
+  E -->|"low"| F["直接执行"]
+  E -->|"high"| G["进审批队列等人批"]
+  F --> H["结果回模型 + 统计回流注册表"]
+  G --> H
+```
+
+*《图：一次调用的四道闸——查得到、schema 合、有权调、再按 risk 决定是否审批；无论走哪条，统计都回流注册表，据此判断工具去留》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：调用带着身份进来
+
+执行管道收到 `refund` + `{order_id, amount}` + `caller=agent_A`。注意身份（哪个 Agent/租户在调）必须一并传入——鉴权要按调用方判，而不是写死在工具代码里。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：查注册表取条目，查不到直接拒
+
+拿 `refund` 去表里查，命中就取回它的 `schema`/`risk`/`version`/`owner`。查不到就是「影子工具」——很可能是某个第三方 MCP Server 悄悄塞进来的能力，目录外一律视为影子权限并告警。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：按条目 `version` 的 schema 校验参数
+
+用 `version:"1.0.0"` 那份 schema 验 `order_id` 是 string、`amount` 是 number、两个必填都在。参数不合规就回填具体哪个字段错了，让模型改——而不是把脏参数喂进真正扣款的函数。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：鉴权按调用方判，可配置
+
+查 `agent_A` 是否有权调 `refund`。策略存在注册中心（按 Agent/租户配），而不是硬编码进工具——每接一个新 Agent 改一遍工具代码是维护噩梦。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：按 `risk` 决定是否审批
+
+`risk:"low"` 直接执行；`risk:"high"`（如 `refund`）挂起进审批队列，等人核对 `amount` 与 `order_id` 后才放行，驳回则回填拒绝原因。**风险级在注册时声明**，执行层只读这个字段决定走向，无需为某个工具改代码。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：执行完统计回流
+
+结果回给模型，同时把调用量、成功率、耗时回流注册表。这正是治理闭环的数据来源：某工具 90 天零调用 → 下线；高频但成功率低 → 优先修它的 `description`，而不是急着换模型。
+{% endstep %}
+{% endstepper %}
+
+## 一个工具条目的四种收场（点标签切换）
+
+{% tabs %}
+{% tab title="risk=low 直接执行" %}
+`get_weather` 走完查表、校验、鉴权后，第 5 步见 `risk:"low"` 直接执行，`sla_ms:800` 内返回，不进审批。低风险高频工具就该这样：把审批留给真正花钱/改状态的操作，别把每一次只读查询都卡给人批。
+{% endtab %}
+
+{% tab title="risk=high 触发审批" %}
+`refund` 标了 `risk:"high"`，第 5 步挂起：把 `order_id` 与 `amount` 摊给人看，批了才扣款、拒了就回填拒绝原因。因为是注册时声明的风险级，退款工具的实现和执行管道完全解耦——加审批策略不动工具代码。
+{% endtab %}
+
+{% tab title="未注册（影子权限）" %}
+`name` 不在注册表里（比如接了个第三方 Server 后多出来的发消息工具）→ 第 2 步查不到，直接拒并告警。MCP 接入的工具同样要先登记进目录、过分级与统计，否则等于把一条没人管的通道暴露给模型。
+{% endtab %}
+
+{% tab title="schema 版本不符" %}
+调用方还在按旧契约传 `amount` 为 string，而 `version:1.0.0` 要求 number → 第 3 步校验失败，回填「字段类型不匹配」的原文。破坏性变更（改必填/删字段）必须升 major 并通知订阅方、跑回归——否则它会静默打断所有旧调用方。
+{% endtab %}
+{% endtabs %}
 
 关键点：**风险级在注册时声明**，执行管道据此决定是否审批。这样「治理策略」与「工具实现」解耦——新增工具不需要改执行层代码（见 [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)）。
 
