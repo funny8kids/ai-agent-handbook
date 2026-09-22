@@ -25,7 +25,7 @@ pass@1 = 75%（3/4） —— 低于 100% 的每一个 ✗ 都该沉淀为常驻�
   c3 answer                             |####| 27ms
   c4 plan         |###| 20ms
   c4 tool:search     |#########| 53ms
-  c4 answer                   |####| 26ms
+  c4 answer                    |####| 26ms
 
   观察：search 步占了大头 -> 优化方向是缓存/并行，而不是换更快的模型
   traces.jsonl 已生成：每行一个用例的完整 span 记录，pandas 可直接读

@@ -78,6 +78,7 @@ bm25#0             chunking#0   chunking#1   rerank#0   memory#0   kv-cache#1
     4.18  chunking#1
     3.85  chunking#0
     3.70  rag#0
+    2.45  kv-cache#1
     2.19  memory#0     2.08  bm25#0
 ```
 

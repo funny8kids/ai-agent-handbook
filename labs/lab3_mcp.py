@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 sys.stdout.reconfigure(encoding="utf-8")  # 防 Windows 控制台 GBK 乱码
+sys.stdin.reconfigure(encoding="utf-8")   # server 侧必须按 UTF-8 解报文：否则中文按 GBK 拆成别的字，字数统计当场失真
 
 # ---------- 共享：工具定义（server 的"能力清单"） ----------
 

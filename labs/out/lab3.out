@@ -20,8 +20,8 @@ Lab 3：手写迷你 MCP —— 两个真实进程之间的 JSON-RPC 对话
 [调用 get_time]   -> 2026-09-21T18:00:00+08:00（演示固定值）
 
   >>> 发送: {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "word_count", "arguments": {"text": "MCP 让一个协议服务 N 个工具"}}}
-  <<< 收到: {"jsonrpc": "2.0", "id": 4, "result": {"content": [{"type": "text", "text": "{\"中文\": 11, \"英文单词\": 2}"}], "isError": false}}
-[调用 word_count]  -> {"中文": 11, "英文单词": 2}
+  <<< 收到: {"jsonrpc": "2.0", "id": 4, "result": {"content": [{"type": "text", "text": "{\"中文\": 10, \"英文单词\": 2}"}], "isError": false}}
+[调用 word_count]  -> {"中文": 10, "英文单词": 2}
 
   >>> 发送: {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "delete_all", "arguments": {}}}
   <<< 收到: {"jsonrpc": "2.0", "id": 5, "result": {"content": [{"type": "text", "text": "Error: 未知工具 delete_all"}], "isError": true}}

@@ -23,7 +23,7 @@ updated: 2026-09-23
 - **一条管道**：stdin/stdout 上每行一个 JSON-RPC 2.0 报文；
 - **三个约定**：`initialize` 握手对版本 → `tools/list` 能力发现 → `tools/call` 干活。
 
-把这三步画成报文往返，就是下面这张时序图——运行实验时打印出来的正好是这六条：
+把这三步画成报文往返，就是下面这张时序图——真跑一次，管道上是 **6 条发出、5 条回音**（那条 `notifications/initialized` 按 JSON-RPC 规矩不要求回复），图里画的是其中最主干的三次请求-应答：
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
@@ -137,11 +137,13 @@ client 侧打印出来的是：`[能力发现] 共 2 个工具: get_time, word_c
 
 {% tabs %}
 {% tab title="server 加工具，client 零改动" %}
-只往 server 的能力清单里加一个 `echo` 工具，client 一行不动，重跑后的第 3 步变成：
+只往 server 的能力清单里加一个 `echo` 工具（下面这个条目加在清单**开头**），client 一行不动，重跑后的第 3 步变成：
 
 ```text
 [能力发现] 共 3 个工具: echo, get_time, word_count
 ```
+
+顺带量到一个细节：把同一个条目加在清单**末尾**，打印就是 `get_time, word_count, echo`。**发现顺序 = server 侧声明顺序**，协议不做排序，所以工具一多，清单顺序就是你给模型看的优先级。
 
 清单里多出来的那一项：
 
