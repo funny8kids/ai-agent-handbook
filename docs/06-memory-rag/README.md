@@ -49,6 +49,7 @@ flowchart LR
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)
 - [记忆固化与睡眠时计算](sleep-time-memory-consolidation.md)
 - [长上下文退化与有效上下文窗口](long-context-degradation.md)
+- [Text-to-SQL：让 Agent 查结构化数据](text-to-sql.md)
 
 ## 读完能做到
 
