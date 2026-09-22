@@ -37,6 +37,8 @@ Langfuse 的界面把这句话变成了三栏实物：
 
 ![Langfuse Trace 真实界面：左筛选器与 trace 表、中 span 瀑布、右单步 Input/Output](../.gitbook/assets/screenshots/01-langfuse-trace-ui.png)
 
+*《图：左侧 SPAN 与 GENERATION 分开计数（全项目 7K 对 6）——工具/中间步骤比模型调用高三个量级，钱却全花在那 6 次生成上，这就是按类型分面筛选存在的理由》*
+
 *来源：Langfuse 官方文档 [langfuse.com/docs/tracing](https://langfuse.com/docs/tracing) 内嵌截图，访问日期 2026-09-22。*
 
 读这张图的顺序就是排查顺序：左侧 Filters 里 `SPAN` 与 `GENERATION` 分开计数（全项目 7K 对 6）——**工具/中间步骤的数量比模型调用高三个量级，钱却全花在那 6 次生成上**，这就是「按类型分面筛选」存在的理由；中间瀑布把 `process_paper_ensemble`（39.12s）拆成 `safe_process_paper` → `process_paper` → `get_project_github_urls` 的嵌套，慢在哪一层一眼可见；右侧选中 `parse_artifacts` 后 Input/Output 全量 JSON 摊开，连 `Session` 和 `User ID` 都钉在标题栏上。这三栏齐活的工具就是选型表里那一行的意思：**没有 span 级输入输出，「逐层定位」只是口号**。

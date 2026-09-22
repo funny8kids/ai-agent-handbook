@@ -39,6 +39,7 @@ flowchart LR
 ![前缀缓存命中与重算范围（动画）](../.gitbook/assets/16-prefix-cache.svg)
 
 *《图：同一次请求两种装配顺序：A 只 prefill 2.4k/13.5k，B 因为时间戳落在第一个 token 之后而全量重算——差别不在内容，在顺序》*
+
 | 前缀片段 | 能否命中 | 为什么失效 |
 |---|---|---|
 | system prompt | ✅ | 里面塞了「当前时间 / 用户 ID / 随机 request id」 |

@@ -55,6 +55,8 @@ flowchart TD
 
 ![AutoGen Studio Team Builder 真实界面：左侧团队列表、中间组件库（Agents/Models/Tools/Terminations）、右侧节点连线画布](../.gitbook/assets/screenshots/07-autogen-studio-ui.png)
 
+*《图：组件库里 Terminations(3) 与 Agents/Models/Tools 平级——终止条件被当一等组件（画布那根写着 Max Messages: 10），team 节点只是往插槽里装配的壳》*
+
 *来源：AutoGen 官方仓库文档截图（microsoft/autogen · `python/packages/autogen-studio/docs/ags_screen.png`），访问日期 2026-09-22。*
 
 对照上面那张抽象图看这张实物图，GroupChat 的四件事全有了落点：组件库里 `Agents (2)` 是 `assistant_agent` 与 `user_agent` 两类角色、`Models (1)`、`Tools (2)`、`Terminations (3)` 是**终止条件被当成一等组件**（画布左上那根 `termination` 节点写着 `Max Messages: 10`）；中间 `team` 节点的 `AGENTS (1)` 与 `TERMINATIONS` 两个插槽说明团队只是装配壳。值得留意的是 `Visual builder mode (experimental)` 那个开关——**GUI 造团队至今仍是实验特性**，生产路径还是代码；这也解释了为什么本书把 AutoGen 的定位写在「事件驱动架构」而不是「那个拖拽界面」上。

@@ -49,6 +49,8 @@ flowchart TD
 
 ![Open WebUI 真实界面：模型选择器、内联渲染的图表与表格、可折叠的工具调用流水、右侧工作区文件面板](../.gitbook/assets/screenshots/05-openwebui-chat-ui.png)
 
+*《图：工具调用流水可折叠审计、右侧 Files 面板显式列出工作区、本地与云端模型并列——那句「openpyxl 没装，改用 stdlib zip/XML 解析」正是环境受限时会自己换路、说明理由的分水岭》*
+
 *来源：Open WebUI 官方文档 [docs.openwebui.com](https://docs.openwebui.com) 首页产品图，访问日期 2026-09-22。*
 
 三个通用 Agent 产品的共性被这张图占齐了：**工具调用过程可折叠审计**（`Explored glob_search, list_files, 4 run_command, 2 write_file, read_file` 那行点开就是流水账）、**工作区是显式的**（右侧 Files 面板列出 `read_xl.py` / `revenue_2026.csv` / `revenue_2026.xlsx`，左下角还有 `Open Terminal` 入口）、**本地与云端模型混排**（侧栏 `Llama 4 Scout (local)`、`Qwen3 Coder (local)` 与 `Claude Opus 5` 并列，用户按任务挑）。最值得学的是那句 `Read via stdlib zip/XML parsing (openpyxl isn't installed)`——**沙箱里没有的库，Agent 得自己换条路并说明理由**；这类「环境受限时的降级说明」正是通用 Agent 与 demo 的分水岭。

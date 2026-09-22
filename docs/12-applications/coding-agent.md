@@ -76,6 +76,8 @@ flowchart LR
 
 ![OpenHands Automate 真实界面：左侧会话列表、中间 Active/Inactive 自动化任务卡、下方工作流模板](../.gitbook/assets/screenshots/03-openhands-automate-ui.png)
 
+*《图：五条并行会话各挂「仓库范围·触发时机·模板」三个标签（acme/frontend-app · Weekdays 09:00 · triage-fast），把通用循环固化成定时自动化，每张卡的 Run now 是随时手动插一脚的安全阀》*
+
 *来源：OpenHands 官方仓库 README 的产品截图（[assets.openhands.dev/screenshot/automation-preview.png](https://assets.openhands.dev/screenshot/automation-preview.png)），访问日期 2026-09-22。*
 
 这张图说明编程 Agent 已经不只是「一个终端里的循环」：左侧五条会话（`Authentication module refactor`、`Payment API integration`…）是**并行任务队列**，卡片上的 `acme/frontend-app` + `Weekdays at 09:00` + `triage-fast` 三个标签分别是**仓库范围、触发时机、模板**——把上面那条通用循环固化成可复用的定时自动化。底部那排「Start from a proven workflow」模板（GitHub PR review copilot、Slack standup digest）则是把 Agent 交付成**带预置验收路径的产品**，而不是留个 CLI 让用户自己悟。注意每张卡都有 `Run now` 与只读详情——**能随时手动插一脚，是这类平台的基本安全阀**。

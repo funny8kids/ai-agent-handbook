@@ -120,9 +120,13 @@ await server.connect(new StdioServerTransport());
 
 ![MCP Inspector 调试台：左选 Server、中切三种原语、右查 JSON Schema 并试运行](../.gitbook/assets/05-mcp-inspector-ui.svg)
 
+*《图：Inspector 左选 Server、中切 tools/resources/prompts 三原语、右栏现填 inputSchema 并当场 Run Tool——一次握手就能把三种能力各点一遍》*
+
 上图是我们按真实布局画的示意；下面这张是官方 Inspector 的实际界面。
 
 ![MCP Inspector 真实界面：Tools 列表、Results 结果区、右侧 Messages 协议流水](../.gitbook/assets/screenshots/02-mcp-inspector-ui.png)
+
+*《图：右侧 Messages 流水把每次 JSON-RPC 往返（TOOLS/CALL、RESOURCES/LIST）连 41ms、43ms 耗时一起摊开——协议长什么样，这里比任何规范文本都直观》*
 
 *来源：MCP 官方文档 [modelcontextprotocol.io/docs/tools/inspector](https://modelcontextprotocol.io/docs/tools/inspector) 内嵌的 demo 截图，访问日期 2026-09-22。*
 

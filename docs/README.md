@@ -94,7 +94,7 @@ updated: 2026-09-22
 - **147 篇知识/资源页全部有「参考资料」**：324 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
 - **223 张页内配图**：183 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 223 in-page figures, parser-verified diagrams + real product UI screenshots。另有 2 张自绘 SVG 用作 GitBook 站标，不在页面正文里，故不计入配图数
-- **165 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；183 张 Mermaid 里 135 张带图注、48 张由图前实质引导语解释，**没有一张图是「如下图所示」四个字打发的**
+- **177 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；42 张内容图（SVG/截图）全部配注，183 张 Mermaid 里 135 张带图注、48 张由图前实质引导语解释，**没有一张图是「如下图所示」四个字打发的**
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

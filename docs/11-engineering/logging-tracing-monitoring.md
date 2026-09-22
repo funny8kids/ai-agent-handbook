@@ -141,9 +141,13 @@ $$
 
 ![可观测性控制台：Trace 列表 + span 瀑布 + 单 span 详情三跳定位](../.gitbook/assets/11-observability-ui.svg)
 
+*《图：日常排查是「三跳定位」——搜索框回一次运行、筛选器锁错误与慢请求、span 树里最长那根红条点开侧板核对输入输出与成本》*
+
 上面是示意，下面是真实产品长什么样——Arize Phoenix 的 Trace Details 页：
 
 ![Phoenix Trace Details 真实界面：左侧 span 树带逐级耗时，右侧选中 span 的 prompt 原文与延迟/Tokens 指标](../.gitbook/assets/screenshots/06-arize-phoenix-trace-ui.png)
+
+*《图：左树从 BaseQueryEngine.query 1.00s 一路缩到 OpenAI.chat 0.54s——一半时间花在一个 LLM 调用上不用问人，看条子长度就知道》*
 
 *来源：Arize Phoenix 官方文档 [arize.com/docs/phoenix/tracing/llm-traces](https://arize.com/docs/phoenix/tracing/llm-traces) 内嵌截图，访问日期 2026-09-22。*
 

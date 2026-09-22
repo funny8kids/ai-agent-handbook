@@ -58,9 +58,12 @@ flowchart LR
 ![框架选型速查：一条五问决策链，先选范式再点名框架](../.gitbook/assets/09-framework-map-ui.svg)
 
 *《图：五问自上而下，第一个「是」即定范式——顺序是设计过的：控制流形态一旦定下，生态与锁定成本才有讨论意义》*
+
 「可视化编排」这一路的代表作是 Dify，真实画布长这样：
 
 ![Dify 工作流画布真实界面：START→LLM→LLM 节点连线 + 右侧 LLM 节点配置面板](../.gitbook/assets/screenshots/04-dify-workflow-ui.png)
+
+*《图：右侧一个抽屉装下模型/上下文变量/SYSTEM 提示词，左上 Auto-Saved 与右上 Run、Publish 分离——试跑和上线是两个动作，这是低代码编排相对裸代码最实在的便利》*
 
 *来源：Dify 官方文档 [docs.dify.ai/en/guides/workflow/node/llm](https://docs.dify.ai/en/guides/workflow/node/llm) 内嵌截图，访问日期 2026-09-22。*
 

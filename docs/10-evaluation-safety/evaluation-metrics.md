@@ -103,9 +103,13 @@ flowchart TB
 
 ![Agent 评测看板：通过率 / 回归 / 成本三卡 + 版本对比 + 发布门禁判定](../.gitbook/assets/10-eval-console-ui.svg)
 
+*《图：一套评估最终收敛成一块发布门禁屏——总通过率、回归用例数、单次成本三张卡配版本对比，绿了才放行、红了先查回归》*
+
 上面是示意，下面是 LangSmith 实验对比页的真实截图——一块真正在用的评测屏长什么样：
 
 ![LangSmith 实验对比真实界面：逐用例的多个评估器得分、延迟与 Tokens 同行排列，Heat Map 开关把分数染色](../.gitbook/assets/screenshots/08-langsmith-experiment-ui.png)
+
+*《图：一行一用例、多评估器并排成列，Latency 与 Tokens 和得分同表；那列 Random 稳在 0.5 附近——把随机打分器当对照组跑进来，就能量出 LLM-as-judge 到底比瞎猜强多少》*
 
 *来源：LangSmith 官方文档 [docs.smith.langchain.com/evaluation](https://docs.smith.langchain.com/evaluation) 内嵌截图，访问日期 2026-09-22。*
 
