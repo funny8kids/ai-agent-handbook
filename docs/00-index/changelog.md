@@ -20,7 +20,7 @@ updated: 2026-09-22
 - **frontmatter 与围栏**：11 个漏标文件补上（6 个实验 → `type: lab`，README/更新日志/贡献/许可 → `type: index`），[推理经济学](../16-ai-infrastructure/inference-economics-deployment.md) 那段无语言标注的公式围栏标成 ```text；不符合房风格（`tags → type → status → updated`）的文件从 15 个降到 3 个——`SUMMARY.md` 与 14 章两份模板示例，属有意保留。
 - **规范固化**：[风格指南](../14-templates/style-guide.md) 第五节新增三条硬规则（命名唯一、≥3 条、每条都要实际点开且标题对得上，arXiv 用 export API 核对），资源卡片体裁说明与发布检查清单同步；[资源模板](../14-templates/resource-template.md) 里残留的「相关资源」表述改正。
 - **回归校验**：189 个 md 文件围栏配对 0 异常，168 个 Mermaid 块真解析器 `parsed=168 failed=0`，无断链回归，187 页 / 19 章统计不变。
-- **本机测不到的部分如实记录**：14 条未能拿到 200 的链接里，7 条是站点反爬 403（`openai.com`、`iso.org`、`dl.acm.org`、`academic.oup.com`、`platform.openai.com`、`wiki.linuxfoundation.org`、`developers.openai.com`），7 条是本机 DNS 被路由器劫持（`sre.google`、`huggingface.co`、`mujoco.org`、`hastie.su.domains` 全部解析到 `192.168.31.1` 后超时）——后者按「unreachable ≠ dead」处理，未删；其中 `sre.google` 两条经搜索引擎确认页面确实在线。**下一轮待办**：13 张薄资源卡片（<900 字）增厚、20 个无图页按体裁判断补图。
+- **本机测不到的部分如实记录**：14 条未能拿到 200 的链接里，7 条是站点反爬 403（`openai.com`、`iso.org`、`dl.acm.org`、`academic.oup.com`、`platform.openai.com`、`wiki.linuxfoundation.org`、`developers.openai.com`），7 条是本机 DNS 被路由器劫持（`sre.google`、`huggingface.co`、`mujoco.org`、`hastie.su.domains` 全部解析到 `192.168.31.1` 后超时）——后者按「unreachable ≠ dead」处理，未删；其中 `sre.google` 两条经搜索引擎确认页面确实在线。**下一轮待办（已用体裁核对过，不是笼统的「补图补字」）**：19 篇知识页正文低于 900 字，其中 4 篇低于本书最低门槛 600 字（[Computer Use 2026](../18-frontier-2026/computer-use-2026.md)、[协议栈 2026](../18-frontier-2026/protocol-stack-2026.md)、[语音 Agent](../12-applications/voice-agent.md)、[模型原生 vs Harness](../18-frontier-2026/model-native-vs-harness.md)），优先增厚这 4 篇；15 个无图页面经逐一体裁核对全部是 `type: index` 的索引页，按规范本就免图，不再为凑指标硬塞。
 
 ## 2026-09-22（第 12 次）全库 Mermaid 宽度实测：把被线上缩小的图救回来
 
