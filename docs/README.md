@@ -86,7 +86,7 @@ updated: 2026-09-22
 ## 关于这本手册 · About this handbook
 
 - **195 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 195 pages across 19 chapters
-- **107 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 107 pages carry rendered formulas
+- **108 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 108 pages carry rendered formulas
 - **数字与结论都能点回一手来源**，文末「参考资料」只放外部来源 · every claim links back to a primary source
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
 - **212 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现（逐文件点数，代码块与行内代码里的写法示例不计入）

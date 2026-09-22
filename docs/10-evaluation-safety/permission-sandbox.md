@@ -27,8 +27,10 @@ updated: 2026-09-22
 把一次 Agent 会话拥有的权限写成一个能力集合 $$\mathcal{C}$$，每个元素是一条（客体，动作）对：
 
 $$
-\mathcal{C}=\big\{(o,a)\;\big|\;o\in\text{对象},\;a\in\{\text{read},\text{write},\text{delete},\text{send}\}\big\}
+\mathcal{C}=\big\{(o,a)\;\big|\;o\in\text{对象},\;a\in\{\text{read},\text{write},\text{delete},\text{send},\text{execute}\}\big\}
 $$
+
+（全站统一按这 5 种动作计数：`execute` 单列一类，因为「跑一段代码」的可逆性与前四类都不同——它能在一次调用里生成任意新能力。）
 
 核心结论是**伤害上界由权限决定**，而不是由模型行为决定：
 
@@ -78,7 +80,9 @@ $$
 P(\text{breach})\approx\prod_{l=1}^{L}p_l
 $$
 
-这解释了为什么「权限 + 沙箱 + 审批 + 审计」要一起上：任何单层都不够强（例如 $$p_l=0.5$$），但四层串联能把风险压到约 6%。也解释了为什么「在系统提示词里写不要危险操作」几乎没有安全价值——它既不是独立层，也容易被注入绕过（见 [提示注入](prompt-injection.md)）。
+这解释了为什么「权限 + 沙箱 + 审批 + 审计」要一起上：任何单层都不够强（例如 $$p_l=0.5$$），但四层串联能把风险压到约 6%。也解释了为什么「在系统提示词里写不要危险操作」几乎没有安全价值——它既不是独立层，也容易被注入绕过。
+
+**这条式子的前提比结论更重要**：$$p_l$$ 必须相互独立。一旦多层共用同一个判定主体（都靠模型读一遍上下文），它们实际上是同一层——被注入一次就同时失守。软层/硬层怎么拆、失相关时式子怎么改写，见 [提示注入](prompt-injection.md) 第 3 节。
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%

@@ -54,21 +54,21 @@ flowchart LR
 - 网络出口白名单：只允许工具声明的域名；egress 审计常驻
 - 所有执行留痕：who/when/what/参数/结果，可回放（append-only 日志是现成方案）
 
-## 核心机制：权限即代码，伤害有上界
+## 核心机制：权限即代码，策略如何匹配
 
-权限的本质是一个**能力集合**，每次工具调用都在消耗其中一项：
+「最大伤害由权限决定，而不是由模型行为决定」这条结论的形式化（能力集合 $$\mathcal{C}$$ 与伤害上界）定义在[权限与沙箱](../10-evaluation-safety/permission-sandbox.md)，本页不复述；本页只回答工程问题：**这套边界在代码里长什么样、怎么判一次调用放不放行**。
 
-$$
-\mathcal{C}=\big\{(o,a)\;\big|\;o\in\text{对象},\;a\in\{\text{read},\text{write},\text{delete},\text{send},\text{execute}\}\big\}
-$$
-
-核心结论是：**最大伤害由权限决定，而不是由模型行为决定**。
+一条授权策略写成一个五元组 $$\sigma=(a,o,\text{cond},\text{ttl},\text{scope})$$（动作、客体、附加条件、存活期、作用域），会话的 allowlist 是策略集 $$\Sigma$$。默认拒绝即 $$\Sigma=\varnothing$$ 起步，一次工具调用 $$t$$ 能否执行是一个匹配判定：
 
 $$
-\text{max damage}\;\le\;f(\mathcal{C})\times\text{不可逆性}
+\text{allow}(t)\iff\exists\,\sigma\in\Sigma:\;a_t\preceq\sigma.a\;\wedge\;o_t\preceq\sigma.o\;\wedge\;\sigma.\text{cond}\;\wedge\;\sigma.\text{ttl}>\text{now}
 $$
 
-因此「权限最小化」是可证明有效的唯一手段——无论模型被注入、越狱还是单纯犯错，都突破不了 $$\mathcal{C}$$ 的边界；而 prompt 层的防御只是概率性的。
+其中 $$\preceq$$ 是通包含关系（$$\text{read}:*$$ 覆盖 $$\text{read}:\texttt{src/*.py}$$，反之不成立）。三点实现细节决定这套机制是真是假：
+
+- **通配只能同向展开**：动作与客体的模式必须分形匹配，否则「允许读项目目录」会被写成「允许读一切」
+- **$$\sigma.\text{cond}$$ 必须能被代码判定**：条件若写成自然语言交给模型自查，这一层就退化成了软层
+- **$$\text{ttl}$$ 与 $$\text{scope}$$ 缺一不可**：没有过期的授权会让 $$\Sigma$$ 单调膨胀——「本会话不再询问 `npm test`」很顺手，但会话越长能力集合越大，**伤害上界随使用时长上升**，这正是长会话 Agent 最容易被忽略的漂移
 
 执行流水线的每个环节对应一类风险，缺一即留口子：
 
