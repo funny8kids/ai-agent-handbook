@@ -2,7 +2,7 @@
 tags: [embodied-ai, application, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 人形与腿足运动
@@ -47,27 +47,110 @@ flowchart TB
 
 ## 「仿真到真机」的人形配方（RL 路线）
 
-```python
-# 伪代码：人形行走策略训练骨架（Isaac Lab / MJX 风格）
-cfg = {
-  "num_envs": 4096,                 # GPU 并行环境数
+这段训练骨架的全部信息，浓缩在下面这份配置契约里——它同时是仿真器的启动参数、域随机化的采样区间、以及「怎样算学坏了」的奖励判据。每个字段值都取真机可复现的量级，改任何一项都要回真机重测。
+
+```json
+{
+  "num_envs": 4096,
   "terrain": ["flat", "rough", "stairs_up", "stairs_down", "slope", "displace"],
-  "curriculum": "terrain_difficulty",   # 先平地向复杂地形推进
-  "randomize": {                    # 每个 env 固定一组参数（episode 内不变）
-    "mass_scale": (0.8, 1.2), "friction": (0.3, 1.2),
-    "kp_kd_scale": (0.7, 1.3), "latency_steps": (0, 6),
-    "push_force": (0, 300),         # 随机推力，训练抗扰
-    "joint_pos_noise": (0, 0.05),
+  "curriculum": "terrain_difficulty",
+  "randomize_per_env": {
+    "mass_scale": [0.8, 1.2],
+    "friction": [0.3, 1.2],
+    "kp_kd_scale": [0.7, 1.3],
+    "latency_steps": [0, 6],
+    "push_force": [0, 300],
+    "joint_pos_noise": [0, 0.05]
   },
-  "reward": {"lin_vel_track": 1.0, "ang_vel_track": 0.5,
-             "termination_penalty": -50, "action_rate": -0.05,
-             "torque": -1e-4, "feet_air_time": 0.1, "joint_limit": -0.5},
-  "obs": {"history": 5, "include": ["base_ang_vel","proj_gravity","cmd_vel",
-                                     "joint_pos","joint_vel","last_action"]},
+  "reward": {
+    "lin_vel_track": 1.0,
+    "ang_vel_track": 0.5,
+    "termination_penalty": -50,
+    "action_rate": -0.05,
+    "torque": -1e-4,
+    "feet_air_time": 0.1,
+    "joint_limit": -0.5
+  },
+  "obs": {
+    "history": 5,
+    "include": ["base_ang_vel", "proj_gravity", "cmd_vel", "joint_pos", "joint_vel", "last_action"]
+  },
+  "trainer": { "algo": "PPO", "total_steps": 2e10 },
+  "export": { "format": "onnx", "sample_rate_hz": 50 }
 }
-policy = PPO(cfg).train(total_steps=2e10)     # 常见量级：几十亿步
-policy.export(onnx=True, sample_rate_hz=50)   # 板载推理要显式降采样匹配训练
 ```
+
+三处最该读出来的取舍：**`latency_steps`（0–6 步）与 `push_force`（0–300N）是抗扰能力的来源**——每个 env 固定一组、episode 内不变，策略才会「先估计当前域再决定怎么踩」；**`reward` 的负项是安全边界**（`action_rate` -0.05、`torque` -1e-4、`joint_limit` -0.5、`termination_penalty` -50），去掉就得到暴力抽搐的步态、电机过热；**`obs.include` 只放真机有的量**（IMU 角速度、投影重力、编码器、上一步动作 `last_action`），塞进仿真真值就等于真机「睁眼瞎」。`total_steps` 到 `2e10`（几十亿步）是常见量级，导出 ONNX 时 `sample_rate_hz=50` 必须匹配训练频率，否则板载推理与训练分布错位。
+
+## 一个步态周期的状态机
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+flowchart LR
+  A[支撑相 stance<br/>接触测力 feet_air_time] --> B[摆动相 swing<br/>action_rate 平滑]
+  B --> C[落足 touchdown<br/>joint_pos_noise]
+  C --> D{稳定?<br/>proj_gravity}
+  D -- 是 --> A
+  D -- 否 --> E[恢复抓地<br/>抗 push_force 300N]
+  E --> A
+```
+
+*《图：一个周期 = 支撑相→摆动相→落足→稳定判定；`proj_gravity` 判稳失败就进恢复支路，恢复成功再并回支撑相》*
+
+## 分步演示：策略在一步之内做了什么
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：拼装观测（50Hz）
+
+每个控制周期把 `obs.history=5` 帧堆成输入：`base_ang_vel`、`proj_gravity`、`cmd_vel`（期望速度）、`joint_pos/joint_vel`、`last_action`。注意这里没有一帧是仿真真值——干净接触力、无噪声根速度的版本在真机上拿不到，训练时就喂真值会训出「离不开真值」的脆策略。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：策略推理出关节目标
+
+导出的 ONNX 以 `sample_rate_hz=50` 推理，吐出各关节目标位置。策略看到的当前域，是 `latency_steps`（0–6 步）和 `push_force`（0–300N）落在哪一档——`kp_kd_scale`（0.7–1.3）会让同一目标在不同 env 里力度不同，所以策略学的是「带裕度地下指令」，不是精确打点。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：WBC/QP 做力分配
+
+关节目标交给 200Hz–1kHz 的全身控制，用 QP 把期望力摊到各接触点上，并受 `torque`（-1e-4 惩罚）与 `joint_limit`（-0.5）约束。反射层负责 kHz 级抗扰，操作层只管末端轨迹——把它们塞进同一网络，实时与安全两头都会输。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：支撑相蹬地
+
+一条腿进入 stance，地面反作用力推动质心前进；`feet_air_time`（+0.1）鼓励干净的抬腿—落地而非拖步。`friction` 采自 [0.3, 1.2]，低摩擦档就模拟结冰/瓷砖，策略必须靠更保守的落脚位置补偿。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：摆动相与落足判定
+
+另一条腿进 swing，`action_rate`（-0.05）压住抖动让落点平滑。落足瞬间用 `proj_gravity` 与捕获点判稳：稳就并回支撑相，不稳就触发恢复；若恢复失败则终止，吃到 `termination_penalty`（-50）——这是全表最重的一笔，逼策略「宁可慢也不要倒」。
+{% endstep %}
+{% endstepper %}
+
+## 三种扰动的结局（点标签切换）
+
+{% tabs %}
+{% tab title="地面打滑" %}
+`friction` 抽到 0.3 档、落足切向力超过摩擦锥，脚往前滑。策略在训练里见过整段 [0.3, 1.2]，会缩短步长、把 `proj_gravity` 拉回支撑多边形上方恢复；典型表现是单步耗时上升，而只要摩擦仍落在训练过的 [0.3, 1.2] 区间内，成功率不该掉——这正是把摩擦放进随机化的意义。
+{% endtab %}
+
+{% tab title="侧向推搡" %}
+`push_force` 抽到接近 300N 的横向冲击。能否恢复取决于电机力矩余量与 `kp_kd_scale`（0.7–1.3）：余量够就一步跨出去重定向捕获点，不够就直接倒、吃 `termination_penalty`。所以「视频里被踹一脚不倒」是挑样本，真指标是「扰动强度—恢复成功率」曲线。
+{% endtab %}
+
+{% tab title="掉电 / 热限" %}
+全尺寸人形连续作业只有 1–4 小时，且执行器热限会压缩可用力矩。掉电或热限触发时，正确行为不是「再撑一步」而是安全停驻——把姿态锁进稳定支撑、上报 `safety_stop`。热限没建模（力矩-速度曲线、背隙）的话，真机做同样动作会顶限幅、变慢，仿真里根本看不出来。
+{% endtab %}
+{% endtabs %}
 
 **踩坑提示**
 

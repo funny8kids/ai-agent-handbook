@@ -2,7 +2,7 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # VLA 模型架构：视觉—语言—动作怎么接起来
@@ -53,40 +53,110 @@ flowchart TD
 | 分块长度 | 10–100 步（0.2–2 秒） | 长：流畅但迟钝；短：灵敏但抖；常见 50 步/1 秒 |
 | 推理调度 | 同步（执行完整块）/ 异步（重叠推理与执行，temporal ensembling） | 异步能同时拿到高频与低延迟，代价是实现复杂度 |
 
-## 动作头的三条实现路线（含代码骨架）
+## 动作头的三条实现路线
 
-```python
-# ① 离散 token：把每维动作量化成 bin，复用交叉熵 —— 简单、易训、难高频
-BINS = 256
-def to_tokens(action):                       # action: (T, D) in [-1, 1]
-    return (action * 0.5 + 0.5) * (BINS - 1)
-def from_tokens(tok):
-    return tok / (BINS - 1) * 2 - 1
-# 训练就是 next-token prediction；部署时按 D 维 × T 步逐个解码 → 慢
+三条路线的差别只在「动作专家怎么把隐藏条件变成一段动作」。下面这份 JSON 是一次推理进出的真实形状：左边是喂进去的观测，右边是吐出来的动作块，中间记着动作头的参数。三条路线共用同一份 I/O，换头不改接口。
 
-# ② 扩散头：条件去噪，能表达多模态分布
-def diffusion_loss(h_cond, action_chunk):
-    noise = torch.randn_like(action_chunk)
-    t = torch.randint(0, K, (len(action_chunk),))
-    noisy = q_sample(action_chunk, t, noise)            # 前向加噪
-    return F.mse_loss(model(noisy, t, h_cond), noise)  # 预测噪声
-# 推理需 K 次去噪（K=10–100），可用 DDIM/一致性蒸馏降步数
-
-# ③ Flow matching：学一个速度场，把噪声推流到动作 —— 训练稳、少步可采样
-def flow_loss(h_cond, a1):
-    a0 = torch.randn_like(a1)
-    u = torch.rand(len(a1), 1, 1, device=a1.device)
-    a_u = u * a1 + (1 - u) * a0                 # 插值点
-    v_target = a1 - a0                          # 目标速度场
-    return F.mse_loss(v_net(a_u, u, h_cond), v_target)
-
-@torch.no_grad()
-def sample(h_cond, steps=10, dt=0.1):           # 欧拉积分，从噪声走到动作
-    a = torch.randn(1, T, D, device=h_cond.device)
-    for i in range(steps):
-        a = a + v_net(a, i*dt, h_cond) * dt
-    return a
+```json
+{
+  "observation": {
+    "cameras": [
+      { "name": "base_rgb", "w": 224, "h": 224, "ts_ms": 0 },
+      { "name": "wrist_rgb", "w": 224, "h": 224, "ts_ms": 2 },
+      { "name": "side_rgb", "w": 224, "h": 224, "ts_ms": 2 }
+    ],
+    "instruction": "pick up the blue cup",
+    "proprio": { "joint_pos_rad": [0.0, -0.4, 1.2, 0.0, 0.8, 0.0], "gripper_open": 0.0 },
+    "hidden_cond_dim": 4096
+  },
+  "action_chunk": {
+    "T": 50,
+    "D": 10,
+    "action_range": [-1.0, 1.0],
+    "control_hz": 50,
+    "representation": "delta_tcp_xyz + 6d_rot + gripper"
+  },
+  "action_head": {
+    "selected": "flow_matching",
+    "discrete_token": { "bins": 256, "encode": "(a*0.5+0.5)*(bins-1)", "decode": "tok/(bins-1)*2-1", "loss": "next-token cross-entropy" },
+    "diffusion": { "denoise_steps_K": [10, 100], "target": "predict_noise", "loss": "MSE", "accelerator": "DDIM / consistency distillation" },
+    "flow": { "sample_steps": 10, "dt": 0.1, "integrator": "euler", "target": "velocity_field(a1 - a0)", "loss": "MSE" }
+  }
+}
 ```
+
+三个动作空间量要钉死在配置里：`action_range` 固定是 `[-1.0, 1.0]`，离散头靠它做 `bins=256` 的量化，`from_tokens` 再反归一化回这个区间；`T`、`D` 决定一次吐出多少步多少维（示例 50 步 10 维 = 1 秒）；`representation` 说明这 10 维到底是 `Δtcp(3) + 6D 旋转(6) + 夹爪(1)`。
+
+### 一次推理的往返（分步演示）
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+sequenceDiagram
+    participant O as 观测
+    participant V as 视觉编码
+    participant L as VLM 骨干
+    participant A as 动作专家
+    participant C as 伺服
+    O->>V: 3 路 224² 帧
+    V->>L: patch token
+    L-->>A: 隐藏条件 h
+    A->>C: 动作块 a₁…a₅₀
+    Note over L,C: 边执行当前块边算下一块
+```
+
+*《图：VLM 只交隐藏条件，真正给伺服的是动作专家吐出的 a₁…a₅₀；下一块在当前块还剩约 8 步时就并行发起》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：观测先对齐时间戳
+
+三路 224² 相机帧 + 本体状态（`joint_pos_rad`、`gripper_open`）+ 语言指令打包进模型。相机 30Hz、控制 50Hz、推理 200ms 各跑各的时钟，不显式带 `ts_ms` 并做最近邻对齐，策略就会「拿着 200ms 前的画面纠正现在的手」，把因果学反。
+
+{% endstep %}
+{% step %}
+
+#### 第 2 步：视觉编码 → token → 隐藏条件
+
+视觉塔把每帧切成 patch token，多路多帧很容易比语言 token 多出一个量级（这就是显存黑洞，得靠 Q-Former / pixel shuffle / 时间下采样压）。VLM 骨干（2–7B 慢系统）融合图像、指令、本体感受，输出的不是动作，是一维 `hidden_cond_dim=4096` 的条件向量 `h`。
+
+{% endstep %}
+{% step %}
+
+#### 第 3 步：动作专家把 `h` 变成一段动作
+
+动作专家（几十 M–300M 的 DiT / flow 头）以 `h` 为条件采样出一个 `(T=50, D=10)` 的动作块，每维归一化在 `[-1.0, 1.0]`。一次必须出一段而不是一步——模型 5Hz、控制 50Hz，唯一优雅的补法就是「预测未来 1 秒、滚动重规划」。
+
+{% endstep %}
+{% step %}
+
+#### 第 4 步：块外再兜一层安全 + 插值
+
+动作块进伺服前过限幅与插值（`action_spec` 的 clamp，见 [动作表示与分层控制](action-representation-control.md)）。块外再留触发式重算：力超限或物体被碰走，立即丢弃剩余动作重新推理，而不是硬着头皮把 1 秒执行完。
+
+{% endstep %}
+{% endstepper %}
+
+### 三条路线的取舍（点标签切换）
+
+{% tabs %}
+{% tab title="① 离散 token" %}
+每维量化成 `bins=256` 个 bin（`encode = (a*0.5+0.5)*(bins-1)`，`decode = tok/(bins-1)*2-1`），训练退化成 next-token prediction，直接复用 LLM 栈、最容易训。代价在部署：`(T=50, D=10)` 要逐 token 解码 500 次，控制频率被 token 数拖垮，且高频控制下量化误差明显。适合快速跑通闭环、低频任务。
+
+{% endtab %}
+{% tab title="② 扩散去噪" %}
+条件去噪：前向对动作块加噪（`q_sample`），网络预测噪声、`MSE` 收损。它能表达多模态分布——同一观察「左抓右抓都对」，回归 MSE 会学成「两边平均 = 撞中间」，这正是扩散有效的根本原因。代价是推理要 `K=10–100` 次去噪，慢；上 DDIM / 一致性蒸馏可把步数压到几步。
+
+{% endtab %}
+{% tab title="③ flow matching" %}
+学一个速度场把噪声推流到动作：插值 `a_u = u*a1 + (1-u)*a0`（`u~rand`、`a0~randn`），目标是 `v_target = a1 - a0`，`MSE` 收损。采样用欧拉积分，示例 `steps=10, dt=0.1` 即可从噪声走到动作。训练比扩散稳、步数比扩散少，是当前多数新工作（π0、GR00T 一类）的默认头。
+
+{% endtab %}
+{% tab title="对照：MSE 回归" %}
+最朴素的动作头：直接回归动作、MSE 收损。看起来最省事，实际最容易翻车——多峰分布被平均，模型停在两个抓取姿态中间。它是用来理解「为什么需要生成式头」的反面基线，不建议单独上真机。
+
+{% endtab %}
+{% endtabs %}
 
 > ✅ **最佳实践**：先用 ①/②/③ 中「最容易训的」跑通闭环（通常是 ①或 flow matching），再加 temporal ensembling、异步推理与动作平滑，别一上来就换三种动作头比高低。
 

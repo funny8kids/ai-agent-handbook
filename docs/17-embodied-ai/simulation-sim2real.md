@@ -2,7 +2,7 @@
 tags: [embodied-ai, evaluation, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 仿真与 Sim-to-Real
@@ -82,26 +82,100 @@ flowchart TB
 
 ## 把真机延迟与噪声注入训练（最小实现）
 
-```python
-import numpy as np
+「注入延迟与噪声」这件事的全部参数，写死在下面这份随机化契约里。它规定了每个 episode 从哪个区间抽一组物理量、动作要延迟几步、观测噪声多大、丢帧怎么处理——训练侧和评估侧读同一份，才不会出现「训练时延迟 6 步、评估时当没延迟」。
 
-def randomize_world(rng, task):
-    p = task.params
-    p.damping[task.joints] = rng.uniform(0.5, 3.0)
-    p.gripper_friction = rng.uniform(0.2, 1.0)
-    p.action_delay_steps = int(rng.integers(1, 11))      # 50Hz 下 20–200ms
-    p.obs_noise_std = rng.uniform(1e-4, 8e-4)
-    p.camera_extrinsics += rng.normal(0, 0.01, size=6)  # 标定误差
-    return p
-
-def step_with_latency(env, policy_state, obs, p):
-    env.push_action(obs_buffer[-1])          # 用的是 p.action_delay_steps 之前的动作
-    obs_raw = env.capture()
-    obs = obs_raw + np.random.randn(*obs_raw.shape) * p.obs_noise_std
-    if rng.random() < 0.02:                  # 2% 丢帧 → 复用上一帧
-        obs = last_good_obs
-    return obs
+```json
+{
+  "per_episode_randomization": {
+    "joint_damping": { "dist": "uniform", "low": 0.5, "high": 3.0 },
+    "gripper_friction": { "dist": "uniform", "low": 0.2, "high": 1.0 },
+    "action_delay_steps": { "dist": "integer", "low": 1, "high": 10, "at_hz": 50, "equiv_ms": [20, 200] },
+    "obs_noise_std": { "dist": "uniform", "low": 1e-4, "high": 8e-4 },
+    "camera_extrinsics_jitter": { "dist": "normal", "sigma": 0.01, "dof": 6, "note": "标定误差" }
+  },
+  "sensor": {
+    "frame_drop_prob": 0.02,
+    "on_drop": "reuse_last_good_obs"
+  },
+  "apply_rule": "每 episode 抽一组、episode 内固定；不要每个控制步重设"
+}
 ```
+
+三个要点藏在数值里：**`action_delay_steps` 1–10 步在 50Hz 下就是 20–200ms**，这是最关键的一项——不随机化延迟，策略会当成「指令立即生效」，真机上必然过冲；**`obs_noise_std` 到 8e-4、`camera_extrinsics` 抖 6 自由度 σ=0.01** 复现的是标定误差与传感器噪声；**`frame_drop_prob` 0.02（2% 丢帧）要显式「复用上一好帧」**，否则策略学到的是「永远有新观测」这个真机不成立的假设。
+
+## 分步演示：一次带延迟与噪声的 `env.step`
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+sequenceDiagram
+  participant P as 策略
+  participant B as 动作缓冲
+  participant E as 仿真器
+  participant S as 传感器
+  P->>B: 本步指令 a_t
+  E->>B: 取 a_(t-delay) 入物理
+  E->>S: 推进动力学并采集
+  S->>P: 加噪观测（2% 复用上帧）
+```
+
+*《图：推进的是 `delay_steps` 之前的旧动作，喂回策略的是加了 std 噪声、还可能复用上帧的观测——延迟和噪声分别卡在回路的进与出》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：指令先进缓冲，不立即生效
+
+策略在 t 步吐出动作 `a_t`，写进动作缓冲；真正推给仿真器的是 `a_(t-action_delay_steps)`——即本 episode 开头抽到的那一档延迟（1–10 步）。这一步模拟的是通信与控制栈的真实滞后，50Hz 下等价 20–200ms。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：推进物理，采集原始观测
+
+用旧动作把动力学往前积分一步，`joint_damping`（0.5–3.0）与 `gripper_friction`（0.2–1.0）都取本 episode 固定的那一组，相机按抖动过的外参（σ=0.01）成像。episode 内不变，策略才能从一致物理里学出可迁移的规律。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：给观测叠噪声
+
+原始观测 `obs_raw` 加上均值为 0、std 落在 1e-4~8e-4 的高斯噪声，复现 IMU 偏置、编码器量化与力矩估计误差。给「完美观测」等于骗策略——真机永远拿不到干净值。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：按 2% 概率丢帧并复用
+
+每步以 `frame_drop_prob=0.02` 判定是否丢帧；丢了就把上一好帧顶上来，而不是喂零或跳过。策略因此学会「这帧可能没更新」的鲁棒性，而不是假设传感器帧帧必到。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：交给策略，episode 结束重抽一组
+
+带延迟、带噪、可能复用的观测喂回策略进入下一步；episode 结束时重抽整组随机参数。判据很简单：去掉延迟评估若明显变差，说明策略真利用了延迟建模（好兆头）；完全没差别，多半是随机化幅度小于真机实际抖动，回去量真机。
+{% endstep %}
+{% endstepper %}
+
+## 各项随机化各自救什么、不救什么（点标签切换）
+
+{% tabs %}
+{% tab title="只随机化视觉" %}
+换纹理、换光照、换相机内外参，仿真里看着很鲁棒，但真机一碰就倒——这类失配的典型量级是 **88%→52%**。动力学从头到尾没变过，策略从未学过「摩擦/延迟变了怎么办」。视觉随机化救不了动力学失配，更好的贴图补不回这个 gap。
+{% endtab %}
+
+{% tab title="随机化摩擦与质量" %}
+`gripper_friction` [0.2, 1.0]、质量/惯量 ±20–50% 一起抖。抓到滑、推到位就停，策略被迫用更保守的力与更大的抓握裕度。随机化范围要按真机实测分布来定，凭感觉放宽只会浪费训练、真机仍失配。
+{% endtab %}
+
+{% tab title="随机化延迟（关键）" %}
+把 `action_delay_steps` 从 1 抖到 10（20–200ms），策略学会「下指令要留提前量」。判据同上一节：训练里去掉延迟评估会变差，正是策略真用了延迟建模的证据——这是唯一能靠随机化直接消灭的一类 sim-to-real bug。
+{% endtab %}
+
+{% tab title="完全不随机化" %}
+对照组：单场景收敛，仿真 **95%**，上真机 **35%**。这是全章最该记住的一页——策略利用了仿真器的数值缺陷（靠穿透做抓取、靠完美接触抓稳），一旦真机没有这些缺陷就全线崩。域随机化的意义就是把「一个场景」变成「一个分布」。
+{% endtab %}
+{% endtabs %}
 
 **判据**：如果你发现「仿真里去掉延迟评估会明显变差」，说明策略已利用了延迟建模——这是好兆头。若完全没差别，多半是你的随机化幅度小于真机实际抖动，去量一遍真机。
 

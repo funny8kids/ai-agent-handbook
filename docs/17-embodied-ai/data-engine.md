@@ -2,7 +2,7 @@
 tags: [embodied-ai, data, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 数据引擎：机器人数据从哪来
@@ -60,19 +60,64 @@ flowchart TD
 
 **入库前自动质检**
 
-```python
-def accept(ep, spec):
-    return all([
-        ep.frames_gap_ms_max < 60,                    # 丢帧
-        ep.action_jerk_p99 < spec.jerk_limit,         # 抖动
-        ep.success_flag is True,                      # 只看真成功
-        ep.static_ratio < 0.35,                       # 长时间静止（操作员走神）
-        spec.min_steps <= ep.steps <= spec.max_steps, # 太短/太长
-        ep.language not in {"", "做一下那个"},          # 指令有效性
-        ep.camera_pose_variance > spec.thresh,        # 相机被撞到
-    ])
-# 不合格的不删，进「隔离区」，用于失败样本训练与统计
+「可入库」不是一句口号，而是一组每条轨迹都要过的机器判据。下面这份质检契约把采集端的成功标准写死成数据：任何一条不过就进隔离区（不删，留作失败样本），全部通过才允许进配比池。
+
+```json
+{
+  "accept_if_all_pass": true,
+  "gate": {
+    "frames_gap_ms_max": { "op": "<", "value": 60, "catch": "丢帧" },
+    "action_jerk_p99": { "op": "<", "ref": "spec.jerk_limit", "catch": "夹爪抖动" },
+    "success_flag": { "op": "==", "value": true, "catch": "只看真成功" },
+    "static_ratio": { "op": "<", "value": 0.35, "catch": "操作员走神的长静止" },
+    "steps": { "op": "between", "low_ref": "spec.min_steps", "high_ref": "spec.max_steps", "catch": "太短/太长" },
+    "language": { "op": "not_in", "value": ["", "做一下那个"], "catch": "指令含糊/缺失" },
+    "camera_pose_variance": { "op": ">", "ref": "spec.thresh", "catch": "相机被撞到" }
+  },
+  "on_fail": "quarantine（保留为失败样本，不删）"
+}
 ```
+
+每条判据都对应一类「训练时才会爆」的脏数据：**`frames_gap_ms_max < 60`** 卡多相机时间戳断层；**`action_jerk_p99 < spec.jerk_limit`** 卡操作员手抖（抖动会教出抽搐策略）；**`success_flag is True`** 强调「只认成功标志、不认看起来成功」；**`static_ratio < 0.35`** 剔掉超过三分之一时间静止的走神片段；**`steps` 落在 `[min_steps, max_steps]`** 防截断；**`language` 非空且不是「做一下那个」**——语言条件一旦含糊，指令-动作对齐就废了；**`camera_pose_variance > spec.thresh`** 抓相机被碰歪的片段。不合格的进隔离区而不是删掉，因为失败样本正是恢复训练最好的燃料。
+
+## 分步演示：一条 episode 从采集到入库
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：采集——按可判定的任务定义录
+
+遥操作按「目标状态 + 时限 + 允许重试次数」的任务规范执行，同步录多相机（含时间戳）、本体状态、动作、语音/文字指令、操作员 ID 与失败原因标签。ACT 的原始设置是每任务约 50 条演示，先跑通「50 条学会一个任务」再谈规模化。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：自动质检——过上面那份 gate
+
+episode 落盘即跑 `accept_if_all_pass` 的七条判据：丢帧、抖动、成功标志、静止比、步数、语言、相机位姿逐条比对。任何一条不过打 `quality_flag` 并进隔离区，通过的才往清洗走。质量在这一步决定，不靠训练时补救。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：清洗与事件标注
+
+按 `ts` 把动作与观测一一对齐（同频或显式插值规则，50Hz 控制/50fps 采集），把 `slip / 复位 / 人工接管` 逐条标成 `events`。这些事件不是噪声，是失败恢复监督信号的唯一来源；语言描述自动生成后再抽样人审。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：配比——按来源定混合比
+
+清洗后的轨迹进配比池，按「真机 : 仿真 : 人类视频/合成」约 `5 : 3 : 2` 起步（无定式，必须用自己的评估集校准）。人类视频多喂表征预训练，真机数据喂动作对齐微调；仿真数据入库前要先加噪声与延迟，否则真机不可用。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：入库——数据版本绑死模型版本
+
+配比后的数据集打版本，与「训练版本 = 模型版本」三件套绑定，否则半年后没人说得清哪版数据训出这版策略。上线后新产生的失败与纠正样本回流到第 1 步的采集端，飞轮的迭代速度取决于这一圈多长——能一周跑一轮，进步就明显快过季度性大数据集。
+{% endstep %}
+{% endstepper %}
 
 **训练侧的消费方式**
 

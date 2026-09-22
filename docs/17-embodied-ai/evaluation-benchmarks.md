@@ -2,7 +2,7 @@
 tags: [embodied-ai, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 评估与基准：怎么证明机器人真的行
@@ -90,23 +90,93 @@ trials_report:
 
 ## 统计与可视化：成功率不要只报一个数
 
-```python
-import numpy as np
-from statsmodels.stats.proportion import proportion_confint   # 或自己写 Wilson
+「成功率不要只报一个数」落到工程上，就是让统计脚本吐出一份固定形状的报告：每个留出条件一行、带 `succ/n/rate` 和 Wilson 置信区间，再加一组按 `model_version` 聚合的过程指标。下面就是这份报告契约——`aggregation` 用 `wilson` 而不是 Wald（小样本 Wald 会给出负的下界），`confidence` 取 0.95。
 
-def report(succ, n, label):
-    lo, hi = proportion_confint(succ, n, method="wilson")
-    print(f"{label:22s} {succ:3d}/{n:<3d} = {succ/n:.0%}  95%CI[{lo:.0%},{hi:.0%}]")
-    return succ/n, lo, hi
-
-for cond in ["seen_obj", "new_obj", "new_scene", "new_cam", "night_light"]:
-    s, n = results[cond]
-    report(s, n, cond)          # 留出维度上的衰减一目了然
-
-# 过程指标比结果指标更早暴露问题
-print(pd.DataFrame(trials).groupby("model_version")[
-    ["partial_credit", "median_seconds", "safety_stop", "human_resets"]].mean())
+```json
+{
+  "aggregation": "wilson",
+  "confidence": 0.95,
+  "per_condition": [
+    { "label": "seen_obj",   "succ": 18, "n": 20, "rate": 0.90, "ci": [0.70, 0.97] },
+    { "label": "new_obj",    "succ": 15, "n": 20, "rate": 0.75, "ci": [0.53, 0.89] },
+    { "label": "new_scene",  "succ": 11, "n": 20, "rate": 0.55, "ci": [0.35, 0.73] },
+    { "label": "new_cam",    "succ": 9,  "n": 20, "rate": 0.45, "ci": [0.26, 0.66] },
+    { "label": "night_light","succ": 8,  "n": 20, "rate": 0.40, "ci": [0.22, 0.61] }
+  ],
+  "process_metrics_by_model_version": {
+    "v2026.08": {
+      "partial_credit": 0.62,
+      "median_seconds": 41,
+      "safety_stop_rate": 0.03,
+      "human_resets_per_task": 0.6
+    }
+  }
+}
 ```
+
+读法：`per_condition` 里 `seen_obj` 到 `night_light` 一路 90%→40% 的**衰减梯度**，比单独任何一个数都更能说明模型学到了什么——`new_cam`、`night_light` 掉得最狠，说明它靠的是视角与光照记忆而非物体恒常性。`process_metrics_by_model_version` 按版本对齐 `partial_credit / median_seconds / safety_stop / human_resets`，这四个过程指标比结果指标更早暴露「修 A 崩 B」。
+
+## 分步演示：跑一次 `cup-to-sink` 评测
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：载入协议并锁种子
+
+读 `eval_protocol.yaml` 里 `cup-to-sink` 的条目，固定「同一随机种子集（或同一初值列表文件）」——换模型才可比，评估集若改动要写进 changelog。这一步决定了这份报告能不能被别人复现。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：按分布摆初值，不友好摆放
+
+物体位姿从 `uniform(x:[0.1,0.5], y:[-0.3,0.3], yaw:[-180,180])` 抽，随机撒 `tissue`/`sponge` 干扰物，光照在 `day / night-lamp / backlit` 轮转，相机外参在标称值 ±2° 抖。很多 demo 翻车恰恰是「今天杯子摆在训练时那个位置」，随机初值专治这个。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：一次机会，`retry: none`
+
+每个条件跑 `trials: 20`（最好 50），关键约束是一次机会、不重试。允许重试的那个数单独归到 `reset-assisted` 统计里，绝不混进主成功率——否则就是把成功率当剪辑技巧。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：自动判成功 + 给过程分
+
+成功判据必须机器可判：`cup.center inside sink.polygon` 且 `gripper.openness > 0.9 AND no_contact_for: 2s`。同时记 `cup_moved_pct = distance_traveled / distance_required` 做部分分，放错位置扣 `wrong_place_penalty: -0.3`——过程分比 0/1 更有信息量。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：失败必须分类，不能只记「没成功」
+
+每次失败打上类别标签：`slip / wrong_target / stuck / timeout / safety_stop`。分类清楚才知道该修数据还是修控制。示例的 100 次里就是 `slip:14, wrong_target:9, stuck:8, timeout:5, safety_stop:3`。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：聚合成带区间的报告
+
+把各条件次数汇成上面那份 JSON：`succ/n = rate`，配 Wilson 95% 区间。例如总样本 `n:100 success:61 rate:0.61`，区间 `[0.51, 0.70]`——`18/20` 和 `450/500` 都是 90%，但区间宽窄差一个量级，只报点数字就是耍流氓。
+{% endstep %}
+{% endstepper %}
+
+## 三种「成功率」，别混着报（点标签切换）
+
+{% tabs %}
+{% tab title="per-attempt" %}
+每次尝试独立计成功，最能反映模型裸能力，也是 `eval_protocol.yaml` 里 `retry: none` 出来的那个数。它的弱点是偏乐观：真机上操作员顺手复位造成的「第二次就成」不会体现，所以不能单独拿它当上线依据。
+{% endtab %}
+
+{% tab title="per-episode-with-retries" %}
+允许 episode 内重试后统计完成率，数字虚高——同一模型换个重试预算就能「刷」出更高成功率。要用它，就必须把重试次数一并报出来，或者干脆改叫「有限重试下的完成率」，否则名字本身就骗人。
+{% endtab %}
+
+{% tab title="user-facing" %}
+含人工复位、卡死求助的真实完成率，`human_resets_per_task: 0.6` 就是它的成本项——平均每 1.67 次成功要人插手一次。产品验收只认这一条：用户不管你在仿真里多少分，只管要不要一直在旁边救场。
+{% endtab %}
+{% endtabs %}
 
 > ✅ **最佳实践**：把「衰减率」（新场景成功率 ÷ 已知场景成功率）当成一等指标。一个 90%→88% 的模型，通常比 95%→45% 的模型更适合上线。
 

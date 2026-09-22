@@ -2,7 +2,7 @@
 tags: [embodied-ai, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 动作表示与分层控制
@@ -48,29 +48,114 @@ updated: 2026-09-22
 
 ## Action Chunking 与「滚动重规划」
 
-```python
-# 部署侧骨架：执行块的同时并行推理下一块，用重叠段做平滑
-H = 50                      # chunk 长度：50 步 @50Hz = 1 秒
-OVERLAP = 15                # 与上一块重叠的步数
-CONTROL_HZ = 50
+部署侧的核心不是「模型跑一次」，而是「边执行当前块、边并行算下一块」。下面这份 JSON 描述滚动缓冲的状态：`H` 是块长、`overlap` 是和新块加权重叠的步数、`prefetch_ahead` 是提前多少步发起下一次推理。三个数决定这条流水线断不断流。
 
-next_obs = env.capture()
-plan = policy.step(next_obs, instruction)          # list[Action]，长度 H
-i = 0
-while not task.done():
-    # 后台线程已在算 new_plan（用比 i 更早的观测），这里只取结果
-    if pending.done():
-        new_plan = pending.result()
-        plan = blend(plan[i:], new_plan[:len(plan) - i], OVERLAP)   # temporal ensembling
-        i = 0
-    a = plan[i]; i += 1
-    a = clamp(a, joint_limits, vel_limit, torque_limit)              # 安全层
-    if safety.force_exceeded(): a = hold_and_replan()                # 触发式重规划
-    robot.send(a)
-    if i >= len(plan) - 8:          # 提前发起下一次推理，保证不断流
-        pending = pool.submit(policy.step, env.capture(), instruction)
-    sleep_at(CONTROL_HZ)
+```json
+{
+  "chunk_buffer": {
+    "H": 50,
+    "control_hz": 50,
+    "duration_s": 1.0,
+    "overlap": 15,
+    "prefetch_ahead": 8
+  },
+  "per_tick_loop": [
+    "capture obs",
+    "pop plan[i]",
+    "clamp(a, joint_limits, vel_limit, torque_limit)",
+    "if force_exceeded: hold_and_replan",
+    "send(a)",
+    "if i >= len(plan)-8: submit next inference",
+    "sleep_at(control_hz)"
+  ],
+  "blend": { "method": "temporal ensembling", "scope": "overlap=15 步加权平均", "why": "消除块边界跳变" },
+  "replan_trigger": ["force_exceeded", "large_visual_displacement", "stall_detected"]
+}
 ```
+
+一次控制周期就是 `per_tick_loop` 那七步：取 `plan[i]`、`clamp`（同时夹 `joint_limits`/`vel_limit`/`torque_limit`）、发命令；当 `i >= len(plan) - prefetch_ahead`（示例剩 8 步）就把后台算好的 `new_plan` 接上——`H=50`、`control_hz=50`、重叠 `overlap=15` 是同一份配置里的数。
+
+### 一次滚动重规划（分步演示）
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+sequenceDiagram
+    participant R as 实时线程
+    participant B as 缓冲 plan
+    participant P as 后台推理
+    R->>B: 取 plan[i]
+    B-->>R: 动作 a
+    R->>P: 剩 8 步时提交新观测
+    P-->>B: new_plan（旧观测算出）
+    Note over B: blend：重叠 15 步加权
+```
+
+*《图：实时线程只管从缓冲取动作，推理在后台并行；交接点靠 15 步重叠加权，避免边界跳变》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：出块
+
+`policy.step(obs, instruction)` 返回长度 `H=50` 的动作列表（每维是本页 schema 里的 `Δxyz + 6D + 夹爪`）。慢系统 5Hz、控制 50Hz，一次必须出 1 秒的量。
+
+{% endstep %}
+{% step %}
+
+#### 第 2 步：逐拍取动作 + 限幅
+
+每个控制拍 `pop plan[i]`，先 `clamp(a, joint_limits, vel_limit, torque_limit)`——安全层在模型外面，永远不信网络会自律。然后 `robot.send(a)`，`sleep_at(CONTROL_HZ)` 卡在 50Hz。
+
+{% endstep %}
+{% step %}
+
+#### 第 3 步：提前发起下一次推理
+
+剩 `prefetch_ahead=8` 步（`i >= len(plan) - 8`）时，后台线程用新观测提交 `new_plan`。为什么提前？推理要 50–200ms，等块跑完才算，中间就有「闭眼执行」的断流窗口。
+
+{% endstep %}
+{% step %}
+
+#### 第 4 步：重叠段做时间集成
+
+新块就绪，`blend(plan[i:], new_plan[:len-i], overlap=15)`——重叠的 15 步加权平均（ACT 论文的 temporal ensembling），块边界不跳变。`i` 归零，继续吐。
+
+{% endstep %}
+{% step %}
+
+#### 第 5 步：异常触发式重算
+
+`force_exceeded` / 视觉大位移 / 卡滞命中 → 立即 `hold_and_replan`：丢弃剩余块、保持当前位姿、用最新观测重推。别硬着头皮把 1 秒动作执行完——这是 [灵巧操作](manipulation.md) 里接触异常闸门的同一套逻辑。
+
+{% endstep %}
+{% endstepper %}
+
+### 每种表示怎么坏（点标签切换）
+
+同一张动作空间表（见上）给的是优点，这里补上各自的**失效场景**——选错表示往往不是选到最差的，而是选到当前任务扛不住的那种。
+
+{% tabs %}
+{% tab title="末端位姿增量" %}
+`Δ(x,y,z,rot)` 相对当前 TCP，和相机最相关、跨机型迁移最好，是 VLA 微调默认。坏在**误差累积**：每步一小偏，100 步后漂移可见；且强依赖 IK/笛卡尔控制器，接近奇异点时解算会突然爆。
+
+{% endtab %}
+{% tab title="绝对末端位姿" %}
+无累积误差，适合固定工装、结构化抓取。坏在**分布偏移**：物体一动（被人碰、传送带挪），绝对目标就作废，策略没见过就完全不知道该往哪走。
+
+{% endtab %}
+{% tab title="关节位置目标" %}
+部署最简单、轨迹天然平滑。坏在**泛化差**：与视觉关系弱，换机型、换初始姿态全得压给网络记，演示数据来自哪台机器就只在这台上好用。
+
+{% endtab %}
+{% tab title="力矩 / 阻抗" %}
+能做插拔、擦、推这类接触丰富任务。坏在**要动力学模型或海量数据**、调参敏感，一个阻尼没配好整机就抖；所以产业上多半给策略一个阻抗接口，而不是让它裸出力矩。
+
+{% endtab %}
+{% tab title="离散动作原语" %}
+把动作收成 `pick/place/wipe` 等有限 token，语言层直接挑。坏在**粒度太粗时高频控制做不了**（插不准、力控不了），太细则 token 数爆炸又回到「量化误差 + 解码慢」——这是 [VLA 离散 token 头](vla-models.md) 的老债。
+
+{% endtab %}
+{% endtabs %}
 
 **要点**
 

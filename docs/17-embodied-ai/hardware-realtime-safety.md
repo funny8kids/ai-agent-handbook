@@ -2,7 +2,7 @@
 tags: [embodied-ai, engineering, safety]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 硬件、实时与安全
@@ -45,7 +45,7 @@ updated: 2026-09-22
 
 **板载常见配置**（量级参考，具体看代际）：NVIDIA Jetson Orin 系列（数瓦到数十瓦，INT8/FP16 推理）、消费级移动 GPU、NPU/加速器。工程要点是**功耗-散热-算力**三角：持续推理下会热降频，热降频后控制频率掉，机器人行为就变了——必须在高温工况下重测端到端延迟与成功率。
 
-## 安全层：怎么落到代码与硬件
+## 安全层：怎么落到软件与硬件
 
 一次动作命令从模型到电机，要依次穿过下面这些闸门；急停与看门狗走独立安全回路，绕过策略进程直达执行器——这正是「分层冗余，任一失效另一层还能停」的落地形态。
 
@@ -62,32 +62,108 @@ flowchart LR
 
 *《图：安全边界——策略/模型输出必须先过软件安全层才进实时线程；急停与心跳丢失走的是不经软件的独立回路》*
 
-```python
-# 软件安全层（放在模型输出与机器人驱动之间，独立于策略进程）
-class SafetyMonitor:
-    def __init__(self, robot, spec):
-        self.r, self.s = robot, spec
-        self.last = None
-    def check(self, cmd, state, dt):
-        # 1) 幅度与速率
-        if (d := (cmd.pos - state.tcp_pos)).norm() > self.s.max_step_m:
-            return reject("step_too_large", scale_to(d, self.s.max_step_m))
-        if (v := (cmd.pos - self.last.pos).norm()/dt) > self.s.max_tcp_vel:
-            return reject("vel_limit", clamp_vel(cmd, self.s.max_tcp_vel))
-        # 2) 力/功率（与 ISO/TS 15066 的功率与力限制 PFL 对应）
-        if state.ext_wrench.norm() > self.s.force_n and not cmd.is_contact_phase:
-            return stop(category=1)             # 受控停止，保留动力
-        # 3) 人机距离（速度-分离监控 SSL）
-        if (p := self.human_nearest_point()) and p.dist < self.s.min_sep(p.human_vel):
-            return slow_down_or_stop(p)
-        # 4) 关节软限位与自碰撞
-        if any(state.joint_pos > self.s.soft_limits):
-            return reject("soft_limit", project_inward(cmd))
-        if self.s.collides(cmd):
-            return reject("self_collision")
-        self.last = cmd
-        return accept(cmd)
+安全监控不是「一个函数」，而是一串闸门：每条命令依次过幅度、速率、力/功率、人机距离、软限位、自碰撞六关，任一关不过就拒或降级。下面这份 JSON 是安全层读的那份规格：`reason` 是枚举、阈值是数据。策略与监控都读同一份，才不会出现「模型以为能到、控制器拒绝执行」。
+
+```json
+{
+  "safety_spec": {
+    "max_step_m": 0.05,
+    "max_tcp_vel_mps": 0.25,
+    "force_n": 30,
+    "min_sep_m_at_1mps": 0.5,
+    "joint_soft_limit_margin_deg": 5,
+    "estop_category": [0, 1],
+    "watchdog_timeout_ms": 100
+  },
+  "state_fields": ["tcp_pos", "joint_pos", "ext_wrench", "gripper_loaded", "human_nearest_point"],
+  "cmd_fields": ["pos", "is_contact_phase"],
+  "reject_reason": ["step_too_large", "vel_limit", "force_limit", "sep_violation", "soft_limit", "self_collision", "comms_lost"],
+  "degrade_action": {
+    "step_too_large": "scale_to(max_step_m)",
+    "vel_limit": "clamp_vel(max_tcp_vel)",
+    "force_limit_off_contact": "stop(category=1, 受控停止保留动力)",
+    "sep_violation": "slow_down_or_stop(human_nearest_point)",
+    "soft_limit": "project_inward(cmd)",
+    "self_collision": "reject",
+    "comms_lost": "known_safe_state(放负载·抱闸)"
+  }
+}
 ```
+
+字段含义直接对上六条闸门：`step_too_large` 是单步位移 `‖cmd.pos − state.tcp_pos‖` 超过 `max_step_m`（示例 0.05m），处理是 `scale_to` 缩放而不是丢掉；`vel_limit` 是 `(cmd.pos − last.pos)/dt` 超 `max_tcp_vel_mps`，`clamp_vel` 限速；`force_limit` 对应 ISO/TS 15066 的功率与力限制 PFL——`ext_wrench.norm() > force_n` 且**不在接触相位**（`is_contact_phase=false`）才受控停，接触相位允许超限（否则插拔做不了）；`sep_violation` 是速度-分离监控 SSL，`min_sep` 随人速增大；`soft_limit` 从 URDF 读关节限位留 5° 余量；`self_collision` 直接拒。
+
+### 一个 50Hz 控制周期（分步演示）
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+flowchart LR
+  CAP[采样 state<br/>20ms] --> MON[安全监控<br/>过闸门]
+  MON --> DIS[下发总线<br/>0.5–2ms]
+  DIS --> ACT[电机响应<br/>5–20ms]
+  ACT --> FB[反馈/看门狗]
+  FB -.-> MON
+```
+
+*《图：一个周期 20ms——采样→监控→下发→响应→反馈；看门狗与急停走独立回路，不进这条软件链》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：采样本体与外力状态
+
+读 `tcp_pos`、`joint_pos`、`ext_wrench`，各带 `monotonic_ns` 时间戳。50Hz 闭环意味着整个周期预算只有 20ms，采样这一步超了，后面全得挤。
+
+{% endstep %}
+{% step %}
+
+#### 第 2 步：命令过安全闸门
+
+策略给的 `cmd` 依次比 `max_step_m=0.05`、`max_tcp_vel_mps=0.25`、`force_n=30`、SSL 分离距离、`joint_soft_limit_margin_deg=5`、自碰撞。过不了就按 `degrade_action` 缩放/限速/受控停——**这是数据分派，不是抛异常**，所以策略进程能继续活着。
+
+{% endstep %}
+{% step %}
+
+#### 第 3 步：下发 EtherCAT + 喂狗
+
+通过 DC 同步的确定性链路把目标发给驱动器（0.5–2ms），同一步喂总线看门狗（`watchdog_timeout_ms=100`）。看门狗的意义是：就算软件卡死，驱动器收不到新指令也会自己进安全态。
+
+{% endstep %}
+{% step %}
+
+#### 第 4 步：电机响应 + 反馈
+
+电机按力矩限幅响应（机械响应 5–20ms），回报实测位置/电流残差。这一层跑在实时线程（PREEMPT_RT、隔离 CPU、零动态内存分配），可以抖的只有策略，伺服不能抖。
+
+{% endstep %}
+{% step %}
+
+#### 第 5 步：异常触发已知安全态
+
+力超 `force_n` 且非接触相位 → `stop(category=1)` 受控停保留动力；通信断 → 心跳丢失直接进已知安全态（放负载、抱闸）。急停是独立硬件回路（Cat0 立即断动力 / Cat1 受控停后断），绕过前四步直达执行器。
+
+{% endstep %}
+{% endstepper %}
+
+### 四类异常，四条降级路径（点标签切换）
+
+{% tabs %}
+{% tab title="掉帧（快策略断流）" %}
+动作块算不出来，控制层不能空转也不能跳变。策略是**用上一块末端做匀速外推 + 触发重推**，而不是硬停——硬停在接触任务里等于突然松手。连续掉帧超预算才升级成受控停。
+
+{% endtab %}
+{% tab title="超力（PFL 触发）" %}
+`ext_wrench.norm() > force_n` 分两种：`is_contact_phase=true` 时允许（插拔、擦拭本来就要用力），false 时立即 `stop(category=1)` 受控停止、保留动力，方便恢复。这条闸门直接对应 ISO/TS 15066。
+
+{% endtab %}
+{% tab title="通信断（看门狗）" %}
+总线 watchdog 或软件心跳超时（示例 `watchdog_timeout_ms=100`），驱动器进**已知安全态**：放下负载、收臂、断电抱闸，别停在半空托着东西。注意这条路径完全不经过策略进程——进程崩了它照样生效。
+
+{% endtab %}
+{% tab title="人闯入（SSL）" %}
+速度-分离监控 `sep_violation`：按人速动态算 `min_sep`，人走得快就要求更大距离。处理是先 `slow_down`，距离继续缩短才 `stop`。安全信号走专用链路，绝不用 WiFi。
+
+{% endtab %}
+{% endtabs %}
 
 **硬件与流程**
 

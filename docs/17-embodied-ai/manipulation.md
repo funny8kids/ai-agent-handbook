@@ -2,7 +2,7 @@
 tags: [embodied-ai, application]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 灵巧操作：抓取、接触与触觉
@@ -53,31 +53,107 @@ flowchart TD
 3. **柔顺优于精准**：插入类任务用阻抗控制（低刚度沿接触方向、高刚度沿法向）比「毫米级轨迹规划」更容易成功。
 4. **恢复动作要专门采数据**： slip 后重新收紧、抓歪后重抓、卡住后退回——这些「纠错片段」占演示数据的 10–30% 才可能学会恢复（对应数字 Agent 里的失败样本回流，见 [数据引擎](data-engine.md)）。
 
-## 抓取 + 柔顺插入的最小骨架
+## 抓取 + 柔顺插入：一份可执行的配方
 
-```python
-import numpy as np
+一次「抓取 + 柔顺插入」能写成一份数据契约：抓取候选的打分权重、接近/闭爪的速度档、插入段的阻抗刚度与力阈值。下面这份 JSON 就是控制层真正读的配方——把「人类操作直觉」固化成参数，策略只需学「什么时候触发」。
 
-def grasp_and_insert(obj, target, arm, hand):
-    # 1) 抓取候选评分：接触质量 + 抓取后可操作空间（相机可见 + 无自碰撞）
-    cands = hand.propose_grasps(obj, k=128)
-    cands = [g for g in cands if arm.ik_reachable(g.pre_grasp) and not arm.self_collision(g)]
-    g = max(cands, key=lambda g: g.quality * g.visibility_score * g.clearance_score)
-
-    arm.move_to(g.pre_grasp, speed="safe")        # 接近段慢
-    hand.close(force_limit=25)                     # 力限幅，别夹碎
-    arm.move_to(g.grasp, speed="creep")
-
-    # 2) 插入段：XY 柔顺（低刚度），Z 位置控制 + 力监控
-    arm.set_impedance(xy_stiffness=80, z_stiffness=4000)     # N/m
-    while (d := target.pose - arm.tcp_pose).norm() > 2e-3:
-        arm.vel_cmd(d.direction * 0.02 + wbc.search_term(wobble=3e-3))  # 抖动搜索
-        if abs(ft.fz()) > 40:                      # 顶死了
-            arm.retrace(dt=0.15); arm.rotate_yaw(0.03)   # 回退 + 微旋 = 经典对齐策略
-        if hand.slip_detected():
-            hand.regrasp(); continue
-    hand.open(); return True
+```json
+{
+  "grasp_planning": {
+    "candidates_k": 128,
+    "filters": ["ik_reachable(pre_grasp)", "not self_collision(grasp)"],
+    "score": "quality * visibility_score * clearance_score",
+    "approach_speed": "safe",
+    "grasp_speed": "creep",
+    "close_force_limit_n": 25
+  },
+  "insertion_control": {
+    "impedance_stiffness_n_per_m": { "xy": 80, "z": 4000 },
+    "pos_tol_m": 0.002,
+    "feed_vel_m_per_s": 0.02,
+    "wobble_search_m": 0.003,
+    "fz_stop_n": 40,
+    "retrace_dt_s": 0.15,
+    "rotate_yaw_rad": 0.03,
+    "on_slip": "regrasp"
+  },
+  "signals": ["ft.fz", "hand.slip_detected", "arm.tcp_pose", "target.pose"]
+}
 ```
+
+关键在**各向异性的阻抗**：`xy` 方向压到 `80 N/m`（软，孔没对准能横向滑进去），`z` 方向拉到 `4000 N/m`（硬，进给位移精确）。`fz_stop_n=40` 是「顶死了」的判据，`rotate_yaw_rad=0.03` 配合 `retrace_dt_s=0.15` 就是经典对齐策略：回退 0.15 秒 + 微旋 0.03 弧度再进。
+
+### 一次抓取到回单（分步演示）
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+flowchart LR
+  PER[感知<br/>点云+分割] --> CAND[128 候选打分]
+  CAND --> APP[慢接近 safe]
+  APP --> CLOSE[闭爪 25N]
+  CLOSE --> INS[柔顺插入 xy80/z4000]
+  INS --> DONE{到位 <2mm?}
+  DONE -- 是 --> RET[开爪·回单]
+  DONE -- 否 --> REC[回退+微旋/重抓]
+  REC -.-> CAND
+```
+
+*《图：抓取不是一步——128 候选按可操作性打分，插入段力顶死则回退微旋、滑移则重抓，只有到位<2mm 才开爪回单》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：生成并过滤抓取候选
+
+`propose_grasps(obj, k=128)` 出 128 个候选，过两道硬筛：`ik_reachable(pre_grasp)`（够得到）和 `not self_collision`（不撞自己）。剩下的按 `quality * visibility_score * clearance_score` 取最高——把「抓完还能干活」（看得见、不挡手腕相机）写进评分，而不只是抓得稳。
+
+{% endstep %}
+{% step %}
+
+#### 第 2 步：慢接近 + 限力闭爪
+
+先 `move_to(pre_grasp, speed="safe")` 慢速接近，`close(force_limit_n=25)` 限力闭爪防夹碎，再 `move_to(grasp, speed="creep")` 蠕行确认咬合。接近段快=危险，闭爪力大=夹碎，这两处最容易被忽略。
+
+{% endstep %}
+{% step %}
+
+#### 第 3 步：切到柔顺插入
+
+`set_impedance(xy=80, z=4000 N/m)`：横向软、进给硬。沿目标方向以 `feed_vel=0.02 m/s` 推进，叠加 `wobble_search=0.003 m` 的抖动搜索（±3mm 微晃找孔），直到 `‖target.pose − tcp_pose‖ < 0.002 m`。
+
+{% endstep %}
+{% step %}
+
+#### 第 4 步：顶死了就回退微旋
+
+`ft.fz > 40 N` 判定卡死：`retrace(dt=0.15)` 退回 0.15 秒、`rotate_yaw(0.03)` 微旋再进——这是把「对准插口」的人类直觉写进控制层，让策略不必从零学出机械常识。
+
+{% endstep %}
+{% step %}
+
+#### 第 5 步：滑移重抓，到位开爪
+
+`slip_detected()` 命中 → `regrasp` 重来。只有走到 `<2mm` 容差内才 `hand.open()` 并回单。**回单要带证据**（实测 `fz` 峰值、耗时、是否触发过恢复），和 [把 Agent 接进机器人](agent-to-robot-bridge.md) 的 `ok + reason + evidence` 是同一套接口。
+
+{% endstep %}
+{% endstepper %}
+
+### 三种典型失败，三条恢复（点标签切换）
+
+{% tabs %}
+{% tab title="顶死（fz 超限）" %}
+信号：`ft.fz > 40 N`、位移不再前进。恢复：`retrace(0.15)` + `rotate_yaw(0.03)` 微旋对齐，连续顶死多次才放弃。这属于对齐问题，硬顶只会刮伤零件。
+
+{% endtab %}
+{% tab title="滑移（抓不稳）" %}
+信号：`hand.slip_detected()`（触觉阵列或电流残差检测到物体在指间动）。恢复：`regrasp` 重新收紧或换候选。纯视觉看不到滑移——关键信息（法向力、滑移）不在像素里。
+
+{% endtab %}
+{% tab title="抓空 / 抓偏" %}
+信号：闭爪到底 `gripper_open≈0` 却没负载，或抬升后位姿和预期差一截。恢复：退回重感知、从 128 候选里取次优，别在同一路径重试。这类占失败大头，是「纠错演示数据要占 10–30%」的来源（见 [数据引擎](data-engine.md)）。
+
+{% endtab %}
+{% endtabs %}
 
 > ✅ **最佳实践**：把「回退 + 旋转 + 再试」这类人类操作直觉写进控制层，让策略只需学「什么时候触发」，不必自己从零学出机械常识。这叫残差/技能组合，比端到端硬学省一个量级的数据。
 
