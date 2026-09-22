@@ -87,6 +87,13 @@ $$
 
 设计一个爬虫 Agent 的状态方案：断点续爬需要哪类状态？用什么存？
 
+## 参考资料
+
+- [LangGraph 持久化概念文档（checkpoint 与 thread 的官方说法）](https://langchain-ai.github.io/langgraph/concepts/persistence/)
+- [Letta（MemGPT 血统的会话与记忆托管）](https://github.com/letta-ai/letta)
+- [Mem0（会话记忆 / 长期记忆分层的服务化实现）](https://github.com/mem0ai/mem0)
+- [Temporal（把状态外置成可重放事件日志的工业实现）](https://temporal.io/)
+
 ## 相关知识点
 
 - [感知—规划—行动循环](perception-planning-action.md)

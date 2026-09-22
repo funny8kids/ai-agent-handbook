@@ -1,3 +1,10 @@
+---
+tags: [lab, react, hands-on]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 1：最小 ReAct 闭环
 
 {% hint style="info" %}

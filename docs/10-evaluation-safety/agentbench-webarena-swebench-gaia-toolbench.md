@@ -112,12 +112,21 @@ flowchart TB
 
 你的场景是「浏览器自动化处理内部审批流」。哪个基准的协议最值得借鉴？模仿它设计 20 个带程序化验证的任务。
 
-## 相关资源
+## 参考资料
 
-- [基准测试资源汇总](../13-resources/benchmarks/README.md)
+- [SWE-bench 官网（榜单与提交口径）](https://www.swebench.com/)
+- [SWE-bench 论文](https://arxiv.org/abs/2310.06770)
+- [SWE-bench 仓库（评测脚本与数据集）](https://github.com/princeton-nlp/SWE-bench)
+- [WebArena 官网](https://webarena.dev/)
+- [WebArena 论文](https://arxiv.org/abs/2307.13854)
+- [GAIA 论文（通用助理基准）](https://arxiv.org/abs/2311.12983)
+- [AgentBench 论文](https://arxiv.org/abs/2308.03688)
+- [AgentBench 仓库（THUDM）](https://github.com/THUDM/AgentBench)
+- [ToolLLM / ToolBench 论文](https://arxiv.org/abs/2307.16789)
+- [BFCL 榜单（函数调用正确率）](https://gorilla.cs.berkeley.edu/leaderboard)
 
 ## 相关知识点
 
 - [基准测试总览](benchmarks.md)
 - [编程 Agent](../12-applications/coding-agent.md)
-
+- [基准测试资源汇总](../13-resources/benchmarks/README.md)

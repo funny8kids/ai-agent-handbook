@@ -91,9 +91,12 @@ $$
 
 给「贷款预审 Agent」设计解释报告模板：审批决定 + 依据的三条证据 + 所用规则版本 + 评审入口。哪些字段必须来自系统记录而非模型生成？
 
-## 相关资源
+## 参考资料
 
 - [Anthropic: Transformer Circuits](https://www.anthropic.com/research/transformer-circuits)
+- [Toy Models of Superposition（叠加与特征解释的原初实验）](https://transformer-circuits.pub/2022/toy_model/index.html)
+- [DeepSeek-R1 论文（可读思维链与监控面）](https://arxiv.org/abs/2501.12948)
+- [SHAP（特征归因的经典方法与实现）](https://github.com/shap/shap)
 
 ## 相关知识点
 

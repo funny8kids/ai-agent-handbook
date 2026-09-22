@@ -68,7 +68,7 @@ flowchart LR
 
 - [LangGraph GitHub](https://github.com/langchain-ai/langgraph)
 - [LangGraph 官方文档](https://langchain-ai.github.io/langgraph/)
-- [官方模板库 langgraph-templates](https://github.com/langchain-ai/langgraph-templates)
+- [官方公告：Launching LangGraph Templates（原 `langgraph-templates` 仓库现已下线，模板入口以这篇公告为准）](https://www.langchain.com/blog/launching-langgraph-templates)
 - [Anthropic 多 Agent 研究系统工程实践（监督者/工作者模式的对照读物）](https://www.anthropic.com/engineering/built-multi-agent-research-system)
 
 ## 相关知识点

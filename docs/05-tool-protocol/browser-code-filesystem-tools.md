@@ -94,6 +94,13 @@ $$
 
 设计「竞品价格监控」Agent：用 API 型还是 GUI 型浏览器工具？价格页结构变化时如何兜底？每天跑批的沙箱预算怎么定？
 
+## 参考资料
+
+- [Playwright（浏览器自动化的底层库，MCP 只是它外面的一层壳）](https://github.com/microsoft/playwright)
+- [Playwright MCP（把浏览器操作暴露成工具协议的官方实现）](https://github.com/microsoft/playwright-mcp)
+- [browser-use（ DOM 优先的网页操作 Agent）](https://github.com/browser-use/browser-use)
+- [earendil-works/pi（文件 / 命令 / 浏览器三件套的组合方式参考）](https://github.com/earendil-works/pi)
+
 ## 相关知识点
 
 - [工具权限与沙箱](tool-permission-sandbox.md)

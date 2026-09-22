@@ -98,11 +98,11 @@ flowchart TD
 
 - [CrewAI 官方文档](https://docs.crewai.com)
 - [CrewAI GitHub](https://github.com/crewAIInc/crewAI)
-- [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)
+- [CrewAI 官方示例仓库](https://github.com/crewAIInc/crewAI-examples)
 
 ## 相关知识点
 
 - [角色分配](../08-multi-agent/role-assignment.md)
 - [监督者模式](../08-multi-agent/supervisor-pattern.md)
 - [任务分解](../07-planning/task-decomposition.md)
-
+- [多 Agent 编排](../08-multi-agent/multi-agent-orchestration.md)

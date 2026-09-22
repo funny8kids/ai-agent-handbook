@@ -1,3 +1,10 @@
+---
+tags: [lab, guardrails, safety]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 6：护栏与真模型切换
 
 {% hint style="info" %}

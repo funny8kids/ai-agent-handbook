@@ -1,6 +1,26 @@
+---
+tags: [index, changelog]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 更新日志
 
 本页记录手册的结构调整与重要内容更新。
+
+## 2026-09-22（第 13 次）出处体检：小节命名、站内链接错位与引用编号核对
+
+前 12 轮都在补图和补内容，这一轮只查一件事：**书里写的出处，是不是真的、对不对得上**。量测方式全部可复现——脚本点数 + 逐条 curl + arXiv export API 比对标题，不用主观判断。结果比预想的糟：问题不在「没写引用」，而在「写了但用错了地方」。
+
+- **一个小节被当两个用**：全库同名小节实际有三种状态——`## 参考资料` 101 篇、`## 相关资源` 26 篇（内容其实是站内跳转）、缺失 12 篇。26 处已全部统一改名为「参考资料」，再把混在里面的 **48 条站内链接**搬到「相关知识点」（21 个文件）。改完的口径是：**「参考资料」只放外部一手来源，站内跳转归「相关知识点」**，两条规则各有一个脚本断言把守（残留 0、混排 0）。
+- **补齐真正缺一手来源的页面**：27 个正文页 + 10 个资源页/卡片新增已验证的一手来源（论文编号、官方仓库、协议文档、部署指南）。以「外部一手来源少于 3 条」为阈值，知识+资源页从 **40 篇降到 4 篇**——剩下 4 篇是 Toolformer 论文（官方未释出代码与权重）、Pi / DeepSeek Harness / MCP Servers 目录（一个仓库加一个官网就是它全部的官方入口），给它们挂二手转载才是灌水，故在卡片里写明原因、保留少于 3 条。
+- **全站外链健康普查**：669 条唯一 URL 逐条走 16 路并发核查（GitHub 改用 API 绕开限流），**619 条返回 200**；硬断链 2 条已修：LangGraph 项目页里指向已下线的 `langgraph-templates` 仓库，改指官方公告 [Launching LangGraph Templates](https://www.langchain.com/blog/launching-langgraph-templates)；[游戏 Agent](../12-applications/game-agent.md) 里 OpenAI VPT 的研究页 403，改指 [官方仓库](https://github.com/openai/Video-Pre-Training)（两处标签同步改写，不保留对不上号的措辞）。
+- **引用编号交叉核对（本轮最有价值的一项）**：把 104 个 arXiv 编号丢给 `export.arxiv.org` 取回真标题，再与标签逐条比对，抓出 **3 处错配**：[主流基准对比](../10-evaluation-safety/agentbench-webarena-swebench-gaia-toolbench.md) 把 SWE-bench 论文挂成了 WebArena 的 `2307.13854`（正解 `2310.06770`，另补 WebArena 自己的条目）；[知识图谱](../06-memory-rag/knowledge-graph.md) 标签写 TransE 却链到 word2vec 的 `1301.3781`（改 `1412.6575`，标题按 API 返回值改写为 *Embedding Entities and Relations…*）；[机器人基础模型](../17-embodied-ai/robot-foundation-models.md) 的 GO-1 标签补出论文真名（AgiBot World Colosseo）。另外差点写进一处新错：Toolformer 的 ACL 2023 会议版编号按记忆填会得到 `2023.acl-long.551`，点开才发现是另一篇表格问答论文，因此该卡片只保留 arXiv 一条。
+- **frontmatter 与围栏**：11 个漏标文件补上（6 个实验 → `type: lab`，README/更新日志/贡献/许可 → `type: index`），[推理经济学](../16-ai-infrastructure/inference-economics-deployment.md) 那段无语言标注的公式围栏标成 ```text；不符合房风格（`tags → type → status → updated`）的文件从 15 个降到 3 个——`SUMMARY.md` 与 14 章两份模板示例，属有意保留。
+- **规范固化**：[风格指南](../14-templates/style-guide.md) 第五节新增三条硬规则（命名唯一、≥3 条、每条都要实际点开且标题对得上，arXiv 用 export API 核对），资源卡片体裁说明与发布检查清单同步；[资源模板](../14-templates/resource-template.md) 里残留的「相关资源」表述改正。
+- **回归校验**：189 个 md 文件围栏配对 0 异常，168 个 Mermaid 块真解析器 `parsed=168 failed=0`，无断链回归，187 页 / 19 章统计不变。
+- **本机测不到的部分如实记录**：14 条未能拿到 200 的链接里，7 条是站点反爬 403（`openai.com`、`iso.org`、`dl.acm.org`、`academic.oup.com`、`platform.openai.com`、`wiki.linuxfoundation.org`、`developers.openai.com`），7 条是本机 DNS 被路由器劫持（`sre.google`、`huggingface.co`、`mujoco.org`、`hastie.su.domains` 全部解析到 `192.168.31.1` 后超时）——后者按「unreachable ≠ dead」处理，未删；其中 `sre.google` 两条经搜索引擎确认页面确实在线。**下一轮待办**：13 张薄资源卡片（<900 字）增厚、20 个无图页按体裁判断补图。
 
 ## 2026-09-22（第 12 次）全库 Mermaid 宽度实测：把被线上缩小的图救回来
 

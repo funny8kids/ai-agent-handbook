@@ -92,8 +92,7 @@ $$
 
 - [Khanmigo / Khan Academy Labs](https://www.khanacademy.org/khan-labs)
 - [Generative Agents](https://arxiv.org/abs/2304.03442)（Stanford，学情记忆方法迁移来源）
-- [GPT-Live-1 实时语音](voice-agent.md) · [2026 前沿模型地图](../18-frontier-2026/frontier-models-2026.md)
-- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) · [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)
+- [Hugging Face Agents Course（免费系统课，含辅导型 Agent 单元）](https://huggingface.co/learn/agents-course)
 
 ## 相关知识点
 
@@ -101,4 +100,6 @@ $$
 - [记忆类型](../06-memory-rag/memory-types.md)
 - [评估 2026](../18-frontier-2026/eval-2026.md)
 - [实时语音 Agent](voice-agent.md)
-
+- [2026 前沿模型地图](../18-frontier-2026/frontier-models-2026.md)
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
+- [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)

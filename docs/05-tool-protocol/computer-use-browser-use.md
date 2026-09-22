@@ -112,6 +112,13 @@ $$
 
 把「每月登录网银下载账单并记账」拆成混合方案：哪些步骤用 API/文件导入？哪些必须 GUI？HITL 检查点放哪？
 
+## 参考资料
+
+- [Anthropic Computer Use 工具文档（截图-坐标循环的官方规范）](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Playwright MCP（有 DOM 时的首选替代）](https://github.com/microsoft/playwright-mcp)
+- [browser-use（网页任务闭环的开源实现）](https://github.com/browser-use/browser-use)
+- [OpenAI Agents SDK（Computer Use / 浏览器工具的另一种抽象层）](https://openai.github.io/openai-agents-python/)
+
 ## 相关知识点
 
 - [浏览器、代码、文件系统工具](browser-code-filesystem-tools.md)

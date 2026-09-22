@@ -144,7 +144,7 @@ $$
 - **调优红利常大于换引擎**：我们常见的项目里，把同一个引擎的批处理参数、KV 量化、chunked prefill 认真调一轮拿到的提升，通常不小于在两个主流引擎之间折腾迁移的收益——而迁移还要重踩一遍坑。选型会开三天，调参往往三天就回本。
 - **前缀命中率是最值得盯的运营指标**：对 Agent 负载，这个数低于三成的话，先回头检查自家 prompt 组装（system prompt 是否稳定、历史是否被截了头），再谈引擎的高级特性。命中率从三成拉到七成，等效于白捡半集群算力。
 
-## 相关资源
+## 参考资料
 
 - [vLLM](https://github.com/vllm-project/vllm)、[SGLang](https://github.com/sgl-project/sglang)、[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM)
 - [NVIDIA Dynamo](https://github.com/ai-dynamo/dynamo)、[llm-d](https://github.com/llm-d/llm-d)

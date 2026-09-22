@@ -130,6 +130,13 @@ $$
 
 画出你的 Agent 的完整降级链（每级的触发条件与用户话术），找出「现在完全没有兜底」的一个环节并补上。
 
+## 参考资料
+
+- [AWS Builders Library：超时、重试与带抖动的退避](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+- [Google SRE Book：Handling Overload（过载与重试风暴的处置）](https://sre.google/sre-book/handling-overload)
+- [tenacity（Python 重试策略的事实标准库）](https://github.com/jd/tenacity)
+- [SWE-agent（把失败轨迹回灌进下一步的重试设计）](https://github.com/SWE-agent/SWE-agent)
+
 ## 相关知识点
 
 - [错误恢复与重试](../07-planning/error-recovery-retry.md)

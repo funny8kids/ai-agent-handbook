@@ -119,6 +119,14 @@ flowchart LR
 
 设计三个「诱惑场景」测试用例（能省事但违规的捷径），验证你的 Agent 是否守规则；不守的话在哪个层加约束？
 
+## 参考资料
+
+- [Constitutional AI 论文](https://arxiv.org/abs/2212.08073)
+- [InstructGPT 论文（RLHF 的原始流程与失败模式）](https://arxiv.org/abs/2203.02155)
+- [DeepSeek-R1 论文（自发反思与奖励作弊的对照读物）](https://arxiv.org/abs/2501.12948)
+- [Anthropic 多 Agent 研究系统（护栏与验收的工程实录）](https://www.anthropic.com/engineering/built-multi-agent-research-system)
+- [OWASP LLM Top 10（风险清单的行业口径）](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+
 ## 相关知识点
 
 - [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md)

@@ -1,3 +1,10 @@
+---
+tags: [lab, rag, hands-on]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 2：手写迷你 RAG
 
 {% hint style="info" %}

@@ -124,7 +124,7 @@ def step_with_latency(env, policy_state, obs, p):
 
 在 MuJoCo 或 Isaac Lab 里做「一次迁移实验」：① 训一个抓立方体的策略（无任何随机化）；② 加入视觉随机化；③ 加入动力学 + 延迟随机化。然后分别报告：仿真成功率、换纹理后的仿真成功率、真机（或高保真渲染）成功率。三次数字的差值就是你的 sim-to-real gap 拆解。
 
-## 相关资源
+## 参考资料
 
 - [MuJoCo / MJX](https://mujoco.org/)、[Isaac Lab](https://github.com/isaac-sim/IsaacLab)、[Genesis](https://github.com/Genesis-Embodied-AI/Genesis)、[ManiSkill3](https://github.com/haosulab/ManiSkill)
 - [域随机化原始论文（Tobin et al. 2017）](https://arxiv.org/abs/1703.06907)、[SimplerEnv](https://simpler-env.github.io/)

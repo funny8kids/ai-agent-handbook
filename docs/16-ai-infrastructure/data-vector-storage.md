@@ -146,10 +146,9 @@ with psycopg.connect(DSN) as conn:
 
 准备 30 个真实问答（含 5 个「知识库里确实没有答案」的陷阱题），对比三套配置：① 纯向量 top-5；② 混合 + RRF top-8 + rerank top-3；③ 配置 ② + 父块扩展。统计端到端正确率与「空手乱答率」——第二项通常掉得最狠，也最影响信任。
 
-## 相关资源
+## 参考资料
 
 - [pgvector](https://github.com/pgvector/pgvector)、[Qdrant](https://github.com/qdrant/qdrant)、[Milvus](https://github.com/milvus-io/milvus)、[LanceDB](https://github.com/lancedb/lancedb)
-- 原理：[向量数据库](../06-memory-rag/vector-database.md)、[Embedding 与相似度](../06-memory-rag/embedding-similarity.md)、[GraphRAG](../06-memory-rag/graphrag.md)
 
 ## 相关知识点
 
@@ -157,4 +156,6 @@ with psycopg.connect(DSN) as conn:
 - [上下文工程](../06-memory-rag/context-engineering.md)
 - [训练与微调基础设施](training-finetune-infra.md)
 - [可观测性与评估平台](llm-observability-eval-platform.md)
-
+- [向量数据库](../06-memory-rag/vector-database.md)
+- [Embedding 与相似度](../06-memory-rag/embedding-similarity.md)
+- [GraphRAG](../06-memory-rag/graphrag.md)

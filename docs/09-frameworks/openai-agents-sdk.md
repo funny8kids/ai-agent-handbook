@@ -128,7 +128,6 @@ print(result.final_output)
 - [OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)
 - [openai/swarm（前身，教学用途）](https://github.com/openai/swarm)
 - [OpenAI Agents SDK GitHub](https://github.com/openai/openai-agents-python)
-- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)（2026-09-10）· [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)
 
 ## 相关知识点
 
@@ -136,4 +135,5 @@ print(result.final_output)
 - [Semantic Kernel](semantic-kernel.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
-
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
+- [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)

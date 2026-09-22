@@ -133,6 +133,13 @@ flowchart TD
 - ❌ 跳过评估与安全：不评估等于裸奔上线，代价通常在上线后才显现
 - ❌ 只看不记：每阶段末尾写一段自己的总结，是检验真懂的最快方式
 
+## 参考资料
+
+- [Anthropic 工程博客：什么时候该用工作流、什么时候才用 Agent](https://www.anthropic.com/engineering/building-effective-agents)
+- [12-Factor Agents（逐条对照的 Agent 工程原则）](https://github.com/humanlayer/12-factor-agents)
+- [MCP 规范官网（工具与上下文协议的权威入口）](https://modelcontextprotocol.io)
+- [LangGraph 文档（阶段二读控制流时的对照实现）](https://langchain-ai.github.io/langgraph/)
+
 ## 相关知识点
 
 - [总导航](README.md)

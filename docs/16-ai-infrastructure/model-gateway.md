@@ -126,7 +126,7 @@ async def route(task: str, messages, schema=None, max_retry=2):
 
 写一个 60 行的网关中间件：拦截所有 LLM 调用，输出 (a) 每条请求的 in/out/cached token 与费用估算，(b) 每个租户的当日累计，(c) 每个池的重试率与超时率。跑一周后回答：哪 3 个池的重试率超过 2%？哪 20% 的请求消耗了 80% 的成本？
 
-## 相关资源
+## 参考资料
 
 - [LiteLLM](https://github.com/BerriAI/litellm)、[Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway)、[OpenRouter](https://openrouter.ai/docs)
 - [限流与退避](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)

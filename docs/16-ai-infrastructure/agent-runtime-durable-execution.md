@@ -131,7 +131,7 @@ $$
 
 给你的 Agent 做一次「随手中断测试」：跑一个 15 步的任务，在第 3、7、11 步分别 `kill -9` 进程，然后重启。检查三件事：① 是否从断点继续（没有重跑已完成的工具）；② 有没有重复副作用（发重复消息/重复提交）；③ 审计表能否解释「发生了什么」。三条都过，才算有运行时。
 
-## 相关资源
+## 参考资料
 
 - [Temporal](https://temporal.io/)、[Restate](https://restate.dev/)、[Inngest](https://www.inngest.com/)
 - [LangGraph 持久化文档](https://langchain-ai.github.io/langgraph/concepts/persistence/)

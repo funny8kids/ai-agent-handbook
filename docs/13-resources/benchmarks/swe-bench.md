@@ -2,7 +2,7 @@
 tags: [evaluation, application, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # SWE-bench
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 基准测试 |
-| 链接 | <https://www.swebench.com/> · <https://github.com/princeton-nlp/SWE-bench> |
+| 链接 | [官网](https://www.swebench.com/) · [仓库](https://github.com/princeton-nlp/SWE-bench) · [论文](https://arxiv.org/abs/2310.06770) |
 | 来源 | Princeton NLP |
 | 发布 | 2023-10；Verified 子集（500 题人工核验）2024 |
 | 难度 | 高级 |
@@ -48,6 +48,13 @@ flowchart TD
 1. 用 [SWE-agent](https://github.com/SWE-agent/SWE-agent) 或 [OpenHands](../projects/openhands.md) 跑 lite 子集体验完整流程
 2. 读 SWE-agent 论文（[arXiv:2405.15793](https://arxiv.org/abs/2405.15793)）理解 ACI 设计
 3. 借鉴其协议建内部代码任务评测集
+
+## 参考资料
+
+- [SWE-bench 论文](https://arxiv.org/abs/2310.06770)（Jimenez et al., 2023）
+- [SWE-bench 官网（榜单与提交口径）](https://www.swebench.com/)
+- [SWE-bench 仓库（评测脚本与数据集）](https://github.com/princeton-nlp/SWE-bench)
+- [SWE-agent 仓库（Agent-Computer Interface 设计）](https://github.com/SWE-agent/SWE-agent)
 
 ## 相关知识点
 

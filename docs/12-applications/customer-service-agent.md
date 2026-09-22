@@ -84,10 +84,9 @@ $$
 
 ## 参考资料
 
+- [τ-bench](https://github.com/sierra-research/tau-bench)
 - [OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)
-- [τ-bench](https://github.com/sierra-research/tau-bench) · [评估 2026](../18-frontier-2026/eval-2026.md)
 - [Anthropic 多 Agent 研究系统](https://www.anthropic.com/engineering/built-multi-agent-research-system)
-- [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)
 
 ## 相关知识点
 
@@ -95,4 +94,5 @@ $$
 - [RAG 基础](../06-memory-rag/rag-basics.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
 - [OpenAI Agents SDK](../09-frameworks/openai-agents-sdk.md)
-
+- [评估 2026](../18-frontier-2026/eval-2026.md)
+- [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)

@@ -93,6 +93,14 @@ flowchart TD
 
 为「门诊病历摘要助手」设计上线方案：人审流程、评估集（谁标注？多少例？）、审计字段、拒答边界各是什么？
 
+## 参考资料
+
+- [earendil-works/pi（内网全栈自托管参考：数据不出域）](https://github.com/earendil-works/pi)
+- [vLLM（行业私有化部署最常用的推理引擎）](https://github.com/vllm-project/vllm)
+- [DeepSeek-R1 论文（开源权重可本地跑的推理模型）](https://arxiv.org/abs/2501.12948)
+- [Llama 3 论文（权重开放与许可条款的原文）](https://arxiv.org/abs/2407.21783)
+- [Qwen 技术报告](https://arxiv.org/abs/2309.16609)
+
 ## 相关知识点
 
 - [幻觉问题](../10-evaluation-safety/hallucination.md)

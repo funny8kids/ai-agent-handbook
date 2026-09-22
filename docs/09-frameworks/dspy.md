@@ -123,7 +123,7 @@ rag_optimized = optimizer.compile(rag, trainset=trainset)
 
 - [DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines](https://arxiv.org/abs/2310.03714)（Khattab et al., 2023）
 - [DSPy 官方文档](https://dspy.ai)
-- [Prompt Engineering](../04-prompt-reasoning/prompt-engineering.md)
+- [DSPy 仓库（stanfordnlp）](https://github.com/stanfordnlp/dspy)
 
 ## 相关知识点
 

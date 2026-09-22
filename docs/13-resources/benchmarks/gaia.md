@@ -2,7 +2,7 @@
 tags: [evaluation, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # GAIA
@@ -47,6 +47,12 @@ flowchart TD
 
 1. 从 Level 1 抽 10 题手工跑你的 Agent，观察失败模式
 2. 对照 [研究 Agent 案例](../../12-applications/research-agent.md) 理解为什么多 Agent 在此有效
+
+## 参考资料
+
+- [GAIA 论文](https://arxiv.org/abs/2311.12983)（Mialon et al., 2023，Meta AI + Hugging Face + AutoGPT）
+- [论文页与数据集（Hugging Face Papers）](https://huggingface.co/papers/2311.12983)
+- [Anthropic：多 Agent 研究系统的工程实践（GAIA 上的实战数据出处）](https://www.anthropic.com/engineering/built-multi-agent-research-system)
 
 ## 相关知识点
 

@@ -112,6 +112,7 @@ def tot_solve(problem, depth=3, breadth=3, beam=2, threshold=0.4):
 
 - [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601)（Yao et al., 2023）
 - [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)（Wei et al., 2022）
+- [ToT 官方实现（princeton-nlp）](https://github.com/princeton-nlp/tree-of-thought-llm)
 
 ## 相关知识点
 

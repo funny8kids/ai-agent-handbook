@@ -120,10 +120,9 @@ def traced_tool(name, args, fn):
 
 给你的 Agent 补一个「首次失败步骤」直方图（按步序号统计，并标注失败类型：检索缺失 / 工具选择错 / 参数错 / 上下文丢失 / 判分争议）。做出来后，你会发现八成问题集中在两类上——那两类就是下个月该修的东西。
 
-## 相关资源
+## 参考资料
 
 - [OTel GenAI 语义约定](https://opentelemetry.io/docs/specs/semconv/gen-ai/)、[Langfuse](https://github.com/langfuse/langfuse)、[Arize Phoenix](https://github.com/Arize-ai/phoenix)
-- 方法层：[评估指标](../10-evaluation-safety/evaluation-metrics.md)、[基准测试](../10-evaluation-safety/benchmarks.md)、[日志与追踪](../11-engineering/logging-tracing-monitoring.md)、[可观测工具](../11-engineering/observability-tools.md)
 
 ## 相关知识点
 
@@ -131,4 +130,7 @@ def traced_tool(name, args, fn):
 - [模型网关与路由](model-gateway.md)
 - [持久化执行与运行时](agent-runtime-durable-execution.md)
 - [17 具身智能：评估基准](../17-embodied-ai/evaluation-benchmarks.md)
-
+- [评估指标](../10-evaluation-safety/evaluation-metrics.md)
+- [基准测试](../10-evaluation-safety/benchmarks.md)
+- [日志与追踪](../11-engineering/logging-tracing-monitoring.md)
+- [可观测工具](../11-engineering/observability-tools.md)

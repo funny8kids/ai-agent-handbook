@@ -116,7 +116,7 @@ async def refund(order_id: str, amount: float):
 
 - [Anthropic: Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents)
 - [OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)
-- [Tool Use](../05-tool-protocol/tool-use.md) / [MCP](../05-tool-protocol/mcp.md)
+- [MCP 规范官网（工具注册与发现的协议层）](https://modelcontextprotocol.io)
 
 ## 相关知识点
 

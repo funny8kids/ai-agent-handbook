@@ -2,7 +2,7 @@
 tags: [tooling, paper]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Toolformer 论文
@@ -47,6 +47,11 @@ flowchart TD
 1. 读第 3 节方法（采样 → 过滤 → 微调三步）
 2. 关注它选的五个工具（计算器/问答/搜索/翻译/日历）与各自的触发场景
 3. 对照现代 [Function Calling](../../05-tool-protocol/function-calling.md)：今天的 API 已把这套训练成果产品化
+
+## 参考资料
+
+- [Toolformer 论文](https://arxiv.org/abs/2302.04761)（Schick et al., 2023，Meta AI）
+- 官方未释出训练代码与权重，复现以论文正文与附录的实验设置为准
 
 ## 相关知识点
 

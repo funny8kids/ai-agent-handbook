@@ -94,9 +94,12 @@ $$
 
 「客户投诉自动处理」需求：分类、退款审批、回复撰写。哪些环节用工作流模式？哪个环节必须 Agent？HITL 放哪？画出完整编排图。
 
-## 相关资源
+## 参考资料
 
 - [Anthropic: Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)
+- [LangGraph（把流程画成图的现成实现）](https://github.com/langchain-ai/langgraph)
+- [Temporal（长流程可靠执行的工业标准）](https://temporal.io/)
+- [Inngest（事件驱动的轻量编排）](https://www.inngest.com/)
 
 ## 相关知识点
 

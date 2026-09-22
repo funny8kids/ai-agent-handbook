@@ -99,12 +99,12 @@ $$
 ## 参考资料
 
 - [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) · [E2B](https://github.com/e2b-dev/E2B) · [Cube](https://github.com/cube-js/cube)
-- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
-- [评估 2026](../18-frontier-2026/eval-2026.md) · [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)
 
 ## 相关知识点
 
 - [浏览器、代码、文件系统工具](../05-tool-protocol/browser-code-filesystem-tools.md)
 - [幻觉问题](../10-evaluation-safety/hallucination.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
-
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
+- [评估 2026](../18-frontier-2026/eval-2026.md)
+- [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)

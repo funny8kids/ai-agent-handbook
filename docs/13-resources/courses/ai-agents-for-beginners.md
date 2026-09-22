@@ -2,7 +2,7 @@
 tags: [agent, course, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # AI Agents for Beginners
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 课程 |
-| 链接 | <https://github.com/microsoft/ai-agents-for-beginners> |
+| 链接 | [课程仓库](https://github.com/microsoft/ai-agents-for-beginners) · [在线课程站](https://microsoft.github.io/ai-agents-for-beginners/) |
 | 来源 | Microsoft |
 | 难度 | 入门 |
 | 标签 | `#agent` `#course` |
@@ -46,6 +46,12 @@ flowchart TD
 1. 学完 Lesson 1–5 后回来读本书 [02 Agent 基础](../../02-agent-basics/README.md) 做概念校准
 2. Lesson 8（Agentic RAG）配合本书 [06 记忆与 RAG](../../06-memory-rag/README.md) 食用
 3. 每课的代码样例跑一遍比看视频收获大
+
+## 参考资料
+
+- [课程仓库](https://github.com/microsoft/ai-agents-for-beginners)
+- [在线课程站（逐课页面与代码）](https://microsoft.github.io/ai-agents-for-beginners/)
+- [同系列前置课 Generative AI for Beginners](https://github.com/microsoft/generative-ai-for-beginners)
 
 ## 相关知识点
 

@@ -1,3 +1,10 @@
+---
+tags: [lab, multi-agent, hands-on]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 4：三角色协作（Planner / Executor / Reviewer）
 
 {% hint style="info" %}

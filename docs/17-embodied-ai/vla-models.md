@@ -116,7 +116,7 @@ def sample(h_cond, steps=10, dt=0.1):           # 欧拉积分，从噪声走到
 
 在一个仿真任务里（如 Isaac Lab 或 MuJoCo 的桌面抓取），固定数据与训练预算，只换动作头：`离散 token` vs `flow matching`，比较：① 训练稳定性；② 推理 50 步动作的耗时；③ 多峰场景（左右两侧都能抓）的成功率与失败姿态分布。写一份 5 行结论。
 
-## 相关资源
+## 参考资料
 
 - [Diffusion Policy](https://diffusion-policy.cs.columbia.edu/)（[论文](https://arxiv.org/abs/2303.04137)）、[ACT / ALOHA](https://arxiv.org/abs/2304.13705)、[flow matching](https://arxiv.org/abs/2210.02747)
 - [LeRobot（数据集 + 训练范式）](https://github.com/huggingface/lerobot)、[openpi](https://github.com/Physical-Intelligence/openpi)

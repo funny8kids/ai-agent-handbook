@@ -76,10 +76,13 @@ updated: 2026-09-20
 
 选一个你想让机器人完成的任务（例如「把桌上三个塑料杯放进水槽」），写下：① 需要哪些传感器；② 控制频率需求；③ 三种失败模式与检测它们的信号；④ 这个任务需要多少条演示数据（先猜，再查 [数据引擎](data-engine.md) 里的经验规律对答案）。
 
-## 相关资源
+## 参考资料
 
-- [具身智能课程与论文入口](../13-resources/README.md)、[游戏 Agent（同为闭环决策）](../12-applications/game-agent.md)
-- 入门实践：LeRobot、Isaac Lab、MuJoCo Playgrounds（见 [把 Agent 接进机器人](agent-to-robot-bridge.md) 的资源区）
+- [LeRobot（开源具身数据集与训练范式，入门首选）](https://github.com/huggingface/lerobot)
+- [Isaac Lab（GPU 并行的具身仿真训练框架）](https://github.com/isaac-sim/IsaacLab)
+- [MuJoCo（接触动力学仿真的长期底座）](https://mujoco.org/)
+- [RT-2 论文（把 VLM 直接当策略输出动作）](https://arxiv.org/abs/2307.15818)
+- [OpenVLA（开源视觉-语言-动作基线）](https://github.com/openvla/openvla)
 
 ## 相关知识点
 
@@ -87,4 +90,6 @@ updated: 2026-09-20
 - [感知—规划—行动循环](../02-agent-basics/perception-planning-action.md)
 - [多模态模型](../03-llm/multimodal.md)
 - [机器人基础模型谱系](robot-foundation-models.md)
-
+- [具身智能课程与论文入口](../13-resources/README.md)
+- [游戏 Agent（同为闭环决策）](../12-applications/game-agent.md)
+- [把 Agent 接进机器人](agent-to-robot-bridge.md)

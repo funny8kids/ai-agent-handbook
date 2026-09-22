@@ -1,3 +1,10 @@
+---
+tags: [lab, hands-on]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 动手实验（Labs）
 
 {% hint style="info" %}

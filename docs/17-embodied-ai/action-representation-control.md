@@ -117,7 +117,7 @@ timestamp: monotonic_ns; obs 与 action 必须带 ts 并做最近邻对齐
 
 在仿真里做「延迟消融」：训练时假设 0 延迟，部署时分别注入 0 / 60 / 150 / 300ms 的观测—动作延迟，记录成功率与末端抖动幅度（加速度方差）。然后把随机延迟注入训练，重训一次看恢复多少。这个实验 1 小时能做完，却能让你彻底理解「延迟建模」为什么是标配。
 
-## 相关资源
+## 参考资料
 
 - [ACT/ALOHA 论文](https://arxiv.org/abs/2304.13705)（动作分块 + temporal ensembling 的出处）、[Diffusion Policy](https://arxiv.org/abs/2303.04137)
 - [ROS 2 控制栈文档](https://control.ros.org/)、[Ompl / MoveIt 2](https://moveit.picknik.ai/)（经典规划与安全层参考实现）

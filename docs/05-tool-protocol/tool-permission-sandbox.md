@@ -93,6 +93,14 @@ $$
 
 为一个「自动分析用户上传 CSV 并生成图表」的 Agent 设计执行环境：代码执行放哪一层沙箱？网络策略是什么？哪些动作需要人工审批？
 
+## 参考资料
+
+- [Claude Code 系统提示词全集（权限与确认策略的现网写法）](https://github.com/Piebald-AI/claude-code-system-prompts)
+- [E2B（面向不可信代码执行的 microVM 沙箱）](https://github.com/e2b-dev/E2B)
+- [gVisor（用户态内核做 syscall 拦截）](https://gvisor.dev/)
+- [Firecracker（冷启动毫秒级的微 VM，多租户执行池的底座）](https://firecracker-microvm.github.io/)
+- [Linux landlock 文档（文件系统权限的最小化）](https://docs.kernel.org/userspace-api/landlock.html)
+
 ## 相关知识点
 
 - [提示注入](../10-evaluation-safety/prompt-injection.md)

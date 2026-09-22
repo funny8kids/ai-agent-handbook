@@ -85,10 +85,10 @@ $$
 
 ## 参考资料
 
-- [Computer Use 2026](../18-frontier-2026/computer-use-2026.md) · [GPT-6 Astra](https://openai.com/index/gpt-6-astra/) · [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)
+- [GPT-6 Astra](https://openai.com/index/gpt-6-astra/)
+- [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)
 - [Anthropic Computer Use](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
 - [browser-use](https://github.com/browser-use/browser-use) · [Playwright MCP](https://github.com/microsoft/playwright-mcp)
-- [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)
 
 ## 相关知识点
 
@@ -96,4 +96,5 @@ $$
 - [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
 - [通用 Agent 产品](general-agent-products.md)
-
+- [Computer Use 2026](../18-frontier-2026/computer-use-2026.md)
+- [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)

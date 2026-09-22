@@ -1,3 +1,10 @@
+---
+tags: [meta, license]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 许可证
 
 本手册内容基于 **MIT License** 发布。

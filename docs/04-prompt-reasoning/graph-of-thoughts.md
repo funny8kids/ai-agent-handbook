@@ -92,6 +92,8 @@ ToT 是一个人尝试三条路、走不通退回来；GoT 是三个人各走一
 
 - [Graph of Thoughts: Solving Elaborate Problems with Large Language Models](https://arxiv.org/abs/2308.09687)（Besta et al., 2023）
 - [Tree of Thoughts: Deliberate Problem Solving with Large Language Models](https://arxiv.org/abs/2305.10601)（Yao et al., 2023）
+- [Chain-of-Thought 论文（一切的起点）](https://arxiv.org/abs/2201.11903)
+- [Graph of Thoughts 官方实现（ETH spcl）](https://github.com/spcl/graph-of-thoughts)
 
 ## 相关知识点
 

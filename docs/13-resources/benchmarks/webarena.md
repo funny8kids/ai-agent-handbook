@@ -2,7 +2,7 @@
 tags: [evaluation, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # WebArena
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 基准测试（环境） |
-| 链接 | <https://webarena.dev/> · [论文](https://arxiv.org/abs/2307.13854) |
+| 链接 | [官网](https://webarena.dev/) · [论文](https://arxiv.org/abs/2307.13854) · [仓库](https://github.com/web-arena-x/webarena) |
 | 来源 | CMU |
 | 发布 | 2023-07 |
 | 难度 | 高级 |
@@ -45,6 +45,12 @@ flowchart TD
 
 1. 本地起 WebArena 环境跑几个任务，观察 Agent 如何维护跨页状态
 2. 借鉴其「程序化验证器」思路设计你的自动化测试（→ [浏览器自动化](../../12-applications/browser-automation.md)）
+
+## 参考资料
+
+- [WebArena 论文](https://arxiv.org/abs/2307.13854)（Zhou et al., 2024）
+- [WebArena 官网](https://webarena.dev/)
+- [WebArena 仓库（可自托管的整套网站环境）](https://github.com/web-arena-x/webarena)
 
 ## 相关知识点
 

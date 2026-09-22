@@ -2,7 +2,7 @@
 tags: [agent, prompt, paper]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # ReAct 论文
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 论文 |
-| 链接 | <https://arxiv.org/abs/2210.03629> |
+| 链接 | [论文](https://arxiv.org/abs/2210.03629) · [官方实现](https://github.com/ysymyth/ReAct) · [项目主页](https://react-lm.github.io) |
 | 来源 | Yao et al., Princeton + Google Brain |
 | 发布 | 2022-10（ICLR 2023） |
 | 难度 | 进阶 |
@@ -50,6 +50,12 @@ flowchart TD
 1. 先读 Figure 1（一张图看懂 Thought→Action→Observation）
 2. 精读第 2 节的方法定义（仅一页）
 3. 对照 [感知—规划—行动循环](../../02-agent-basics/perception-planning-action.md) 与 Pi 的 agentLoop 源码看工程化差异
+
+## 参考资料
+
+- [ReAct 论文](https://arxiv.org/abs/2210.03629)（Yao et al., 2022，ICLR 2023）
+- [官方实现（ysymyth/ReAct）](https://github.com/ysymyth/ReAct)
+- [项目主页（提示样例与任务输出）](https://react-lm.github.io)
 
 ## 相关知识点
 

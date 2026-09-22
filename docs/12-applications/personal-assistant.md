@@ -96,8 +96,6 @@ $$
 ## 参考资料
 
 - [Mem0](https://github.com/mem0ai/mem0) · [Letta](https://github.com/letta-ai/letta) · [Pi](https://github.com/earendil-works/pi)
-- [通用 Agent 产品](general-agent-products.md) · [实时语音 Agent](voice-agent.md)
-- [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md) · [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)
 
 ## 相关知识点
 
@@ -105,4 +103,7 @@ $$
 - [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
 - [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)
-
+- [通用 Agent 产品](general-agent-products.md)
+- [实时语音 Agent](voice-agent.md)
+- [2026 协议栈](../18-frontier-2026/protocol-stack-2026.md)
+- [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)

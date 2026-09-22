@@ -74,7 +74,7 @@ $$
 
 挑一个开源视频预测/世界模型 checkpoint，做「物理合理性 5 题」：遮挡重现、堆叠稳定性、液体倾倒体积、斜面滑动、弹簧回弹。各写 3 条可自动计算的指标（如深度一致性、边界 IoU、颜色质心轨迹连续性），并记录它在哪几题失败。这份清单以后就是你判断任何「世界模型能当数据工厂」宣传的尺子。
 
-## 相关资源
+## 参考资料
 
 - [V-JEPA 2](https://arxiv.org/abs/2506.09985)、[Genie 2 博客](https://deepmind.google/discover/blog/genie-2-a-large-scale-foundation-world-model/)、[Cosmos](https://github.com/NVIDIA/Cosmos)、[DayDreamer](https://arxiv.org/abs/2206.14176)（真机上的世界模型 RL 代表作）
 

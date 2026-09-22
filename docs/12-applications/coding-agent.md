@@ -131,11 +131,16 @@ $$
 - **人审时间先高后低**：经验值上，上线初期团队审 Agent 提的 PR，花的时间不比自己动手写少——这是信任建设的正常成本，不是失败信号。跑上几个月后，审阅通过率和合并率通常才稳定到六到七成，那时再考虑放宽低风险类别的审查。
 - **最常见的失败是「对但不干净」**：测试过了，但 diff 改多了、或者绕过了根因打个补丁——这类案例比直接失败高一个量级。把「变更文件数上限」「不得改动测试目录之外的业务逻辑」这类约束写进审查清单，比事后返工省心得多。
 
-## 相关资源
+## 参考资料
 
-- [SWE-bench](../13-resources/benchmarks/swe-bench.md)
 - [12-Factor Agents](https://github.com/humanlayer/12-factor-agents)
-- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) · [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)
+- [OpenHands（原 All-Hands，自主编码 Agent 的开源主力）](https://github.com/All-Hands-AI/OpenHands)
+- [SWE-agent（把仓库交互封装成接口的对照实现）](https://github.com/SWE-agent/SWE-agent)
+- [aider（终端里的结对编程 Agent，git 语义最扎实）](https://github.com/Aider-AI/aider)
+- [Codex CLI（OpenAI 的开源终端 Agent）](https://github.com/openai/codex)
+- [Gemini CLI（Google 的开源终端 Agent）](https://github.com/google-gemini/gemini-cli)
+- [Goose（Block 的本地可扩展编码 Agent）](https://github.com/block/goose)
+- [Claude Code 系统提示词全集（护栏与工具说明的现网原文）](https://github.com/Piebald-AI/claude-code-system-prompts)
 
 ## 相关知识点
 
@@ -143,4 +148,6 @@ $$
 - [记忆压缩、遗忘与摘要](../06-memory-rag/memory-compression-forgetting.md)
 - [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)
 - [模型原生 vs 自建 Harness](../18-frontier-2026/model-native-vs-harness.md)
-
+- [SWE-bench](../13-resources/benchmarks/swe-bench.md)
+- [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md)
+- [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md)

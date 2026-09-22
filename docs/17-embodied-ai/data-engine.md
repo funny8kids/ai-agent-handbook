@@ -124,10 +124,9 @@ def accept(ep, spec):
 
 给你的目标任务做一张「数据预算表」：任务数 × 每任务演示条数 × 每条秒数 = 采集小时数；再按操作员效率（如 8 条/小时）折算成人天。然后回答两个问题：① 哪些任务可以用仿真批量生成？② 哪些必须真机（因为接触/柔性/安全）？通常你会发现必须真机的任务比想象中少。
 
-## 相关资源
+## 参考资料
 
 - [Open X-Embodiment](https://arxiv.org/abs/2310.08864)、[DROID](https://droid-dataset.github.io/)、[AgiBot World](https://github.com/OpenDriveLab/AgiBot-World)、[UMI](https://github.com/real-stanford/universal_manipulation_interface)、[LeRobot 数据集规范](https://github.com/huggingface/lerobot)
-- [数据集资源区](../13-resources/datasets/README.md)
 
 ## 相关知识点
 
@@ -135,4 +134,4 @@ def accept(ep, spec):
 - [世界模型与视频预训练](world-models-video.md)
 - [数据与检索基础设施](../16-ai-infrastructure/data-vector-storage.md)
 - [训练与微调基础设施](../16-ai-infrastructure/training-finetune-infra.md)
-
+- [数据集资源区](../13-resources/datasets/README.md)

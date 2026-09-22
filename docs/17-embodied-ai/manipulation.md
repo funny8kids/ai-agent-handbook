@@ -104,7 +104,7 @@ def grasp_and_insert(obj, target, arm, hand):
 
 选一个日常任务（推荐「把 USB 插进电脑」或「拧开矿泉水盖」），列出：① 需要哪些传感量（含最便宜的替代方案）；② 三种典型失败模式与检测信号；③ 你愿意为「恢复行为」采集多少条纠错演示。做完这三问，你会发现任务定义比模型选择重要得多。
 
-## 相关资源
+## 参考资料
 
 - [ALOHA / ACT](https://arxiv.org/abs/2304.13705)、[Mobile ALOHA](https://arxiv.org/abs/2401.02117)、[Diffusion Policy](https://arxiv.org/abs/2303.04137)、[UMI](https://arxiv.org/abs/2402.10329)
 - 抓取方向：[GraspNet](https://graspnet.net/)、[AnyGrasp SDK](https://github.com/graspnet/anygrasp_sdk)；OpenAI 手内旋转：[Learning Dexterous In-Hand Manipulation](https://arxiv.org/abs/1808.00177)

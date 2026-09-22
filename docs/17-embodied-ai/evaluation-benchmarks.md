@@ -132,14 +132,15 @@ print(pd.DataFrame(trials).groupby("model_version")[
 
 给你现在正在做的任务写一份 `eval_protocol.yaml`（含 4 个留出维度、每维 ≥20 次、失败分类表），然后跑一次并把结果贴给同事，问一句：「照这份文档，你能不能独立复现？」——凡是答不上来的，就是文档要补的地方。
 
-## 相关资源
+## 参考资料
 
 - [CALVIN](https://github.com/mees/calvin)、[LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO)、[SimplerEnv](https://simpler-env.github.io/)、[BEHAVIOR-1K](https://behavior.stanford.edu/)、[ManiSkill3](https://github.com/haosulab/ManiSkill)
-- 方法层：[评估指标](../10-evaluation-safety/evaluation-metrics.md)、[基准测试](../10-evaluation-safety/benchmarks.md)、[可观测性与评估平台](../16-ai-infrastructure/llm-observability-eval-platform.md)
 
 ## 相关知识点
 
 - [仿真与 Sim-to-Real](simulation-sim2real.md)
 - [数据引擎](data-engine.md)
 - [硬件、实时与安全](hardware-realtime-safety.md)
-
+- [评估指标](../10-evaluation-safety/evaluation-metrics.md)
+- [基准测试](../10-evaluation-safety/benchmarks.md)
+- [可观测性与评估平台](../16-ai-infrastructure/llm-observability-eval-platform.md)

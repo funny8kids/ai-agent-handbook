@@ -109,7 +109,7 @@ policy.export(onnx=True, sample_rate_hz=50)   # 板载推理要显式降采样�
 
 给你手上的仿真环境（Isaac Lab / MuJoCo 任一）训一个「平地 + 随机推力」行走策略，然后画三条曲线：① 推力强度 vs 恢复成功率；② 观测噪声 vs 步态稳定性；③ 控制频率（20/50/100Hz）vs 性能。回答：哪一条曲线下降最快？那就是你系统最薄弱的环节。
 
-## 相关资源
+## 参考资料
 
 - [Isaac Lab](https://github.com/isaac-sim/IsaacLab)、[Legged Gym](https://github.com/leggedrobotics/legged_gym)、[Unitree RL 训练示例](https://github.com/unitreerobotics/unitree_rl_gym)
 - 方向参考：HumanPlus / H2O / OmniH2O / ExBody / ASAP 系列（人类动作驱动的人形控制）、[GR00T 全身控制工作](https://arxiv.org/abs/2503.14734)

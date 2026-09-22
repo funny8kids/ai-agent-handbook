@@ -25,7 +25,7 @@ updated: 2026-09-20
 
 **成本模型（单轮）**
 
-```
+```text
 轮成本 = 输入tok × 输入单价 × (1 - 命中率 × 折扣)
        + 输出tok × 输出单价
 任务成本 = Σ(每轮成本) + 失败重试成本 + 检索/嵌入/沙箱成本
@@ -121,10 +121,13 @@ flowchart LR
 
 挑你系统里成本最高的 3 条链路，按本文公式各算一次「每次成功任务成本」，把输入 token 构成拆开（system / 工具定义 / 历史 / RAG 片段 / 本轮）。哪一块占比最高且最没必要？先砍它——通常能立刻省 20%。
 
-## 相关资源
+## 参考资料
 
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
+- [MLX](https://github.com/ml-explore/mlx)
 - 单价与配额：各供应商定价页（变化频繁，以官网为准）
-- 引擎与形态：[推理服务化](inference-serving.md)、[llama.cpp](https://github.com/ggml-org/llama.cpp)、[MLX](https://github.com/ml-explore/mlx)
+- [Artificial Analysis（跨供应商单价与吞吐的第三方实测口径）](https://artificialanalysis.ai/)
+- [vLLM（自建池最常落的引擎）](https://github.com/vllm-project/vllm)
 
 ## 相关知识点
 
@@ -132,4 +135,4 @@ flowchart LR
 - [推理、量化、蒸馏与部署](../03-llm/inference-quantization-deployment.md)
 - [训练与微调基础设施](training-finetune-infra.md)
 - [本章导读](README.md)
-
+- [推理服务化](inference-serving.md)

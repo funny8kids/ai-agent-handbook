@@ -33,7 +33,7 @@ flowchart TB
 
 ## 源码案例
 
-- **MineDojo / VPT**（[论文](https://arxiv.org/abs/2206.08853) / [OpenAI VPT](https://openai.com/research/video-pretraining)）：在 Minecraft 上训练通用 Agent——VPT 用 7 万小时视频预训练 + RL 微调完成「砍树→合成工具→挖钻石」长链任务；是「LLM 时代之前」最具启发性的具身 Agent 工作
+- **MineDojo / VPT**（[论文](https://arxiv.org/abs/2206.08853) / [OpenAI VPT 官方仓库](https://github.com/openai/Video-Pre-Training)）：在 Minecraft 上训练通用 Agent——VPT 用 7 万小时视频预训练 + RL 微调完成「砍树→合成工具→挖钻石」长链任务；是「LLM 时代之前」最具启发性的具身 Agent 工作
 - **Generative Agents（斯坦福小镇）**（[论文](https://arxiv.org/abs/2304.03442) / 开源实现众多）：25 个 LLM NPC 在虚拟小镇生活——记忆流（情景记忆检索）+ 反思 + 计划三件套，是 [记忆类型](../06-memory-rag/memory-types.md) 的最著名实证，NPC 之间涌现出社交行为
 - **Voyager**（[论文](https://arxiv.org/abs/2305.16291)）：Minecraft 里的终身学习 Agent——LLM 写技能代码存入技能库，遇到新任务检索复用并持续扩展，「程序记忆 + 自我扩展」的开源典范（呼应 [记忆类型](../06-memory-rag/memory-types.md) 的程序记忆）
 - **游戏 QA 自动化**：LLM 按测试用例操作游戏、观察崩溃与平衡性问题——Computer Use 技术栈在游戏窗口上的直接应用
@@ -73,6 +73,14 @@ $$
 ## 小练习
 
 设计一个酒馆 NPC：人设、记忆结构（人设/近期/经历三层）、说话预算（多少 token/次）；写出它「被问到自己背景故事」时的记忆检索流程。
+
+## 参考资料
+
+- [MineDojo / VPT 论文（7 万小时视频预训练 + RL 长链任务）](https://arxiv.org/abs/2206.08853)
+- [OpenAI VPT 官方仓库（权重与复现脚本）](https://github.com/openai/Video-Pre-Training)
+- [Generative Agents 论文（斯坦福小镇：记忆流 + 反思 + 计划）](https://arxiv.org/abs/2304.03442)
+- [Voyager 论文（技能库驱动的终身学习）](https://arxiv.org/abs/2305.16291)
+- [Voyager 官方仓库（技能库与 Minecraft 环境）](https://github.com/MineDojo/Voyager)
 
 ## 相关知识点
 

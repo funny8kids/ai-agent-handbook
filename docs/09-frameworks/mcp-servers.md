@@ -2,7 +2,7 @@
 tags: [mcp, tooling, framework]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # MCP Servers
@@ -74,6 +74,13 @@ sequenceDiagram
 - ❌ Server 装得越多越好：工具面膨胀降低选择准确率（→ [工具选择与路由](../07-planning/tool-selection-routing.md)）
 - ❌ 社区 Server 即插即用：恶意 Server 可借工具描述注入指令，供应链审查不可省
 - ❌ 把 MCP Server 当微服务调用：它是「给模型用的」，权限、审计按模型行为设计，不按传统 API 设计
+
+## 参考资料
+
+- [官方 Server 仓库（modelcontextprotocol/servers）](https://github.com/modelcontextprotocol/servers)
+- [MCP 协议与架构文档](https://modelcontextprotocol.io/docs/learn/architecture)
+- [mcp.so（Server 目录与检索）](https://mcp.so)
+- [awesome-mcp-servers（社区清单）](https://github.com/Punkpeye/awesome-mcp-servers)
 
 ## 相关知识点
 

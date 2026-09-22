@@ -2,7 +2,7 @@
 tags: [engineering, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # LangFuse
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 工具（可观测） |
-| 链接 | <https://github.com/langfuse/langfuse> · [文档](https://langfuse.com/docs) |
+| 链接 | [仓库](https://github.com/langfuse/langfuse) · [文档](https://langfuse.com/docs) · [自托管](https://langfuse.com/self-hosting) |
 | 来源 | LangFuse |
 | 协议 | MIT（核心） |
 | 难度 | 进阶 |
@@ -48,6 +48,12 @@ flowchart TD
 1. 一行接入（`from langfuse.openai import openai`）跑通 trace
 2. 配置按租户/任务类型的成本看板（→ [观测工具选型](../../11-engineering/observability-tools.md)）
 3. 失败 trace 一键转评估用例
+
+## 参考资料
+
+- [Langfuse 仓库](https://github.com/langfuse/langfuse)
+- [官方文档](https://langfuse.com/docs)
+- [自托管部署指南](https://langfuse.com/self-hosting)
 
 ## 相关知识点
 

@@ -2,7 +2,7 @@
 tags: [rag, framework]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 向量数据库生态
@@ -50,6 +50,13 @@ flowchart LR
 - ❌ 从 Milvus 集群起步：百万级以下单机方案绰绰有余，分布式运维是真实的持续成本
 - ❌ 只测写入不测查询：召回质量（recall@k）与 P99 延迟才是 SLA，容量规划基于查询模式
 - ❌ 忽略重排：向量库召回 Top-50 后接 Reranker 通常显著提升最终质量（→ [RAG 基础](../06-memory-rag/rag-basics.md)）
+
+## 参考资料
+
+- [FAISS（向量检索算法的参考实现）](https://github.com/facebookresearch/faiss)
+- [pgvector（Postgres 内的 HNSW/IVFFlat）](https://github.com/pgvector/pgvector)
+- [Qdrant（payload 过滤与向量检索联合优化）](https://github.com/qdrant/qdrant)
+- [Milvus（云原生分布式向量库）](https://github.com/milvus-io/milvus)
 
 ## 相关知识点
 

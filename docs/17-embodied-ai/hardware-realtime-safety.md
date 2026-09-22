@@ -123,11 +123,10 @@ class SafetyMonitor:
 
 给你的机器人写一份「一页安全验收表」，每项都要有实测数字：急停响应时间、最大允许接触力（含测量方法）、TCP 速度上限、策略崩溃后行为、断网降级行为、控制频率 vs 温度曲线。任何一项写不出来，就是现场会出事的那一项。
 
-## 相关资源
+## 参考资料
 
 - [ROS 2 实时与控制](https://control.ros.org/)、[EtherCAT](https://www.ethercat.org/)、[Linux PREEMPT_RT](https://wiki.linuxfoundation.org/realtime/start)
 - 安全标准入口：[ISO 10218（工业机器人安全）](https://www.iso.org/)、[ISO/TS 15066（协作机器人）](https://www.iso.org/standard/65457.html)
-- 算力与部署：[推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md)
 
 ## 相关知识点
 
@@ -135,4 +134,4 @@ class SafetyMonitor:
 - [评估与基准](evaluation-benchmarks.md)
 - [把 Agent 接进机器人](agent-to-robot-bridge.md)
 - [沙箱与执行环境](../16-ai-infrastructure/sandbox-execution-environments.md)
-
+- [推理经济学与部署形态](../16-ai-infrastructure/inference-economics-deployment.md)

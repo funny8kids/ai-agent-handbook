@@ -77,6 +77,12 @@ $$
 
 「HR 助手 Agent」要读员工档案回答经理询问：设计数据分级、脱敏规则、检索过滤与日志保留策略——经理能问「小王薪资多少」吗？
 
+## 参考资料
+
+- [Microsoft Presidio（PII 识别与脱敏的参考实现）](https://microsoft.github.io/presidio/)
+- [OWASP LLM Top 10（含敏感信息泄露与提示注入条目）](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [DeepSeek Harness（数据不出域的自托管栈参考）](https://github.com/deepseek-ai/deepseek-harness)
+
 ## 相关知识点
 
 - [向量数据库](../06-memory-rag/vector-database.md)

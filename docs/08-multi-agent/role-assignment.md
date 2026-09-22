@@ -63,6 +63,13 @@ flowchart TD
 
 为「博客自动生产」设计三角色（调研/写作/事实核查）：每个角色的工具面、产出 JSON 格式、禁止事项各写两条。
 
+## 参考资料
+
+- [CrewAI（role / goal / backstory 三元组的实现）](https://github.com/crewAIInc/crewAI)
+- [MetaGPT 论文（把人类 SOP 编码成角色分工）](https://arxiv.org/abs/2308.00352)
+- [AutoGen（以对话为骨架的多 Agent 角色编排）](https://github.com/microsoft/autogen)
+- [Claude Code 系统提示词全集（子 Agent 角色描述的实际写法）](https://github.com/Piebald-AI/claude-code-system-prompts)
+
 ## 相关知识点
 
 - [多 Agent 协作](multi-agent-collaboration.md)

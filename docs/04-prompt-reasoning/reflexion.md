@@ -81,6 +81,8 @@ flowchart LR
 
 - [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366)（Shinn et al., 2023）
 - [Self-Refine: Iterative Refinement with Self-Feedback](https://arxiv.org/abs/2303.17651)（Madaan et al., 2023）
+- [Reflexion 官方实现](https://github.com/noahshinn/reflexion)
+- [DeepSeek-R1 论文（反思被 RL 内化进思维链）](https://arxiv.org/abs/2501.12948)
 
 ## 相关知识点
 

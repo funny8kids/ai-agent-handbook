@@ -60,6 +60,13 @@ flowchart TB
 
 给个人助理 Agent 分类：用户口味偏好、昨天聊过的电影、你常用的报销流程、本次对话的第一句话——各属于哪种记忆？分别怎么存？
 
+## 参考资料
+
+- [MemGPT 论文（把上下文当分页虚拟内存的原始设计）](https://arxiv.org/abs/2310.08560)
+- [Letta（MemGPT 的后续开源实现）](https://github.com/letta-ai/letta)
+- [Mem0（记忆分层与检索的服务化实现）](https://github.com/mem0ai/mem0)
+- [Generative Agents 论文（记忆流 + 反思 + 重要度检索的实证）](https://arxiv.org/abs/2304.03442)
+
 ## 相关知识点
 
 - [上下文工程](context-engineering.md)

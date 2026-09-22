@@ -1,3 +1,10 @@
+---
+tags: [index, navigation]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 总导航
 
 本页是整本手册的总入口。点击任意章节进入，或按 [学习路线](learning-path.md) 循序渐进。

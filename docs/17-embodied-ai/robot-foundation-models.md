@@ -95,10 +95,10 @@ flowchart TB
 
 挑表中两个模型（建议 π0 与 OpenVLA），分别写出：动作头形式、一次推理输出多少步、单步控制频率、需要多少演示数据才可能微调成功。然后回答：如果你的相机只有 30fps 且板载 16GB 显存，哪个更现实？
 
-## 相关资源
+## 参考资料
 
 - [RT-2 论文](https://arxiv.org/abs/2307.15818)、[Open X-Embodiment](https://arxiv.org/abs/2310.08864)、[OpenVLA](https://github.com/openvla/openvla)、[π0](https://arxiv.org/abs/2410.24164)、[openpi](https://github.com/Physical-Intelligence/openpi)
-- [RDT-1B](https://arxiv.org/abs/2410.07864)、[GR00T N1](https://arxiv.org/abs/2503.14734)、[SmolVLA](https://huggingface.co/blog/smolvla)、[GO-1](https://arxiv.org/abs/2503.06669)
+- [RDT-1B](https://arxiv.org/abs/2410.07864)、[GR00T N1](https://arxiv.org/abs/2503.14734)、[SmolVLA](https://huggingface.co/blog/smolvla)、[GO-1 论文（AgiBot World Colosseo）](https://arxiv.org/abs/2503.06669)
 
 ## 相关知识点
 

@@ -109,7 +109,7 @@ flowchart LR
 ## 参考资料
 
 - [GraphRAG: Unlocking LLM Discovery on Narrative Private Data](https://arxiv.org/abs/2404.16130)（Edge et al., 2024，社区检测与摘要）
-- [Translating Embeddings for Modeling Multi-relational Data](https://arxiv.org/abs/1301.3781)（Bordes et al., 2013，TransE，图嵌入基础）
+- [Embedding Entities and Relations for Learning and Inference in Knowledge Bases](https://arxiv.org/abs/1412.6575)（Bordes et al., 2014，TransE 系的图嵌入基础工作）
 - [Knowledge Graphs](https://arxiv.org/abs/2003.02320)（Hogan et al., 2020，综述）
 - [Neo4j 文档](https://neo4j.com/docs/)
 

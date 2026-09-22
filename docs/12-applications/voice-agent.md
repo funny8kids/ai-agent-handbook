@@ -85,12 +85,13 @@ session.on("tool_call", async (call) => {
 ## 参考资料
 
 - [Build more natural voice experiences with GPT-Live-1 in the API](https://openai.com/index/introducing-gpt-live-1-in-the-api/)（OpenAI, 2026-09-10）
-- [多模态模型](../03-llm/multimodal.md)
-- [什么是 AI Agent](../02-agent-basics/what-is-agent.md)
+- [Whisper（开源语音识别基线，端侧可用）](https://github.com/openai/whisper)
+- [Pipecat（语音 Agent 的开源管道框架：VAD/ASR/LLM/TTS 串成流）](https://github.com/pipecat-ai/pipecat)
+- [LiveKit Agents（生产级实时语音与打断处理）](https://github.com/livekit/agents)
 
 ## 相关知识点
 
 - [多模态模型](../03-llm/multimodal.md)
 - [通用 Agent 产品](general-agent-products.md)
 - [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)
-
+- [什么是 AI Agent](../02-agent-basics/what-is-agent.md)

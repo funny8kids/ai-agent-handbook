@@ -179,11 +179,10 @@ def agent_loop(goal, objects, runner):
 
 用一份仿真（Isaac Lab / MuJoCo / ManiSkill 任一）搭一个三层最小系统：① 感知给你一个物体清单 JSON；② 技能库提供 4 个技能（goto / grasp / place / open），每个带前提条件与硬超时；③ 语言层用 function calling 出计划。跑 20 个任务，统计「规划层失败」与「执行层失败」的比例——这决定你下一步该修 prompt/规划还是修策略。
 
-## 相关资源
+## 参考资料
 
-- [ROS 2 文档（Action、Life cycle、DDS）](https://docs.ros.org/)、[MoveIt 2](https://moveit.picknik.ai/)、[LeRobot](https://github.com/huggingface/lerobot)
+- [ROS 2 文档（Action、Life cycle、DDS）](https://docs.ros.org/en/latest/)、[MoveIt 2](https://moveit.picknik.ai/)、[LeRobot](https://github.com/huggingface/lerobot)
 - 方法：[SayCan](https://arxiv.org/abs/2204.01691)、[Code as Policies](https://arxiv.org/abs/2209.07753)、[VoxPoser](https://arxiv.org/abs/2307.05973)
-- 相关章节：[工具调用与协议](../05-tool-protocol/README.md)、[规划与任务执行](../07-planning/README.md)、[Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)
 
 ## 相关知识点
 
@@ -191,4 +190,6 @@ def agent_loop(goal, objects, runner):
 - [动作表示与分层控制](action-representation-control.md)
 - [硬件、实时与安全](hardware-realtime-safety.md)
 - [持久化执行与运行时](../16-ai-infrastructure/agent-runtime-durable-execution.md)
-
+- [工具调用与协议](../05-tool-protocol/README.md)
+- [规划与任务执行](../07-planning/README.md)
+- [Human-in-the-loop](../02-agent-basics/human-in-the-loop.md)

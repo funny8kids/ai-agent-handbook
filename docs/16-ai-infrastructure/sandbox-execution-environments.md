@@ -108,7 +108,7 @@ def before_execute(call):
 
 给你的执行层写一份「威胁清单」并逐条验证：① 能不能读到宿主 `/etc/passwd`？② 能不能出网？③ 能不能 fork 到卡死？④ 能不能写满磁盘？⑤ 能不能拿到别人的会话文件？每条给出「已挡 / 靠自觉 / 未挡」的结论——「靠自觉」的都要变成代码。
 
-## 相关资源
+## 参考资料
 
 - [gVisor](https://gvisor.dev/)、[Firecracker](https://firecracker-microvm.github.io/)、[landlock 文档](https://docs.kernel.org/userspace-api/landlock.html)、[seccomp](https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - [E2B](https://github.com/e2b-dev/E2B)、[Modal](https://modal.com/docs)

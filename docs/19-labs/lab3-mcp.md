@@ -1,3 +1,10 @@
+---
+tags: [lab, mcp, hands-on]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 3：手写迷你 MCP
 
 {% hint style="info" %}

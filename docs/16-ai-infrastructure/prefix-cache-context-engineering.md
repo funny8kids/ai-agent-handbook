@@ -100,10 +100,12 @@ turn(h, "第 3 轮（故意加了时间戳 → 命中率掉下去）")
 
 给你现有 Agent 的 prompt 组装函数做一次「前缀审计」：把每轮 prompt 存成文件，`diff` 相邻两轮，找出第一个不同的 token 出现在什么位置。它前面的都是可复用资产，它后面的都白算了。
 
-## 相关资源
+## 参考资料
 
 - [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)、[vLLM Automatic Prefix Caching 文档](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html)
 - 各家 Prompt Caching 说明（Anthropic / OpenAI / Google 定价页，字段与折扣差异较大，以官方为准）
+- [Anthropic Prompt Caching 文档（折扣与 TTL 的原文）](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+- [OpenAI Prompt Caching 指南（自动缓存的计费口径）](https://platform.openai.com/docs/guides/prompt-caching)
 
 ## 相关知识点
 

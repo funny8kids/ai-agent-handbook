@@ -1,3 +1,10 @@
+---
+tags: [lab, evaluation, tracing]
+type: lab
+status: published
+updated: 2026-09-22
+---
+
 # Lab 5：评测与可观测（pass@1 + trace 瀑布）
 
 {% hint style="info" %}

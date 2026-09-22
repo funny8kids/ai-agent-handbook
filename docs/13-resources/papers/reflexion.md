@@ -2,7 +2,7 @@
 tags: [agent, memory, paper]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Reflexion 论文
@@ -14,7 +14,7 @@ updated: 2026-09-20
 | 属性 | 内容 |
 |---|---|
 | 类型 | 论文 |
-| 链接 | <https://arxiv.org/abs/2303.11366> |
+| 链接 | [论文](https://arxiv.org/abs/2303.11366) · [官方实现](https://github.com/noahshinn/reflexion) |
 | 来源 | Shinn et al., Northeastern + MIT |
 | 发布 | 2023-03（NeurIPS 2023） |
 | 难度 | 进阶 |
@@ -46,6 +46,12 @@ flowchart TD
 1. 读方法节的三组件：Actor / Evaluator / Reflector
 2. 跑一遍官方实现 [noahshinn/reflexion](https://github.com/noahshinn/reflexion) 的 HumanEval 实验
 3. 对照 [Reflexion 知识点](../../04-prompt-reasoning/reflexion.md) 的最佳实践改造你自己的 Agent
+
+## 参考资料
+
+- [Reflexion 论文](https://arxiv.org/abs/2303.11366)（Shinn et al., 2023）
+- [官方实现（noahshinn/reflexion）](https://github.com/noahshinn/reflexion)
+- [同期对照：Self-Refine 论文](https://arxiv.org/abs/2303.17651)（不用情景记忆，仅靠自我反馈迭代）
 
 ## 相关知识点
 

@@ -106,7 +106,7 @@ spec:
 
 把你集群里最近的 GPU 使用情况按「整卡闲置 / 分区可用 / 排队等待」三类各列出前 5 个任务，然后决定：哪三个适合合并到同一张卡的多个副本？哪一个是「必须独占但不能超 6 小时」的（给它加抢占与自动 checkpoint）？
 
-## 相关资源
+## 参考资料
 
 - [Kubernetes DRA 文档](https://kubernetes.io/docs/concepts/scheduling-eviction/dynamic-resource-allocation/)、[NVIDIA GPU Operator / MIG 指南](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/)
 - [KEDA](https://keda.sh/)、[Volcano](https://volcano.sh/)、[Kueue](https://kueue.sigs.k8s.io/)、[Ray](https://github.com/ray-project/ray)

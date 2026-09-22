@@ -1,3 +1,10 @@
+---
+tags: [meta, contributing]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 贡献指南
 
 欢迎参与共建这本 AI Agent 手册！请按以下流程贡献内容。
