@@ -2,7 +2,7 @@
 tags: [basics, resource]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 术语表
@@ -28,6 +28,8 @@ updated: 2026-09-20
 | Token | Token | 文本的最小切分单位，计费与窗口的单位 |
 | 嵌入 | Embedding | 文本的语义向量表示 |
 | 上下文窗口 | Context Window | 模型一次可见的最大 token 数 |
+| 有效上下文 | Effective Context Window | 性能不掉的最大输入长度，常远低于厂商标称窗口 |
+| 上下文腐化 | Context Rot | 输入越长越易漏读中段、被无关内容带偏的退化现象 |
 | 注意力 | Attention | Transformer 中 token 间交换信息的机制 |
 | 混合专家 | MoE（Mixture of Experts） | 每 token 只激活部分专家参数的稀疏架构 |
 | 指令微调 | SFT（Supervised Fine-Tuning） | 用问答对教模型跟随指令 |
@@ -35,6 +37,8 @@ updated: 2026-09-20
 | 直接偏好优化 | DPO（Direct Preference Optimization） | 从偏好对直接学习的免 RL 对齐方法 |
 | 幻觉 | Hallucination | 模型编造看似合理但错误的内容 |
 | 推理模型 | Reasoning Model | 通过 RL 学会长思考链的模型（o1/R1 类） |
+| 测试期计算 | Test-time Compute | 推理阶段多花算力换准确率，与训练期算力相对 |
+| 思考预算 | Reasoning Effort / Thinking Budget | 给模型「想多久」设的档位或 token 上限 |
 | 量化 | Quantization | 降低权重数值精度以压缩模型 |
 
 ## 工具与协议
@@ -59,6 +63,7 @@ updated: 2026-09-20
 | 知识图谱 | Knowledge Graph | 实体-关系网络的知识表示 |
 | 图检索增强 | GraphRAG | 用知识图谱增强的 RAG |
 | 会话压缩 | Compaction | 把历史对话摘要化以释放上下文空间 |
+| 睡眠时计算 | Sleep-time Compute | 空闲期先整理记忆、预推导结论，把临场思考挪到查询前 |
 | 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 |
 
 ## 多智能体与工程
