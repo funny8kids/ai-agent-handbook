@@ -2,7 +2,7 @@
 tags: [safety, tooling, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 工具权限与沙箱
@@ -16,7 +16,7 @@ updated: 2026-09-22
 
 - 权限三问：谁授权（allowlist/策略）？何时拦（执行前管道）？留什么痕（审计日志）？
 - 沙箱梯度：进程内 → 容器 → 内核级隔离（Landlock/seccomp）→ 独立虚拟机，隔离强度与成本递增
-- 提示注入使「模型被騙着用合法权限做坏事」成为主要攻击面（→ [提示注入](../10-evaluation-safety/prompt-injection.md)），权限最小化是最后防线
+- 提示注入使「模型被骗着用合法权限做坏事」成为主要攻击面（→ [提示注入](../10-evaluation-safety/prompt-injection.md)），权限最小化是最后防线
 - 网络出口控制比文件系统更常被忽视：数据外泄多半走网络
 
 ## 执行流水线
