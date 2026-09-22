@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：借认知科学的五分类给 Agent 记忆建模——不同记忆放不同地方、用不同机制存取。
   **难度**：入门
-  **标签**：`#memory`
 {% endhint %}
 
 ![Agent 记忆三层：工作记忆、情景记忆、语义记忆及其流转](../.gitbook/assets/06-memory-tiers.svg)

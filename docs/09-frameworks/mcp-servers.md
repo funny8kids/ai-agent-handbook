@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：MCP Server 生态是 Agent 工具的「应用商店」：官方与社区维护着数百个现成 Server，覆盖数据库、开发、办公、浏览器等场景。
   **难度**：入门
-  **标签**：`#mcp` `#tooling`
 {% endhint %}
 
 | 属性 | 内容 |

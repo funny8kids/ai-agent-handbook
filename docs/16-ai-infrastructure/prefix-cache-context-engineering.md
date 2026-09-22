@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：Agent 的每一轮都在把同一份长前缀（system + 工具定义 + 历史）重发给模型，前缀缓存（prefix caching / prompt caching）就是让这段重复计算与付费只发生一次——前提是**你别动前缀**。
   **难度**： 进阶
-  **标签**：`#infrastructure` `#memory`
 {% endhint %}
 
 ## 先看结论

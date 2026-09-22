@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：五大基准各考一面：SWE-bench 考修真代码、WebArena 考逛真网站、GAIA 考通用助理、AgentBench 考综合、ToolBench 考调工具——合起来是 Agent 能力的全景图。
   **难度**：进阶
-  **标签**：`#evaluation`
 {% endhint %}
 
 ## 五基准精读

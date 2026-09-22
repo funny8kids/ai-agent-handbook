@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：游戏是 Agent 的天然试验场（环境封闭、反馈即时、可无限重试）——从 AlphaGo 的 RL 到今天 LLM 驱动的智能 NPC，两条技术路线并存。
   **难度**：进阶
-  **标签**：`#application`
 {% endhint %}
 
 ## 先看结论

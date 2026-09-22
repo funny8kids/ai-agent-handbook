@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：给每个 Agent 一个明确的角色（角色 = 专属 system prompt + 工具面 + 产出格式），角色越具体，协作越有序。
   **难度**：入门
-  **标签**：`#multi-agent`
 {% endhint %}
 
 ## 先看结论

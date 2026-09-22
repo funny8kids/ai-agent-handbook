@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：VLA（Vision-Language-Action，视觉-语言-动作模型）= 预训练 VLM 的骨干 + 一个把隐藏状态变成连续动作的「动作专家」。模型能不能在真机上流畅干活，八成取决于这个动作专家的输出形式与频率。
   **难度**： 高级
-  **标签**：`#embodied-ai` `#llm`
 {% endhint %}
 
 ## 先看结论

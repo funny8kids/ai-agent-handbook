@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：权限决定「Agent 能不能做」，沙箱决定「做坏了影响多大」——两者合起来是 Agent 安全的承重墙。
   **难度**：进阶
-  **标签**：`#safety` `#tooling`
 {% endhint %}
 
 ## 先看结论

@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：工作流编排 = 把「何时用确定性代码、何时放权给 LLM」显式设计出来——好的 Agent 系统是工作流与自主性的混合体。
   **难度**：进阶
-  **标签**：`#planning` `#engineering`
 {% endhint %}
 
 ## 先看结论

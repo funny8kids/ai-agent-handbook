@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：仿真的价值不是「便宜地刷分」，而是给你一台可以无限快进、能设陷阱、能量化不确定性的时间机器——真正难的是把「仿真里的 95%」变成「真机上的 60%」，而域随机化（domain randomization）与 real2sim 标定是两座最常见的桥。
   **难度**： 高级
-  **标签**：`#embodied-ai` `#evaluation`
 {% endhint %}
 
 ## 先看结论

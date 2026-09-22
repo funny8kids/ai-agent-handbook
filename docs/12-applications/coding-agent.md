@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：编程是 Agent 第一落地场景——验证客观（测试）、反馈明确（报错）、语料丰富（GitHub），本章深拆三大代表性 harness：Claude Code、Pi、DeepSeek Harness。
   **难度**：进阶
-  **标签**：`#application` `#agent`
 {% endhint %}
 
 ![编程 Agent 的沙箱工作循环：改码—测试—修复闭环，合并权留给人](../.gitbook/assets/12-coding-agent-loop.svg)

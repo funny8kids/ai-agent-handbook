@@ -10,7 +10,6 @@ updated: 2026-09-22
 {% hint style="info" %}
 **一句话**：现代 LLM 推理引擎的核心不是「把模型跑得更快」，而是「让 GPU 在等 token 的时候别闲着」——连续批处理（continuous batching）+ 分页 KV 缓存（PagedAttention）就是这两件事的实现。
   **难度**： 高级
-  **标签**：`#infrastructure` `#llm`
 {% endhint %}
 
 ## 先看结论
