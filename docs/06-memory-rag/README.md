@@ -47,6 +47,7 @@ flowchart LR
 - [GraphRAG](graphrag.md)
 - [知识图谱](knowledge-graph.md)
 - [记忆压缩、遗忘与摘要](memory-compression-forgetting.md)
+- [记忆固化与睡眠时计算](sleep-time-memory-consolidation.md)
 
 ## 读完能做到
 

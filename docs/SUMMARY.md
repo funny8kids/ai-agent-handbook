@@ -69,6 +69,7 @@
 * [GraphRAG](06-memory-rag/graphrag.md)
 * [知识图谱](06-memory-rag/knowledge-graph.md)
 * [记忆压缩、遗忘与摘要](06-memory-rag/memory-compression-forgetting.md)
+* [记忆固化与睡眠时计算](06-memory-rag/sleep-time-memory-consolidation.md)
 
 ## 🗺️ 07 规划与任务执行
 * [本章导读](07-planning/README.md)
