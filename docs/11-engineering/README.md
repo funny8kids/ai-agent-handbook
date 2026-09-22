@@ -2,7 +2,7 @@
 tags: [engineering]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 11 工程化与可观测性

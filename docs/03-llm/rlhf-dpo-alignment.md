@@ -2,7 +2,7 @@
 tags: [llm, safety, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # RLHF、DPO 与对齐

@@ -2,7 +2,7 @@
 tags: [prompt]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 04 Prompt 与推理

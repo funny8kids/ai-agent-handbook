@@ -1,3 +1,10 @@
+---
+tags: [meta, template]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 资源模板
 
 > 向 [13 资源库](../13-resources/README.md) 添加论文、课程、项目、工具等资源时，使用下方卡片格式。

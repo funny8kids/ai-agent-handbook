@@ -2,7 +2,7 @@
 tags: [embodied-ai, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 机器人基础模型谱系

@@ -2,7 +2,7 @@
 tags: [evaluation, safety]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 10 评估、安全与对齐

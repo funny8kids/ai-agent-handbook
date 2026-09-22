@@ -2,7 +2,7 @@
 tags: [application, safety]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 医疗、金融、法律 Agent

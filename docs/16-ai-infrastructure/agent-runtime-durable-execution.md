@@ -2,7 +2,7 @@
 tags: [infrastructure, engineering, agent]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 持久化执行与 Agent 运行时

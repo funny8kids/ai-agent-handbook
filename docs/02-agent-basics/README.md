@@ -2,7 +2,7 @@
 tags: [agent, basics]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 02 Agent 基础

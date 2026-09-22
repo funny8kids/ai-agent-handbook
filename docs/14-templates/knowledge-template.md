@@ -1,3 +1,10 @@
+---
+tags: [meta, template]
+type: index
+status: published
+updated: 2026-09-22
+---
+
 # 知识点模板
 
 > 新增知识点页面时，先按 [风格指南](style-guide.md) 第三节选定体裁，再复制对应模板。
@@ -7,7 +14,7 @@
 
 1. 选体裁：A 原理型 / B 概念型 / C 实战型（见 [风格指南](style-guide.md) 第三节）
 2. 复制对应「模板正文」到新页面（如 `02-agent-basics/xxx.md`）
-3. 填好 frontmatter（`tags` / `type` / `status` / `updated`）
+3. 填好 frontmatter（`tags` / `type` / `status` / `updated`）——`updated` 写**当天日期**，之后每次改正文都要同步（口径见 [风格指南](style-guide.md) 第八节）
 4. 在 `docs/SUMMARY.md` 中登记该页面
 5. 自检通过 [风格指南](style-guide.md) 第九节检查清单后，才把 `status` 改为 `published`
 

@@ -2,7 +2,7 @@
 tags: [embodied-ai, agent, tooling]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 把 Agent 接进机器人：技能库 + ROS 2 桥

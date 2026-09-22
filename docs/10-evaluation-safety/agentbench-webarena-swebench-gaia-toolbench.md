@@ -2,7 +2,7 @@
 tags: [evaluation, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # AgentBench、WebArena、SWE-bench、GAIA、ToolBench

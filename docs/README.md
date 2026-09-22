@@ -86,14 +86,14 @@ updated: 2026-09-22
 ## 关于这本手册 · About this handbook
 
 - **187 页 / 19 章**（含 2026 前沿章 + 6 个离线动手实验）· 187 pages across 19 chapters
-- **105 页含数学公式**（KaTeX）· pages carry formulas
-- **每篇底部有「参考资料」**，数字与结论都能点回一手来源 · every page ends with references
+- **104 页正文含 KaTeX 公式**（只数线上真会渲染的 `$$…$$`；模板页代码块里的示例写法不算）· 104 pages carry rendered formulas
+- **数字与结论都能点回一手来源**，文末「参考资料」只放外部来源 · every claim links back to a primary source
 - **每章「读完能做到」清单 + 章末自测 + 中英术语速查**：全量覆盖，题目可答、答案有出处
-- **202 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现
+- **209 个 GitBook 原生提示卡**：一句话结论 / 易踩的坑 / 风险警示分色呈现（逐文件点数，代码块与行内代码里的写法示例不计入）
 - **全书 180 张 Mermaid 图经真解析器逐块校验**，0 渲染风险；每张图的自然宽度都用**与线上同版本**（mermaid 11.14.0）的引擎实测过，最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放
-- **144 篇知识/资源页全部有「参考资料」**：315 条外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
+- **144 篇知识/资源页全部有「参考资料」**：316 条去重后的外部一手来源逐条点开核对（arXiv 编号用 export API 比对论文标题），站内跳转一律不混入该小节
 - **323 个项目索引**（实测 star 与许可，头部项目配手写点评）· an index of 323 projects with observed stars and hand-written takes
-- **222 张配图**：180 个 Mermaid 内联图（全部带章节配色）+ 34 张自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 222 figures, parser-verified diagrams + real product UI screenshots
+- **220 张页内配图**：180 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含封面、横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 220 in-page figures, parser-verified diagrams + real product UI screenshots。另有 2 张自绘 SVG 用作 GitBook 站标，不在页面正文里，故不计入配图数
 - **162 条读者可见图注**：GitBook 会剥掉内容图片的 alt，所以每张 SVG/截图下方都写了一句「读这张图要带走什么」；180 张 Mermaid 里 132 张带图注、48 张由图前实质引导语解释，**没有一张图是「如下图所示」四个字打发的**
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、Terminal-Bench 4.0
 

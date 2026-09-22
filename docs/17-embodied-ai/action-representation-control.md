@@ -2,7 +2,7 @@
 tags: [embodied-ai, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 动作表示与分层控制

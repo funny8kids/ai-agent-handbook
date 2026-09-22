@@ -2,7 +2,7 @@
 tags: [basics, beginner]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 01 AI 基础

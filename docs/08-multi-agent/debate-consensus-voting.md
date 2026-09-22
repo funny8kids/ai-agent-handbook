@@ -2,7 +2,7 @@
 tags: [multi-agent, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 辩论、共识与投票

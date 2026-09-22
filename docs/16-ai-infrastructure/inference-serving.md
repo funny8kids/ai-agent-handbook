@@ -2,7 +2,7 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 推理服务化：引擎、批处理与延迟指标

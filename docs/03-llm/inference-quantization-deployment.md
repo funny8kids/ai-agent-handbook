@@ -2,7 +2,7 @@
 tags: [llm, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 推理、量化、蒸馏与部署

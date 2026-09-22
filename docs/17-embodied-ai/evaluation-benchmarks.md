@@ -2,7 +2,7 @@
 tags: [embodied-ai, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 评估与基准：怎么证明机器人真的行

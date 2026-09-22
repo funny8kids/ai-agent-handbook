@@ -2,7 +2,7 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 深度学习基础
