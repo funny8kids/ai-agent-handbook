@@ -157,7 +157,7 @@ client 侧打印出来的是：`[能力发现] 共 2 个工具: get_time, word_c
 {% tab title="发一个不存在的方法" %}
 不是未知工具，而是未知**方法**——协议层的错误走的是另一条路：
 
-```json
+```text
 >>> {"jsonrpc": "2.0", "id": 7, "method": "tools/execute",
      "params": {"name": "get_time"}}
 
