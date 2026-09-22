@@ -49,33 +49,34 @@ def fetch(url, binary=False, tries=4):
     raise RuntimeError("fetch failed after %d tries: %s (%s)" % (tries, url, last))
 
 
-def llms_urls():
+def llms_entries():
+    """[(published title, url)] straight out of the site's own index — no URL is constructed."""
     text = fetch(LLMS)
-    return re.findall(r"\((https://[^)\s]+\.md)\)", text)
+    return [(m.group(1).strip(), m.group(2).strip())
+            for m in re.finditer(r"\[([^\]]+)\]\((https://[^)\s]+\.md)\)", text)]
 
 
-def tail(rel_path):
-    """A page's path below its chapter directory, lowercased — the part GitBook keeps verbatim.
+def page_index(entries):
+    """Map a published title to its live URL; return (index, ambiguous_titles).
 
-    Measured on llms.txt: GitBook transliterates the chapter directory to pinyin
-    (`09-frameworks/langchain.md` -> `09-kuang-jia-yu-sheng-tai/langchain.md`) but publishes every
-    deeper segment unchanged (`13-resources/projects/langchain.md` ->
-    `13-zi-yuan-ku/projects/langchain.md`). Matching on the basename alone collided those two
-    pages and silently dropped 5 of the 54 widget pages from live coverage; matching on the tail
-    separates them without ever constructing a URL. The tail's length also carries the segment
-    count, so `docs/README.md` (tail ()) can never match a chapter README (`00-index/README.md`,
-    tail ("readme.md",)) -- that one has no published tail and stays a skip.
+    Why the join is the TITLE and not the path. Measured on llms.txt, the live path is not a
+    function of the local path: the chapter segment becomes a pinyin slug that is not in the repo
+    (`07-planning` -> `07-gui-hua-yu-ren-wu-zhi-xing`, `13-resources` -> `13-zi-yuan-ku`, while
+    `00-index` -> `dao-hang-yu-suo-yin` and loses the numeric prefix entirely), a folder README
+    republishes as `<folder>.md`, and deeper segments stay verbatim. Every rule tried against
+    those paths left pages unmapped, and an unmapped page is silently dropped from the live
+    check — the failure mode that hid 5 of the 54 widget pages in the first full sweep.
+
+    The title is the identity the site itself uses: SUMMARY labels are published verbatim as
+    <title> and <h1> (tools/checks/check_nav_h1_sync.py enforces label == page H1 and title
+    uniqueness), and llms.txt lists that same label next to that same URL. So local page ->
+    its own H1 -> entry title -> URL needs no path guesswork at all.
     """
-    return tuple(s.lower() for s in rel_path.replace("\\", "/").split("/")[1:])
-
-
-def page_index(urls):
-    """Map a published page tail to its live URL. Ambiguous tails are dropped, never guessed."""
-    by_tail = {}
-    for u in urls:
-        rel = u[len(SITE) + 1:] if u.startswith(SITE) else os.path.basename(u)
-        by_tail.setdefault(tail(rel), []).append(u)
-    return {k: v[0] for k, v in by_tail.items() if len(v) == 1}
+    by_title = {}
+    for title, url in entries:
+        by_title.setdefault(norm(title), []).append(url)
+    ambiguous = {k for k, v in by_title.items() if len(v) > 1}
+    return {k: v[0] for k, v in by_title.items() if len(v) == 1}, ambiguous
 
 
 def widget_pages():
@@ -269,23 +270,30 @@ EXTRACT_PHANTOM = """```markdown
 
 
 def page_index_controls():
-    """The tail matcher must separate same-named pages and never invent a URL."""
-    urls = [SITE + "/readme.md",
-            SITE + "/09-kuang-jia-yu-sheng-tai/langchain.md",
-            SITE + "/13-zi-yuan-ku/projects/langchain.md"]
-    idx = page_index(urls)
-    assert idx.get(tail("README.md")) == urls[0], "control: homepage tail did not resolve"
-    assert idx.get(tail("09-frameworks/langchain.md")) == urls[1], \
-        "control: chapter page did not resolve through its pinyin directory"
-    assert idx.get(tail("13-resources/projects/langchain.md")) == urls[2], \
-        "control: same-named pages were not told apart"
-    assert idx.get(tail("00-index/README.md")) is None, \
-        "control: a chapter README resolved to the homepage"
-    collide = page_index(urls + [SITE + "/16-yy/langchain.md"])
-    assert all(tail(r) not in collide for r in ("09-frameworks/langchain.md",
-                                                "16-ai-infrastructure/langchain.md")), \
-        "control: an ambiguous tail resolved anyway"
-    print("url-index controls: same-named pages separated, chapter README and ambiguous tails refused")
+    """The title join must resolve punctuation variants and refuse an ambiguous key."""
+    entries = [("首页 · AI Agent Handbook", SITE + "/readme.md"),
+               ("LangChain：框架用法与选型", SITE + "/09-kuang-jia-yu-sheng-tai/langchain.md"),
+               ("LangChain：项目档案与点评", SITE + "/13-zi-yuan-ku/projects/langchain.md"),
+               ("工作流编排", SITE + "/07-gui-hua-yu-ren-wu-zhi-xing/workflow-orchestration.md"),
+               ("工作流编排与持久执行", SITE + "/11-gong-cheng-hua-yu-ke-guan-ce-xing/workflow-orchestration.md")]
+    idx, amb = page_index(entries)
+    assert not amb, "control: distinct titles were reported ambiguous"
+    assert idx.get(norm("LangChain：框架用法与选型")) == entries[1][1], \
+        "control: a punctuated title did not resolve"
+    # hit control: the same title written with different punctuation is still the same page
+    assert idx.get(norm("LangChain 框架用法与选型")) == entries[1][1], \
+        "control: normalisation broke the title join"
+    # the two pages that share the file name workflow-orchestration.md stay apart (these entries
+    # are synthetic sample data around URL shapes measured on llms.txt; no URL is constructed)
+    assert idx.get(norm("工作流编排")) != idx.get(norm("工作流编排与持久执行")), \
+        "control: two chapters' pages resolved to the same live URL"
+    # phantom control: a repeated title must be refused outright, never guessed at
+    dup = page_index([("重复标题", SITE + "/a.md"), ("重复标题", SITE + "/b.md")])
+    assert dup[0] == {} and dup[1] == {norm("重复标题")}, \
+        "control: an ambiguous title still resolved: %s" % (dup,)
+    assert idx.get(norm("这本书里没有的标题")) is None, "control: an absent title matched anyway"
+    print("url-index controls: punctuated and punctuation-free titles join to one url, same-named "
+          "pages in different chapters stay apart, ambiguous title refused")
 
 
 def run_extractor_controls():
@@ -324,13 +332,38 @@ def main():
         print("dry run: extractor sane, no network touched")
         return 0
 
-    index = page_index(llms_urls())
+    entries = llms_entries()
+    index, ambiguous = page_index(entries)
+    print("live index: llms entries=%d distinct titles=%d ambiguous=%d"
+          % (len(entries), len(index), len(ambiguous)))
     assert len(index) >= 180, "vacuity: live url index only resolved %d pages" % len(index)
+    # Live titles must be unique — that uniqueness is what makes the title join safe, and it is
+    # the same rule check_nav_h1_sync.py enforces from the SUMMARY side.
+    assert not ambiguous, "ambiguous published titles on the live site: %s" % sorted(ambiguous)
+    # Mapping coverage: a page that cannot be resolved would be dropped from every live check
+    # without anyone noticing, so completeness is asserted over all published pages, not assumed.
+    all_pages, unmapped = 0, []
+    for dirpath, _, filenames in os.walk(DOCS):
+        for fn in filenames:
+            if not fn.endswith(".md") or fn in ("SUMMARY.md", "MANIFEST.md"):
+                continue
+            path = os.path.join(dirpath, fn)
+            all_pages += 1
+            title = h1_of(open(path, encoding="utf-8").read())
+            if norm(title) not in index:
+                rel = os.path.relpath(path, DOCS).replace("\\", "/")
+                unmapped.append((rel, title))
+    print("title mapping: local pages=%d resolved=%d unmapped=%d"
+          % (all_pages, all_pages - len(unmapped), len(unmapped)))
+    for rel, h in unmapped[:10]:
+        print("  - unmapped: %s | %r" % (rel, h))
+    assert not unmapped, "%d local pages cannot be matched to a live URL, so live checks miss them" \
+        % len(unmapped)
     checked = missing_url = checked_props = 0
     problems = []
     for path, stem, text, widgets in pick(pages, want_all, sample):
         rel = os.path.relpath(path, DOCS)
-        url = index.get(tail(rel))
+        url = index.get(norm(h1_of(text)))
         if not url:
             missing_url += 1
             print("  skip (no unambiguous live url): %s" % rel.replace("\\", "/"))
