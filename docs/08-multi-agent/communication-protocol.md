@@ -2,7 +2,7 @@
 tags: [multi-agent, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 通信协议
@@ -31,7 +31,7 @@ updated: 2026-09-22
 $$
 \text{点对点边数}=\frac{n(n-1)}{2}
 \qquad\Longrightarrow\qquad
-\text{$$n$$ 一大就不可维护}
+n\text{ 一大就不可维护}
 $$
 
 这就是为什么**生产系统的主流是星型**：边数线性、中心可做校验与汇总，代价是中心需要处理所有消息。

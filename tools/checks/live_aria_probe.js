@@ -25,7 +25,14 @@
     const s = c.querySelector('svg');
     return s && s.querySelectorAll('text').length > 0;
   });
-  const body = document.body.innerText;
+  // Reader-visible markup only. Round 57 measured three false alarms from testing body text:
+  // a page that quotes {% hint %} inside a code span is showing it on purpose, and KaTeX ships
+  // its own TeX source in a hidden <annotation>/<math> node — so a formula writing 95\% "leaks"
+  // %} into the markup while the reader sees 95%. The headless judge drops the same nodes, keep
+  // the two paths in step.
+  const clone = (document.querySelector('main') || document.body).cloneNode(true);
+  clone.querySelectorAll('code,pre,script,style,annotation,math').forEach((n) => n.remove());
+  const shown = clone.textContent;
   return JSON.stringify({
     url: location.href.replace(/\/$/, ''),
     ready: document.readyState,
@@ -37,7 +44,7 @@
     katexErr: document.querySelectorAll('.katex-error').length,
     mermaid: mer.length,
     mermaid_unrendered: mer.length - painted.length,
-    leak: /\{%|\%}/.test(body),
+    leak: /\{%|%\}|\$\$/.test(shown),
     viewport: [innerWidth, innerHeight],
     hidden: document.visibilityState !== 'visible',
   });

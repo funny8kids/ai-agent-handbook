@@ -10,23 +10,26 @@ worth having, because round 55 proved this platform can silently drop authored
 content (it drops the markdown H1) and a dropped formula block would look like
 "nothing is wrong" to a text-presence probe.
 
-Why this file is a manifest generator and NOT a self-running judge: the live DOM is
-only reachable through a browser. The repo's urllib path sees the pre-hydration HTML
-(mermaid containers ship empty with aria-busy=true), so a headless fetch cannot
-answer "did the widget render". The browser side runs live_aria_probe.js; its JSON is
-piped back here with --diff.
+Why the browser path still exists: the third equality (mermaid) is only answerable there.
+Round 57 measured that the server-rendered HTML already carries the tab and KaTeX structures in
+exactly the authored quantities — so --headless audits every published page with urllib and no
+operator-supplied viewport — but mermaid containers appear only after hydration. --calibrate
+re-fetches the URLs a browser actually measured and asserts SSR == DOM, so the shortcut cannot
+drift away from what the reader sees without this file failing first.
 
-Measured limitation, recorded so a future round does not report it as a defect: with
-the in-app browser closed the page has a 0x0 viewport (visibilityState=hidden), so
-lazily-rendered pieces never finish. Evidence: 6 consecutive pages, every mermaid
-container still had aria-busy=true and 0 <text> nodes after scrollIntoView + 4s wait.
-Therefore this judge compares mermaid CONTAINER counts (hydration created a slot for
-each authored block) and never claims the diagram painted. Screenshot-based visual
-review needs the operator to open the Browser panel once.
+Measured limitation, recorded so a future round does not report it as a defect: with the in-app
+browser closed the page has a 0x0 viewport (visibilityState=hidden), so lazily-rendered pieces
+never finish — 6 consecutive pages kept every mermaid container at aria-busy=true with 0 <text>
+nodes after scrollIntoView + 4s wait. This judge therefore compares mermaid CONTAINER counts
+(hydration created a slot for each authored block) and never claims the diagram painted; that
+needs a screenshot, which needs the operator to open the Browser panel once.
 
 Usage:
     python tools/checks/live_aria_manifest.py [--sample N | --all]   # print expectations
     python tools/checks/live_aria_manifest.py --diff live.json       # compare probe output
+    python tools/checks/live_aria_manifest.py --headless --all       # tab/katex parity over every
+                                                                     # published page, urllib only
+    python tools/checks/live_aria_manifest.py --calibrate [live.json]  # SSR vs measured DOM
 """
 import io, json, os, re, sys, urllib.request
 
@@ -57,6 +60,96 @@ def outside_fences(text):
     return "\n".join(keep)
 
 
+def strip_code_spans(line):
+    """Drop CommonMark inline code spans: a backtick run opens, an equal-length run closes.
+
+    A lazy regex can't express this. The changelog writes fence examples as inline ```text …,
+    a run that never closes on its line, and `[^`]*` then swallows up to the NEXT backtick —
+    eating a real delimiter on the far side so a whole paragraph read as unpaired.
+    """
+    out, i, n = [], 0, len(line)
+    while i < n:
+        if line[i] != "`":
+            out.append(line[i])
+            i += 1
+            continue
+        j = i
+        while j < n and line[j] == "`":
+            j += 1
+        run = line[i:j]
+        k = line.find(run, j)
+        while k != -1 and (line[k - 1] == "`" or line[k + len(run):k + len(run) + 1] == "`"):
+            k = line.find(run, k + 1)      # that candidate sits inside a longer run
+        if k == -1:
+            out.append(run)                # unclosed on this line: literal, not a code span
+            i = j
+        else:
+            out.append(" ")
+            i = k + len(run)
+    return "".join(out)
+
+
+def prose(text):
+    """What the reader can actually be shown: no fenced blocks, no inline code spans.
+
+    Round 57 proved this matters for an EQUALITY check. docs/README.md documents the formula
+    syntax inside backticks, so a raw $$-count claimed it authored a formula the site correctly
+    served zero of; the changelog raw-counted 23 against 10 rendered. Counting on prose is the
+    same 口径 the repo's formula judge uses, so the two rulers can no longer disagree.
+    """
+    return "\n".join(strip_code_spans(ln) for ln in outside_fences(text).split("\n"))
+
+
+def formula_sources(text):
+    """[(kind, source)] for every formula the page asks for, plus the defects found.
+
+    One tokenizer, so the live parity axis, the offline sweep and the KaTeX judge can never
+    disagree about what the author wrote — the repo has been burned by three rulers reading
+    three formula counts (811 / 821 / 834) off the same tree.
+    """
+    body = prose(text)
+    lines = body.split("\n")
+    lone = [i for i, ln in enumerate(lines) if ln.strip() == "$$"]
+    defects = []
+    if len(lone) % 2:
+        defects.append("asymmetric display delimiters: %d lone-line $$" % len(lone))
+    in_block, out = set(), []
+    for a, b in zip(lone[0::2], lone[1::2]):
+        src = "\n".join(lines[a + 1:b])
+        out.append(("display", src))
+        in_block.update(range(a, b + 1))
+        nested = [ln for ln in src.split("\n") if "$$" in ln]
+        if nested:
+            defects.append("NESTED $$ inside a display block prints literally: %r"
+                           % nested[0].strip()[:70])
+    for para in re.split(r"\n\s*\n", "\n".join(ln for i, ln in enumerate(lines)
+                                               if i not in in_block)):
+        parts = para.split("$$")
+        pairs = (len(parts) - 1) // 2          # N delimiters make floor(N/2) formulas, at most
+        out += [("inline", src) for src in parts[1::2][:pairs]]
+        if (len(parts) - 1) % 2:
+            defects.append("unpaired $$ inside one paragraph: %r"
+                           % re.sub(r"\s+", " ", para).strip()[:70])
+    return out, defects
+
+
+def formula_counts(text):
+    """(formulas the reader should see, defect list) under GitBook's own tokenizer.
+
+    Two rules, both learned by comparing against this site's served HTML:
+      * a $$ alone on a line opens/closes a display block, and everything between two such
+        delimiters is ONE formula — so a $$ nested inside it never starts a new formula, it
+        prints literally (round 57 found two pages doing exactly that);
+      * the remaining $$ tokens pair up *within one paragraph*. Pairing them across the whole
+        page is what made the changelog read 11 against 10 served: it quotes `$$` inside code
+        spans, and every such quote flips the global parity while leaving its own paragraph fine.
+    A paragraph holding an unpaired delimiter is reported, not silently rounded down — that is
+    the same class of authoring bug as the round-53 block whose closing $$ never stood alone.
+    """
+    sources, defects = formula_sources(text)
+    return len(sources), defects
+
+
 def expect_of(text):
     """Authored counts a correctly rendered page must reproduce in the DOM.
 
@@ -64,8 +157,8 @@ def expect_of(text):
     with 1 wrapper and 4 items rendered exactly 4 [role=tab] buttons and 4 [role=tabpanel] panels.
     """
     return {
-        "tabs": len(re.findall(r"^\s*\{%\s*tab\s+title=", text, flags=re.M)),
-        "katex": len(re.findall(r"\$\$", text)) // 2,
+        "tabs": len(re.findall(r"^\s*\{%\s*tab\s+title=", prose(text), flags=re.M)),
+        "katex": formula_counts(text)[0],
         "mermaid": len(re.findall(r"^```mermaid", text, flags=re.M)),
     }
 
@@ -133,6 +226,125 @@ def classify(entry, exp):
     return parity(entry, exp)
 
 
+def ssr_counts(served):
+    """Counts the server-rendered HTML exposes, defined to mirror the browser probe.
+
+    Round 56 measured this on 7 published pages: role="tab" and the katex class token
+    already appear in the pre-hydration HTML in EXACTLY the authored quantities, so two of
+    the three equalities need no browser at all. mermaid does (its container is appended by
+    hydration), which is why it is deliberately absent here.
+
+    Token-exact matching, not a substring count: `role="tabpanel"` must not be read as a tab
+    and `class="katex-display"` must not be read as a rendered formula.
+    """
+    tabs = sum(1 for m in re.finditer(r'role="([^"]*)"', served) if "tab" in m.group(1).split())
+    katex = sum(1 for m in re.finditer(r'class="([^"]*)"', served) if "katex" in m.group(1).split())
+    return {"tabs": tabs, "katex": katex}
+
+
+def visible(served):
+    """Reader-visible text of the served HTML, with intentional markup removed.
+
+    Round 57 found three LEAK false positives here: the changelog and a resources page
+    *document* {% %} syntax inside code spans, and every KaTeX element ships its own TeX source
+    in an <annotation> node — so a page whose formula writes 95\\% leaks "%}" into the raw
+    markup while the reader sees "95%". A literal tag outside those nodes is still a leak.
+    """
+    s = re.sub(r"<(script|style|pre|code|annotation)\b.*?</\1>", " ", served, flags=re.S)
+    return re.sub(r"<[^>]+>", " ", s)
+
+
+def fetch(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "python-urllib"})
+    return urllib.request.urlopen(req, timeout=60).read().decode("utf-8", "replace")
+
+
+def formula_defects():
+    """Every authored formula GitBook cannot render, checked without a browser."""
+    out = []
+    for dirpath, _, filenames in os.walk(DOCS):
+        for fn in sorted(filenames):
+            if not fn.endswith(".md") or fn == "SUMMARY.md":
+                continue
+            path = os.path.join(dirpath, fn)
+            text = io.open(path, encoding="utf-8").read()
+            rel = os.path.relpath(path, DOCS).replace("\\", "/")
+            for msg in formula_counts(text)[1]:
+                out.append("FORMULA %s: %s" % (rel, msg))
+    return out
+
+
+def headless(rows, workers=8):
+    """Full-site parity for the two structures the server already renders.
+
+    Fetched concurrently because 175 pages x ~1.4 MB is minutes of wall-clock otherwise, and a
+    run that is slow gets run less often than a defect deserves.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(r):
+        for attempt in (1, 2):                       # one retry: a dropped TLS socket is a
+            try:                                      # probe artifact, a pattern is a defect
+                return r, fetch(r["url"]), None
+            except Exception as exc:
+                err = "%s (attempt %d)" % (exc, attempt)
+        return r, "", err                             # a failed fetch is a finding, not a skip
+
+    problems, checked, small = [], 0, 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for r, served, exc in pool.map(one, rows):
+            if exc is not None:
+                problems.append("FETCH %s: %s" % (r["page"], exc))
+                continue
+            if len(served) < 200000:
+                small += 1
+                problems.append("SHAPE %s only %d bytes (fallback page?)" % (r["page"], len(served)))
+                continue
+            checked += 1
+            got = ssr_counts(served)
+            for key in ("tabs", "katex"):
+                if got[key] != r[key]:
+                    problems.append("SSR-PARITY %s:%s authored=%s served=%s"
+                                    % (r["page"], key, r[key], got[key]))
+            shown = visible(served)
+            for token in ("{%", "%}"):
+                if token in shown:
+                    problems.append("LEAK %s serves literal %r" % (r["page"], token))
+            if "$$" in shown:
+                problems.append("LEAK %s serves literal $$ (a formula the parser never took)"
+                                % r["page"])
+    problems += formula_defects()
+    print("ssr parity: authored=%d checked=%d problems=%d fallback-pages=%d"
+          % (len(rows), checked, len(problems), small))
+    for p in problems:
+        print("  - " + p)
+    return 1 if problems else 0
+
+
+def calibrate(path):
+    """Prove the headless shortcut measures the same thing the browser does.
+
+    --headless is only trustworthy because, on the pages where both were measured, the
+    server-rendered tab/katex counts equal the hydrated DOM counts. This re-fetches those
+    archived pages and asserts it, so a future change in GitBook's rendering shows up as a
+    calibration failure instead of a quietly weakened axis.
+    """
+    readings = json.load(io.open(path, encoding="utf-8"))
+    bad, checked = [], 0
+    for entry in readings:
+        served = fetch(entry["url"])
+        got = ssr_counts(served)
+        for key in ("tabs", "katex"):
+            checked += 1
+            if got[key] != entry[key]:
+                bad.append("CALIB %s %s: ssr=%s dom=%s" % (entry["url"], key, got[key], entry[key]))
+    print("ssr-vs-dom calibration: pages=%d comparisons=%d mismatches=%d"
+          % (len(readings), checked, len(bad)))
+    for b in bad:
+        print("  - " + b)
+    return 1 if bad else 0
+
+
 def controls():
     assert expect_of('{% tabs %}\n{% tab title="A" %}\nx\n{% tab title="B" %}\ny\n{% endtabs %}\n'
                      '$$a$$\n$$b$$\n```mermaid\nx\n```\n') == {
@@ -153,6 +365,49 @@ def controls():
     assert parity(dict(base, ready="complete", leak=True), exp)[0].startswith("LEAK"), "control: leak unchecked"
     assert parity(dict(base, ready="complete", mermaid_unrendered=3), exp)[0].startswith("BUSY"), "control: busy floor unchecked"
     print("controls ok (counters, negatives, empty pages, hydration gate)")
+    # server-rendered counting must mirror the DOM selectors, token by token
+    assert ssr_counts('<div role="tablist"><button role="tab">A</button><div role="tabpanel">x'
+                      '</div></div>')["tabs"] == 1, "control: tabpanel/tablist must not count as a tab"
+    assert ssr_counts('<span class="katex"><span class="katex-mathml">y</span></span>'
+                      '<div class="katex-display">z</div>')["katex"] == 1, \
+        "control: katex-display/katex-mathml must not count as extra formulas"
+    assert ssr_counts('<p>nothing here</p>') == {"tabs": 0, "katex": 0}, "control: phantom structures"
+    print("ssr controls ok (token-exact tab/katex counting)")
+    # the two counting rules round 57 had to learn, kept as executable memory
+    assert expect_of("写法 `$$x$$` 只是文档示例\n")["katex"] == 0, \
+        "control: markup shown inside a code span is not a formula the reader is served"
+    assert expect_of("```json\n{\"a\": \"$$x$$\"}\n```\n")["katex"] == 0, \
+        "control: $$ inside a fence must not be counted as a formula"
+    assert expect_of('{% tabs %}\n{% tab title="A" %}\n`{% tab title="B" %}`\n{% endtabs %}\n')["tabs"] == 1, \
+        "control: a tab example inside a code span must not inflate the tab count"
+    assert formula_counts("text\n$$\n\\frac{a}{b}=0\n$$\nmore\n") == (1, []), \
+        "control: a well-formed display block must read as clean"
+    assert formula_counts("句内 $$x$$ 也算\n$$\na=b\n$$\n")[0] == 2, \
+        "control: inline and display formulas must add up, not overwrite each other"
+    # pairing is per paragraph: the changelog proved a page-wide pairing flips parity on every
+    # quoted `$$`, so a stray delimiter must be caught inside its own paragraph and stop there
+    para, d = formula_counts("孤立的 $$ 在这里\n\n式子 $$c=1$$ 在那里\n")
+    assert para == 1 and any(x.startswith("unpaired") for x in d), \
+        "control: an unpaired $$ must not steal a formula from the next paragraph"
+    assert formula_counts("引用写法 `$$` 不计\n\n真正的 $$d=2$$ 计一条\n") == (1, []), \
+        "control: a $$ quoted in a code span must not disturb its neighbours"
+    nested, d = formula_counts("$$\n\\text{$$n$$ 一大就不可维护}\n$$\n")
+    assert d and d[0].startswith("NESTED"), "control: a nested $$ must be named, not quietly counted"
+    assert formula_counts("$$\n\\frac{1}{\n")[1], \
+        "control: an unclosed delimiter must not read as zero formulas"
+    assert "{%" not in visible('<p>write <code>{% hint %}</code> to get a card</p>'), \
+        "control: an intentional code span is not a leaked tag"
+    # inline-code stripping: an unclosed backtick run is literal text, the closed span is not
+    quoted = "写作 ```text 块，再加 `$$` 是重复"
+    assert "$$" not in strip_code_spans(quoted) and "```text" in strip_code_spans(quoted), \
+        "control: an unclosed fence example must survive while the quoted $$ next to it goes"
+    assert "$$" in strip_code_spans("未闭合的 ``` 符号之后 $$x$$ 仍是公式"), \
+        "control: a stray backtick run must not delete a real formula"
+    assert "%}" not in visible('<span class="katex"><annotation encoding="application/x-tex">'
+                               '95\\%</annotation></span>'), \
+        "control: KaTeX's own TeX source is hidden from the reader"
+    assert "%}" in visible("<p>a stray 95%} in prose</p>"), "control: a real leak must still be caught"
+    print("formula/leak controls ok (code spans, nesting, annotation source)")
 
 
 def diff(live):
@@ -175,6 +430,7 @@ def diff(live):
             continue
         checked += 1
         problems.extend(classify(entry, exp))
+    problems += formula_defects()      # browser-free, so this axis never goes quiet
     print("live parity: pages=%d checked=%d problems=%d" % (len(live), checked, len(problems)))
     for p in problems:
         print("  - " + p)
@@ -184,12 +440,18 @@ def diff(live):
 def main():
     args = sys.argv[1:]
     controls()
+    if "--calibrate" in args:
+        at = args.index("--calibrate") + 1
+        default = os.path.join(HERE, "data", "live_aria_round56.json")
+        return calibrate(args[at] if at < len(args) and not args[at].startswith("--") else default)
     if "--diff" in args:
         path = args[args.index("--diff") + 1]
         return diff(json.load(io.open(path, encoding="utf-8")))
     want_all = "--all" in args
     sample = int(args[args.index("--sample") + 1]) if "--sample" in args else 6
     rows, total, _ = build(sample, want_all)
+    if "--headless" in args:
+        return headless(rows)
     print("widget-bearing pages=%d, emitting %d (sample=%s all=%s)" % (total, len(rows), sample, want_all))
     print("# paste these URLs into the browser, run %s, save the JSON, re-run with --diff" % os.path.basename(PROBE))
     print(json.dumps([{"url": r["url"], **{k: r[k] for k in ("tabs", "katex", "mermaid")}, "page": r["page"]}
