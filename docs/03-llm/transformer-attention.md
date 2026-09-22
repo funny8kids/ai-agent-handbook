@@ -2,7 +2,7 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Transformer 与 Attention
@@ -43,49 +43,122 @@ $$
 
 对 Agent 的直接含义：**注意力是 $$O(n^2)$$ 的**（$$n$$ 为序列长度），注意力矩阵占显存、也决定上下文成本——这正是长上下文昂贵、需要 KV 缓存与压缩的根因。
 
-上面四个符号加起来不到 20 行 NumPy，跑一遍就能确认自己没有只背公式：
+#### 注意力数据流：n×n 那一格是唯一的热区
 
-```python
-# -*- coding: utf-8 -*-
-import numpy as np
-
-rng = np.random.default_rng(0)
-n, d, dk = 4, 12, 6                     # 4 个 token，模型维 12，注意力头维 6
-X = rng.normal(size=(n, d))
-Wq, Wk, Wv = (rng.normal(size=(d, dk)) for _ in range(3))
-Q, K, V = X @ Wq, X @ Wk, X @ Wv
-
-scores = Q @ K.T / np.sqrt(dk)          # (n, n) 相关度，除以 sqrt(dk) 控方差
-mask = np.triu(np.full_like(scores, -np.inf), k=1)   # 因果掩码：不许偷看未来
-weights = np.exp(scores + mask)
-weights /= weights.sum(axis=1, keepdims=True)         # 按行 softmax，每行和为 1
-out = weights @ V                        # 加权求和，得到每个位置的新表示
-
-print("注意力权重（行=当前词，列=被看的词，- 表示被掩码）:")
-for i, row in enumerate(weights):
-    print("  token%d  " % i + "  ".join("%.3f" % w if mask[i, j] == 0 else "  -  " for j, w in enumerate(row)))
-print("\n每行权重和:", np.round(weights.sum(axis=1), 6))
-print("输出形状:", out.shape, "| 权重矩阵形状:", weights.shape, "-> O(n^2) 就在这")
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
+flowchart TD
+  X["X：n × d"] --> P["投影 W_Q / W_K / W_V"]
+  P --> S["QK^T：n × n 分数"]
+  S --> G["÷√d_k，叠加因果掩码"]
+  G --> W["按行 softmax：n × n 权重"]
+  W --> O["权重 × V：输出 n × d_k"]
+  W -.-> N["平方级的显存与算力都在这一格"]
 ```
 
-真实输出（`python attn.py`，NumPy 2.4）：
+*《图：整条链路只有 softmax 前后的两张 n×n 是平方级的，输出退回 n×d_k——KV 缓存省的是重算，省不掉这两张矩阵》*
 
-```text
-注意力权重（行=当前词，列=被看的词，- 表示被掩码）:
-  token0  1.000    -      -      -
-  token1  0.000  1.000    -      -
-  token2  0.049  0.551  0.400    -
-  token3  0.001  0.000  0.000  0.999
+#### 手算一遍：两个 token、四个维度
 
-每行权重和: [1. 1. 1. 1.]
-输出形状: (4, 6) | 权重矩阵形状: (4, 4) -> O(n^2) 就在这
+公式里的四个符号连起来只做三件事：点积打分、按行归一化、加权求和。用两个 token、$$d_k=4$$ 的最小配置把它们逐格填出来，每一步都能在草稿纸上验算——不需要任何运行环境，也能确认自己没有只背公式。
+
+约定：$$k_1=(1,0,1,0)$$、$$k_2=(0,1,1,0)$$；$$v_1=(1,0)$$、$$v_2=(0,2)$$（于是 $$d_v=2$$）；第 2 个 token 发出的查询取 $$q_2=(2,0,1,0)$$；缩放因子 $$\sqrt{d_k}=\sqrt{4}=2$$。
+
+{% stepper %}
+{% step %}
+#### 第 1 步：`QK^T`——把相关度算成两个点积
+
+$$q_2\cdot k_1 = 2{\times}1+0{\times}0+1{\times}1+0{\times}0 = 3$$，$$q_2\cdot k_2 = 2{\times}0+0{\times}1+1{\times}1+0{\times}0 = 1$$。第 2 行分数向量是 $$(3,\,1)$$：直觉上「token2 更想看 token1」，因为 $$q_2$$ 与 $$k_1$$ 在第 1、3 维同时对齐，而与 $$k_2$$ 只在第 3 维对齐。这一步产出的是 $$n\times n$$ 矩阵，也就是全部开销的来源。
+{% endstep %}
+
+{% step %}
+#### 第 2 步：除以 `√d_k`——把分数拉回单位量级
+
+$$(3,\,1)/2=(1.5,\,0.5)$$。缩放不改变大小关系，只改变**分散程度**：同样的两个数，进 softmax 之前先除以 2，指数之间的比值从 $$e^3/e^1=e^2\approx7.39$$ 缩到 $$e^{1.5}/e^{0.5}=e^1\approx2.72$$。分数量级越接近 1，softmax 的输出就越接近「均匀分配」，梯度也越不至于消失。
+{% endstep %}
+
+{% step %}
+#### 第 3 步：按行 softmax——分数变成和为 1 的注意力权重
+
+$$e^{1.5}=4.4817$$、$$e^{0.5}=1.6487$$，行和 $$6.1304$$，于是权重为 $$(0.731,\,0.269)$$。掩码位置的分数被加上 $$-\infty$$，取指数后是 0，不参与归一化——所以掩码不需要事后删列，它在 softmax 里自然消失。
+{% endstep %}
+
+{% step %}
+#### 第 4 步：右乘 `V`——加权求和得到新表示
+
+$$\mathrm{out}_2 = 0.731\cdot(1,0)+0.269\cdot(0,2)=(0.731,\,0.538)$$。注意输出的第 2 维 $$0.538$$ **比任何单个 $$v$$ 的第 2 维都小**：凸组合只能落在 $$v_1$$ 与 $$v_2$$ 张成的区间内部，永远造不出端点之外的新值。这就是「注意力是信息通路、不是信息放大器」的准确含义，也是它必须配 FFN 的原因。
+{% endstep %}
+
+{% step %}
+#### 第 5 步：因果掩码——首行退化成 one-hot
+
+第 1 个 token（`token0`）只能看见自己：唯一那个分数是多少都无所谓，单元素 softmax 恒等于 1，权重行是 $$(1.000)$$，被遮住的 $$n-1$$ 列贡献 $$e^{-\infty}=0$$，输出直接等于 $$v_1=(1,0)$$。**首 token 的注意力永远是自己**，而「解码时一个字一个字往外蹦」正是这条约束的结果：预测第 $$t$$ 个 token 时，$$t$$ 之后的列在数学上不存在。第 2 个 token 起才有真正的混合——但也只看得见前缀。
+{% endstep %}
+{% endstepper %}
+
+#### 把配置写成一张数据契约
+
+上面用的是 2 token、$$d_k=4$$；同一套步骤搬到 4 token、$$d_k=6$$ 的玩具配置上（输入由固定随机种子 `seed=0` 的高斯矩阵投影而来，未经训练），逐行写出来的权重矩阵就是下面这份。`null` 表示该位置被因果掩码遮住，`row_sums` 用来验 softmax 有没有按行归一化。
+
+```json
+{
+  "config": {
+    "n_tokens": 4,
+    "d_model": 12,
+    "d_k": 6,
+    "seed": 0,
+    "scale": "sqrt(d_k)",
+    "mask": "causal: triu(k=1) filled with -inf"
+  },
+  "shapes": {
+    "X": [4, 12],
+    "W_q | W_k | W_v": [12, 6],
+    "Q | K | V": [4, 6],
+    "scores": [4, 4],
+    "weights": [4, 4],
+    "out": [4, 6]
+  },
+  "weights": {
+    "token0": [1.000, null, null, null],
+    "token1": [0.000, 1.000, null, null],
+    "token2": [0.049, 0.551, 0.400, null],
+    "token3": [0.001, 0.000, 0.000, 0.999]
+  },
+  "row_sums": [1.0, 1.0, 1.0, 1.0],
+  "complexity": {
+    "weights": "n x n -> O(n^2)",
+    "out": "n x d_k -> O(n)"
+  }
+}
 ```
+
+`out` 的形状是 $$(4,6)$$ 而 `weights` 是 $$(4,4)$$：前者随长度线性长，后者平方级长。把这份契约跟第 2 节的手算结果对照，能看出随机初始化下的注意力权重毫无语义可言——它只是随机投影的副产物。
 
 三件事值得停一下：
 
-- 上三角全是 `-`：这就是因果掩码，也是「解码只能一个字一个字往外蹦」的代码形态
+- 上三角全是 `null`：这就是因果掩码，也是「解码只能一个字一个字往外蹦」的数据形态
 - 权重矩阵是 $$n\times n$$ 而输出是 $$n\times d_k$$：**平方级开销长在权重上，不在输出上**，所以 KV 缓存能救显存却救不了注意力计算
 - `token3` 那一行几乎把全部权重压在自己身上（0.999）——随机投影下点积一大，softmax 就饱和成近似 one-hot，这正是 $$\sqrt{d_k}$$ 缩放要解决的问题，也是「注意力可视化」能骗人的原因：这一行看起来很有信息量，其实只是随机数
+
+#### 改三处配置会怎样（点标签切换）
+
+{% tabs %}
+{% tab title="删掉 ÷√d_k 这一步" %}
+第 2 步不缩放了，$$(3,\,1)$$ 直接进 softmax：$$e^3=20.0855$$、$$e^1=2.7183$$，权重从 $$(0.731,\,0.269)$$ 变成 $$(0.881,\,0.119)$$，输出从 $$(0.731,\,0.538)$$ 变成 $$(0.881,\,0.238)$$。2 维 $$d_k$$ 上这只是「偏了一点」，但偏差随维度指数放大——缩放因子不是装饰，是防止 softmax 饱和的闸门。
+{% endtab %}
+
+{% tab title="把 d_k 从 6 拉到 512" %}
+按前面的假设（各维独立、均值 0、方差 1），点积的方差等于 $$d_k$$：$$d_k=512$$ 时标准差约 $$22.6$$，典型分数落在 $$\pm20$$ 量级。这样的两个分数一进 softmax，小的一方直接被压到 $$e^{-10}$$ 以下，一行几乎严格 one-hot，反向传播时梯度趋 0。除以 $$\sqrt{512}\approx22.6$$ 把方差拉回 1，才换来可控的训练。这也解释了那份 4 token 契约里 `token1` 行为什么会出现 0.000 / 1.000 这种极端行。
+{% endtab %}
+
+{% tab title="把因果掩码整块拿掉" %}
+上三角不再是 `null`，每个 token 都能看全文，权重仍是 $$n\times n$$、算力一点没省。省不掉是次要的，问题是**训练目标塌了**：语言模型学的是「用前缀预测下一个词」，让模型看见答案本身，它只要把下一列抄过来就能拿满分。双向注意力只属于掩码语言模型（BERT 一类），而那一类模型不能自回归解码——这正是「LLM 会一本正经地续写、BERT 不能生成」的架构级原因。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="tip" %}
+**提示**：把「平方级」换算成看得见的字节——$$n=4096$$ 时单头一张权重矩阵是 $$4096^2=16{,}777{,}216$$ 个分数，按 fp32 存约 64 MiB，32 个头就是 2 GiB，而且每层都来一遍。生产实现因此用 FlashAttention 分块算 softmax，**根本不物化这张矩阵**；而 KV 缓存省的是另一件事：历史 token 的 $$K,V$$ 不必重算。两者解决的是不同的平方级问题，别混为一谈。
+{% endhint %}
 
 ### 2. 多头注意力
 

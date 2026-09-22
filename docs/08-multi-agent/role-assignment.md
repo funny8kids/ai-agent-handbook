@@ -2,7 +2,7 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 角色分配
@@ -58,16 +58,102 @@ flowchart LR
 }
 ```
 
-```python
-def consume(artifact, schema):
-    errs = validate(artifact, schema)
-    if errs: return send_back(worker, kind="contract_violation", errs=errs)
-    if artifact["status"] == "blocked":       # 合法产出，但不是完成
-        return escalate(planner, artifact["open_risks"])
-    return review(artifact)                    # 交给只读的评审者
+消费方拿到工件只有三条路，判序是「先校验形状、再看 `status`、最后才谈质量」——把顺序写反，一个字段缺失的 `blocked` 就会被当成完成收进流程：
+
+```json
+{
+  "consume_dispatch": {
+    "step_1_validate": { "check": "required 五字段齐全且类型对", "on_fail": { "action": "send_back", "to": "worker", "kind": "contract_violation", "carries": "errs" } },
+    "step_2_status": { "blocked": { "action": "escalate", "to": "planner", "carries": "open_risks" } },
+    "step_3_quality": { "done": { "action": "review", "to": "reviewer", "note": "评审者只读 + 测试工具" } }
+  },
+  "send_back_shape": { "kind": "contract_violation", "errs": ["evidence: required field missing"], "retryable_by": "worker" },
+  "escalate_shape": { "to": "planner", "reason": "blocked", "open_risks": ["依赖的上游接口无文档"] }
+}
 ```
 
+三条分支各自通向不同的角色，这个映射本身就是一份权限声明：**契约违规回到执行者**（形状问题他能自己修，不必打扰别人）；**`blocked` 升级到规划者**（做不下去通常是任务切分或资源的问题，只有握有全局目标的人能改任务）；**只有 `done` 才进评审者**（评审者的算力要留给真工件，不是拿去发现「你少交了一个字段」）。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FDEEE7","primaryBorderColor":"#EA580C","primaryTextColor":"#1F2937","secondaryColor":"#FADACA","tertiaryColor":"#FEF8F5","lineColor":"#F3A379","actorBkg":"#FDF2EC","actorBorder":"#EA580C","actorTextColor":"#1F2937","signalColor":"#F08A55","noteBkgColor":"#FBE1D3","noteBorderColor":"#EA580C","noteTextColor":"#1F2937","labelBoxBkgColor":"#FDEEE7","labelBoxBorderColor":"#EA580C"}}}%%
+flowchart TB
+  A[执行者交工件] --> V{validate<br/>required 五字段}
+  V -- 缺字段 --> S[send_back<br/>contract_violation + errs]
+  S --> W[执行者自修]
+  V -- 合格 --> B{status}
+  B -- blocked --> E[escalate planner<br/>带 open_risks]
+  B -- done --> R[review<br/>只读 + 测试工具]
+  R -- 驳回：附理由 --> W
+  R -- 通过 --> D[最终交付]
+  E -.重切任务.-> W
+```
+
+*《图：两条回路不共用预算——契约违规由执行者自修，驳回由评审者发令；只有 `blocked` 才往上惊动规划者》*
+
 要点：**`blocked` 是合法状态**，不是错误。没有这一档，执行者会用假装完成来摆脱困境——这是多 Agent 系统最常见的失真模式。
+
+## 分步演示：一份工件从交付到通过（含一次驳回）
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：规划者先出契约，再出任务
+
+规划者只有只读工具（搜索、读取），产出是一份任务清单 JSON：每条带 `task_id`、验收标准、这一子任务允许调用的工具集。**验收标准必须在派发时就写死**，否则第 4 步的评审者没有判据，只能凭语感裁决——多 Agent 的评审一旦退化成语感，它就与生成者共享同一个盲区。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：执行者交付，五字段一个不能少
+
+执行者拿全量工具（写入、执行），只做分到的那条 `task_id`，交回 `worker-artifact-v1` 那份契约要求的五个必填字段：`task_id`、`status`、`changes`、`evidence`、`open_risks`。卡住时正确动作是 `status: "blocked"` 并把原因写进 `open_risks`，而不是硬凑一个看起来完成的 `done`。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：消费方先 validate，形状问题不出这个门
+
+`validate(artifact, schema)` 只看形状：字段齐不齐、类型对不对、`status` 是否落在 `done / blocked / partial` 三个枚举值里。不合格就 `send_back(worker, kind="contract_violation", errs=...)`，把缺失字段名原样带回去。**这一步不消耗评审者**：形状错误是可自动判定的，用便宜判定挡在前面，贵判定才划算。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：评审者只读，裁决只有两种
+
+`status` 为 `done` 才轮到评审者，它手上只有只读与测试工具。产出格式固定：通过，或驳回 + 理由。理由必须指到具体验收标准与具体证据（「`evidence` 里的测试输出显示 `test_export` 未覆盖空值分支」），不能是「感觉还可以更好」。它能挑问题，但不能替执行者改工件——**能改就等于没有第二双眼睛**。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：驳回走回路，两轮不成升级改任务
+
+驳回是回到执行者的一次带料返工：附上未满足的验收标准与已试过的方向，而不是让它从零重跑。回路要有计数兜底——同一子任务被驳回两轮，问题多半不在执行者，而在任务切分或验收标准本身，此时升级回规划者重写这条 `task_id`。没有这一档，系统会在「执行者反复试、评审者反复驳」里把预算烧光。
+{% endstep %}
+{% endstepper %}
+
+## 改四处会怎样（点标签切换）
+
+{% tabs %}
+{% tab title="删掉 `blocked` 这一档" %}
+`status` 只剩 `done / partial`。执行者遇到做不下去的情况时没有合法出口，最省事的写法就是把 `open_risks` 留空、报一个 `done`——因为报「做不了」会被追问，报「做完了」可以直接往下走。你会在集成阶段才收到这个成本，而且那时已经分不清是哪一条子任务撒的谎。**`blocked` 存在的意义是让诚实比撒谎更省力。**
+{% endtab %}
+
+{% tab title="给评审者写文件的工具" %}
+它开始顺手改而不是提意见：一次改动没有 `changes` 记录、没有走执行者的 `evidence`，评审意见与被评对象混成一份产出，下游再也分不清「这是工件作者写的还是评审写的」。工具面差异是角色能成立的前提——只读不是限制，是这个角色的全部价值。
+{% endtab %}
+
+{% tab title="必填字段从 5 个减到 3 个" %}
+去掉 `evidence` 与 `open_risks` 后交接消息短了，但 `validate` 从此判不出真假完成，`escalate` 也没有可上报的料：规划者只看到「blocked」两个字，无法决定是补资源还是改切分。字段省下的 token，会以「上游重新问一遍下游」的形式加倍还回来——交接契约的体积要按总账算，不是按单条消息算。
+{% endtab %}
+
+{% tab title="角色从 2 个加到 5 个" %}
+交接边数从 1 条涨到约 $$O(k^2)$$ 量级（5 个角色最多 20 条边），每条边都要一份独立契约、独立回归。能力增益在第三、第四个角色之后就饱和了，通信成本却没有。加角色前先回到上面那四问：有没有互斥工具面、要不要不同模型档、上下文是否互污，三个都否就只改 system prompt。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="info" %}
+**验收线**：把三角色跑 20 个子任务，只看两个比例——`contract_violation` 占比（高说明契约写得太松或任务说不清）与「同一 `task_id` 驳回 ≥2 轮」占比（高说明切分错了）。这两个数比任何质量评分都更早暴露问题，也是决定该不该拆第四个角色的依据。
+{% endhint %}
 
 ## 什么时候该加一个角色
 

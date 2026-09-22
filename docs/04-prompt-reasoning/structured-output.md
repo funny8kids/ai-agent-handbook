@@ -2,7 +2,7 @@
 tags: [prompt, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 结构化输出
@@ -94,26 +94,110 @@ flowchart LR
 | Structured Outputs | 按 JSON Schema 约束生成 | 很高 | 生产 API |
 | 约束解码 | 逐 token 过滤非法候选 | 100%（语法） | 本地推理（outlines、xgrammar） |
 
-## 代码示例
+## 一次调用的三份数据
 
-```python
-from pydantic import BaseModel, Field
-from typing import Literal
-from openai import OpenAI
+结构化输出落到工程上只有三份数据：**你声明的 schema**、**发出去的请求**、**收回来的响应**。例子是「把一段客服对话归成一张工单」，字段模型叫 `Ticket`：`category` 是三值枚举、`urgency` 限定在 1–5、`summary` 是自由字符串。下面这一页就是这个模型编译出来的全部三份——原代码里的 `Literal[...]` 与 `Field(ge=1, le=5)` 会变成 JSON Schema 的 `enum` 与 `minimum/maximum`。
 
-class Ticket(BaseModel):
-    category: Literal["billing", "tech", "other"]
-    urgency: int = Field(ge=1, le=5)
-    summary: str
-
-client = OpenAI()
-resp = client.beta.chat.completions.parse(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": text}],
-    response_format=Ticket,          # schema 级约束
-)
-ticket = resp.choices[0].message.parsed   # 直接得到校验过的对象
+```json
+{
+  "schema_Ticket": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "category": { "type": "string", "enum": ["billing", "tech", "other"] },
+      "urgency": { "type": "integer", "minimum": 1, "maximum": 5 },
+      "summary": { "type": "string", "maxLength": 280 }
+    },
+    "required": ["category", "urgency", "summary"]
+  },
+  "request": {
+    "model": "gpt-4o-mini",
+    "messages": [{ "role": "user", "content": "<客服对话原文>" }],
+    "response_format": "Ticket",
+    "max_tokens": 512
+  },
+  "response": {
+    "choices": [
+      {
+        "message": {
+          "role": "assistant",
+          "parsed": { "category": "billing", "urgency": 4, "summary": "重复扣费两个月，要求退款" }
+        },
+        "finish_reason": "stop"
+      }
+    ]
+  }
+}
 ```
+
+三个写法上的坑，一眼能看出来：**`Literal["billing","tech","other"]` 编译成 `enum`**、**`Field(ge=1, le=5)` 编译成 `minimum/maximum`**（前者管集合、后者管区间，两者都不是「语义正确」）、**`additionalProperties: false` 必须显式写**，否则模型多吐一个 `note` 字段仍算合法 JSON。`summary` 上的 `maxLength: 280` 是示例补的——只写 `str` 时 schema 对长度不设防，一句 800 字的摘要同样合法。请求侧的 `response_format: "Ticket"` 就是把上面那份 schema 交给服务端，走的是 `beta.chat.completions.parse` 而不是普通的 `chat.completions.create`；响应侧的 `choices[0].message.parsed` 是反序列化并校验过的对象——中间没有一次 `json.loads` 需要你手写。
+
+`finish_reason` 是这段契约里最容易被忽略的字段：它是 `"length"` 时说明 `max_tokens` 把 JSON 截断了，此时 `parsed` 必然为 `null`，解析必炸。**先看 `finish_reason` 再取字段**，比写十层 try/except 有效。
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
+flowchart TD
+  S["1 schema：enum + minimum/maximum"] --> R["2 请求：response_format 带上 schema"]
+  R --> D["3 解码：每步按状态机过滤词表"]
+  D --> P["4 响应：parsed 对象 + finish_reason"]
+  P --> C{"5 业务校验通过？"}
+  C -- 否 --> E["错误原文回填，带历史重试"]
+  E --> R
+```
+
+*《图：五步闭环——schema 决定解码器能选哪些 token，`finish_reason` 决定响应能不能用，业务校验失败时错误原文要回到第 2 步而不是原地重采样》*
+
+## 分步演示：从 `{` 到 `}` 的逐 token 过滤
+
+{% stepper %}
+{% step %}
+#### 第 1 步：schema 先编译成状态机
+
+`Ticket` 的三个字段加定界符，编译后是一个有限状态机：起始态只接受 `{`，接着是「键名态 → 冒号态 → 值态」的三段循环。`category` 的值态挂的是**枚举自动机**，只有 `billing` / `tech` / `other` 三条 accepting 路径；`urgency` 的值态挂整数自动机，`minimum: 1` 与 `maximum: 5` 让它只接受单个数字 1–5（`10` 会先进 `1`，第二位的 `0` 非法，因为会超出 5）。
+{% endstep %}
+{% step %}
+#### 第 2 步：每一步把非法 token 的概率置零
+
+词表按 10 万量级算，解码第 1 步合法的 token 只有 `{` 及其带空格的变体，候选集从 $$10^5$$ 缩到个位数。到 `category` 的引号内第 2 个 token，模型想输出「扣」也合法吗？不合法——枚举自动机当前前缀是 `b`，只有 `illing"`、`illing ` 这类延续被保留，其余全部置零后重新归一化（就是第 1 节那条公式）。**模型的概率质量被摊到语法可行的候选上，所以合法率是 100%，但选中的那个值未必对**。
+{% endstep %}
+{% step %}
+#### 第 3 步：整数区间是最容易暴露自由度的地方
+
+`urgency` 只允许 1–5。若模型原本想给「9 分紧急」，它**没有任何办法把 9 写出来**：约束解码下这个 token 不存在。结果是模型只能挑 5，或者反过来把语气塞进 `summary`。这就是「约束越强、语义越失真」的具体形态——区间收窄能防脏数据，也会把分布压扁。
+{% endstep %}
+{% step %}
+#### 第 4 步：`finish_reason` 决定响应能不能用
+
+序列走完后先看 `finish_reason`。它是 `"length"`（`max_tokens: 512` 用尽）时 JSON 停在半路，`parsed` 为 `null`；它是 `"stop"` 时才算语法完整。这一步是纯机械判断，但很多线上事故就漏在这里：把 `"length"` 的残缺字符串当成解析失败去重试，而真正的原因是配额。
+{% endstep %}
+{% step %}
+#### 第 5 步：合法只是及格线，业务校验才是判卷
+
+`{"category":"billing","urgency":4,"summary":""}` 语法满分，语义零分——`summary` 是空串；`{"category":"other","urgency":1,"summary":"要求退款"}` 语法合法，但「退款」被判成 `other` 是分类错误。这两类都过不了 schema，只能靠**业务规则 + 标注集**拦住，然后把 `ValidationError` 原文回填重试。缺这一步，「100% 合法」只是把解析错误推迟到了业务层。
+{% endstep %}
+{% endstepper %}
+
+## 三条落地路线怎么选（点标签切换）
+
+同一个 `Ticket`，三种接法，代价完全不同。
+
+{% tabs %}
+{% tab title="约束解码：语法零失败" %}
+把 schema 编成状态机挂到采样器上（outlines、xgrammar），或在托管 API 上开 Structured Outputs。语法合法率 100%，重试次数归零。代价：每步要算一次合法 token 集合，首 token 延迟上升；且模型被剥夺了「我不确定」的表达通道——它必须吐一个合语法的 JSON。适合字段封闭、取值可枚举的场景，比如本页的工单分类。
+{% endtab %}
+
+{% tab title="提示 + 校验重试：兼容一切模型" %}
+不依赖服务端能力：few-shot 给样式，收到字符串后自己 `json.loads` + 校验，失败就把错误原文连同已生成的部分一起回填重问。合法率停在 90% 上下（这正是本页开头那个「怎么从 90% 提到 100%」的起点），剩下那部分是模型能力决定的。代价是最坏路径的延迟与 token 翻倍，并且要求你的下游真的会重试——没有重试闭环的 JSON Mode 等于自欺。适合模型不支持约束、且能接受偶发失败的场景。
+{% endtab %}
+
+{% tab title="函数调用：让 schema 顺带当动作" %}
+把 `Ticket` 注册成工具（`name: "create_ticket"`, `inputSchema` 就是上面那份 schema），模型输出 `tool_use` 块，参数天然按 schema 约束，且省掉一次「先出 JSON 再解析」的往返。代价：工具调用的训练偏好会让模型在「该问清楚」时也硬填参数；嵌套 schema 越深漏字段越多——生产上更稳的做法是拆成多次调用。适合输出即动作的 Agent 链路（→ [Function Calling](../05-tool-protocol/function-calling.md)）。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+**注意**：`minimum: 1, maximum: 5` 与 `enum: ["billing","tech","other"]` 拦得住**格式**，拦不住**判断错误**——`urgency: 1` 配一句「线上全挂，客户要起诉」照样合法。上线前先把两件事分开记：约束解码/重试能把合法率推到接近 100%，字段的**准确率**要靠带标注的评估集去看，两者不是一个指标。
+{% endhint %}
 
 ## 源码案例
 

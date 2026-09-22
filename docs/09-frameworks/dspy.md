@@ -2,7 +2,7 @@
 tags: [framework, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # DSPy
@@ -67,22 +67,107 @@ flowchart LR
 
 ## 最小示例
 
-```python
-import dspy
+一个「按上下文答题」模块从声明到编译，涉及的全部配置如下（字段名与取值均为框架真实接口名）：
 
-class QA(dspy.Signature):
-    """根据上下文回答问题"""
-    context: str = dspy.InputField()
-    question: str = dspy.InputField()
-    answer: str = dspy.OutputField()
-
-rag = dspy.ChainOfThought(QA)
-
-trainset = [dspy.Example(context=c, question=q, answer=a) for ...]
-optimizer = dspy.MIPROv2(metric=exact_match, auto="light")
-rag_optimized = optimizer.compile(rag, trainset=trainset)
-# rag_optimized 里是自动搜索出的 prompt 与 few-shot 组合
+```json
+{
+  "signature": {
+    "name": "QA",
+    "docstring": "根据上下文回答问题",
+    "inputs": [
+      { "field": "context", "type": "str", "role": "InputField" },
+      { "field": "question", "type": "str", "role": "InputField" }
+    ],
+    "outputs": [ { "field": "answer", "type": "str", "role": "OutputField" } ]
+  },
+  "program": { "module": "ChainOfThought", "wraps": "QA", "bound_name": "rag" },
+  "trainset": [
+    {
+      "type": "Example",
+      "fields": { "context": "…", "question": "…", "answer": "…" },
+      "input_keys": ["context", "question"],
+      "note": "answer 是标签，只有它参与打分，不会被喂给模型"
+    }
+  ],
+  "optimizer": {
+    "type": "MIPROv2",
+    "metric": "exact_match",
+    "auto": "light",
+    "compile": { "program": "rag", "trainset": "上面的样例集" },
+    "output": { "bound_name": "rag_optimized", "contains": "自动搜出的指令 + few-shot 示例组合" }
+  }
+}
 ```
+
+三处最容易看漏的地方：**`docstring` 不是注释**，它是会被编进提示的任务说明；**`module` 决定执行结构**，`ChainOfThought` 多出一个推理字段、`ReAct` 多出工具循环，结构定死后措辞才交给优化器；**`auto: "light"` 是搜索预算档位**，可选 `light / medium / heavy`，档位越高自举与评估轮数越多——更贵、更慢，也更容易在小评估集上过拟合。
+
+{% hint style="warning" %}
+**这条配置里最危险的一项是 `metric: "exact_match"`**。它只比对字符串是否相等，所以一个正确答案「42 天」写成「大约 42 天」就被判错，优化器随即朝着「把答案压成裸字符串」的方向搜——分数涨了，能力没涨。指标至少要能容忍格式差异（归一化后比对、F1、或 LLM 评分），否则编译产物学的是断言口径而不是任务本身。
+{% endhint %}
+
+## 分步演示：从「声明意图」到「编译产物」
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：只写接口，不写措辞
+
+Signature 交出去的是字段契约：`context`、`question` 进，`answer` 出，加一行 `docstring` 说明任务。此刻程序里**没有任何 prompt**——它是一个待填充的壳，这正是「逻辑与措辞分离」的落点。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：Module 把壳包成可执行结构
+
+`ChainOfThought(QA)` 绑定为 `rag`，运行时先产出推理字段再产出 `answer`。这一步定死了 $$f_p$$ 的结构；提示措辞 $$p$$ 仍然空缺，由优化器负责填。同一份 Signature 换成 `ReAct` 就变成带工具的循环，Signature 一行不用改。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：交出评估集与指标
+
+trainset 每条是一个 `Example(context, question, answer)`，`exact_match` 逐条打分。这两样东西划定了优化的全部边界——本页「核心抽象」那条 $$p^*=\arg\max$$ 只在 $$\mathcal{D}\times m$$ 张成的空间里成立。样例数量也是硬约束：几十条量级上编出来的提示，泛化只能靠留出集说话。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：优化器搜索「指令 × 示例」组合
+
+`MIPROv2(auto="light")` 先拿未优化的 `rag` 在 trainset 上自举出候选 few-shot，再用贝叶斯搜索在指令与示例的组合空间里逐轮提案：每轮都在评估集上跑一遍分，低分方案直接淘汰。`auto` 档位控制的就是这个「提案—评估」循环的轮数，也就直接控制 token 花费。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：产物是 `rag_optimized`，一个可入库的提示
+
+编译返回的新程序内部装着搜出来的指令与示例组合，替换掉人工措辞。它应当像代码一样进版本库、打标签、可回滚——否则你无法回答「这次准确率提升来自哪次优化」。上线前人工读一遍产物，看它学的是能力还是应试技巧。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% tabs %}
+{% tab title="选它：有清晰指标的可重复管线" %}
+分类准确率、抽取 F1、检索命中率这类能自动判分的任务，且会被反复迭代——DSPy 的收益是**结构性**的：换模型时不重写咒语，重新 `compile` 一遍即可，产物还能版本化对比。手写 prompt 在同样场景下的成本是每次换模型都要重跑人工调优。
+{% endtab %}
+
+{% tab title="别选：开放式与创意任务" %}
+没有稳定 metric 就没有优化方向：写「把下面这句改写得更专业」这种 Signature，优化器只能朝着「指标随机噪声」的方向搜。这类任务手写 prompt + 人工评审更实际，硬上 DSPy 只是把措辞权换给了随机数。
+{% endtab %}
+
+{% tab title="改 `auto` 档位会怎样" %}
+`light → heavy` 增加的是自举样例数与搜索轮数：分数通常还会再涨一点，但训练期 token 花费成倍上升，小评估集上的过拟合风险同步上升。经验做法是固定 `light` 起步，只在留出集指标明显低于手写基线时才加档，并始终看留出集而不是 trainset 分数。
+{% endtab %}
+
+{% tab title="换模块结构会怎样" %}
+`ChainOfThought → ReAct` 加的是工具与循环，单次请求的调用数从 1 次涨到多轮；`Signature` 增删输出字段（比如加一个 `reason`）会立刻改变提示形状和打分口径。结构变更属于「改程序」，必须重新编译并复测——以为优化器会自动兜住是新手最常见的失误。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

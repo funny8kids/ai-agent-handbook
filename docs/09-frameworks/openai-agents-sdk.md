@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # OpenAI Agents SDK
@@ -65,17 +65,97 @@ sequenceDiagram
 
 ## 最小示例
 
-```python
-from agents import Agent, Runner
+一个「分诊 + 两条专线」客服组的完整声明与一次运行，形状如下（字段名即框架接口名）：
 
-refund = Agent(name="退款专员", instructions="处理退款申请")
-tech = Agent(name="技术支持", instructions="解决技术问题")
-triage = Agent(name="分诊", instructions="判断意图并移交",
-    handoffs=[refund, tech])
-
-result = Runner.run_sync(triage, "我上周买的东西想退款")
-print(result.final_output)
+```json
+{
+  "agents": [
+    { "name": "退款专员", "instructions": "处理退款申请", "handoffs": [] },
+    { "name": "技术支持", "instructions": "解决技术问题", "handoffs": [] },
+    {
+      "name": "分诊",
+      "instructions": "判断意图并移交",
+      "handoffs": ["退款专员", "技术支持"]
+    }
+  ],
+  "run": {
+    "entry_agent": "分诊",
+    "input": "我上周买的东西想退款",
+    "mode": "run_sync（同步；异步与流式另有入口）",
+    "turn_budget": "max_turns：循环轮数上限，生产里要显式设"
+  },
+  "tools_visible_to_entry_agent": [
+    "transfer_to_refund_agent（名字由 handoff 目标 Agent 的 name 规整而来）"
+  ],
+  "result": {
+    "final_output": "由接手的那个 Agent 给出，不是分诊 Agent 给的",
+    "last_agent": "退款专员",
+    "also_on_result": "逐次模型响应、完整会话历史、trace 所需的 span"
+  }
+}
 ```
+
+三条要点值得单独说：`handoffs` 是**声明在移交发起方**身上的（分诊写 `[refund, tech]`，退款专员那一侧不需要知道）；`final_output` 属于**最后一个 Agent**，所以「谁答的」必须和答案一起取出来，否则线上出问题时无从归因；`instructions` 是移交的唯一依据——模型只看这行文字决定要不要换人。
+
+{% hint style="warning" %}
+**别把「少抽象」读成「少预算」**。这套 SDK 只给了循环，没给刹车：`max_turns` 不设就是放开跑，移交图上有环时全靠内置回环防护兜底。上线前两件事必须自己做——把 handoff 关系画成有向图数一遍环，以及给每次运行设轮数与成本上限（对照本页「工程含义」第一条）。
+{% endhint %}
+
+## 分步演示：一句「我上周买的东西想退款」的旅程
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：声明期就把「移交」编译成工具
+
+Runner 启动时读每个 Agent 的 `handoffs` 清单，为其中每个目标合成一个 `transfer_to_*` 工具，和真工具混在同一份 `tools` 列表里发给模型。也就是说框架没有额外的调度层——移交的决策路径与函数调用完全相同，这正是它「抽象量最少」的具体含义。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：模型自己挑，框架不插手分诊
+
+分诊 Agent 拿到 `instructions=判断意图并移交` 加上工具清单，产出一次 `transfer_to_refund_agent` 调用。此时没有任何「意图分类器」「路由规则」被运行——路由完全是一次普通的函数调用（对照 [工具选择与路由](../07-planning/tool-selection-routing.md)）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：执行侧把「调工具」翻译成「换 Agent」
+
+框架收到该调用后不做业务，而是切换当前 Agent：退款专员的 `instructions` 生效，**对话历史整体带走**（否则接手方要用户重述一遍），循环继续。若新 Agent 又声明了 handoffs，就还能再移交——所以移交图上的环是真的能跑成死循环的地方。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：终止与产出
+
+接手 Agent 给出不再调工具的回答，循环结束。结果对象上 `final_output` 是答案、`last_agent` 是接手者；`max_turns` 用尽则报错而不是返回半成品。要人工介入就在工具或移交上加审批位，语义与 LangGraph 的 `interrupt` 等价，但挂起状态要持久化得自己接（见下方标签）。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% tabs %}
+{% tab title="选它：OpenAI 模型 + 要开箱生产特性" %}
+tracing、session、guardrail 都是同一套对象上的字段，不必再自己去接 LangSmith 之类的第三方观测。移交逻辑写成 `handoffs=[a, b]` 一个数组，读配置就能画出客服路由图。
+{% endtab %}
+
+{% tab title="别选：控制流要显式审计" %}
+「第 3 步失败要回滚第 1、2 步」「这条分支必须双人复核」这类需求，靠 handoff 网表达不清——它没有图、没有节点状态、没有 checkpoint，跨进程恢复全部自己实现。这类场景直接 LangGraph。
+{% endtab %}
+
+{% tab title="加 guardrail 会怎样" %}
+输入侧 guardrail 与主 Agent **并行**跑，因此首 token 延迟不变；代价是触发时主任务已经跑了一段，那段算力白花。它拦的是内容，工具执行的副作用一律管不住——那一层要沙箱与权限审批（见 [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)）。
+{% endtab %}
+
+{% tab title="换非 OpenAI 模型会怎样" %}
+LiteLLM 桥接能跑，但 Responses API 的原生工具、内置检索与部分 trace 字段会退化。跨模型是刚需时，把本页当概念模型，落地要么用 LangGraph 要么直接对着 OpenAI Chat Completions 手写循环——后者反而更透明。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

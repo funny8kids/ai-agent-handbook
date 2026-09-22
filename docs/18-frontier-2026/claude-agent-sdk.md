@@ -2,7 +2,7 @@
 tags: [claude, agent-sdk, harness, framework]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Claude Agent SDK
@@ -118,42 +118,161 @@ $$
 
 ### 6. 权限：先划「不可逆动作」，再谈模式
 
-`permission_mode` 与 `allowed_tools` 是两把不同的闸：前者决定「是否每次问人」，后者决定「能不能出现在工具表里」。推荐顺序：
+`permission_mode` 与 `allowed_tools` 是两把不同的闸：前者决定「是否每次问人」，后者决定「能不能出现在工具表里」。三档环境的共同骨架与差异，就是下面这份配置——`base` 三档都一样（`Read`/`Grep` 打底），差异只落在工具集、确认策略与有没有 Hook：
 
-```python
-# 示意：三档配置的共同骨架，差异只在工具集与确认策略
-def build_options(env: str, repo: str):
-    base = dict(cwd=repo, allowed_tools=["Read", "Grep"])
-    if env == "ci":       # 只读探索，任何写盘都拒绝
-        return ClaudeAgentOptions(**base, permission_mode="default")
-    if env == "dev":      # 本地：可编辑，命令仍需确认
-        return ClaudeAgentOptions(**base, allowed_tools=["Edit", "Bash"],
-                                  permission_mode="acceptEdits")
-    # prod 流水线：写盘自动，但危险命令由 PreToolUse Hook 拦截并落审计
-    return ClaudeAgentOptions(**base, allowed_tools=["Edit"],
-                              permission_mode="acceptEdits",
-                              hooks=audit_and_block_hooks())
+```json
+{
+  "base": { "cwd": "/path/to/repo", "allowed_tools": ["Read", "Grep"] },
+  "profiles": [
+    {
+      "env": "ci",
+      "allowed_tools": ["Read", "Grep"],
+      "permission_mode": "default",
+      "intent": "只读探索，任何写盘都拒绝"
+    },
+    {
+      "env": "dev",
+      "allowed_tools": ["Read", "Grep", "Edit", "Bash"],
+      "permission_mode": "acceptEdits",
+      "intent": "本地：可编辑文件，命令仍需逐次确认"
+    },
+    {
+      "env": "prod",
+      "allowed_tools": ["Read", "Grep", "Edit"],
+      "permission_mode": "acceptEdits",
+      "hooks": ["audit_and_block_hooks"],
+      "intent": "流水线：写盘自动，危险命令由 PreToolUse Hook 拦截并落审计"
+    }
+  ]
+}
 ```
+
+读这份配置要注意四点：
+
+1. **`ci` 用 `default` 而不是 `acceptEdits`**：`default` 的语义始终是「每次都问」，但 CI 里没有人可问——写盘动作要么被拒、要么挂到超时。想要「只读探索、任何写盘都拒绝」这个意图，就得靠 `default` + 不给写工具两件事一起成立，而不是以为 `default` 本身禁止写。
+2. **`dev` 比 `prod` 多一个 `Bash`**：跑测试、装依赖是本地的刚需；流水线里命令执行权归 CI，不该由模型临场决定，所以 `prod` 的工具集收到只剩 `Edit`。
+3. **`allowed_tools` 是整表而不是追加**：`ci` 只有两项，`dev` 要把 `Read`/`Grep` 一起写全再加 `Edit`/`Bash`。漏写 `Read` 就等于让 Agent 蒙着眼改代码——这类配置错误不会报错，只会让循环绕远。
+4. **只有 `prod` 挂 `hooks`**：`audit_and_block_hooks` 同时做拦截与审计，因为这一档写盘自动、没有人兜底。
+
+三把闸的先后顺序是固定的，搞反了就会写出「Hook 永远等不到调用」的配置：
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0EAFB","primaryBorderColor":"#6D28D9","primaryTextColor":"#1F2937","secondaryColor":"#DFD0F7","tertiaryColor":"#F9F6FD","lineColor":"#AF89EA","actorBkg":"#F3EEFC","actorBorder":"#6D28D9","actorTextColor":"#1F2937","signalColor":"#9969E4","noteBkgColor":"#E5D8F8","noteBorderColor":"#6D28D9","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0EAFB","labelBoxBorderColor":"#6D28D9"}}}%%
+flowchart TB
+  R[模型产出 tool_use] --> A{在 allowed_tools 里?}
+  A -- 否 --> X[工具不可见<br/>这一轮直接调不到]
+  A -- 是 --> P{permission_mode}
+  P -- default --> Q[问人确认]
+  P -- acceptEdits --> H[PreToolUse Hook]
+  Q --> H
+  H -- 放行 --> E[受限目录内执行]
+  H -- 拦截 --> L[拒绝 + 审计日志]
+```
+
+*《图：`allowed_tools` 决定能不能被想到，`permission_mode` 决定要不要问，Hook 决定问完了还让不让——三层都过才会真的执行》*
 
 要点：**Hook 是最后防线**，因为它在工具真正执行前跑你的代码；prompt 里的「请不要删库」不是闸（见 [权限控制与沙箱隔离](../10-evaluation-safety/permission-sandbox.md)）。
 
-## 可运行示例（Python）
+## 一次 `query()` 的调用形状
 
-```python
-from claude_agent_sdk import query, ClaudeAgentOptions
+入口只有两个符号：`claude_agent_sdk` 导出的 `query` 与 `ClaudeAgentOptions`。一次调用的请求与回包形状如下——**注意回包不是一次性 return，而是逐条 yield 的消息流**，所以消费端是「边跑边读」而不是「等结果」：
 
-async for message in query(
-    prompt="Find the failing unit test and fix the root cause.",
-    options=ClaudeAgentOptions(
-        allowed_tools=["Read", "Edit", "Bash"],
-        permission_mode="acceptEdits",
-        cwd="/path/to/repo",
-    ),
-):
-    print(message)
+```json
+{
+  "call": {
+    "prompt": "Find the failing unit test and fix the root cause.",
+    "options": {
+      "cwd": "/path/to/repo",
+      "allowed_tools": ["Read", "Edit", "Bash"],
+      "permission_mode": "acceptEdits"
+    }
+  },
+  "returns": {
+    "shape": "异步消息流：循环内逐条取到模型消息 / 工具调用 / 工具结果",
+    "last_message": { "session_id": "会话标识", "usable_for": ["resume", "fork"] }
+  }
+}
 ```
 
+这份形状里藏了三个决策：`cwd` 决定加载哪个仓库的 `.claude/` 配置与 Skills，也就决定了「同一个 prompt 在两个目录里行为不同」；`allowed_tools` 三项（`Read`、`Edit`、`Bash`）对应「读得懂、改得动、跑得起来」这条最小闭环，缺一项模型就只能把活推给你；`permission_mode: "acceptEdits"` 意味着改文件不再问人、但 `Bash` 仍然要确认——这正是本页「权限」一节里 `dev` 档的配置。
+
 > 以官方 SDK 文档为准核对 API 签名；版本迭代较快。
+
+{% hint style="warning" %}
+**生产环境请锁 SDK 与 CLI 版本并记录在案**：SDK/CLI 的行为差异主要来自版本与配置目录，「本地能跑、CI 结果不同」多半是这个原因。同理，第三方产品不得未经批准提供 claude.ai 登录额度，也不能自称 Claude Code。
+{% endhint %}
+
+## 分步演示：一次 `query()` 从进程启动到交付
+
+本页「核心机制 1」那张时序图是骨架，下面按它走一遍，标出每一步会卡在哪。
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：循环在你的进程里，配置先进来
+
+`query()` 接受两个入参：`prompt` 与 `options`（一个 `ClaudeAgentOptions`）。循环启动之前先加载系统提示、`cwd` 指向仓库的项目 `.claude/` 与用户级配置、Skills/Plugins。这一步是「SDK 行为与 CLI 不一致」的第一嫌疑：版本不同、或者加载到的配置目录不同。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：第一轮通常不写代码
+
+模型先出 `Read`/`Grep` 的 `tool_use`，把失败的单测定位出来；工具结果回填上下文，进入下一轮。读写探索往往占掉前缀成本的大头——这正是本页「会话为什么能当可分支的工作流」一节里 `fork` 值得存在的原因：这段「已经读懂仓库」的状态可以复用。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：`Edit` 与 `Bash` 在权限闸处分岔
+
+`permission_mode="acceptEdits"` 下，文件编辑直接放行、`Bash`（跑测试的命令）仍需确认。如果一轮下来被打断几十次，问题通常是 `allowed_tools` 给宽了而不是模式选错了——先收窄工具集，再考虑换模式（见「常见故障」表第二行）。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：Hook 在工具真正执行前跑你的代码
+
+`PreToolUse` 做 lint、危险命令拦截、审计落盘，必要时对接内部审批系统；放行后工具才在受限目录里执行。比「只在 prompt 里写不要 rm -rf」可靠一个数量级——差别在于 Hook 拒绝时是**动作没发生**，而 prompt 只是让模型不太想做。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：继续跑，直到接近上限才压缩
+
+多轮「模型 → 工具 → 观察」之间，harness 在上下文逼近上限时自动 `compact`。子 Agent 也在这一层派发：每个子 Agent 独立上下文、只回传摘要，省主上下文但会叠 token 成本——不设并发上限就是「子 Agent 成本爆炸」那一行。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：最后一条消息带 `session_id`
+
+拿到 session 标识之后，任务才真正变成可续跑资产：`resume` 用同一份历史与已读文件状态跨进程/跨天继续，`fork` 从既有会话拉出平行支线跑两种修复方案做 A/B。分叉的价值是探索前缀只付一次，滥用则让支线条数线性堆成本——每条支线给独立预算，只留一条主线进交付。
+{% endstep %}
+{% endstepper %}
+
+## 改一处会怎样（点标签切换）
+
+{% tabs %}
+{% tab title="去掉 `Bash`" %}
+`allowed_tools` 收到 `["Read", "Edit"]`：Agent 读得到、改得动，但跑不了测试。它会在没有验证的情况下声称修好了，验证责任被推回 CI。适合「只出补丁、人来跑」的评审场景，不适合「找根因并修复」这类要求自证的 prompt。
+{% endtab %}
+
+{% tab title="`acceptEdits` 改回 `default`" %}
+每一次写盘都要问人。本地开发会被打断到想关掉终端；CI 里更糟——没有人可问，任务卡在第一个 `Edit` 上超时。记住 `default` 的语义是「每次问」，不是「禁止写」。
+{% endtab %}
+
+{% tab title="撤掉 `hooks`" %}
+`prod` 档把 `audit_and_block_hooks` 摘掉：写盘仍然自动，但危险命令没人拦、审计链断在工具执行前那一刻。等于把最后防线换成 prompt 里的礼貌请求——出事之后你只知道「它删了」，不知道为什么、什么时候。
+{% endtab %}
+
+{% tab title="只有 `.claude/` 进版本库" %}
+Permissions、Hooks、Skills 全部写在 `.claude/` 里并由 SDK 加载，配置随仓库 review。反过来把 `allowed_tools` 硬编码在应用代码里，就会出现「同一个仓库本地能跑、别人的分支跑不了」——这也是误区「配置只写在代码里」的形态。
+{% endtab %}
+
+{% tab title="换成 CLI headless" %}
+非 Python/TypeScript 项目用 Claude Code CLI 的 headless 模式（`-p` 加 JSON 输出）以子进程驱动：拿到同一套循环与同一份 `.claude/` 配置，代价是没有进程内回调——Hook 想接自家审批系统就只能靠子进程 stdout 逐条解析，中断与恢复也要自己管。
+{% endtab %}
+{% endtabs %}
 
 ## 常见故障与排查
 

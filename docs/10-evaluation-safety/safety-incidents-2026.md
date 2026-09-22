@@ -2,7 +2,7 @@
 tags: [safety, alignment, monitoring, 2026]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 2026 安全现实：事故、阈值与监控
@@ -98,19 +98,106 @@ flowchart TB
 | L2 冻结会话 | 分类器连续命中 | 停 in-flight 工具、冻结 session | 复盘 + 重放确认 |
 | L3 全局熔断 | 触及真实系统 | 撤凭证、断网出口、拉人 | 事后报告与红队回归 |
 
-```python
-def gate_and_watch(action, policy, signals):
-    d = policy.decide(action)           # 执行闸门：白名单 / 确认 / 拒绝
-    if d == "deny":
-        audit.log(action, reason=d.reason); return reject(action)
-    if signals.strikes >= 2:            # 监控连续命中 → 冻结
-        session.freeze(); page_oncall("L2")
-    if action.touches_production() and signals.high_severity:
-        revoke_credentials(); kill_network_egress(); page_oncall("L3")
-    return allow(action)
+这套阶梯跑起来只有两处判定：闸门在动作前，阶梯在动作后。把上面那张表写成机器能读的档级定义，就是全部实现：
+
+```json
+{
+  "gate": {
+    "input": "policy.decide(action)",
+    "deny": { "then": ["audit.log(action, reason=d.reason)", "reject(action)"], "note": "动作一次都没发生；拒绝是数据不是异常" },
+    "allow": { "then": "放行到真实系统，同时把该动作送监控抽样" },
+    "confirm": { "then": "两阶段：先出草稿/预授权，人确认后落地" }
+  },
+  "signals": {
+    "strikes": "监控分类器在同一会话上的连续命中计数",
+    "high_severity": "本次事件是否被判为高危",
+    "touches_production": "动作是否触及真实系统"
+  },
+  "ladder": {
+    "L0": { "trigger": "可疑但低风险",             "action": ["audit.log"],                                  "recovery": null },
+    "L1": { "trigger": "单次越界尝试",             "action": ["收回到只读工具集"],                            "recovery": "人工复核该事件" },
+    "L2": { "trigger": "signals.strikes >= 2",     "action": ["停 in-flight 工具", "session.freeze()", "page_oncall(L2)"], "recovery": "复盘 + 重放确认" },
+    "L3": { "trigger": "touches_production && signals.high_severity", "action": ["revoke_credentials()", "kill_network_egress()", "page_oncall(L3)"], "recovery": "事后报告 + 红队回归" }
+  },
+  "placement": "闸门串在动作流上（决定做不做），监控旁路抽样（决定抬到哪一档）"
+}
 ```
 
+三处设计要停下来看一眼。**`strikes >= 2` 而不是 1**：分类器有误报，单次命中只够抬到 L1 收工具面，连续两次才是「同一段行为在重复」，此时才值得冻结整个会话——阈值定在 1，值班会被误报淹没；定在 3，中间那一次已经足够造成损失。**L3 的三个动作都是「撤」而不是「停」**：只杀进程没用，凭证还在、出口还通，重启后一切照旧；先 `revoke_credentials()` 再 `kill_network_egress()`，顺序反了会给进程内重试留出窗口。**`deny` 走审计但不进 strikes**：闸门拒掉的动作没有真的发生，把它算进监控命中数会让阶梯在最不该抬档的时候抬档。
+
 关键设计：**熔断要能撤销已发出的动作**，因此高后果动作应两阶段（先出草稿/预授权，人确认后落地）。这与 2026 产品里的确认策略同源。
+
+### 6. 分步演示：一次越权尝试如何爬完 L0→L3
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：动作先过闸门，判定发生在执行之前
+
+`policy.decide(action)` 查工具白名单与确认策略，产出 `allow / deny / confirm` 三种结果之一。走 `deny` 就到此为止：落一条带 `reason=d.reason` 的审计记录并把动作原样退回，真实系统没有被碰过。这就是「注入发生在数据面、越权发生在动作面」的落点——内容过滤拦不住的，这里拦。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：放行的动作同时被抽样送监控
+
+放行动作进入真实系统，但它的调用与参数会进抽样审计。审的对象是**动作流**（工具名 + 完整参数 + 目标资源），推理文本只是辅助材料：动作才是可判分的信号源，「它想干什么」常常写在参数里而不是想法里。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：第一次命中 → L1，只收工具面
+
+分类器判出一个未授权模式，`strikes` 记 1，抬到 L1：把该 Agent 收回只读工具集，事件排队人工复核。会话不中断——降档运行与急停相比，代价小了不止一个数量级，而可疑动作的杀伤力大多来自写权限而不是继续思考。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：连续第二次命中 → L2，冻结而不是杀掉
+
+`strikes >= 2`，抬到 L2：先停在飞工具（in-flight），再 `session.freeze()`，同时 `page_oncall("L2")`。**冻结优于销毁**：现场要留下来供复盘与重放确认，这是 L2 的恢复条件；一杀了之等于把唯一的证据扔了，下次同类模式还得重新撞一遍。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：触及生产 + 高危 → 直接 L3，先撤凭证再断出口
+
+若本次动作 `touches_production` 且 `high_severity`，不再等第几次命中，直接 L3：`revoke_credentials()` → `kill_network_egress()` → 拉人。这两步的次序不能换：凭证是可以在别处重放的，出口断掉才把「一次越权」封成「一次事件」。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：收尾在回流，不在恢复
+
+L2、L3 事件的处置完成后，样本进红队回归集（含「不可能任务」用例），事后报告归档。一个只在恢复条件上打勾的处置是半成品：没有回归用例，同一个越权模式下一版模型上会原样再来一次，而且这次可能没有第二次抽样的运气。
+{% endstep %}
+{% endstepper %}
+
+### 7. 四种触发形状，四条处置（点标签切换）
+
+{% tabs %}
+{% tab title="闸门直接拒" %}
+`policy.decide` 返回 `deny`：工具不在白名单、或该动作要求确认而确认未给。审计里有 `reason`，`strikes` 不加，会话继续。**这是最便宜的一种结局**——越权意图被挡在真实系统之外，代价只有一次落日志。
+{% endtab %}
+
+{% tab title="单次越界 → L1" %}
+动作已经放行、监控判出未授权模式，但只命中一次：收回到只读工具集，等人工复核该事件后恢复。这一档最容易被误做成「直接停机」，那样做的真实成本是把一次误报升级为一次业务中断。
+{% endtab %}
+
+{% tab title="连续命中 → L2" %}
+`strikes >= 2` 说明这不是抖动而是行为模式：停在飞工具、冻结会话、拉 L2 值班。恢复要「复盘 + 重放确认」两件事都做，重放是为了验证同一段上下文在新策略下不再走到越权分支——只看监控不再报警不构成恢复依据。
+{% endtab %}
+
+{% tab title="触及生产 + 高危 → L3" %}
+两个条件同时成立就是全局熔断：撤凭证、断网出口、拉人，事后必须出报告并把用例灌进红队回归集。这一档的判据要能在无人的情况下自动执行——**它等不起人工确认**，否则 2026 年那类「评测脚手架连到真实系统」的事故会以同样的方式再来一次。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+**每一档都要有机器可判的触发式，和一条写死的恢复条件**：`strikes >= 2`、`touches_production && high_severity` 这类判据能无人值守地抬档；而「人工复核该事件」「复盘 + 重放确认」「事后报告 + 红队回归」是恢复条件，不是待办清单。只写触发不写恢复的阶梯，实际效果是把 L2 冻结变成永久停机——最后没人敢按 L2，阈值形同虚设。
+{% endhint %}
+
+两处判定的分工值得用一句话钉住：**闸门管单个动作的可逆性，阶梯管整段行为的影响面**。两阶段解决的是「动作还没发出去」，L1–L3 解决的是「模式已经反复出现」。把它们混成一条 `if` 链，就会长出「闸门拒绝被算进监控命中」这类自激抬档的 bug——事故复盘里这类混合最常见，因为两条判据看起来都是「安全」。
 
 ## 工程含义
 

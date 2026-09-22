@@ -2,7 +2,7 @@
 tags: [framework, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # LangGraph
@@ -62,18 +62,117 @@ flowchart TD
 
 ## 最小示例
 
-```python
-from langgraph.graph import StateGraph, MessagesState, START, END
+一个「只有一个规划节点」的图，声明形状与编译配置如下——`nodes` / `edges` / `state` 三块正好对应它的三个原语：
 
-def plan(state: MessagesState):
-    return {"messages": [llm.invoke(state["messages"])]}
-
-g = StateGraph(MessagesState)
-g.add_node("plan", plan)
-g.add_edge(START, "plan")
-g.add_edge("plan", END)
-app = g.compile(checkpointer=saver)   # 加 checkpoint 即可断点恢复
+```json
+{
+  "state": {
+    "schema": "MessagesState",
+    "fields": { "messages": "对话消息列表，节点共享" },
+    "contract": "节点返回【增量】而非整体覆盖"
+  },
+  "nodes": [
+    {
+      "name": "plan",
+      "reads": "state['messages']",
+      "does": "llm.invoke(state['messages'])",
+      "returns": { "messages": ["新增一条 AI 消息（追加，不覆盖）"] }
+    }
+  ],
+  "edges": [
+    { "from": "START", "to": "plan", "kind": "normal" },
+    { "from": "plan", "to": "END", "kind": "normal" },
+    { "from": "plan", "to": "retrieve | answer", "kind": "conditional（按状态路由，可成环）" }
+  ],
+  "compile": {
+    "checkpointer": "saver（内存 / SQLite / Postgres 任一）",
+    "gives": ["断点恢复", "时间旅行", "按 thread_id 续跑"]
+  }
+}
 ```
+
+关键在最后那个 `compile`：**加一个 checkpointer 就获得断点恢复**，图的定义一行没改。第三类边（条件边）是唯一能表达分支与循环的东西——普通边只说「接下来是谁」，条件边读状态再决定，本页「状态图示例」那张图里「要不要去检索」就长在这里。
+
+## 分步演示：一次运行如何变成可恢复的时间线
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
+flowchart TD
+  R["run(thread_id)"] --> SS["超步：并行执行本层节点"]
+  SS --> CP["写 checkpoint<br/>状态 + 待执行下一步"]
+  CP -->|还有出边| SS
+  CP -->|命中 interrupt| H["挂起：等人"]
+  H -->|带同一 thread_id 回复| R
+  CP -->|无出边| F["END：最终状态"]
+```
+
+*《图：图是静态的，跑起来是「超步 → 落盘」的循环；checkpoint 同时是恢复点、时间旅行入口和 interrupt 的挂起锚》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：声明状态对象
+
+`MessagesState` 只有一个字段 `messages`。状态是**节点之间唯一的通信信道**，也是 checkpoint 序列化的全部内容：字段越多，落盘越重、回放越慢。只在单节点内部用的东西应当留在局部变量里（见本页「实战手记」第一条）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：注册节点，节点只交增量
+
+`add_node("plan", plan)` 挂一个函数，函数读 `state['messages']`，返回 `{"messages": [新的 AI 消息]}`。**返回的是增量而非整份状态**——合并由 reducer 负责（消息列表默认是追加）。写成全量覆盖的节点会让历史消息凭空消失，且很难在图上看出原因。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：连边，把分支放进条件边
+
+`add_edge(START, "plan")`、`add_edge("plan", END)` 是固定流转；需要「按状态决定去哪」时改用条件边，它挂一个路由函数，读状态返回目标节点名。分支与循环都活在这里，**而不是藏在节点代码里**——这是 LangGraph 可审计性的来源：把图导出成图片就能评审控制流，不必读函数体（本页「状态图示例」那张图就是导出结果的样子）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：compile 时绑上 checkpointer
+
+`g.compile(checkpointer=saver)` 之后，每执行完一个超步就把状态写一条记录，用 `thread_id` 标识一条会话线程。生产环境用 SQLite/Postgres 而不是内存 saver：进程一重启，内存里的 checkpoint 全部作废，等于没做持久化。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：恢复、时间旅行与挂起
+
+崩在第 7 步就带同一个 `thread_id` 再跑一次，前 6 个超步直接读回放；想「换个决策再试」，回到某个历史 checkpoint 从那儿继续。命中 `interrupt` 的线程会停在节点前不动，等人带着输入回来才继续——**它不会超时**，所以每个 interrupt 位都得接通知渠道。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% hint style="warning" %}
+**checkpoint 是免费的，留存不是**：每个超步落一条记录，长任务高并发下存储涨得很快；而完全不接 checkpointer 就等于同时放弃恢复、时间旅行与 interrupt。可行做法是只给进行中的线程保留完整记录，跑完的压缩归档（见本页「实战手记」第二条）。
+{% endhint %}
+
+{% tabs %}
+{% tab title="选它：分支 + 循环 + 要能恢复" %}
+多步骤、要审计、可能跑几十分钟的工作流：投诉处理、研究编排、跨系统对账。这三项需求同时出现时几乎没有替代品——分支和循环是图自带的，恢复是 checkpoint 自带的，而这三件事在手写循环里全要自己造。
+{% endtab %}
+
+{% tab title="别选：纯线性链路" %}
+「提示 → 模型 → 解析」这种一条道走到黑的场景，LangGraph 的图与状态是净开销：多一层抽象、多一处落盘。同门的 LCEL 链足够，甚至直接调 SDK 更透明（对照 [LangChain](langchain.md)）。
+{% endtab %}
+
+{% tab title="代价：不加 checkpoint 裸跑" %}
+省掉 `checkpointer=saver` 就能少一层存储，但也同时放弃了恢复、时间旅行与 interrupt——线程挂不住，人审环节直接失效。长任务一次失败从头再来，烧掉的 token 通常比 checkpoint 的存储贵得多。
+{% endtab %}
+
+{% tab title="代价：节点里有副作用" %}
+checkpoint 重放会重复执行节点。若节点直接下单、发信、写库，一次故障恢复就变成两次真实副作用。对策是把副作用节点标成幂等（带外部幂等键）或拆成「计算 + 提交」两步，对照 [持久化执行](../16-ai-infrastructure/agent-runtime-durable-execution.md) 的做法。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

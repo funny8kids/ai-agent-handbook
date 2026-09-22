@@ -2,7 +2,7 @@
 tags: [framework, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # LangChain
@@ -43,14 +43,36 @@ $$
 
 ## 最小示例
 
-```python
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+一条「模板 + 模型」两段链的完整形状，字段名即接口名：
 
-prompt = ChatPromptTemplate.from_template("用一句话解释{topic}")
-chain = prompt | ChatOpenAI(model="gpt-4o-mini")
-print(chain.invoke({"topic": "MCP 协议"}).content)
+```json
+{
+  "prompt": {
+    "class": "ChatPromptTemplate",
+    "factory": "from_template",
+    "template": "用一句话解释{topic}",
+    "emits": "填好变量的消息列表"
+  },
+  "llm": { "class": "ChatOpenAI", "model": "gpt-4o-mini" },
+  "chain": {
+    "operator": "|",
+    "segments": ["prompt", "llm"],
+    "protocol": "Runnable：invoke / stream / batch 三件套"
+  },
+  "call": {
+    "method": "invoke",
+    "input": { "topic": "MCP 协议" },
+    "returns": "AIMessage：正文在 content，元数据在 response_metadata",
+    "answer_path": "invoke 结果的 .content"
+  }
+}
 ```
+
+三件事最容易被略过：`|` 两端都必须是 Runnable，能否相接只看「前一段的输出类型是否等于后一段的输入类型」；`invoke` 收的是 dict，键名必须与模板变量 `{topic}` 完全一致，写错不会报错而是把 `{topic}` 原样送进提示；出参是 `AIMessage` 不是字符串，`.content` 这一层是新手最常踩的取值坑——想要纯文本就在链尾再接一个输出解析器（下张图第三段）。
+
+{% hint style="info" %}
+**这条链的调试成本是四层栈**：一次 `invoke` 报错，调用要穿过「你的代码 → chain → runnable → 具体实现」四层才落到网络上。经验做法是先接 LangSmith 或 OpenTelemetry 导出再写业务，让每一段的输入输出可见——抽象层数直接放大排障成本，这一层账单不会因为代码少写而消失。
+{% endhint %}
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
@@ -64,6 +86,62 @@ flowchart LR
 ```
 
 *《图：LCEL 链拓扑——所有组件实现同一 Runnable 接口，`|` 把线性段拼成链，任一段可替换、整链自动可流式/批量/追踪》*
+
+## 分步演示：`invoke({"topic": "MCP 协议"})` 在链里走的三段
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：模板段接 dict，出消息列表
+
+`ChatPromptTemplate` 把 `{topic}` 替换成 `MCP 协议`，产出的是**结构化消息**（带角色），不是拼好的字符串。这一段没有任何网络调用，出错通常是两类：键名对不上（占位符原样进提示）、模板里塞了不认识的变量。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：模型段接消息列表，出 AIMessage
+
+`ChatOpenAI(model="gpt-4o-mini")` 发起一次真实请求，返回值是 `AIMessage`：正文在 `.content`，token 用量与结束原因在 `.response_metadata`。**整条链只有这一段花钱**，也是唯一能改成 `stream` 的一段——链自动支持流式就是从这里来的。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：取值或接解析器
+
+`.content` 手动取一次；或者链尾再接一段解析器（`StrOutputParser`），让整条链的输出直接是字符串。两种写法等价，差别在下游：接了 parser 的链可以直接被再拼装，手取 `.content` 的写法则把类型判断留在了业务代码里。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：换接口不换结构
+
+同一条链换成 `stream`（逐 token）或 `batch`（一次喂一串 dict），编排代码一行不改——这就是 Runnable 协议换来的全部好处，也是它的抽象税：结构没变，出问题时要多问几层「这一段是谁给的」。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% tabs %}
+{% tab title="选它：要接的不是模型而是第三十种向量库" %}
+LangChain 的真实价值在集成层：几十种向量库、文档加载器、切分器都已经封装成同一套接口。自己写这些适配是纯体力活，而且下个版本还得再适配一次。这一层用 LangChain，业务控制流自己写，就是「用薄」。
+{% endtab %}
+
+{% tab title="别选：只要模型调用 + 工具循环" %}
+一个循环加两家 SDK 就能表达的东西，套上 chain 与 Runnable 只会多两层栈。「学 Agent = 学 LangChain」这条误区（见本页「常见误区」）说的就是这件事：框架是原理的封装，先懂循环再用封装。
+{% endtab %}
+
+{% tab title="别选：控制流要分支、循环、恢复" %}
+链是线性的。一旦需要「检索为空就改写查询重试」「中途停下来等人签字」，继续往 chain 里塞就是在跟接口较劲——同门 LangGraph 把分支放在边上、恢复交给 checkpoint（对照 [LangGraph](langgraph.md)）。
+{% endtab %}
+
+{% tab title="代价：版本与教程的时间差" %}
+该项目迭代快、破坏性变更多次，抄两年前的教程代码大概率对不上当前接口。锁版本 + 抄前先核对版本，是本页「工程含义」第二条的全部内容；更稳的做法是把 LangChain 限制在「适配层」，业务逻辑别依赖它的接口形状。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

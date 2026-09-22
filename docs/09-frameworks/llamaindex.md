@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # LlamaIndex
@@ -63,14 +63,102 @@ flowchart LR
 | 检索粒度 vs 完整性 | 小块精确但缺上下文 | 自动合并父块（命中子块则返回父块） |
 | 语义 vs 精确匹配 | 向量对 ID/型号无能 | 混合检索 + 重排序集成 |
 
-## 最小 RAG（5 行）
+## 最小 RAG 的形状
 
-```python
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+「一个目录进，一句问题出」的最小配置，展开成契约是下面这份（字段名即接口名）：
 
-index = VectorStoreIndex.from_documents(SimpleDirectoryReader("docs/").load_data())
-print(index.as_query_engine(similarity_top_k=3).query("年假政策是什么？"))
+```json
+{
+  "reader": {
+    "class": "SimpleDirectoryReader",
+    "input_dir": "docs/",
+    "method": "load_data()",
+    "emits": "Document 列表：一个文件一份，带文件名等元数据"
+  },
+  "index": {
+    "class": "VectorStoreIndex",
+    "method": "from_documents(documents)",
+    "inside": "切块（默认 Node Parser）→ embedding → 写入向量存储"
+  },
+  "query_engine": {
+    "method": "as_query_engine",
+    "params": { "similarity_top_k": 3 },
+    "inside": "检索 3 个块 → 拼上下文 → 交给 LLM 生成"
+  },
+  "ask": "年假政策是什么？",
+  "response": { "answer": "自然语言回答", "source_nodes": "命中的那 3 个块及其元数据" }
+}
 ```
+
+这份契约里**没有一项是检索质量的决定因素**：默认 embedding 模型、默认切块策略、默认向量存储全是隐式的，`similarity_top_k=3` 是整条链上唯一被你显式调过的检索参数。这也解释了为什么它能当天跑通、却很难直接上线（对照本页「常见误区」第二条与第四条）。
+
+## 分步演示：一份目录如何变成一条可回答的问题
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：Reader 只负责把文件变成 Document
+
+`SimpleDirectoryReader("docs/")` 逐文件解析成带元数据的 Document 列表。PDF/表格/图片的解析质量瓶颈全在这一步——**解析出来的正文顺序错、表格被拉平，后面所有环节都救不回来**，这正是 LlamaCloud 把「解析烂 PDF」产品化的原因（见「源码案例」）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：Node Parser 决定「可检索单元」的粒度
+
+`from_documents` 内部先切块：不显式换就用默认策略，句窗 / 层级 / 语义切块都要自己指定。这一步决定命中与召回的上限——切太碎丢上下文，切太粗稀释语义，两种失败模式在「三个关键权衡」表里各占一行。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：Embedding 与写入索引
+
+每个节点过一次 embedding 模型，连节点文本与元数据一起写进向量存储。默认用的是 OpenAI 侧的 embedding 模型，**不配密钥就跑不通；换了模型则整个索引必须重建**——查询向量与库向量不同源，相似度就没有意义。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：Retriever 按 `similarity_top_k=3` 取回节点
+
+问题向量在库里比对，返回得分最高的 3 个节点，附带各自的分数与元数据。这 3 个块就是答案的全部依据——**检索没召回的内容，模型再强也答不出**，只能编。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：Query Engine 组装提示并生成
+
+模板把 3 个节点拼进上下文，交给 LLM 生成 `Response`：`answer` 是文本，`source_nodes` 是依据。生产里必须把 `source_nodes` 一起返回并展示——否则无法判断回答是被文档支撑，还是模型自己补的。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% hint style="warning" %}
+**这份契约里没有任何一处写着「你的文档长什么样」**：默认切块策略面对合同、表格、带页眉的 PDF 通常很差（见「常见误区」第二条）。先去看 Node Parser 的选项，再谈检索参数——顺序反了就是拿调参掩盖解析问题。
+{% endhint %}
+
+{% tabs %}
+{% tab title="选它：项目瓶颈写在「检索质量」四个字上" %}
+句窗检索、自动合并父块、混合检索 + 重排序这些组件是现成的，换一件通常只改一处配置。同类需求自己实现，光是调父子块的映射关系就要几天——而这块工作对最终命中率的影响通常远大于换向量库。
+{% endtab %}
+
+{% tab title="别选：多 Agent 与复杂编排" %}
+它有工具循环与工作流，但编排复杂度天花板低于图编排框架：分支、并发、断点恢复不是它的强项。以「检索 + 生成」为核心的项目用它，需要严格可审计控制流的部分交给 LangGraph（对照 [LangGraph](langgraph.md)）。
+{% endtab %}
+
+{% tab title="改 `similarity_top_k` 会怎样" %}
+调大：召回上升但上下文里噪声同涨，模型容易抓错依据，token 成本线性上升、延迟一起变差。调小到 1：答案变干净，但跨段落问题必丢。真正有效的动作通常不是调它，而是把切块与检索策略换对，再配重排序把 3 个位置留给最相关的块。
+{% endtab %}
+
+{% tab title="数据源接不上时" %}
+先去 LlamaHub 查有没有现成连接器（飞书/Notion/数据库/网盘），几百个数据源的适配自己写不划算。查不到时先评估 LlamaCloud 这类托管解析服务，用它的质量给自建管线定基准，再决定解析这块要不要自建。
+{% endtab %}
+{% endtabs %}
 
 ## 源码案例
 

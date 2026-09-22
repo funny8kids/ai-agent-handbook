@@ -2,7 +2,7 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # CrewAI
@@ -34,22 +34,41 @@ $$
 
 ## 最小 Crew
 
-```python
-from crewai import Agent, Task, Crew
+一个「调研 + 撰稿」两人组的全部声明就长这样——三段 agent 字段、四段 task 字段、一个 process 枚举，没有第四层抽象（真实项目里这份配置通常拆成 `agents.yaml` 与 `tasks.yaml`）：
 
-researcher = Agent(role="调研员", goal="收集竞品定价信息",
-    backstory="资深市场分析师", tools=[search_tool])
-writer = Agent(role="撰稿人", goal="写出决策建议",
-    backstory="商业专栏作者")
+```yaml
+agents:
+  - role: 调研员                # 是谁
+    goal: 收集竞品定价信息       # 要什么
+    backstory: 资深市场分析师    # 背景：本质是 prompt 片段，不是性格设定
+    tools: [search_tool]        # 只挂这个岗位真用得上的工具
+  - role: 撰稿人
+    goal: 写出决策建议
+    backstory: 商业专栏作者
+    tools: []                   # 不挂工具，只消费上游产出
 
-t1 = Task(description="调研3个竞品定价", agent=researcher,
-          expected_output="定价对比表")
-t2 = Task(description="基于调研写建议", agent=writer,
-          expected_output="500字建议", context=[t1])
+tasks:
+  - id: t1
+    description: 调研3个竞品定价
+    agent: 调研员
+    expected_output: 定价对比表   # 验收标准：这句写不出来，任务就不该建
+  - id: t2
+    description: 基于调研写建议
+    agent: 撰稿人
+    expected_output: 500字建议
+    context: [t1]                # t1 的产出整段拼进 t2 的提示
 
-Crew(agents=[researcher, writer], tasks=[t1, t2],
-     process="sequential").kickoff()
+crew:
+  agents: [调研员, 撰稿人]
+  tasks: [t1, t2]
+  process: sequential            # sequential | hierarchical（内置 Manager）
 ```
+
+运行侧只有一个入口：`crew.kickoff()`。它按 `process` 驱动任务序列，把「agent 三件套 + task 的 `description`/`expected_output`/`context`」渲染成一次次模型调用，返回最后一个任务的产出。
+
+{% hint style="tip" %}
+**看这份配置能得出的三个结论**：不写 `tools` 的撰稿人拿不到任何工具，因此不会幻觉出「我搜了一下」；不写 `context` 的任务之间**互相看不见**，t2 只能靠自己那份 `description` 硬写；编排开关只有 `process` 一个，改成 `hierarchical` 的代价是多出一层 Manager 的调用开销。
+{% endhint %}
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
@@ -64,6 +83,62 @@ flowchart TD
 ```
 
 *《图：Crew = {Agent, Task, Process} 结构——sequential 按任务顺序接力，hierarchical 由内置经理动态分派（监督者模式开箱版）》*
+
+## 分步演示：一次 `kickoff()` 内部发生了什么
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：把角色渲染成 system prompt
+
+`role` / `goal` / `backstory` 三个字段被模板织进同一段 system prompt，`tools` 列成可调清单。到这里为止框架没做任何聪明事——所谓「角色」就是三段结构化措辞，改 `backstory` 的效果等同于改 prompt，这也是它「上手快、但没有魔法」的根因。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：sequential 沿任务序列接力
+
+t1 先跑：模型读 `description=调研3个竞品定价` + `expected_output=定价对比表`，产出一张表。接着跑 t2：它的提示里除了自己的两个字段，还要拼上 `context` 指向的 t1 产出**全文**。也就是说 `context` 不是引用而是复制——链越长，尾部任务的输入越大（成本公式见本页后段）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：hierarchical 换成经理派活
+
+把 `process` 改成 `hierarchical`，框架会插入一个内置 Manager agent：它读目标与任务清单，决定谁做哪一步，做完按该任务的 `expected_output` 验收，不合格打回重跑。等价于监督者模式的开箱实现（对照 [监督者模式](../08-multi-agent/supervisor-pattern.md)）——但 `expected_output` 写成「一篇好文章」时，经理的验收就退化成再问模型一遍。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：拿结果，然后自己补可观测性
+
+`kickoff()` 返回最终产出；每个任务的中间产出可按任务顺序取用。框架默认不导出逐次 LLM 调用的 trace，成本、延迟、失败原因都要自己接（对照 [可观测性工具](../11-engineering/observability-tools.md)）。这是声明式抽象的另一面账单：配置好读，运行过程也更难看见。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% tabs %}
+{% tab title="选它：角色化流水线" %}
+任务能写成「A 产出 → B 消费 → C 收尾」的线性链，且每步验收能一句话说清（`定价对比表`、`500字建议`）。这时编排代码近乎为零：改流程只动配置，评审时读一份 yaml 就能看懂全链，新人也不需要先理解图、状态、reducer 这些概念。
+{% endtab %}
+
+{% tab title="别选：要分支、循环或恢复" %}
+一旦出现「检索为空就改写查询重试」「跑到一半要人签字」，`sequential / hierarchical` 这两个枚举装不下——它没有条件边，也没有 checkpoint，长任务失败只能整条 `kickoff()` 从头再来，前面所有 token 白烧。这类需求直接看 LangGraph（本页选型表里「控制流灵活性：低」那一栏就是它）。
+{% endtab %}
+
+{% tab title="别选：模型要写代码并执行" %}
+产出物是代码、还要真跑一遍看报错时，CrewAI 得自己接执行器、自己把报错回灌成下一轮提示——等于把它唯一的优势（开箱即用）手动抵消掉。这条闭环 AutoGen 是内置的（`code_execution_config`）。
+{% endtab %}
+
+{% tab title="真代价：context 是复制不是引用" %}
+`context: [t1, t2, t3]` 看着省事，实际是把三份产出全文塞进同一次提示，输入规模按依赖链线性累加。常见收敛做法是只保留真正需要的那一环依赖，并把 `expected_output` 压成表格或 JSON 短格式——宁可牺牲一点下游可读性，也别让最后一个任务为全链历史付费。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

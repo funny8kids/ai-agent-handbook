@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Semantic Kernel
@@ -53,18 +53,94 @@ flowchart TD
 
 *《图：SK 插件架构——Kernel 注入模型服务与插件函数清单，模型经 Function Calling 直接选中原生/提示函数执行，两类函数在调用侧无差别》*
 
-## C# 最小示例
+## 一次装配的真实形状
 
-```csharp
-var builder = Kernel.CreateBuilder();
-builder.AddAzureOpenAIChatCompletion(deployment, endpoint, key);
-var kernel = builder.Build();
-kernel.ImportPluginFromFunctions("weather",
-    [KernelFunctionFactory.CreateFromMethod(GetWeather, "查询天气")]);
+上面那张图落到工程上就是三次注册加一次调用。整条装配链的形状、参数与默认行为，收在下面这份清单里（字段名即 API 名）：
 
-var result = await kernel.InvokePromptAsync(
-    "台北今天天气如何？需要时调用工具。");
+```yaml
+builder:
+  entry: Kernel.CreateBuilder          # 开一个 DI 容器构建器
+  services:
+    - add: AddAzureOpenAIChatCompletion
+      params: [deployment, endpoint, key]   # 部署名 / 端点 / 密钥，三者缺一即在 Build 期报错
+      role: 聊天补全服务（可再注册多个，按 service_id 解析）
+  plugins:
+    - name: weather                    # ImportPluginFromFunctions 的第一个参数
+      functions:
+        - factory: KernelFunctionFactory.CreateFromMethod
+          method: GetWeather
+          description: 查询天气          # 模型就靠这一行决定要不要调它
+          kind: native                 # 另一类是 prompt function：yaml/handlebars 模板
+kernel:
+  build: Build()                       # 产出不可变内核实例；按作用域管理，别当全局单例
+invocation:
+  method: InvokePromptAsync
+  prompt: 台北今天天气如何？需要时调用工具。
+  function_choice: auto                # 由模型 Function Calling 直接挑函数
+  returns: 最终回答文本（原生/提示函数在调用侧无差别）
 ```
+
+注意 `description: 查询天气` 这一行——它是整套企业框架里**唯一影响选函数准确率的字段**，其余全是装配工作。SK 的「插件」概念之所以能被模型用起来，靠的就是这一句被序列化进函数清单；写得含糊，模型就多调或漏调（对照 [工具选择与路由](../07-planning/tool-selection-routing.md)）。
+
+## 分步演示：从建容器到拿到回答
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：CreateBuilder，开一个 DI 容器
+
+这一步和 AI 无关，是标准的企业框架动作：注册配置、日志、HTTP 客户端、过滤器。SK 的差异化正在这——模型服务、记忆、插件都是**可注入、可替换、可按作用域隔离**的服务，所以多租户与单元测试都有的抓手（反面见「常见误区」最后一条：把 Kernel 当全局单例滥用）。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：AddAzureOpenAIChatCompletion 注册模型服务
+
+三个参数 `deployment / endpoint / key` 对应 Azure 侧的部署名、端点与密钥。注册多个服务时靠 `service_id` 区分，提示函数可以在调用点指定用哪个——这一步是「换模型不动业务代码」的落点，与 Python 生态里直接实例化一个客户端就写死的做法形成对比。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：ImportPluginFromFunctions 把方法变成函数
+
+`KernelFunctionFactory.CreateFromMethod(GetWeather, "查询天气")` 从方法签名反射出参数 schema，再挂上 description，组成一个名为 `weather` 的插件。原生函数与提示函数在此刻**注册成同一种对象**，所以模型看到的清单是混排的，它也无法分辨哪一个是 C# 方法、哪一段是模板。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：InvokePromptAsync，让模型自己挑函数并回填
+
+`"台北今天天气如何？需要时调用工具。"` 发给模型时，函数清单随请求一起出去；模型点中 `weather` 插件的函数，内核执行、把结果回填进对话，再让模型续写直到不再要求调用。`function_choice` 处于 auto 时这条循环由框架跑完——旧路线（Planner 先生成 DSL 计划再解析）在自动函数调用成熟后被淘汰，原因见「源码案例」第一条。
+
+{% endstep %}
+{% endstepper %}
+
+## 什么时候选它，什么时候别选（点标签切换）
+
+{% hint style="tip" %}
+**这份清单里只有一行会改变模型的行为**：`description: 查询天气`。其余全是装配工作——所以线上出现「模型没调用我的函数」时，先读这一行，再数函数清单有多长，最后才怀疑模型。
+{% endhint %}
+
+{% tabs %}
+{% tab title="选它：.NET / Azure 存量企业" %}
+依赖注入、健康检查、日志、密钥管理全都走企业栈现成的那一套，LLM 能力以「可注入服务」的身份进容器，安全与合规评审有现成流程可套。Python 框架在这个语境里是净增运维负担——多一个运行时、多一套依赖解析。
+{% endtab %}
+
+{% tab title="别选：新的多 Agent 项目" %}
+SK 与 AutoGen 的合流成果是 Microsoft Agent Framework，官方推荐新项目走后者。在 SK 上继续加多 Agent 逻辑的风险是**迁移成本**：Process 步骤里编进多少「模型之外的决策」（规划、人工确认、失败补偿），将来就要重写多少（本页「选型对比」下方那段把这笔账列清了）。
+{% endtab %}
+
+{% tab title="改 description 会怎样" %}
+函数 description 从「查询天气」改成「按城市与日期查询实时天气，含体感温度」，模型点中它的概率通常明显上升——但副作用是清单变长、每次请求都带这段文字。**清单里每个字符都是常驻成本**，别只在漏调时加词，也要在误调时删词。
+{% endtab %}
+
+{% tab title="不注册插件会怎样" %}
+只 `AddAzureOpenAIChatCompletion` 不 `ImportPluginFromFunctions`，同一句提示词会得到一个自信的错误回答（模型不知道天气从哪来，又倾向于答）。函数清单为空时模型不会反问，这一点和「工具越多越准」是两个方向的坑。
+{% endtab %}
+{% endtabs %}
 
 ## 选型对比
 

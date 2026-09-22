@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 错误处理、重试与降级
@@ -54,25 +54,41 @@ flowchart TB
 
 ## 熔断器模式
 
-```python
-class CircuitBreaker:
-    def __init__(self, threshold=5, cooldown=60):
-        self.failures, self.open_until = 0, 0
-    async def call(self, fn, *a, **kw):
-        if time.time() < self.open_until:
-            raise CircuitOpen()          # 快速失败, 触发降级
-        try:
-            r = await fn(*a, **kw)
-            self.failures = 0
-            return r
-        except UpstreamError:
-            self.failures += 1
-            if self.failures >= self.threshold:
-                self.open_until = time.time() + self.cooldown
-            raise
+一台熔断器只有一个状态机加三个数字：**连续失败阈值 `threshold=5`**、**冷却时长 `cooldown=60` 秒**、**半开态放行数 `half_open_probe=1`**。每次调用先读时钟：当前时间早于 `open_until` 就直接抛 `CircuitOpen`，连上游都不去碰——快速失败的全部意义就是把这段时间留给降级链，而不是让一堆请求在故障上游前排队送死。真的放出去的调用，成功就把 `failures` 归零、状态回到 closed；抛 `UpstreamError` 才计数，数到 5 就把 `open_until` 推到 `now + 60`。
+
+哪些错误算「上游死了」，是这套机器里唯一需要人拍板的地方：
+
+```json
+{
+  "circuit_breaker": {
+    "threshold": 5,
+    "cooldown_s": 60,
+    "half_open_probe": 1,
+    "counts_as_failure": ["E_UPSTREAM_DOWN"],
+    "does_not_count": ["E_RATE_LIMIT", "E_TOOL_INVALID_ARGS", "E_MODEL_REFUSED", "E_CONTEXT_OVERFLOW"],
+    "on_open": "抛 CircuitOpen，直接进降级链，不在本层排队",
+    "state": "closed | open | half-open"
+  },
+  "retry_policy": {
+    "E_RATE_LIMIT":        { "max_retries": 5, "backoff": "2^n + jitter",  "fallback": "换模型 / 排队" },
+    "E_TIMEOUT":           { "max_retries": 2, "backoff": "linear",        "fallback": "缩短任务" },
+    "E_TOOL_INVALID_ARGS": { "max_retries": 2, "retry_side": "model",      "backoff": "none", "fallback": "人审" },
+    "E_UPSTREAM_DOWN":     { "max_retries": 1, "breaker": true,            "fallback": "跳过该能力并说明" },
+    "E_MODEL_REFUSED":     { "max_retries": 1, "transform": "换措辞",       "fallback": "人工处理" },
+    "E_CONTEXT_OVERFLOW":  { "max_retries": 1, "transform": "压缩上下文",    "fallback": "分段处理" }
+  },
+  "retry_budget": {
+    "retry_ratio_max": 0.1,
+    "accounting": "per-client token bucket",
+    "ceilings": ["max_retries", "max_cost", "deadline"],
+    "auto_retry_non_idempotent": false
+  }
+}
 ```
 
-三态迁移（上面的实现只写了 closed/open 两态，half-open 是恢复探测的关键补齐）：
+`does_not_count` 这一行最容易写错。**429 是上游在礼貌地让你慢下来，不是它死了**：把限流计入熔断失败，一次区域性配额打满就会误开整条链路的闸，把「等一会就好」升级成「这条路 60 秒内彻底不走」。参数校验失败与模型拒绝更是自家问题——连续五次「模型把日期写成字符串」不该让某个支付网关进入熔断态，那只会让你看不见它真的挂了。冷却 60 秒也不是随手取的整数：它的量级来自上游 SLA 里你能容忍的不可用时长，而且必须配 `half_open_probe=1` 才成立——半开时一次放进十个请求，等于在故障没痊愈时自己再造一次重试风暴。
+
+三态迁移（上面那份配置只声明了阈值和时钟，恢复这件事全靠 half-open 撑起来）：
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
@@ -82,6 +98,78 @@ flowchart LR
   H -- 成功 --> C
   H -- 仍失败 --> O
 ```
+
+## 分步演示：一次 `E_RATE_LIMIT` 从报错走到降级落地
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：先问这件事能不能重做
+
+判序不能反过来：第一步只看**幂等性**。转账、发信、下单这类带外部副作用的动作，重复执行等于重复扣款，配置里那条 `auto_retry_non_idempotent: false` 就是为它准备的——要么带幂等键（`run_id + step_id`）让上游去重，要么直接升级人审。这一关没过，后面所有参数都只在放大事故。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：归类，拿到六个分类码之一
+
+错误信号来自三处：HTTP 状态（429 / 5xx）、异常类型（超时、连接失败）、上游报文里自带的 `error.code`。把它们收敛成 `E_RATE_LIMIT` / `E_TIMEOUT` / `E_TOOL_INVALID_ARGS` / `E_UPSTREAM_DOWN` / `E_MODEL_REFUSED` / `E_CONTEXT_OVERFLOW` 中的一个，再按 `retry_policy` 查这张表。**分错类的代价不是慢，是走错分支**：把参数错误归到「瞬时」，就会拿着同一份脏参数重试五次。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：按类退避，等待时间交给抖动
+
+`E_RATE_LIMIT` 走 `2^n + jitter`、上限 5 次；`E_TIMEOUT` 走线性等待、只给 2 次；`E_TOOL_INVALID_ARGS` **不等待**，直接把校验错误原文回填给模型，模型侧最多改 2 次。full jitter 的写法是 `t_n = rand(0, min(t_max, t_0 · 2^(n-1)))`——不加抖动，同一批失败的客户端会在同一时刻齐步回来，把刚喘过气的下游再打倒一次。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：撞预算闸，三条天花板任一触顶就停
+
+次数之外还有成本与时间：`ceilings` 里的 `max_cost` 和 `deadline` 任一先到，重试立刻停止并转入降级链。全局再看一眼重试比：`retry_ratio_max = 0.1`，**按调用方各记一个令牌桶**——共享一个桶时，一个坏客户端能把所有人的重试预算烧光，这是局部故障放大成全局雪崩的标准路径。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：把进度说出来，并把自愈记进统计
+
+对用户透明不是礼貌问题：「正在重试第 2/3 次」和静默转圈的区别，就是工单和事故的区别。内部记账同步做——自愈成功的重试**不告警但入统计**，只有真正影响任务完成的错误才升 P1。统计里最值得盯的是每类错误的重试率与最终成功率，它是下一轮调 `max_retries` 的唯一依据。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：进降级链，并在结果上留标记
+
+顺序固定：主模型 → 备模型 → 缩水任务（少步骤、少工具）→ 人工信箱，每一级都要写清触发条件。落到哪一级都必须在结果里标注「本回答由降级模型生成」——降级不是异常，是一条**有痕迹的正常路径**，用户拿降级输出当正常结果做决策，才是事故放大的地方。
+{% endstep %}
+{% endstepper %}
+
+## 四种结局，四条分支（点标签切换）
+
+同一份错误报文，判据不同就走成四条完全不同的路。四个标签对应四种收场。
+
+{% tabs %}
+{% tab title="瞬时错误：重试就活" %}
+`E_RATE_LIMIT` / `E_TIMEOUT`，幂等性已确认。按表执行：429 最多 5 次、退避 `2^n + jitter`；超时最多 2 次、线性等待，用完就转「缩短任务」。把 `max_retries` 从 5 调到 3 看着像省钱，实际是把恢复窗口内的请求更早推向降级——用户拿到的答案质量下降是隐形的，多花的 token 是显形的，两边要一起算。反过来给到 8 次也救不了真正的故障，只是让 P95 延迟翻倍。
+{% endtab %}
+
+{% tab title="幂等冲突：重试就是事故" %}
+非幂等动作（下单、退款、发信）在任何错误码下都**不进自动重试**。带幂等键时上游会去重，同一个 `run_id + step_id` 重发只结算一次，此时重试才安全；没带键就直接停手、升级人审。这条分支的判断成本极低（一次字符串比较），漏掉它的代价却是一笔真实的重复扣款——把幂等判断放在分类码之前，是本页唯一不许调换顺序的一步。
+{% endtab %}
+
+{% tab title="需要人批：回填救不了" %}
+`E_TOOL_INVALID_ARGS` 走完模型侧 2 次自修正仍失败，或工具风险级是 `high`（退款、删数据、对外发信），闸门就不该再让模型自己拍。交给人看的是这次调用的 `name` + 完整 `input` + 已试过的两次错误原文，而不是「Agent 说它需要帮助」。人工批准即数据分支：批准继续执行，驳回就回填一条拒绝原因，模型能据此提别的方案。
+{% endtab %}
+
+{% tab title="预算耗尽：降级不是失败" %}
+次数 / 成本 / deadline 任一触顶，或熔断器处于 open（`threshold=5` 已把 `open_until` 推到 60 秒后）。此时继续重试只是把预算烧在同一条死路上：换备模型 → 仍不行就缩水任务（砍步骤、砍工具面）→ 最后进人工信箱，并给结果打「由降级生成」标记、上报 P1。`E_MODEL_REFUSED` 的措辞改写只有 1 次预算，1 次就归入这条分支，别把它当瞬时错误反复试探安全策略。
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+**三个数字要一起调**：`threshold=5` 与 `cooldown=60` 决定熔断灵敏度，`retry_ratio_max=0.1` 决定会不会引发重试风暴。它们互为代价——阈值调低（更快熔断）通常要把冷却时间也调短，否则一次抖动就把能力下线一整分钟；重试比一旦超过 10%，退避省下来的时间会被上游排队全数还回来。
+{% endhint %}
 
 ## 源码案例
 

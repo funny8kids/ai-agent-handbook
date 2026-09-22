@@ -2,7 +2,7 @@
 tags: [agents-api, openai, harness, sandbox, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # OpenAI Agents API
@@ -29,39 +29,40 @@ updated: 2026-09-22
 - 环境可以用 OpenAI hosted sandbox，或 E2B / Modal / Cloudflare / Daytona / Vercel 等伙伴沙箱
 - 已有 OpenAI API Key；模型示例常用 `gpt-6-astra`
 
-## 可运行示例
+## 一次 `sessions.create` 的真实形状
 
-```javascript
-import OpenAI from "openai";
+接入面只有一个入口：用 API Key 初始化 `openai` 客户端，然后打 `client.beta.agents.sessions.create`，一次调用换回一个 session。报文分四块——`agent` 决定「谁在跑、能用什么」，`environment` 决定「在哪跑」，`vault_ids` 决定「凭据从哪注入」，`input` 是任务本身。下面就是那次调用发出去的完整形状：
 
-const client = new OpenAI();
-
-const session = await client.beta.agents.sessions.create({
-  agent: {
-    model: "gpt-6-astra",
-    tools: [
+```json
+{
+  "agent": {
+    "model": "gpt-6-astra",
+    "tools": [
       {
-        type: "mcp",
-        server_label: "observability",
-        transport: {
-          type: "http",
-          server_url: "https://observability.example.com/mcp",
-        },
-      },
+        "type": "mcp",
+        "server_label": "observability",
+        "transport": {
+          "type": "http",
+          "server_url": "https://observability.example.com/mcp"
+        }
+      }
     ],
-    multi_agent: { enabled: true, max_concurrent_subagents: 3 },
+    "multi_agent": { "enabled": true, "max_concurrent_subagents": 3 }
   },
-  vault_ids: ["vault_YOUR_VAULT_ID"],
-  environment: {
-    type: "openai_hosted",
-    capability_directories: ["/workspace/capabilities/skills"],
+  "vault_ids": ["vault_YOUR_VAULT_ID"],
+  "environment": {
+    "type": "openai_hosted",
+    "capability_directories": ["/workspace/capabilities/skills"]
   },
-  input:
-    "Investigate service-api’s elevated 5xx rate over the last 30 minutes. " +
-    "Delegate deployment, error, and dependency analysis to subagents. " +
-    "Save findings, evidence, and recommended mitigation in /workspace/outputs.",
-});
+  "input": "Investigate service-api’s elevated 5xx rate over the last 30 minutes. Delegate deployment, error, and dependency analysis to subagents. Save findings, evidence, and recommended mitigation in /workspace/outputs."
+}
 ```
+
+三处值得停下来看：
+
+- **`tools` 是异构的**：`type: "mcp"` 这条只声明「有个叫 `observability` 的 MCP server，走 `http` 传输，地址是 `https://observability.example.com/mcp`」，具体工具清单由对端在运行时给出。因此**报文里数不出模型到底能看到几个工具**——这个数量只能在运行时由 tool search 收敛（见下文机制 3）。
+- **`max_concurrent_subagents: 3` 是硬上限而不是提示**：`input` 里恰好派了 deployment、error、dependency 三个方向，3 刚好够用；第 4 个子任务只能排队，不会抢跑。每个子 Agent 有独立上下文，主 Agent 只负责派发与汇总。
+- **`input` 里的落盘路径是接口的一部分**：产物写 `/workspace/outputs`，技能登记在 `capability_directories` 指向的 `/workspace/capabilities/skills`——技能与产物住在同一个沙箱命名空间里，跨会话续跑时才读得回来。
 
 字段要点：
 
@@ -72,6 +73,10 @@ const session = await client.beta.agents.sessions.create({
 | `agent.multi_agent` | 打开子 Agent，并限制并发 |
 | `environment` | `openai_hosted` 或自托管 / 伙伴沙箱 |
 | `input` | 任务自然语言；长任务可异步续跑 |
+
+{% hint style="warning" %}
+**别把 `input` 当配置文件用**：验收标准（DoD）、工具白名单、子 Agent 拓扑应该写成自己仓库里的配置并落盘进 `/workspace`，而不是全塞进一句自然语言。上面这份示例里 `input` 只有三句、`max_concurrent_subagents` 只有 3——换到你自己的任务时，先把「落哪儿、能用啥、并行几个」这三件事定下来，再谈提示词。
+{% endhint %}
 
 ## 核心机制
 
@@ -115,6 +120,90 @@ flowchart TB
 ```
 
 *《图：sessions.create 单向流进 Codex 再落到沙箱；产物回文件系统，只有自托管算力允许 App 直连沙箱、绕开厂商 harness》*
+
+## 分步演示：一次「5xx 排查」从建会话到回读
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0EAFB","primaryBorderColor":"#6D28D9","primaryTextColor":"#1F2937","secondaryColor":"#DFD0F7","tertiaryColor":"#F9F6FD","lineColor":"#AF89EA","actorBkg":"#F3EEFC","actorBorder":"#6D28D9","actorTextColor":"#1F2937","signalColor":"#9969E4","noteBkgColor":"#E5D8F8","noteBorderColor":"#6D28D9","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0EAFB","labelBoxBorderColor":"#6D28D9"}}}%%
+sequenceDiagram
+  participant App as 你的应用
+  participant API as Agents API
+  participant H as Codex harness
+  participant T as 沙箱 · MCP
+  participant F as 会话文件系统
+  App->>API: sessions.create
+  API->>H: 建会话 + 登记技能目录
+  H->>T: tool search 命中后调用
+  H->>F: 读写 /workspace/outputs
+  H-->>App: 事件流（进度 / 续跑）
+  Note over H,F: 逼近上下文上限时自动压缩
+```
+
+*《图：一次 `create` 之后循环全在 API 内跑；应用只订阅事件流，中间产物落在沙箱文件系统，不回上下文》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：一次调用换回一个会话
+
+`beta.agents.sessions.create` 同步返回 session 句柄，之后没有「再发一轮」的固定接口——任务已经交给 harness。`environment.type=openai_hosted` 时沙箱按需拉起（冷启动慢的处理见下文故障表），`capability_directories` 下的技能被登记进会话，`vault_ids` 把凭据注入运行环境而不是写进提示词。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：主 Agent 拆方向，并发被上限卡住
+
+`gpt-6-astra` 读 `input` 得到「30 分钟窗口 + deployment / error / dependency 三个方向」，先派发再汇总。`max_concurrent_subagents: 3` 意味着同时在跑的就是 3 个；子 Agent 各有独立上下文，主 Agent 看到的只有它们的结论，不是它们的过程。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：工具按命中装载，不整表进上下文
+
+真要查指标时，才从 `observability` 这个 MCP server 里拉相关工具的定义。全量 tools 的 token 税与前缀缓存失效，是自建 harness 里最常见、也最难自察的两项浪费——它们不会报错，只会让每一轮都变贵变钝。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：并行与裁剪发生在代码里
+
+programmatic tool calling 允许一个子 Agent 并行发多次查询、在代码里 join 与过滤，只把相关片段回填上下文。机制 3 那句「模型出意图，代码做批量与裁剪」在这里是实际发生的事：三个方向各查五项指标，回填进上下文的是一段合并后的摘要，而不是十五份原始响应——省下的那部分才是 tool search 之外的第二笔账。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：压缩与落盘同时发生
+
+上下文逼近上限时 harness 自动压缩早期轮次，而「丢什么、留什么」不由你决定。所以 DoD、已排除的假设、下一步计划要写进 `/workspace/outputs`——故障表第一行「长任务中途失忆」的本质就是把验收标准只存在早期对话里。
+{% endstep %}
+
+{% step %}
+
+#### 第 6 步：续跑、回读与账单
+
+跑几小时的任务允许应用侧断开再按事件流续跑，恢复点在 API 那一侧。计费只按 token 与工具用量，Agents API 本身不额外收费——所以官方客户反馈里「约 4× 延迟下降」省下的是墙钟时间，不是账单；子 Agent 开得越多，token 那条线只会往上走。
+{% endstep %}
+{% endstepper %}
+
+## 四种配置，四种代价（点标签切换）
+
+{% tabs %}
+{% tab title="关掉子 Agent" %}
+`multi_agent.enabled` 改 `false`：三个方向改由主 Agent 串行做。只有一份上下文，交叉引用更稳、结论更不容易自相矛盾；代价是墙钟时间按方向数近似线性上升，「约 4× 延迟下降」那部分收益直接归零。子任务其实只有一个方向、或者共享事实源还没定下来时，就该关。
+{% endtab %}
+
+{% tab title="并发从 3 拉到 8" %}
+`max_concurrent_subagents: 3 → 8`。子 Agent 各带独立上下文，token 与工具调用量近似线性上涨；更先出问题的是结果互相矛盾——三个方向查同一场 5xx，指标口径不一致时没人兜底。先指定共享文件/数据库作为唯一事实源（见下表最后一列），再谈提高并发。
+{% endtab %}
+
+{% tab title="换成伙伴沙箱" %}
+`environment.type` 从 `openai_hosted` 换成 E2B / Modal / Cloudflare / Daytona / Vercel 之一。换来的是算力规格与冷启动策略自己控（「沙箱冷启动慢」只能靠换档位或预热池解决的那一行），代价是 `capability_directories` 要重新挂、出网策略自己管；架构图里「应用直连沙箱」那条边也只有这一档才成立。
+{% endtab %}
+
+{% tab title="把一个 MCP 拆成三个" %}
+`observability` 单个 server 挂几十个工具时，tool search 也只能减轻 token 税，救不回注意力分配。按用途拆成 `metrics` / `logs` / `deploy` 三个 `server_label`，每份定义更短、命中更准，`transport.server_url` 也各自独立演进。这是「工具全量塞爆上下文」那行的正解，比调提示词有效得多。
+{% endtab %}
+{% endtabs %}
 
 ## 常见故障与排查
 

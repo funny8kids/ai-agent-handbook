@@ -2,7 +2,7 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # AutoGen
@@ -63,16 +63,96 @@ flowchart TD
 
 ## 双 Agent 对话（经典入门例）
 
-```python
-from autogen import AssistantAgent, UserProxyAgent
+两个角色各一份配置，一次对话一个入口——AutoGen 的入门例拆开就是这几个字段：
 
-assistant = AssistantAgent("coder", llm_config=llm_cfg)
-user = UserProxyAgent("reviewer",
-    code_execution_config={"work_dir": "sandbox"})  # 沙箱执行代码
-user.initiate_chat(assistant, message="写个脚本统计本目录代码行数并运行验证")
+```json
+{
+  "agents": [
+    {
+      "class": "AssistantAgent",
+      "name": "coder",
+      "llm_config": "llm_cfg：模型、密钥、重试参数集中在这一个对象里"
+    },
+    {
+      "class": "UserProxyAgent",
+      "name": "reviewer",
+      "code_execution_config": { "work_dir": "sandbox" },
+      "human_input_mode": "默认 ALWAYS：每轮都要人确认一次，全自动跑要显式改成 NEVER",
+      "termination": "Assistant 侧默认看消息里的 TERMINATE 终止标记"
+    }
+  ],
+  "conversation": {
+    "initiator": "reviewer",
+    "target": "coder",
+    "first_message": "写个脚本统计本目录代码行数并运行验证",
+    "max_consecutive_auto_reply": "自动往返上限，默认 10（Studio 画布上那根终止组件写的也是 Max Messages: 10）"
+  }
+}
 ```
 
-这个例子里包含了 AutoGen 最有价值的设计：**「模型写代码 → 框架安全执行 → 报错信息回填 → 模型修正」的闭环**。代码执行被放在受控目录（`work_dir`）中，避免模型直接操作宿主机。
+`initiate_chat` 只是把 `first_message` 投进消息流并启动调度；此后每一轮谁发言由调度决定——群聊时是 GroupChatManager 读消息流挑人，双 Agent 时就是这两个角色互答。这份配置里真正承担风险的只有一个字段：`work_dir`。
+
+## 分步演示：一次「写码 → 跑挂 → 修好」的闭环
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：Assistant 产出代码块
+
+`coder` 收到「统计本目录代码行数并运行验证」，回复一条**带 Python 代码块的消息**。注意它并没有执行任何东西——AutoGen 把「写」和「跑」彻底分成两个角色，写代码的一方没有执行能力，这是它整套安全模型的基座。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：UserProxy 是唯一有手的一方
+
+`reviewer` 从消息里抽出代码块，在 `code_execution_config` 指定的环境落地执行：脚本写进 `work_dir`（这里是 `sandbox`）再运行。执行器可以是本地目录、Docker 或 Jupyter；选本地目录时它继承的是宿主进程的文件与网络权限——`work_dir` 圈住的是文件位置，不是能力边界。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：报错原文回填消息流
+
+执行失败时，**stdout/stderr 原样作为下一轮消息**回给 `coder`。这是 AutoGen 最有价值的设计：报错成为下一轮修正的输入，而不是被吞掉或由人转述。也正因如此，它会自动重试——直到跑通，或者撞到轮次上限。
+
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：收敛靠显式终止，不靠模型自觉
+
+两条终止路径：`coder` 在回答里发出 `TERMINATE` 标记，或自动往返数撞到 `max_consecutive_auto_reply`（默认 10）。没有第三条——同一个语法错误反复提交、每次都被沙箱拒绝再回灌，正是这条闭环最典型的失控形态（对照本页「常见误区」第四条）。
+
+{% endstep %}
+{% endstepper %}
+
+## 同一份配置，四种改法的结局（点标签切换）
+
+{% hint style="warning" %}
+**`work_dir: "sandbox"` 圈住的只是文件落点，不是权限边界**：用本地执行器时，脚本继承的是宿主进程能做的全部事情。这一份配置里唯一会把「研究原型」变成「生产事故」的字段就是它——下面四个标签讲的都是它不同取值的结果。
+{% endhint %}
+
+{% tabs %}
+{% tab title="work_dir 指到宿主目录" %}
+模型生成的脚本能读写它「看到」的一切文件。跑「统计本目录代码行数」这类任务看起来一切正常，一次幻觉出的 `open(..., "w")` 就是事故。这条路径只适合在一次性容器里跑，别拿开发机试。
+{% endtab %}
+
+{% tab title="executor 换成 Docker" %}
+每次执行起一个容器，崩了毁掉的是容器，代价是冷启动延迟与镜像维护——要预装什么包、给不给网络，都变成你要管的配置。这是把「安全边界」从约定变成机制的唯一办法（见 [沙箱与执行环境](../16-ai-infrastructure/sandbox-execution-environments.md)）。
+{% endtab %}
+
+{% tab title="human_input_mode 保持默认 ALWAYS" %}
+每轮都等人回车。研究场景里这是优点：报错回灌前有人看一眼，能提前掐掉死循环。生产批量任务里它是瓶颈——挂起等人这件事不会自己超时（同一个坑见 LangGraph 的 interrupt）。
+{% endtab %}
+
+{% tab title="上限从 10 调到几十轮" %}
+双 Agent 互相自动回复可以一路烧到预算耗尽，而且循环往往收敛不了：同一个语法错误反复提交、每次都被沙箱拒绝再回灌。把上限设成你以为需要的轮数再加一档，超了就升级给人，比事后看账单便宜。
+{% endtab %}
+{% endtabs %}
+
+这两个角色各自能干什么，全写在配置里；拼起来的运行形态就是下面那张时序图。
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
