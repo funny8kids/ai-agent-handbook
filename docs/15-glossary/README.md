@@ -64,6 +64,11 @@ updated: 2026-09-22
 | 图检索增强 | GraphRAG | 用知识图谱增强的 RAG |
 | 会话压缩 | Compaction | 把历史对话摘要化以释放上下文空间 |
 | 睡眠时计算 | Sleep-time Compute | 空闲期先整理记忆、预推导结论，把临场思考挪到查询前 |
+| 文本转 SQL | Text-to-SQL | 把自然语言问题翻译成 SQL 去查结构化数据 |
+| Schema 链接 | Schema Linking | 从海量表列里挑出与本题相关的那几项 |
+| 执行准确率 | Execution Accuracy（EX） | 比 SQL 执行后的结果集是否一致，而非比 SQL 文本 |
+| 难负例 | Hard Negatives | 语义接近却答错的样本，是 embedding 对比微调的涨点主力 |
+| Embedding 微调 | Embedding Fine-tuning | 用领域 (query, 正例, 难负例) 对重训向量，让检索跟上黑话 |
 | 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 |
 
 ## 多智能体与工程
