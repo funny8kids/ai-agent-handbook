@@ -2,7 +2,7 @@
 tags: [embodied-ai, agent, tooling]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 把 Agent 接进机器人：技能库 + ROS 2 桥
@@ -38,113 +38,138 @@ flowchart TB
 
 *《图：Agent 层只递 obj_id 不递坐标——意图队列带幂等键，感知只喂物体登记表；急停与力限绕过前两层直连控制层》*
 
-## 最小可跑：技能注册 + ROS 2 Action 桥接
+## 先看一份真实形状的注册表
 
-```python
-# skill_registry.py —— 把技能当「工具」暴露给 Agent，但语义是机器人级的
-from dataclasses import dataclass
-from typing import Literal
+技能库对语言层暴露的全部东西，就是下面这份 JSON。它同时是「Agent 能看见的说明书」和「控制器能执行的约束」，两边读同一份，才不会出现「语言层以为能做、控制层拒绝执行」。
 
-@dataclass
-class SkillResult:
-    ok: bool
-    reason: str = ""                      # slip / unreachable / timeout / blocked / force_limit
-    evidence: dict | None = None          # 关键帧路径、峰值力、耗时
-
-@dataclass
-class SkillSpec:
-    name: str
-    description: str                      # 给语言层看的自然语言说明
-    params: dict                          # JSON schema（含 obj_id 枚举来自登记表）
-    preconditions: list[str]              # 例："obj visible", "gripper empty"
-    hard_limits: dict                     # 超时、最大力、速度档
-
-SKILLS = [
-  SkillSpec("grasp", "抓取指定物体（内部自动规划接近与抓取姿态）",
-            {"obj_id": "string"}, ["obj visible"], {"timeout_s": 25, "force_n": 30}),
-  SkillSpec("place", "把当前持物放到指定区域",
-            {"region": "sink|table|bin|shelf"}, ["gripper loaded"], {"timeout_s": 20}),
-  SkillSpec("open_drawer", "拉开指定抽屉到可放取的角度",
-            {"drawer": "string"}, [], {"timeout_s": 15, "force_n": 45}),
-  SkillSpec("goto", "底盘移动到指定工位/区域",
-            {"target": "string"}, [], {"timeout_s": 90}),
-  SkillSpec("hand_back", "把手伸到某人身前等待对方放置物体",
-            {"where": "string"}, ["human present"], {"timeout_s": 60}),
-]
-
-def to_tool_schema(specs):                 # 暴露成 function calling 的 tools
-    return [{"type": "function", "function": {
-        "name": s.name, "description": s.description + " 前提: " + "; ".join(s.preconditions),
-        "parameters": {"type": "object", "properties":
-                       {k: {"type": "string"} for k in s.params}}}} for s in specs]
+```json
+{
+  "skills": [
+    {
+      "name": "grasp",
+      "description": "抓取指定物体（内部自动规划接近与抓取姿态）。前提: obj visible",
+      "params": { "obj_id": "string，取值来自物体登记表" },
+      "preconditions": ["obj visible"],
+      "hard_limits": { "timeout_s": 25, "force_n": 30 }
+    },
+    {
+      "name": "place",
+      "description": "把当前持物放到指定区域。前提: gripper loaded",
+      "params": { "region": "sink | table | bin | shelf" },
+      "preconditions": ["gripper loaded"],
+      "hard_limits": { "timeout_s": 20 }
+    },
+    {
+      "name": "open_drawer",
+      "description": "拉开指定抽屉到可放取的角度",
+      "params": { "drawer": "string" },
+      "preconditions": [],
+      "hard_limits": { "timeout_s": 15, "force_n": 45 }
+    },
+    {
+      "name": "goto",
+      "description": "底盘移动到指定工位/区域",
+      "params": { "target": "string" },
+      "preconditions": [],
+      "hard_limits": { "timeout_s": 90 }
+    },
+    {
+      "name": "hand_back",
+      "description": "把手伸到某人身前等待对方放置物体。前提: human present",
+      "params": { "where": "string" },
+      "preconditions": ["human present"],
+      "hard_limits": { "timeout_s": 60 }
+    }
+  ]
+}
 ```
 
-```python
-# ros2_bridge.py —— Agent 的一次调用 = 一个 ROS 2 Action（可取消、带反馈）
-import rclpy
-import json
-from rclpy.node import Node
-from rclpy.action import ActionClient
-from my_robot_interfaces.action import Skill       # 自定义 action：Goal/Result/Feedback
+三件事一眼能看出来：**`description` 里必须拼上前提条件**（语言层就靠这行文字决定要不要调，这份注册表直接投影成 function calling 的 `tools`）；**`params` 收的是 ID 和枚举区域，不是坐标**；**`hard_limits` 是数据不是注释**——它会被塞进下行的目标消息里，控制层据此自杀式超时。
 
-class SkillRunner(Node):
-    def __init__(self):
-        super().__init__("agent_skill_runner")
-        self.clients, self._inflight = {}, {}
+## 分步演示：一次 `grasp` 从派发到回单的完整往返
 
-    def _client(self, name):                       # 一个技能 = 一个 ROS 2 action topic
-        return self.clients.setdefault(name, ActionClient(self, Skill, f"/skills/{name}"))
-
-    def _build_goal(self, skill, args, idempotency_key):
-        g = Skill.Goal()
-        g.skill, g.args_json, g.idempotency_key = skill.name, json.dumps(args), idempotency_key
-        g.deadline_s = skill.hard_limits["timeout_s"]      # 控制层也要有超时，别只靠上层
-        return g
-
-    def send(self, skill, args, run_id, on_feedback=None):
-        cli = self._client(skill.name)
-        gh = cli.send_goal_async(self._build_goal(skill, args, f"{run_id}:{skill.name}"),
-                                 feedback_callback=lambda fb: on_feedback and on_feedback(fb.feedback))
-        return cli, gh                              # 上层 await + 超时；取消走 gh.cancel_goal_async()
-
-    def cancel(self, run_id):                       # 取消必须真的传到控制层
-        if gh := self._inflight.get(run_id):
-            gh.cancel_goal_async()
-
-async def execute_skill(runner, spec, args, run_id):
-    cli, goal_future = runner.send(spec, args, run_id)
-    gh = await goal_future
-    runner._inflight[run_id] = gh
-    if not gh.accepted:                                  # 控制器拒绝（前提条件不满足/已急停）
-        return SkillResult(False, "rejected_by_controller")
-    try:
-        async with asyncio.timeout(spec.hard_limits["timeout_s"]):
-            res = (await gh.get_result_async()).result    # 异步等待，不忙轮询
-            return SkillResult(ok=res.status == 4,        # SUCCEEDED
-                               reason=res.message or "",
-                               evidence={"peak_force_n": res.peak_force,
-                                         "ms": res.elapsed_ms,
-                                         "frames": res.snapshot_urls})
-    except TimeoutError:
-        runner.cancel(run_id)                       # 取消要真的传到控制层！
-        return SkillResult(False, "timeout")
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
+sequenceDiagram
+    participant A as Agent 层
+    participant B as 桥接层
+    participant C as 控制层
+    A->>B: grasp(obj_17) + 幂等键 + 25s
+    B->>C: ROS 2 Action Goal
+    C-->>B: 受理 / 拒绝
+    C-->>B: 执行反馈（进度）
+    B-->>A: ok + 证据（力/耗时/关键帧）
+    Note over A,C: 超时或取消必须一路传到控制层
 ```
 
-```python
-# 规划循环：语言层只管「下一步做什么」，不知道怎么做
-def agent_loop(goal, objects, runner):
-    plan = llm_plan(goal, objects, tools=to_tool_schema(SKILLS))
-    for step in plan.steps(max_steps=12):                     # 步数上限是硬约束
-        if step.needs_human:
-            if not human_approve(step): break                 # Human-in-the-loop
-        res = await execute_skill(runner, SKILLS[step.name], step.args, step.run_id)
-        if not res.ok:
-            if step.retries >= 2:
-                return escalate_to_human(step, res)           # 别硬试：物理世界里重试有代价
-            objects.refresh()                                 # 失败往往意味着场景变了 → 重感知
-            plan = replan(plan, res)                          # 带着失败原因重规划
-    return done(report())
+*《图：一次调用 = 一个可取消的 Action；「拒绝」和「反馈」都是正常报文，只有回单里的 `ok` 才算结论》*
+
+{% stepper %}
+{% step %}
+
+#### 第 1 步：语言层只挑技能，不写动作
+
+规划器拿到上面那份 `tools` 清单和当前物体登记表，产出的是一串「技能名 + obj_id」，并被强加一个**步数上限（示例里是 12 步）**。物理世界里每一步都花钱、花时间、有可能撞坏东西，所以循环必须有硬上限——和 Lab 1 里 `max_steps` 兜底是同一个道理，只是代价从 token 变成了机械臂。
+{% endstep %}
+
+{% step %}
+
+#### 第 2 步：桥接层把一次调用装成一个 Action 目标
+
+组装下行的目标消息时带三样东西：技能名与参数（序列化成 JSON）、**幂等键 `run_id:skill_name`**、**`deadline_s`（取自注册表的 `timeout_s`）**。幂等键保证重放不会重复执行物理动作（对照 [持久化执行](../16-ai-infrastructure/agent-runtime-durable-execution.md)）；`deadline` 下传给控制层，意味着**就算 Agent 那侧卡死，机器自己也会停**——超时不能只靠上层。
+{% endstep %}
+
+{% step %}
+
+#### 第 3 步：控制器有权拒绝，而且拒绝是正常路径
+
+一个技能对应一个 action topic。目标发出去，先等「受理 / 拒绝」——前提条件不满足（夹具里已经拿着东西）、或者系统处于急停态，控制器直接拒绝，桥接层返回一条 `rejected_by_controller` 的结果给语言层。**注意：这一步没有任何异常抛出**，拒绝是数据，不是崩溃，所以 Agent 可以据此换技能。
+{% endstep %}
+
+{% step %}
+
+#### 第 4 步：执行期间靠反馈推进，不靠轮询
+
+受理后进入异步等待：控制层持续上报进度反馈（当前阶段、实测力、已完成比例），上层订阅回调而不是忙轮询——忙轮询既烧 CPU，又会把「取消」的响应延迟拉大。反馈的另一个作用是给多模态模型喂关键帧，让人工升级时看到的是图而不是一串形容词。
+{% endstep %}
+
+{% step %}
+
+#### 第 5 步：回单只有三种可能，每种都要能被机器判定
+
+结果回来时统一成一个形状：
+
+```json
+{
+  "ok": true,
+  "reason": "",
+  "evidence": { "peak_force_n": 12.4, "ms": 4120, "frames": ["snap_01.jpg", "snap_02.jpg"] }
+}
 ```
+
+`reason` 是**枚举**而不是自由文本：`slip / unreachable / timeout / blocked / force_limit / perception_lost / safety_stop / rejected_by_controller`。语言层要的是可分派的失败类别，不是「大概是没抓稳吧」。「没报错」不等于成功——机器人最常见的状态恰恰是安静地什么都没做，所以判定必须看 `ok` 字段与证据。
+{% endstep %}
+{% endstepper %}
+
+## 四种结局，四条分支（点标签切换）
+
+{% tabs %}
+{% tab title="一切顺利" %}
+`ok=true`，带证据回单。规划循环走到下一步，同时把 `scene_version` 一起推进——**抓取这个动作本身改变了世界**（杯子从桌面进了夹具），下一句「放到水槽」引用的必须是新版本。世界版本化是防「按 30 秒前的地图伸手」的唯一办法。
+{% endtab %}
+
+{% tab title="控制器拒绝" %}
+返回 `rejected_by_controller`，物理动作一次都没发生。分支处理是**重感知 + 重规划**：前提条件不满足通常说明语言层对世界的理解过期了（夹具已占用、物体被人的手挡住）。此时最不该做的是「再试一次同样的目标」——同一份前提下重试，结果必然是同一份拒绝。
+{% endtab %}
+
+{% tab title="执行到一半超时" %}
+到 `deadline` 仍没等到结果，桥接层必须**把取消真的传到控制层**，再回一条 `reason=timeout` 的结果。这里藏着本领域最危险的 bug 类别：上层放弃了、日志里写了 timeout，而机械臂还在动。取消信号要一路贯穿到伺服层，急停与力限则干脆绕过前两层直连控制层（见本页开头的分层图）。
+{% endtab %}
+
+{% tab title="同一技能连败两次" %}
+第一次失败后先 `objects.refresh()` 重感知、再带着失败原因重规划；**第二次仍失败就直接升级给人**，不再硬试。物理世界的重试有真实代价：可能刮花物体、可能把夹具拧到卡死。升级时要一并交出去的正是那份证据链——峰值力、耗时、关键帧、已试过的分支——这比「Agent 说它做不到」有用得多。
+{% endtab %}
+{% endtabs %}
 
 ## 生活类比
 
