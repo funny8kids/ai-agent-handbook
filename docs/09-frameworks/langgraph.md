@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-23
 ---
 
-# LangGraph
+# LangGraph：框架用法与选型
 
 {% hint style="info" %}
 **一句话**：LangGraph 把 Agent 表达为「状态图」：节点是步骤、边是流转、checkpoint 提供持久化与时间旅行——复杂 Agent 工作流的当前主流选择。

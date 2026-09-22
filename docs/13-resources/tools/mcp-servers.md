@@ -2,10 +2,10 @@
 tags: [mcp, tooling, resource]
 type: resource
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# MCP Servers
+# MCP Servers：收录理由与注意事项
 
 {% hint style="info" %}
 **一句话**：MCP 工具生态：官方与社区的数百个现成 Server，Agent 工具的「应用商店」。

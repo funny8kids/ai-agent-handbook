@@ -2,10 +2,10 @@
 tags: [mcp, tooling, framework]
 type: resource
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# MCP Servers
+# MCP Servers：常用清单与误区
 
 {% hint style="info" %}
 **一句话**：MCP Server 生态是 Agent 工具的「应用商店」：官方与社区维护着数百个现成 Server，覆盖数据库、开发、办公、浏览器等场景。

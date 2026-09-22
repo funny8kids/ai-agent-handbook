@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-23
 ---
 
-# LangChain
+# LangChain：框架用法与选型
 
 {% hint style="info" %}
 **一句话**：LangChain 是最流行的 LLM 应用开发框架：统一模型/向量库/工具的抽象，配以链条式编排——生态最大，抽象也最多，要「用薄不要用厚」。

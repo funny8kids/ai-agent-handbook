@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-23
 ---
 
-# LangChain
+# LangChain：项目档案与点评
 
 {% hint style="info" %}
 **一句话**：最流行的 LLM 应用开发框架：数百个集成 + 统一抽象，生态最大的「全家桶」。

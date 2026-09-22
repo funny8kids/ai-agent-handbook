@@ -2,10 +2,10 @@
 tags: [framework, resource]
 type: resource
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# LangGraph
+# LangGraph：项目档案与点评
 
 {% hint style="info" %}
 **一句话**：把 Agent 表达为状态图的主流编排框架：checkpoint、interrupt、条件边，复杂工作流与多 Agent 的当前首选。

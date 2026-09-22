@@ -66,6 +66,7 @@ def audit():
             problems.append("NOH1 %s has no markdown H1" % rel)
         elif norm(h1) != norm(label):
             problems.append("TITLE %s nav=%r h1=%r" % (rel, label, h1))
+    problems += duplicate_titles(rows)
     known = {os.path.relpath(os.path.join(dp, fn), DOCS).replace("\\", "/")
              for dp, _, fns in os.walk(DOCS) for fn in fns if fn.endswith(".md")}
     known -= {"SUMMARY.md", "asset-MANIFEST.md"}
@@ -74,6 +75,25 @@ def audit():
             continue
         problems.append("ORPHAN %s is not registered in SUMMARY" % rel)
     return rows, problems
+
+
+def duplicate_titles(rows):
+    """Two pages must not publish the same title.
+
+    Because the label *is* the published <title>/<h1>, a repeated label means the sidebar, the
+    browser tab, site search results and llms.txt all show the same words for two different
+    pages — a reader cannot tell a framework chapter from the resource entry it points to. This
+    axis is invisible to the label-vs-H1 compare above, which only ever looks at one page at a
+    time. Fix by qualifying both titles, never by deleting a page.
+    """
+    by_label = {}
+    for rel, label, _ in rows:
+        by_label.setdefault(norm(label), []).append(rel)
+    out = []
+    for key, rels in sorted(by_label.items()):
+        if len(rels) > 1:
+            out.append("SAMETITLE %s" % " == ".join(rels))
+    return out
 
 
 def run_controls(rows, problems):
@@ -88,9 +108,21 @@ def run_controls(rows, problems):
     # phantom control: a genuinely different title must still read as a divergence.
     assert norm("本章导读") != norm("06 记忆与 RAG") != norm("完全不同的标题"), \
         "control: normaliser equates two different titles (ruler too loose)"
+    # duplicate-title axis: hit control (a real repeat must surface) + phantom (qualifiers clear it)
+    hits = duplicate_titles([("09-frameworks/langchain.md", "LangChain", "LangChain"),
+                             ("13-resources/projects/langchain.md", "LangChain", "LangChain"),
+                             ("09-frameworks/x.md", "LangChain：框架用法与选型", "h"),
+                             ("13-resources/projects/x.md", "LangChain：项目档案与点评", "h")])
+    assert hits == ["SAMETITLE 09-frameworks/langchain.md == 13-resources/projects/langchain.md"], \
+        "control: duplicate-title axis does not work: %s" % hits
+    assert not duplicate_titles([("a.md", "LangChain：框架用法与选型", "h"),
+                                 ("b.md", "LangGraph：框架用法与选型", "h")]), \
+        "control: distinct titles reported as duplicates"
     diverged = [p for p in problems if p.startswith("TITLE")]
-    print("controls: entries=%d TITLE-findings=%d, punctuation-only difference accepted / different title rejected"
-          % (len(rows), len(diverged)))
+    same = [p for p in problems if p.startswith("SAMETITLE")]
+    print("controls: entries=%d TITLE-findings=%d SAMETITLE-findings=%d, punctuation-only difference accepted / "
+          "different title rejected / repeated title caught"
+          % (len(rows), len(diverged), len(same)))
 
 
 def main():

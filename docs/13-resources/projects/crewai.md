@@ -2,10 +2,10 @@
 tags: [framework, multi-agent, resource]
 type: resource
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
-# CrewAI
+# CrewAI：项目档案与点评
 
 {% hint style="info" %}
 **一句话**：角色扮演式多 Agent 框架：role/goal/backstory 三件套组队干活，上手最快的多 Agent 框架。

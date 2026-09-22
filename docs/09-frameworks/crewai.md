@@ -5,7 +5,7 @@ status: published
 updated: 2026-09-23
 ---
 
-# CrewAI
+# CrewAI：框架用法与选型
 
 {% hint style="info" %}
 **一句话**：CrewAI 用「球队隐喻」组织多 Agent：角色（Agent）、任务（Task）、团队（Crew）、流程（Process），上手最快的角色化多 Agent 框架。
