@@ -2,7 +2,7 @@
 tags: [planning, agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Plan-and-Execute
@@ -42,12 +42,13 @@ $$
 
 $$
 \text{Cost}_{\text{ReAct}}\approx\sum_{t=1}^{T}\big|\text{ctx}_t\big|
-\;\;\sim\;\;O(T^2)\quad(\text{上下文随步数线性增长})$$
+\;\;\sim\;\;O(T^2)\quad(\text{上下文随步数线性增长})
+$$
 
 而 Plan-and-Execute 的计划只算一次，执行步只需局部上下文：
 
 $$
-\text{Cost}_{\text{P&E}}\approx\big|\text{ctx}_1\big|+\sum_{t=1}^{T}\big|\text{step}_t\big|
+\text{Cost}_{\text{P\&E}}\approx\big|\text{ctx}_1\big|+\sum_{t=1}^{T}\big|\text{step}_t\big|
 $$
 
 **步骤数越多、单步上下文越短，优势越大**。代价是计划一旦错了，执行会沿着错误方向走——所以必须配 Replan。另外 $$\pi_{\text{exec}}$$ 因为任务简单，可以用更便宜的小模型，进一步降本。

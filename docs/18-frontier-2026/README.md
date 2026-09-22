@@ -2,7 +2,7 @@
 tags: [frontier, models, agents, 2026]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 本章导读：2026 前沿
@@ -15,7 +15,7 @@ updated: 2026-09-22
 
 01–17 章讲的是**原理与工程骨架**（循环、协议、记忆、评估、基础设施）。这些骨架稳定，但**模型名、产品名、基准代际**每季度都在换。把易变的前沿内容集中在本章，正文知识页只需链接过来，不必整本追改。
 
-写这一章时（2026-09-12）刚发生的事：
+写这一章起于 2026-09-12，下表随前沿补记（最近一次 2026-09-23）：
 
 | 时间 | 事件 | 对 Agent 工程的含义 |
 |---|---|---|
@@ -25,6 +25,7 @@ updated: 2026-09-22
 | 2026-09-09 | **GPT-6 Astra** | computer use / 浏览 / 科研 / 网安 SOTA |
 | 2026-09-10 | **OpenAI Agents API** 公测 | 托管 Codex harness：压缩、tool search、子 Agent |
 | 2026-09-10 | GPT-Live-1 API | 实时语音 Agent 运行时 |
+| 2026-09-15 | **TypeSafe AI 发布 Jev（System One 模型）** | 不生成文字、只输出带置信度的类型化决策；Agent 的高频判定节点从此不必再用贵模型抽检 |
 
 ## 本章地图
 
@@ -46,6 +47,7 @@ flowchart TB
 | [OpenAI Agents API](openai-agents-api.md) | 用一次 API call 起托管 Agent，并理解压缩 / tool search / 子 Agent |
 | [Claude Agent SDK](claude-agent-sdk.md) | 分清 Agent SDK / CLI / Client SDK / Managed Agents |
 | [模型原生 vs 自建 Harness](model-native-vs-harness.md) | 判断你的场景该买托管 harness 还是自己写循环 |
+| [System One 决策模型：Jev](system-one-decision-models.md) | 判断哪些高频判定该从贵模型搬走，以及怎么给它标阈值 |
 | [通用 Agent 产品](../12-applications/general-agent-products.md) | 看懂 Manus 类「通用助理」与编程 Agent 的差异 |
 | [实时语音 Agent](../12-applications/voice-agent.md) | 理解语音 Agent 的延迟预算与工具打断模型 |
 | [2026 协议栈](protocol-stack-2026.md) | 把 MCP / A2A / AG-UI / agents.md / Skills 放进同一张图 |

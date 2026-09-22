@@ -2,7 +2,7 @@
 tags: [basics, resource]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 术语表
@@ -40,6 +40,10 @@ updated: 2026-09-22
 | 测试期计算 | Test-time Compute | 推理阶段多花算力换准确率，与训练期算力相对 |
 | 思考预算 | Reasoning Effort / Thinking Budget | 给模型「想多久」设的档位或 token 上限 |
 | 量化 | Quantization | 降低权重数值精度以压缩模型 |
+| 决策模型 | Decision Model / System One Model | 不生成文字、只并行输出带置信度的类型化判断（是否/选档/打分） |
+| 期望校准误差 | ECE（Expected Calibration Error） | 模型自称的置信度与真实准确率差多远，判定器能否上线的主指标 |
+| 置信度—覆盖率 | Confidence–Coverage Trade-off | 只采信高置信判定会掉覆盖率：准确率与「能用多少比例」必须一起报 |
+| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判，转交更强模型或人审的那条出口 |
 
 ## 工具与协议
 

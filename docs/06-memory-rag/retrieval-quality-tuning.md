@@ -2,7 +2,7 @@
 tags: [rag, memory, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # RAG 检索质量调优
@@ -60,7 +60,7 @@ $$
 \mathrm{RRF}(d)=\sum_{r\in R}\frac{1}{k+\mathrm{rank}_r(d)},\qquad k\approx 60
 $$
 
-某文档在各路召回里排名越靠前，累加的融合分越高；$k$ 是平滑常数，压掉头部名次的过度主导。
+某文档在各路召回里排名越靠前，累加的融合分越高；$$k$$ 是平滑常数，压掉头部名次的过度主导。
 
 **检索侧的两个基本盘**——召回看「别漏」，排序看「把对的排前面」：
 
@@ -78,7 +78,7 @@ $$
 \mathrm{nDCG@}k=\frac{\mathrm{DCG@}k}{\mathrm{IDCG@}k}
 $$
 
-分母 $\log_2(i+1)$ 让越靠后的命中折扣越大，$\mathrm{IDCG}$ 是理想排序的 DCG（归一化用），于是 nDCG 落在 0–1，可直接跨查询比较。重排环节「把对的排前面」的成效，就用它来量。
+分母 $$\log_2(i+1)$$ 让越靠后的命中折扣越大，$$\mathrm{IDCG}$$ 是理想排序的 DCG（归一化用），于是 nDCG 落在 0–1，可直接跨查询比较。重排环节「把对的排前面」的成效，就用它来量。
 
 ## 检索质量漏斗
 

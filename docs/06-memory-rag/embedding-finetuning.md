@@ -2,7 +2,7 @@
 tags: [rag, embedding, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Embedding 微调：让检索跟上你的领域
@@ -21,13 +21,13 @@ updated: 2026-09-22
 
 ### 1. 对比学习（InfoNCE）
 
-给一个 query $q$、它的正例 $d^+$、若干负例 $\{d_j^-\}$，把三者的相似度放进一个 softmax：拉近正例、推开负例。
+给一个 query $$q$$、它的正例 $$d^+$$、若干负例 $$\{d_j^-\}$$，把三者的相似度放进一个 softmax：拉近正例、推开负例。
 
 $$
 \mathcal{L}_{\text{NCE}}=-\log\frac{\exp(\mathrm{sim}(q,d^{+})/\tau)}{\exp(\mathrm{sim}(q,d^{+})/\tau)+\sum_{j}\exp(\mathrm{sim}(q,d_{j}^{-})/\tau)}
 $$
 
-$\tau$ 是温度，越小越「较真」于最难的那几个负例。Sentence-BERT 证明：用孪生网络结构在（句对, 标签）上微调，就能把任意句子编码器变成好用的句向量。
+$$\tau$$ 是温度，越小越「较真」于最难的那几个负例。Sentence-BERT 证明：用孪生网络结构在（句对, 标签）上微调，就能把任意句子编码器变成好用的句向量。
 
 ### 2. 难负例是灵魂
 

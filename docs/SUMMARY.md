@@ -221,6 +221,7 @@
 * [OpenAI Agents API](18-frontier-2026/openai-agents-api.md)
 * [Claude Agent SDK](18-frontier-2026/claude-agent-sdk.md)
 * [模型原生 vs 自建 Harness](18-frontier-2026/model-native-vs-harness.md)
+* [System One 决策模型：Jev](18-frontier-2026/system-one-decision-models.md)
 * [Computer Use 2026](18-frontier-2026/computer-use-2026.md)
 * [评估 2026：基准代际](18-frontier-2026/eval-2026.md)
 * [2026 协议栈](18-frontier-2026/protocol-stack-2026.md)

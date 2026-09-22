@@ -2,7 +2,7 @@
 tags: [llm, safety, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # RLHF、DPO 与对齐
@@ -19,10 +19,10 @@ updated: 2026-09-22
 
 ### 1. 奖励模型：把偏好学成一个打分器
 
-偏好数据形如「对同一个问题 $$x$$，回答 $$y_w$$ 优于 $$y_l$$」（$$w$$=winner，$$l$$=loser）。假设存在一个潜在奖励 $$r^\*(x,y)$$，人类偏好由 Bradley–Terry 模型生成：
+偏好数据形如「对同一个问题 $$x$$，回答 $$y_w$$ 优于 $$y_l$$」（$$w$$=winner，$$l$$=loser）。假设存在一个潜在奖励 $$r^{*}(x,y)$$，人类偏好由 Bradley–Terry 模型生成：
 
 $$
-P(y_w\succ y_l\mid x)=\sigma\big(r^\*(x,y_w)-r^\*(x,y_l)\big)
+P(y_w\succ y_l\mid x)=\sigma\big(r^{*}(x,y_w)-r^{*}(x,y_l)\big)
 $$
 
 其中 $$\sigma(z)=1/(1+e^{-z})$$。于是训练奖励模型 $$r_\phi$$ 就是最大化该似然的负对数：

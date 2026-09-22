@@ -2,7 +2,7 @@
 tags: [frontier, models, gpt-6, claude, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 2026 前沿模型地图
@@ -19,6 +19,7 @@ updated: 2026-09-22
 - **GPT-6 Astra**（`gpt-6-astra`，2026-09-09）：OpenAI 当前最强工作型模型；computer use / 浏览 / 软件工程 / 网络安全 / 科研全面拉高；首次触达 Preparedness **Critical 网络安全**阈值
 - **Claude Fable 5.1 / Mythos 5.1**（`claude-fable-5-1`，2026-09-01）：同一底模、不同防护档；Fable 面向大众，Mythos 走可信访问（网安 / 生命科学）
 - **Claude Opus 5**（2026-07-24）：长时程 Agent 的 Opus 档，Fable 5.1 出现前的主力
+- **还有一条分叉不在表里**：Jev（2026-09-15）**不是更强的对话模型，而是另一种物种**——只做判断、不生成文字。上面三个模型争的是「谁更能干活」，它抢的是「每步都要问一次的那类调用」。见 [System One 决策模型](system-one-decision-models.md)
 - 读榜单必须带上 **harness + effort + 防护是否干预**；Astra 与 Fable 的官方数字都标明了这些条件
 - 缓存读价格成为 Agent 成本主战场：Fable 5.1 将 cache read 降至约 **$0.25 / 1M**（较 Fable 5 低 75%），高 agentic 负载总成本可降约 45%
 
