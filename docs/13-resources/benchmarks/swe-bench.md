@@ -32,16 +32,21 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart TD
-    I["真实 GitHub issue"] --> B["Docker 环境：停在 issue 之前的 base commit"]
-    B --> A["Agent 阅读代码库，产出 patch"]
-    A --> H["测试 harness：应用 patch 后重跑测试"]
-    H --> F{"FAIL_TO_PASS：issue 相关测试全部转绿？"}
+flowchart LR
+  subgraph JUDGE["判分：两道门禁串联"]
+    F{"FAIL_TO_PASS<br/>issue 相关测试全部转绿？"} -->|"是"| P{"PASS_TO_PASS<br/>其余测试无回归？"}
     F -->|"否"| Z["该题不得分"]
-    F -->|"是"| P{"PASS_TO_PASS：其余测试无回归？"}
     P -->|"否"| Z
     P -->|"是"| W["该题解决，计入解决率"]
+  end
+  subgraph SETUP["题目怎么摆出来"]
+    I["真实 GitHub issue"] --> B["Docker 环境<br/>停在 issue 之前的 base commit"]
+    B --> A["Agent 阅读代码库<br/>产出 patch"]
+    A --> H["测试 harness<br/>应用 patch 后重跑测试"]
+  end
 ```
+
+*《图：SWE-bench 的一题两阶段——上排把真实 issue 封进 Docker 让 Agent 产出 patch，patch 交进下排；下排两道门禁任一不过即不得分》*
 
 ## 上手建议
 

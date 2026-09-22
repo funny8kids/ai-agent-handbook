@@ -2,7 +2,7 @@
 tags: [rag, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 向量数据库
@@ -98,10 +98,8 @@ $$
 flowchart LR
   A[查询] --> B[Embedding]
   B --> C[ANN 索引<br/>HNSW/IVF]
-  C --> D[候选 Top-50]
-  D --> E[元数据过滤<br/>权限/时间/租户]
-  E --> F[Rerank 精排]
-  F --> G[Top-5 给 LLM]
+  C --> D["候选 Top-50 + 元数据过滤<br/>权限/时间/租户"]
+  D --> E["Rerank 精排<br/>Top-5 给 LLM"]
 ```
 
 ## 源码案例

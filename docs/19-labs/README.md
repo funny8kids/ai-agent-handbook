@@ -22,18 +22,17 @@ updated: 2026-09-22
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
 flowchart LR
-    L1[Lab1 最小 ReAct 闭环] --> L2[Lab2 手写迷你 RAG]
-    L2 --> L3[Lab3 手写迷你 MCP]
-    L3 --> L4[Lab4 三角色协作]
-    L4 --> L5[Lab5 评测与 trace]
-    L5 --> L6[Lab6 护栏与接真模型]
-    L1 -.对应章节.-> C1[04 推理]
-    L2 -.-> C2[06 记忆与 RAG]
-    L3 -.-> C3[05 工具协议]
-    L4 -.-> C4[08 多智能体]
-    L5 -.-> C5[10/11 评测与可观测]
-    L6 -.-> C6[10 安全]
+  subgraph S2["第二阶：协作与治理"]
+    L4["Lab4 三角色协作<br/>对应章节：08 多智能体"] --> L5["Lab5 评测与 trace<br/>对应章节：10/11 评测与可观测"]
+    L5 --> L6["Lab6 护栏与接真模型<br/>对应章节：10 安全"]
+  end
+  subgraph S1["第一阶：手写单 Agent 内核"]
+    L1["Lab1 最小 ReAct 闭环<br/>对应章节：04 推理"] --> L2["Lab2 手写迷你 RAG<br/>对应章节：06 记忆与 RAG"]
+    L2 --> L3["Lab3 手写迷你 MCP<br/>对应章节：05 工具协议"]
+  end
 ```
+
+*《图：实验地图——上排三关手写单 Agent 内核（推理、记忆、工具），下排三关进入协作与治理；六个实验相互独立，但按编号顺序做收益最大》*
 
 ## 六个实验各练到什么
 

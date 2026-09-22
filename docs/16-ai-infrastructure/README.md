@@ -2,7 +2,7 @@
 tags: [engineering, infrastructure, advanced]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 16 AI 基础设施
@@ -40,14 +40,14 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
-  REQ[Agent 请求<br/>稳定前缀 + 工具] --> GW[⑥ 模型网关<br/>路由 · 配额 · 审计]
-  GW --> RT[⑦ 持久化运行时<br/>checkpoint · 幂等]
-  RT --> CACHE{② 前缀缓存命中?}
-  CACHE -- 命中 · 省 prefill --> ENG[① 推理引擎<br/>prefill → decode]
-  CACHE -- 未命中 · 重算 --> ENG
+flowchart TB
+  REQ[Agent 请求<br/>稳定前缀+工具] --> GW[⑥ 模型网关<br/>路由/配额/审计]
+  GW --> RT[⑦ 持久化运行时<br/>checkpoint/幂等]
+  RT --> CACHE{② 缓存命中?}
+  CACHE -- 命中省 prefill --> ENG[① 推理引擎<br/>prefill → decode]
+  CACHE -- 未命中重算 --> ENG
   ENG --> TOOL[⑤ 沙箱执行工具]
-  TOOL -- 结果 + 历史追加 --> RT
+  TOOL -- 结果+历史追加 --> RT
   RT --> OBS[⑨ 可观测与评估]
   GPU[③ GPU 调度] -. 供给算力 .-> ENG
 ```

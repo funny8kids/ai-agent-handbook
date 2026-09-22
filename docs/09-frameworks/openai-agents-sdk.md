@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # OpenAI Agents SDK
@@ -47,18 +47,18 @@ $$
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
 sequenceDiagram
   participant U as 用户
-  participant GR as 输入 Guardrail（并行旁路）
+  participant GR as 输入 Guardrail
   participant R as Runner（主循环）
   participant T as 分诊 Agent
   participant F as 退款 Agent
   U->>GR: 我上周买的东西想退款
-  U->>R: 同一请求（安检不阻塞主任务）
+  U->>R: 同一请求<br/>安检不阻塞主任务
   R->>T: 开始运行分诊 Agent
-  Note over T: 工具列表含 transfer_to_refund_agent
-  T->>R: 调用该「工具」＝移交控制权
+  Note over T: 工具含 transfer_to_refund
+  T->>R: 调用该「工具」<br/>＝移交控制权
   R->>F: 切换当前 Agent，继续循环
   F-->>R: 产出最终回答
-  R-->>U: 返回结果（若 guardrail 触发则取消主任务）
+  R-->>U: 返回结果<br/>guardrail 触发则取消主任务
 ```
 
 *《图：Agents SDK 运行循环——输入 guardrail 与主 Agent 并行安检；handoff 被建模为特殊工具，模型「调工具」即「换 Agent」》*

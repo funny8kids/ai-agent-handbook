@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # LlamaIndex
@@ -38,17 +38,16 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart TD
-  subgraph OFF["索引侧（离线）"]
-    RD["Reader 数据连接器<br/>SimpleDirectoryReader / LlamaHub"] --> NParser["Node Parser 切块<br/>句窗 / 层级 / 语义切块"]
-    NParser --> IDX[("Index<br/>Vector / KG / Summary")]
-  end
+flowchart LR
   subgraph ON["查询侧（在线）"]
     Q[用户问题] --> RET["Retriever<br/>向量 / 混合 / AutoMerging"]
     RET --> SYN["Query Engine<br/>组装上下文 + LLM 生成"]
     SYN --> ANS["回答 + 引用"]
   end
-  IDX --> RET
+  subgraph OFF["索引侧（离线）"]
+    RD["Reader 数据连接器<br/>SimpleDirectoryReader / LlamaHub"] --> NParser["Node Parser 切块<br/>句窗 / 层级 / 语义切块"]
+    NParser --> IDX[("Index<br/>Vector / KG / Summary")]
+  end
 ```
 
 *《图：LlamaIndex 管线——离线索引与在线查询两段分离，Node Parser 与 Retriever 是独立可替换环节，失败模式可逐段定位》*

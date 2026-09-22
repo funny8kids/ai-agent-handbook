@@ -35,16 +35,16 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
-flowchart LR
+flowchart TB
   A[1950<br/>图灵测试] --> B[1956 达特茅斯<br/>会议 · AI 诞生]
-  B --> C[1973 第一次寒冬<br/>算力不足]
+  B --> C[1973<br/>第一次寒冬<br/>算力不足]
   C --> D[1986<br/>反向传播普及]
-  D --> E[1997<br/>深蓝胜卡斯帕罗夫]
-  E --> F[2012 AlexNet<br/>深度学习复兴]
-  G[2017<br/>Transformer] --> H[2020 GPT-3<br/>规模涌现]
-  H --> I[2022 ChatGPT<br/>LLM 出圈]
-  I --> J[2024 o1 / 2025 R1<br/>推理模型]
-  J --> K[2025-2026<br/>Agent Harness 时代]
+  D --> E[1997<br/>深蓝胜<br/>卡斯帕罗夫]
+  E --> F[2012<br/>AlexNet<br/>深度学习复兴]
+  G[2017<br/>Transformer] --> H[2020<br/>GPT-3<br/>规模涌现]
+  H --> I[2022<br/>ChatGPT<br/>LLM 出圈]
+  I --> J[2024 o1<br/>2025 R1<br/>推理模型]
+  J --> K[2025-2026<br/>Agent<br/>Harness 时代]
 ```
 
 *《图：时间线分两行读，上行 1950→2012，下行 2017→2026 接续》*

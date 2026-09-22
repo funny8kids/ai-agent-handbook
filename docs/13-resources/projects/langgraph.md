@@ -30,7 +30,7 @@ LangGraph 的出发点是一个明确的判断：**Agent 的难点通常不在�
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart LR
+flowchart TB
     A["节点 A：LLM 调用"] -->|"条件边：读 state 决定走向"| B["节点 B：工具执行"]
     A -->|"或走这条"| C["子图 / Send：按数据动态扇出"]
     B --> D["汇合节点"]

@@ -2,7 +2,7 @@
 tags: [infrastructure, engineering, cost]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 推理经济学与部署形态
@@ -58,15 +58,15 @@ for name, kw in {
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
-  TURN[每轮成本<br/>输入tok×单价×未命中 + 输出tok×单价] --> STEPS[× 步数 · Σ 每轮]
+flowchart TB
+  TURN[每轮成本<br/>输入tok×单价×未命中<br/>+ 输出tok×单价] --> STEPS[× 步数 · Σ 每轮]
   STEPS --> ADD[+ 重试成本<br/>+ 检索 / 嵌入 / 沙箱]
   ADD --> DIV[÷ 成功率]
   DIV --> COST[每次成功任务成本]
-  COST --> L1[杠杆1：减少步数与循环]
-  COST --> L2[杠杆2：上下文瘦身 + 缓存]
-  COST --> L3[杠杆3：按难度分级路由]
-  COST --> L4[杠杆4+：量化 / 蒸馏 / 语义缓存]
+  COST --> L1[杠杆1<br/>减少步数与循环]
+  COST --> L2[杠杆2<br/>上下文瘦身+缓存]
+  COST --> L3[杠杆3<br/>按难度分级路由]
+  COST --> L4[杠杆4+<br/>量化/蒸馏/语义缓存]
 ```
 
 ## 四种部署形态对照

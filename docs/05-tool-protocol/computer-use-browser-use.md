@@ -2,7 +2,7 @@
 tags: [tooling, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Computer Use / Browser Use
@@ -25,12 +25,11 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 flowchart LR
-  A[截图] --> B[模型理解界面]
-  B --> C["输出动作<br/>click(340, 228) / type('...')"]
-  C --> D[执行]
-  D --> E[再截图验证]
-  E -- 未完成 --> A
-  E -- 完成 --> F[结束]
+  A[截图] --> B["模型理解界面<br/>输出动作 click / type"]
+  B --> C[执行]
+  C --> D[再截图验证]
+  D -- 未完成 --> A
+  D -- 完成 --> E[结束]
 ```
 
 ## 两条路线对比

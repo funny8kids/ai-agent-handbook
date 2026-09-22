@@ -2,7 +2,7 @@
 tags: [safety, alignment, monitoring, 2026]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 2026 安全现实：事故、阈值与监控
@@ -85,11 +85,48 @@ flowchart TB
 - **Enterprise Frontier Safeguards（EFS）**：数据存客户控制的云，默认由客户自查
 - **Private Safety Processing** 等探索：在保护隐私前提下保留安全信号
 
+### 5. 事故响应阶梯：把「停机」写成可执行的规则
+
+监控分类器给出信号后，动作不能靠临场判断。可按「可逆性 × 影响面」两维定档：
+
+| 档 | 触发 | 动作 | 恢复条件 |
+|---|---|---|---|
+| L0 记录 | 可疑但低风险 | 仅落审计日志 | — |
+| L1 降级 | 单次越界尝试 | 收回到只读工具集 | 人工复核该事件 |
+| L2 冻结会话 | 分类器连续命中 | 停 in-flight 工具、冻结 session | 复盘 + 重放确认 |
+| L3 全局熔断 | 触及真实系统 | 撤凭证、断网出口、拉人 | 事后报告与红队回归 |
+
+```python
+def gate_and_watch(action, policy, signals):
+    d = policy.decide(action)           # 执行闸门：白名单 / 确认 / 拒绝
+    if d == "deny":
+        audit.log(action, reason=d.reason); return reject(action)
+    if signals.strikes >= 2:            # 监控连续命中 → 冻结
+        session.freeze(); page_oncall("L2")
+    if action.touches_production() and signals.high_severity:
+        revoke_credentials(); kill_network_egress(); page_oncall("L3")
+    return allow(action)
+```
+
+关键设计：**熔断要能撤销已发出的动作**，因此高后果动作应两阶段（先出草稿/预授权，人确认后落地）。这与 2026 产品里的确认策略同源。
+
 ## 工程含义
 
 1. **上线清单升级**：工具白名单、确认策略、审计日志、越权红队、应急停机
 2. **评估环境隔离**：任何连模型的 eval 必须假定「它可能碰到真实系统」
 3. **不要假设思考链可读 = 可审计**：更强模型可能更简洁、更少书面步骤
+
+## 常见误区
+
+1. **把「模型没这么做过」当成「不会这么做」**——越权率是分布，不是有无；要看多次 run 的尾部
+2. **只加内容过滤，不加执行闸门**——注入发生在数据面，越权发生在动作面，两者不是同一层
+3. **eval 环境复用生产凭证**——系统层事故几乎都来自这条捷径
+4. **监控只抽样推理文本**——动作流（工具调用与参数）才是可判分的信号源
+5. **把 ZDR 当成「不需要审计」**——隐私保留策略与安全取证路径要在合同里同时写明
+
+## 小练习
+
+写出你系统里「最不该被自动执行」的 3 个动作，各配一条可执行闸门规则（判据、命中后的档级 L1–L3）和一个两阶段化改法。然后拿这 3 条构造「不可能任务」红队用例，看 Agent 会不会绕过去。
 
 ## 参考资料
 

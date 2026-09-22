@@ -33,12 +33,12 @@ CrewAI 的设计判断与图式编排正好相反：**多 Agent 的难点不在�
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart LR
-    AG["Agent：role / goal / backstory"] --> CREW
-    TK["Task：description + expected_output + context"] --> CREW
-    CREW["Crew：一批 Agent + 一批 Task 的组队容器"] --> PR{"Process 二选一<br/>sequential 顺序接力<br/>hierarchical 经理 Agent 分派质检"}
+flowchart TB
+    AG[Agent：role<br/>goal/backstory] --> CREW
+    TK[Task：description<br/>+ expected_output<br/>+ context] --> CREW
+    CREW[Crew：Agent+Task<br/>组队容器] --> PR{"Process 二选一<br/>sequential 顺序接力<br/>hierarchical 经理 Agent 分派质检"}
     PR --> KO["kickoff() 开跑"]
-    KO -.->|"不满意：改的是角色描述和验收标准，不是控制流"| AG
+    KO -.->|"不满意：改角色描述<br/>与验收标准"| AG
 ```
 
 ## 推荐理由

@@ -2,7 +2,7 @@
 tags: [safety]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 越狱攻击
@@ -70,11 +70,11 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
-flowchart LR
-  A[越狱输入] --> B[输入分类器<br/>模式/语义检测]
+flowchart TB
+  A[越狱输入] --> B[输入分类器<br/>模式+语义]
   B -- 拦截 --> X[拒绝]
-  B -- 漏过 --> C[模型对齐层<br/>RLHF 拒绝训练]
-  C -- 漏过 --> D[输出分类器<br/>有害内容检测]
+  B -- 漏过 --> C[模型对齐层<br/>RLHF 训练]
+  C -- 漏过 --> D[输出分类器<br/>有害内容]
   D -- 拦截 --> Y[不落地]
   D -- 漏过 --> E[监控限流<br/>事后审计]
 ```

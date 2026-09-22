@@ -2,7 +2,7 @@
 tags: [prompt, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 结构化输出
@@ -65,18 +65,22 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
-flowchart TD
-    A["解码第 t 步：模型输出词表概率分布"] --> B["schema 编译成的状态机：算出本步允许的 token 集合"]
-    B --> C["非法 token 概率置零，重新归一化"]
-    C --> D["采样一个 token，追加到序列"]
+flowchart LR
+  subgraph VAL["解码外：语法已成，还要过业务校验"]
+    F["语法 100% 合法的 JSON"] --> G{"枚举、范围<br/>日期真实性？"}
+    G -->|"通过"| H["交给下游程序消费"]
+    G -->|"失败"| I["回填具体错误信息<br/>带错误重试"]
+  end
+  subgraph DEC["解码内：约束采样（每步一个 token）"]
+    A["解码第 t 步<br/>词表概率分布"] --> B["schema 编译成的状态机<br/>给出本步允许的 token"]
+    B --> C["非法 token 概率置零<br/>重新归一化"]
+    C --> D["采样一个 token<br/>追加到序列"]
     D --> E{"序列是否完整？"}
     E -->|"否"| A
-    E -->|"是"| F["语法 100% 合法的 JSON"]
-    F --> G{"Schema 与业务校验：枚举、范围、日期真实性"}
-    G -->|"通过"| H["交给下游程序消费"]
-    G -->|"失败"| I["回填具体错误信息，带错误重试"]
-    I --> A
+  end
 ```
+
+*《图：两道关卡——上排保证「语法一定合法」，下排才管「内容对不对」；业务校验失败时，带着错误信息回到上排的解码第 t 步重试》*
 
 ## 实现方式对比
 

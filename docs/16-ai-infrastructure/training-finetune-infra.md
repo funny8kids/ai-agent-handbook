@@ -25,16 +25,21 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart TD
-  D[数据管线<br/>清洗/去重/配比] --> S[训练<br/>LoRA / FSDP / DeepSpeed]
-  S --> C[Checkpoint + 实验记录<br/>config/commit/数据版本]
-  C --> E[离线评估<br/>任务集 + 回归门禁]
-  E -- 通过 --> A[适配器注册<br/>版本/底座/评测分]
-  A --> V[推理引擎热加载<br/>vLLM/SGLang 多 LoRA]
-  V --> P[线上影子/A-B]
-  P -- 指标回退 --> R[一键回滚]
-  E -- 不通过 --> D
+flowchart LR
+  subgraph ON["在线：发布与回滚"]
+    A[适配器注册<br/>版本/底座/评测分] --> V[推理引擎热加载<br/>vLLM/SGLang 多 LoRA]
+    V --> P[线上影子/A-B]
+    P -- 指标回退 --> R[一键回滚]
+  end
+  subgraph OFF["离线：训练与准入"]
+    D[数据管线<br/>清洗/去重/配比] --> S[训练<br/>LoRA / FSDP / DeepSpeed]
+    S --> C[Checkpoint + 实验记录<br/>config/commit/数据版本]
+    C --> E{离线评估<br/>回归门禁}
+    E -- 不通过 --> D
+  end
 ```
+
+*《图：微调上线链路——上排是离线闭环（评估不过就回炉重训），过门禁后进入下排在线链路（注册→热加载→影子/A-B，指标回退则一键回滚）》*
 
 ## 选型对照
 

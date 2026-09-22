@@ -2,7 +2,7 @@
 tags: [safety, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 数据隐私
@@ -24,12 +24,12 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE9E9","primaryBorderColor":"#DC2626","primaryTextColor":"#1F2937","secondaryColor":"#F7CFCF","tertiaryColor":"#FEF6F6","lineColor":"#EC8888","actorBkg":"#FCEEEE","actorBorder":"#DC2626","actorTextColor":"#1F2937","signalColor":"#E76767","noteBkgColor":"#F9D8D8","noteBorderColor":"#DC2626","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE9E9","labelBoxBorderColor":"#DC2626"}}}%%
-flowchart LR
-  A[用户数据] --> B{闸门1: 脱敏/最小化}
+flowchart TB
+  A[用户数据] --> B{闸门1<br/>脱敏/最小化}
   B --> C[Agent 上下文]
-  C --> D{闸门2: 检索权限过滤}
+  C --> D{闸门2<br/>检索权限过滤}
   D --> E[(向量库/记忆)]
-  C --> F{闸门3: 出域控制<br/>模型API/外部工具}
+  C --> F{闸门3 出域控制<br/>模型 API<br/>外部工具}
   F --> G[外部]
   E -.到期.-> H[删除/匿名化]
 ```

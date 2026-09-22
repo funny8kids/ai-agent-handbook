@@ -9,7 +9,20 @@ updated: 2026-09-22
 
 本页记录手册的结构调整与重要内容更新。
 
-## 2026-09-22（第 13 次）出处体检：小节命名、站内链接错位与引用编号核对
+## 2026-09-22（第 14 次）正文厚度与图形几何：薄页、超宽图、细条图三类缺陷一起量清
+
+这一轮沿用「先量后改」，并新增两条量纲：知识页正文的中文字数、每张 Mermaid 图的**自然宽×高比例**。上一轮只量了宽度，漏掉了反方向的毛病——图太窄也会毁排版。
+
+- **薄页增厚 12 篇**：最低门槛 600 字、目标线 900 字。低于门槛的 4 篇全部改写：[语音 Agent](../12-applications/voice-agent.md) 424→1376、[Computer Use 2026](../18-frontier-2026/computer-use-2026.md) 362→997、[模型原生 vs Harness](../18-frontier-2026/model-native-vs-harness.md) 451→1365、[协议栈 2026](../18-frontier-2026/protocol-stack-2026.md) 397→902。另外 8 篇补的是机制而非字数：[第 18 章评测](../18-frontier-2026/eval-2026.md) 591→1141（里程碑打分式 + 任务 YAML 模板 + 归因纪律）、[Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md) →1356（resume/fork 成本式、三环境 `build_options()`）、[事故实录](../10-evaluation-safety/safety-incidents-2026.md) →1265（L0–L3 响应阶梯 + `gate_and_watch()` 伪代码）、[通用 Agent 产品](../12-applications/general-agent-products.md) →1029（验收件三件套 + 托付度公式）、[记忆类型](../06-memory-rag/memory-types.md) →1102（写入/检索/遗忘三操作与衰减打分式）、[角色分配](../08-multi-agent/role-assignment.md) →1073（`worker-artifact-v1` 交接契约、加角色的四问）、[ToT](../04-prompt-reasoning/tree-of-thoughts.md) →1128（预算不等式 `p_T − p_1 > λc(bd−1)`）、[CrewAI](../09-frameworks/crewai.md) →1096（sequential 成本来源与三个杠杆）。全库 900 字以下的知识页从 **19 篇降到 8 篇**；剩下 8 篇 823–898 字，逐篇核对房风格小节齐全（图、源码案例、误区、小练习、参考资料），再写就是凑数，保留原样。
+- **超宽图 25→0**：把仍超出正文列宽的 25 张压回列内——LR 长链无损合并到 ≤5 排、扇形图去掉占位根节点、时序图折长消息并缩短参与者别名。全库最宽 1328→1096px。
+- **本轮新发现的第二类图形缺陷：细条图**。宽度达标不等于排布合理：把每块的 W×H 一起量出来后，发现 **40 个块是「窄高细条」**（W<420 且 H>380，宽高比 <0.55），线上表现为正文右侧一大片空白。已改造比例最差的 10 张：[MCP Servers 目录](../13-resources/tools/mcp-servers.md) 252×1342→990×533、[微调基建](../16-ai-infrastructure/training-finetune-infra.md) 256×1096→862×516、[结构化输出](../04-prompt-reasoning/structured-output.md) 364×1372→1014×626、[SWE-bench](../13-resources/benchmarks/swe-bench.md) 360×1236→896×611、[向量存储](../16-ai-infrastructure/data-vector-storage.md) 376×1248→956×568、[RAG 基础](../06-memory-rag/rag-basics.md) 304×974→1096×342、[LlamaIndex](../09-frameworks/llamaindex.md) 328×1022→744×438、[动手实验地图](../19-labs/README.md) 168×936→568×470、[角色分配](../08-multi-agent/role-assignment.md) 244×664→1056×112、[第 18 章评测](../18-frontier-2026/eval-2026.md) 360×686→982×219。
+- **两条实测出来的 Mermaid 排布规律**（已固化进[风格指南](../14-templates/style-guide.md)）：① `flowchart TB` 的长链必然塌成细条，而 `subgraph … direction LR` 在本 Mermaid 版本被忽略（实测仍渲染成 304×829 的竖排）；唯一有效的做法是父图改 `flowchart LR` 并让两个 subgraph **互不相连**——只要有一条跨排边，dagre 就把两排横向拼接（5 排链一拼就 1600px 以上），被删掉的跨排边改写进图注，信息不丢。② 父图为 LR 时**后声明的 subgraph 渲染在上面**，所以源码里要把逻辑上的第二排写在前面；本次 10 张图全部按此调序并逐张截图复核。
+- **失败与回退如实记录**：曾按「最长路径 ≤5 就换 LR」批量翻转 16 张图，实测 **15 张超宽**（最高 2053px、字号被缩到 8.7px），已全部回退，只有第 18 章评测流水线一张成立。教训是 rank 数不等于最长路径——旁支与孤立节点各占一排，这条也写进了风格指南，避免下轮重犯。
+- **一处真实错字**：[通用 Agent 产品](../12-applications/general-agent-products.md) 里「付款前停”」引号不配对，改为「付款前停止」。
+- **回归校验**：170 个 Mermaid 块真解析器 `parsed=170 failed=0`（较上轮 +2：第 18 章评测流水线图、协议栈时序图），全树宽度复测 **0 超宽**、最宽 1096px、每块有效字号 16.0px；189 个 md 文件围栏配对 0 异常；frontmatter 不符房风格仅 1 个（`.gitbook/assets/screenshots/MANIFEST.md`，有意保留）；知识页缺「参考资料」0；站内链接 1484 条 0 断链，692 条唯一外链逐条核查 0 硬断。统计同步：README 的 Mermaid 168→170、配图 210→212、含公式页 100→105。
+- **下一轮待办（需要操作者定调）**：仍有约 30 张图属「窄高细条」（比例 0.34–0.55，如[权限四层楼](../10-evaluation-safety/permission-sandbox.md) 348×1080、[CrewAI 流程](../09-frameworks/crewai.md) 296×1038、[AI 简史](../01-ai-basics/ai-history.md) 360×768）。其中一部分**纵向本身就是语义**（防御纵深、时间轴、层级收敛），拆成两排会丢掉「一层压一层」的读法；要不要为统一版面牺牲这层语义，属产品级取舍，本轮先不动，留到定调之后。
+
+
 
 前 12 轮都在补图和补内容，这一轮只查一件事：**书里写的出处，是不是真的、对不对得上**。量测方式全部可复现——脚本点数 + 逐条 curl + arXiv export API 比对标题，不用主观判断。结果比预想的糟：问题不在「没写引用」，而在「写了但用错了地方」。
 

@@ -2,7 +2,7 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 角色分配
@@ -19,6 +19,7 @@ updated: 2026-09-20
 - 有效角色设计回答三个问题：它看什么（上下文）、能做什么（工具）、交付什么（格式）
 - 角色数量最小化：先试「规划者 + 执行者」二元结构，再按需增加
 - 「评审」「验证」类角色性价比最高：独立视角是质量杠杆
+- 角色能不能配合，取决于**交接契约**是否允许它诚实说「我做不下去」
 
 ## 角色设计模板
 
@@ -34,12 +35,51 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FDEEE7","primaryBorderColor":"#EA580C","primaryTextColor":"#1F2937","secondaryColor":"#FADACA","tertiaryColor":"#FEF8F5","lineColor":"#F3A379","actorBkg":"#FDF2EC","actorBorder":"#EA580C","actorTextColor":"#1F2937","signalColor":"#F08A55","noteBkgColor":"#FBE1D3","noteBorderColor":"#EA580C","noteTextColor":"#1F2937","labelBoxBkgColor":"#FDEEE7","labelBoxBorderColor":"#EA580C"}}}%%
-flowchart TD
-    P["规划者 Planner：只读工具"] -->|"任务清单 JSON"| W["执行者 Worker：全量工具，只做分到的子任务"]
-    W -->|"完成的工件"| R["评审者 Reviewer：只读 + 测试工具"]
-    R -->|"驳回：附具体理由"| W
+flowchart LR
+    P["规划者 Planner<br/>只读工具"] -->|"任务清单"| W["执行者 Worker<br/>全量工具，只做分到的子任务"]
+    W -->|"工件"| R["评审者 Reviewer<br/>只读 + 测试工具"]
+    R -->|"驳回：附理由"| W
     R -->|"通过"| O["最终交付"]
 ```
+
+## 交接契约：把「角色间的话」写成可校验格式
+
+协作崩掉的地方极少在「模型不聪明」，而在上游产出的字段下游读不到。契约要包含三段：必填字段、失败时说什么、下游能否据此重试。
+
+```json
+{
+  "$id": "worker-artifact-v1",
+  "required": ["task_id", "status", "changes", "evidence", "open_risks"],
+  "properties": {
+    "status":      { "enum": ["done", "blocked", "partial"] },
+    "changes":     { "type": "array", "items": { "type": "string" } },
+    "evidence":    { "type": "array", "description": "测试输出/日志/截图路径" },
+    "open_risks":  { "type": "array" }
+  }
+}
+```
+
+```python
+def consume(artifact, schema):
+    errs = validate(artifact, schema)
+    if errs: return send_back(worker, kind="contract_violation", errs=errs)
+    if artifact["status"] == "blocked":       # 合法产出，但不是完成
+        return escalate(planner, artifact["open_risks"])
+    return review(artifact)                    # 交给只读的评审者
+```
+
+要点：**`blocked` 是合法状态**，不是错误。没有这一档，执行者会用假装完成来摆脱困境——这是多 Agent 系统最常见的失真模式。
+
+## 什么时候该加一个角色
+
+按顺序问，问到「是」才拆：
+
+1. 是否需要**互斥的工具面**（只读 vs 可写）？→ 拆，这是最硬的理由
+2. 是否需要**不同模型或不同 effort 档**？→ 拆（评审用强模型、抽取用便宜模型）
+3. 上下文是否会**互相污染**（长检索记录压住判断）？→ 拆，或用子 Agent 隔离
+4. 只是「听起来更专业」？→ 不拆，改一条 system prompt 就够
+
+设 $$k$$ 个角色，交接边数约为 $$O(k^2)$$，而能力增益很快饱和——这就是「先试二元结构」的原因。
 
 ## 源码案例
 

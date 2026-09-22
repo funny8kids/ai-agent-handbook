@@ -2,7 +2,7 @@
 tags: [rag, basics]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # RAG 基础
@@ -69,21 +69,22 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
-flowchart TB
+flowchart LR
+  subgraph 查询侧[在线查询]
+    B1[用户问题] --> B2[查询改写]
+    B2 --> B3[混合检索]
+    B3 --> B4[Rerank 重排]
+    B4 --> B5[组装上下文]
+    B5 --> B6[LLM 生成 + 引用]
+  end
   subgraph 索引侧[离线索引]
     A1[文档] --> A2[切块 Chunking]
     A2 --> A3[Embedding]
     A3 --> A4[(向量库)]
   end
-  subgraph 查询侧[在线查询]
-    B1[用户问题] --> B2[查询改写]
-    B2 --> B3[混合检索]
-    A4 --> B3
-    B3 --> B4[Rerank 重排]
-    B4 --> B5[组装上下文]
-    B5 --> B6[LLM 生成 + 引用]
-  end
 ```
+
+*《图：RAG 的两条流水线——上排离线把文档变成向量库，下排在线把问题变成带引用的回答；两排唯一的接口是「向量库供混合检索读取」》*
 
 ## 直觉解释
 

@@ -2,7 +2,7 @@
 tags: [computer-use, browser-use, astra, claude]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Computer Use 2026
@@ -50,6 +50,51 @@ $$s_t^{\text{screen}}$$ 可以是截图、可访问性树、DOM 或三者混合�
 4. 工具调用自动审查  
 
 见 [2026 安全现实](../10-evaluation-safety/safety-incidents-2026.md)。
+
+### 4. 定位失效的恢复阶梯
+
+GUI 自动化的头号故障不是「模型不会点」，而是**上一次截图里的元素这一次不在了**：页面异步渲染、列表重排、弹窗遮挡、滚动位置漂移都会让坐标失效。生产实现普遍按阶梯降级，而不是原地重试同一个坐标：
+
+```python
+# 伪代码：定位失效的四级降级阶梯（非完整实现）
+def act_with_recovery(env, target, budget):
+    for level in ("ax", "text_anchor", "zoom", "human"):
+        ref = env.locate(target, method=level)   # 逐级换定位方式
+        if ref is None:
+            continue
+        result = env.act(ref)                     # 点击 / 输入 / 选择
+        if env.changed_as_expected(result):       # 用截图 diff + 状态断言判定
+            return result
+        budget.spend(level)                       # 每级都要计费，防止无限重试
+    return env.escalate(target, reason="locate_exhausted")
+```
+
+三条要点：
+
+1. **可访问性树（AX tree）优先于像素**：AX 节点带 role 与 name，页面重排后仍能按语义找到；纯坐标只在没有 AX 的原生应用里兜底。
+2. **文本锚点比坐标稳**：「点『提交』右侧那个开关」这种描述，重排后命中率明显高于绝对坐标——写提示词时就把目标描述成语义锚点。
+3. **判定成功要独立于模型自述**：模型说「已提交」不算，要用截图区域 diff、URL 变化、后端状态查询这类外部信号确认，否则会把幻觉当成完成。
+
+### 5. 预算是三维的
+
+只限轮次的护栏会在「第 3 步就烧光 token」时失效。2026 的实现通常同时卡三个维度，任一触顶即停：
+
+$$
+B=\min\big(N_{\text{steps}},\; T_{\text{visual-token}},\; W_{\text{wall-clock}}\big)
+$$
+
+再加一条**进展判据**：连续 $$k$$ 步（经验上取 2–3）页面状态没有可检测变化，就判定为原地打转而提前终止——这一步比单纯放宽轮次更省成本，因为它砍掉的正是「反复截图反复滚动」的无效循环。
+
+## 常见误区
+
+- ❌ **有 API 却硬用 GUI**：GUI 是「没有接口时的兜底」，不是更高级的能力。同一动作走 API 少两次截图往返，且不会因改版失效。
+- ❌ **把 partial 分数当可托付度**：partial 77.9% 与 strict 41.7% 是同一系统的两种口径，选型要按你的容错场景挑口径，不能混比。
+- ❌ **每步都截全屏**：视觉 token 随分辨率平方级增长；滚动后只截变化区域，或先取 AX 树再按需截图。
+- ❌ **确认弹窗交给模型自己判断**：付款、删除、外发这三类动作的确认必须由 harness 侧的闸门触发，而不是模型「觉得需要问」。
+
+## 小练习
+
+给「在网页报销系统里提交一张差旅发票」设计 computer use 方案：写出感知方式（AX/DOM/截图各承担什么）、四级定位阶梯的具体判据、三维预算的取值，以及哪一步必须停下来问人。
 
 ## 工程含义
 

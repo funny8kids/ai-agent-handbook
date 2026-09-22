@@ -46,19 +46,19 @@ $$
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F9E9FB","primaryBorderColor":"#C026D3","primaryTextColor":"#1F2937","secondaryColor":"#F1CFF5","tertiaryColor":"#FCF6FD","lineColor":"#DC88E7","actorBkg":"#FAEEFB","actorBorder":"#C026D3","actorTextColor":"#1F2937","signalColor":"#D367E0","noteBkgColor":"#F4D8F7","noteBorderColor":"#C026D3","noteTextColor":"#1F2937","labelBoxBkgColor":"#F9E9FB","labelBoxBorderColor":"#C026D3"}}}%%
 sequenceDiagram
-  participant U as 用户请求
-  participant R as agent_run 任务根 span
-  participant L as llm_call span
-  participant T as tool_call span
-  participant S as sub_agent span
-  U->>R: 入口生成 trace_id + 业务维度
-  R->>L: turn 1（prompt 版本 / 模型 / 参数）
-  L-->>R: tool_use（选择 search_docs）
-  R->>T: 执行工具，记 latency / tokens / status
+  participant U as 用户
+  participant R as agent_run<br/>根 span
+  participant L as llm_call
+  participant T as tool_call
+  participant S as subagent
+  U->>R: 入口生成 trace_id<br/>+ 业务维度
+  R->>L: turn 1<br/>prompt 版本/模型
+  L-->>R: tool_use<br/>选 search_docs
+  R->>T: 执行工具<br/>记 latency/token
   T-->>R: observation 回填
-  R->>S: 派生子任务（继承 trace_id，独立 span）
+  R->>S: 派生子任务<br/>继承 trace_id
   S-->>R: 子轨迹摘要
-  R-->>U: 最终输出 + 总步数与成本
+  R-->>U: 最终输出<br/>步数+成本
 ```
 
 ### 2. 用「四个黄金信号」组织指标

@@ -2,7 +2,7 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 机器学习基础
@@ -85,13 +85,11 @@ $$\gamma$$ 是折扣因子，越接近 1 越看重长远收益。策略 $$\pi_\t
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E9EFFD","primaryBorderColor":"#2563EB","primaryTextColor":"#1F2937","secondaryColor":"#CFDDFB","tertiaryColor":"#F6F9FE","lineColor":"#87A9F4","actorBkg":"#EEF3FD","actorBorder":"#2563EB","actorTextColor":"#1F2937","signalColor":"#6692F1","noteBkgColor":"#D8E3FB","noteBorderColor":"#2563EB","noteTextColor":"#1F2937","labelBoxBkgColor":"#E9EFFD","labelBoxBorderColor":"#2563EB"}}}%%
 flowchart LR
-  A[收集数据] --> B[划分训练/验证/测试集]
-  B --> C[选择模型]
-  C --> D[训练：最小化损失]
-  D --> E{验证集表现?}
-  E -- 过拟合 --> F[正则化 / 加数据 / 简化模型]
-  F --> C
-  E -- 良好 --> G[测试集评估并上线]
+  A["收集数据<br/>划分训练/验证/测试"] --> B[选择模型]
+  B --> C[训练<br/>最小化损失]
+  C --> D{验证集表现?}
+  D -- 过拟合：正则化/加数据/简化 --> B
+  D -- 良好 --> E[测试集评估<br/>并上线]
 ```
 
 ## 核心概念速查

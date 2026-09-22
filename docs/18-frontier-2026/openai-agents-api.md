@@ -2,7 +2,7 @@
 tags: [agents-api, openai, harness, sandbox, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # OpenAI Agents API
@@ -104,12 +104,12 @@ Agents API 把这四件事做成版本化能力，随模型升级一起演进。
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0EAFB","primaryBorderColor":"#6D28D9","primaryTextColor":"#1F2937","secondaryColor":"#DFD0F7","tertiaryColor":"#F9F6FD","lineColor":"#AF89EA","actorBkg":"#F3EEFC","actorBorder":"#6D28D9","actorTextColor":"#1F2937","signalColor":"#9969E4","noteBkgColor":"#E5D8F8","noteBorderColor":"#6D28D9","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0EAFB","labelBoxBorderColor":"#6D28D9"}}}%%
-flowchart LR
-  App[你的应用] -->|sessions.create / events| API[Agents API]
-  API --> H[Codex harness 托管]
-  H -->|工具调用| SB[沙箱<br/>OpenAI 或伙伴]
+flowchart TB
+  App[你的应用] -->|sessions.create<br/>+ events| API[Agents API]
+  API --> H[Codex<br/>harness 托管]
+  H -->|工具调用| SB[沙箱<br/>OpenAI/伙伴]
   H -->|MCP| M[MCP Server]
-  SB --> FS[(文件 / 中间产物)]
+  SB --> FS[(文件/中间产物)]
   App -->|控制自托管算力| SB
 ```
 

@@ -2,7 +2,7 @@
 tags: [safety, tooling, engineering]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 工具权限与沙箱
@@ -25,12 +25,10 @@ updated: 2026-09-20
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7F4F3","primaryBorderColor":"#0D9488","primaryTextColor":"#1F2937","secondaryColor":"#CAE7E5","tertiaryColor":"#F5FBFA","lineColor":"#7AC4BE","actorBkg":"#ECF6F5","actorBorder":"#0D9488","actorTextColor":"#1F2937","signalColor":"#56B4AC","noteBkgColor":"#D3ECEA","noteBorderColor":"#0D9488","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7F4F3","labelBoxBorderColor":"#0D9488"}}}%%
 flowchart LR
-  A[模型发出 tool-call] --> B[Hook 拦截]
-  B --> C[人工/自动审批]
-  C --> D[权限检查<br/>allowlist/rate limit]
-  D --> E[沙箱执行<br/>文件系统/网络受限]
-  E --> F[超时控制]
-  F --> G[结果改写与审计记录]
+  A[模型发出 tool-call] --> B["Hook 拦截<br/>人工/自动审批"]
+  B --> C["权限检查<br/>allowlist/限额"]
+  C --> D["沙箱执行<br/>受限 FS/网络/超时"]
+  D --> E[改写与审计记录]
 ```
 
 ## 沙箱技术梯度

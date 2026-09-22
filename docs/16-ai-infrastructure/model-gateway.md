@@ -2,7 +2,7 @@
 tags: [infrastructure, engineering, tooling]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 模型网关与路由
@@ -29,16 +29,16 @@ sequenceDiagram
   participant GW as 网关
   participant C as 缓存
   participant M1 as 小模型池
-  participant M2 as 大模型池 / API
-  App->>GW: chat.completions（带 tenant、task、预算）
-  GW->>GW: 鉴权 → 配额检查 → PII 脱敏 → 策略
+  participant M2 as 大模型池
+  App->>GW: chat.completions<br/>tenant / task / 预算
+  GW->>GW: 鉴权→配额→PII脱敏→策略
   GW->>C: 前缀/语义缓存查询
   C-->>GW: miss
-  GW->>M1: 按路由规则派单（含结构化输出要求）
+  GW->>M1: 按路由规则派单<br/>含结构化输出要求
   M1-->>GW: 置信度不足 / 长度超限
-  GW->>M2: 升级到强模型（预算已扣，记录 escalation）
+  GW->>M2: 升级到强模型<br/>预算已扣·记录 escalation
   M2-->>GW: 结果
-  GW->>GW: 计量（in/out/cached token）→ 审计 → 指标
+  GW->>GW: 计量 in/out/cached token<br/>→ 审计 → 指标
   GW-->>App: 结果 + usage
 ```
 

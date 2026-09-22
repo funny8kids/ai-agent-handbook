@@ -2,7 +2,7 @@
 tags: [mcp, tooling, resource]
 type: resource
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # MCP Servers
@@ -37,16 +37,21 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEEF0","primaryBorderColor":"#475569","primaryTextColor":"#1F2937","secondaryColor":"#D7DADE","tertiaryColor":"#F8F8F9","lineColor":"#9AA2AD","actorBkg":"#F0F1F3","actorBorder":"#475569","actorTextColor":"#1F2937","signalColor":"#7E8896","noteBkgColor":"#DEE0E4","noteBorderColor":"#475569","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEEF0","labelBoxBorderColor":"#475569"}}}%%
-flowchart TD
-    MKT["官方 + 社区 Server 生态（数百个）"] --> G{"第三方 Server？"}
-    G -->|"是"| V["先审工具描述（防注入），过权限与沙箱检查单"]
-    V --> CFG["配置进 MCP 客户端"]
-    G -->|"否：官方参考实现"| CFG
-    CFG --> C["客户端：Claude Code / DeepSeek Harness / Pi / Gemini CLI"]
-    C -->|"MCP 协议"| Srv["Server 暴露三原语：Tools / Resources / Prompts"]
-    Srv --> B["真实能力：filesystem / github / playwright / postgres"]
+flowchart LR
+  subgraph RUN["接入后的运行时"]
+    C["客户端：Claude Code / DeepSeek Harness<br/>Pi / Gemini CLI"] -->|"MCP 协议"| Srv["Server 暴露三原语<br/>Tools / Resources / Prompts"]
+    Srv --> B["真实能力：filesystem / github<br/>playwright / postgres"]
     B --> R["一次接入，处处可用"]
+  end
+  subgraph PICK["选型与接入"]
+    MKT["官方 + 社区 Server 生态<br/>（数百个）"] --> G{"第三方 Server？"}
+    G -->|"是"| V["先审工具描述（防注入）<br/>过权限与沙箱检查单"]
+    G -->|"否：官方参考实现"| CFG["配置进 MCP 客户端"]
+    V --> CFG
+  end
 ```
+
+*《图：上排是接入前的选型与审查，走完「配置进 MCP 客户端」这一步即进入下排的运行时链路》*
 
 ## 上手建议
 

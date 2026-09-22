@@ -2,7 +2,7 @@
 tags: [embodied-ai, evaluation, advanced]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # 仿真与 Sim-to-Real
@@ -27,13 +27,13 @@ updated: 2026-09-20
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
-  R2S[real2sim 标定<br/>URDF / 相机 / 延迟] --> TR[策略训练<br/>RL / 模仿 / 世界模型]
+flowchart TB
+  R2S[real2sim 标定<br/>URDF/相机<br/>延迟] --> TR[策略训练<br/>RL/模仿<br/>世界模型]
   DR[域随机化<br/>物理 + 视觉 + 时序] --> TR
-  TR --> EV[仿真评估<br/>回归集 + 陷阱场景]
+  TR --> EV[仿真评估<br/>回归集+陷阱场景]
   EV --> SYSID[真机小样本<br/>辨识残差]
-  SYSID -- 修正随机化范围 --> DR
-  SYSID --> ZEROSHOT[真机直接部署 或<br/>真机数据微调后部署]
+  SYSID -- 修正随机化 --> DR
+  SYSID --> ZEROSHOT[真机直接部署<br/>或微调后部署]
   ZEROSHOT --> FLY[真机失败回流] --> TR
 ```
 

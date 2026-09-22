@@ -2,7 +2,7 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # CrewAI
@@ -76,6 +76,24 @@ flowchart TD
 | 适合 | 角色化流水线、快速原型 | 代码执行闭环、研究 | 复杂可审计编排 |
 
 **选型建议**：任务能拆成「几个角色按顺序做几件事」→ CrewAI 最快；需要条件分支/循环/断点恢复 → LangGraph；需要模型写代码并执行 → AutoGen/Agent Framework。
+
+## sequential 成本从哪来
+
+声明式写法容易低估成本。设第 $$j$$ 个任务的指令与产出长度为 $$\ell_j$$，`context` 会把它依赖的前序产出整体拼进提示，则第 $$j$$ 个任务的输入规模约为：
+
+$$
+\text{in}_j \;\approx\; \ell_j^{\text{task}} + \sum_{i \in \text{deps}(j)} \ell_i^{\text{out}} + \ell^{\text{tools}}
+$$
+
+也就是说：**依赖链越长，后面的任务越贵，而且是累加而非平摊**。三个可动的杠杆：
+
+| 杠杆 | 做法 | 代价 |
+|---|---|---|
+| 收窄 `context` | 只依赖真正需要的任务，别把全链塞给最后一个角色 | 可能丢信息 |
+| 压产出 | `expected_output` 写成结构化短格式（表格/JSON）而非「一篇文章」 | 下游可读性下降 |
+| 分档模型 | 调研用便宜模型、终审用强模型 | 需要逐任务验证质量 |
+
+另一个常见坑是**重试放大**：任务没有明确验收判据时，Manager 或人工会反复重跑同一任务，成本按重跑次数线性增长——这也是 `expected_output` 必须可判分的现实理由（对照 [角色分配](../08-multi-agent/role-assignment.md) 的交接契约）。
 
 ## 源码案例
 
