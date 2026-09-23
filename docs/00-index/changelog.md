@@ -9,6 +9,36 @@ updated: 2026-09-23
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-23（第 63 次）新轴·「正文内容在 768 列里的真实下场」：276 条 display 公式量出 2 条超列（已改 stacked）；负结果——居中的超宽公式其实滚得到；表格 2131 格 0 溢出
+
+本轮动正文 2 页，落库判据 3 个文件（新增 `check_content_overflow.py`、`katex_render_html.mjs`、`check_table_overflow.py`）。第 62 轮量清了「读者拿到的列宽是 768」，本轮第一次去量**装进这条列里的内容**：公式和表格。它们和 Mermaid 图是同一类尺寸问题，机制却完全相反，所以判据也完全不同。
+
+### 一、公式轴：量到的缺陷不是「看不见」，是「得拖」
+
+1. **口径**：276 条 authored display 公式（106 页，`14-templates` 照 README 排除），用钉住的 katex@0.18.7 渲成浏览器真正要画的 HTML，再从 localhost 发给 Edge，塞进 `max-width:768px; overflow-x:auto`——线上 wrapper 的同一组类，不手写样式。墨迹宽用 `Range` 量，因为 `.katex-display>.katex` 是 `display:block`，量元素本身只会量到盒子（ruler 里这条做成了断言：768 盒与 1100 盒的元素宽不同、墨迹宽必须相同）。
+2. **一个先立后破的假设**：这条轴最初是为「居中 + `overflow-x-auto` ⇒ `scrollWidth` 只算结束边 ⇒ 左半边永远滚不到」写的。种下的 2807px 反例量出 `lostLeft=0 lostRight=0 maxScroll=2041`——Chromium 把居中超宽的溢出全放在结束侧，滚得到。于是度量改成**拖距** `over = 自然宽 − 可视宽`，`unreachable=0` 作为负结果每轮照打；ruler 两头都断言（反例必须 `drag>0` 且 `lost==0`），平台哪天改了滚动模型会立刻红而不是悄悄对。
+3. **方案 B 救不了公式**（本轮断言，不是推测）：线上 math wrapper 的 class 集仍是 `decoration-primary/6 max-w-3xl overflow-x-auto print:break-inside-avoid w-full`，硬 `max-w-3xl` 且**没有 `layout-wide:` 变体**。所以公式唯一的修法是把内容排进列里。
+4. **缺陷与修复**：2 条超列——`07-planning/subgoal-planning.md` 自然宽 877.7px、`02-agent-basics/agent-vs-workflow-chatbot-copilot.md` 862.7px，两条都是拿 `\qquad` 把两三句陈述横着串成一行。改成 `aligned` 按 `=`／`→` 对齐换行，**一个字都没删**。复测：276 条全量，max 877→766，over-column 2→0（门槛 16px＝一个字形），`render-errors=0`；解析判据照旧 927 条公式 0 失败、版本 0.18.7。
+5. **余量**：`02-agent-basics/perception-planning-action.md` 的终止判据式子 766px，离列宽只剩 2px。没动它——它没过阈值，动它就是凑指标；但轴里加了 headroom 行，每跑必报，下一轮若有人往那条式子里再加一项就会看见红。
+
+### 二、表格轴：0 溢出，但理由和我原想的不一样
+
+1. **结构底**：authored 表格 175 页 / 2218 行 / 7637 格，最宽 6 列。平台给每格 `min-width:100px`，容器是 `flex flex-col min-w-full w-fit` + `overflow-x:visible`（**没有滚动条**），所以 ≥8 列的表必然撑破 768 列。6×100=600 装得下，今天没有可修的，但这条悬崖写成了 `floor_check()` 的断言而不是 changelog 里的一句话。
+2. **真渲染**：取「单元格里最长不可断串」排前 8 的页面（`13-resources/projects/README.md` 一张表就 1670 格），把线上页面副本从 localhost 发出去，探针量墨迹越出格子的距离。读数：`<main>` 8/8 全 768px；**2131 格 spill=0**；比列宽的表 0 张。
+3. **控制**：同一格塞进 65 字符、无连字符/斜杠/空格的串，保留平台断行 → 0 溢出；把 `overflow-wrap` 关掉 → 溢出 205~298px。尺子有牙，「0 溢出」才成其为读数。
+4. **本轮被自己的控制打脸一次**：第一版控制串用的是书里真有的 `agentbench-webarena-swebench-gaia-toolbench.md`（46 字符），关掉断行仍然 0 溢出——**浏览器在连字符后面就能换行**。于是预筛的「不可断串」定义补上连字符与斜杠两个断行点，控制串换成下划线型。记法：控制若不可能失败，就不是控制。
+5. **平台侧事实**：单元格计算值 `overflow-wrap:anywhere; word-break:break-word; white-space:pre-wrap`，长标识符是被强断的。这条每跑断言：GitBook 哪天撤掉它，全站长 token 会糊到邻格，轴会红。
+
+### 三、目检
+
+本地 768px 列真渲染 PNG（钉版 KaTeX + 真 webfont，同一条轴用的那套）：两条改后的式子整条在框内、按 `=`／`→` 对齐；同框保留的旧 `\qquad` 形态出现横向滚动条，且句尾在框边被切——「拖」这个度量就是这么来的。
+
+### 四、留下的取舍与未做
+
+- **102 张超宽 Mermaid 图仍在等站点开关**：本轮 8 个线上页面复测 `<main>` 还是 768px，宽版布局尚未生效（`check_table_overflow.py` 的 `main=` 列即读数）。开关一开，公式轴要 `--column 1152` 复跑，但公式 wrapper 是硬 `max-w-3xl`、不会跟着变宽——见一.3。
+- 未做：手机宽度下的公式/表格读数（本沙箱 Edge `innerWidth` 钳在约 1250px，报 vw=390 的数就是造数）；表格轴默认只跑风险前 8 页，`--pages all` 留给放得下 175 次浏览器启动的一趟；**行内**公式的溢出没量（inline 不套 `overflow-x-auto`，机制不同，另立一轴才诚实）。
+- `labs/out/*.out` 四个实验输出文件仍是脏的（跑实验留下的），与本轮无关，不带上提交。
+
 ## 2026-09-23（第 62 次）新轴·「读者实际拿到的正文列宽」：1120 是宽版布局的数，默认列宽实测 768；217 张图按真列宽重测，102 张被整体缩小、24 张标签掉到 12px 以下
 
 本轮动正文 0 页，动判据 3 个文件（`check_mermaid_geometry.py` 修尺子、新增 `check_live_column.py`、新增 `check_live_sync.py`），并把 README 里一句从第 21 轮站到本轮的假话改掉。缺陷本身（102 张超宽图）没有动：三条修法都是版式取舍，按目标里的停一停条款留给操作者定。

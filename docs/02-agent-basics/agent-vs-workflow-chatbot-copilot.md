@@ -36,9 +36,10 @@ updated: 2026-09-22
 自主性不是免费的，它交换的是**可预测性**：
 
 $$
-\text{Agent 的收益}=\text{处理未知情况的能力}
-\qquad
-\text{Agent 的代价}=\text{路径不可预测}+\text{token 成本上升}+\text{调试复杂}
+\begin{aligned}
+\text{Agent 的收益} &= \text{处理未知情况的能力}\\
+\text{Agent 的代价} &= \text{路径不可预测}+\text{token 成本上升}+\text{调试复杂}
+\end{aligned}
 $$
 
 Workflow 的每一步都确定、可测试、成本可估；Agent 能处理「开发者没预设到的情况」，但你无法在运行前知道它要花多少步、多少钱。因此工程判据是：
