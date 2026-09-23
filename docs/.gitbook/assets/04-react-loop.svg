@@ -140,9 +140,12 @@
   <text x="476" y="466" text-anchor="middle" font-size="15" fill="#475569">同一条链上想与做 · 一次生成 = 一个节点</text>
 
   <!-- arc captions -->
-  <text x="600" y="236" font-size="15" fill="#075985" stroke="#f8fafc" stroke-width="3.5" paint-order="stroke">决定调用</text>
-  <text x="476" y="440" text-anchor="middle" font-size="15" fill="#92400e" stroke="#f8fafc" stroke-width="3.5" paint-order="stroke">沙箱执行 → 返回观测</text>
-  <text x="296" y="236" font-size="15" fill="#065f46" stroke="#f8fafc" stroke-width="3.5" paint-order="stroke">结果写回上下文</text>
+  <text x="600" y="236" font-size="15" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linejoin="round">决定调用</text>
+  <text x="600" y="236" font-size="15" fill="#075985">决定调用</text>
+  <text x="476" y="440" text-anchor="middle" font-size="15" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linejoin="round">沙箱执行 → 返回观测</text>
+  <text x="476" y="440" text-anchor="middle" font-size="15" fill="#92400e">沙箱执行 → 返回观测</text>
+  <text x="296" y="236" font-size="15" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linejoin="round">结果写回上下文</text>
+  <text x="296" y="236" font-size="15" fill="#065f46">结果写回上下文</text>
 
   <!-- ===== right card: a real trace ===== -->
   <g filter="url(#sh2)">

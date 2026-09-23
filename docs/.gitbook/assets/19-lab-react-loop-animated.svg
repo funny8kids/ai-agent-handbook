@@ -7,7 +7,8 @@
       .t{font-family:"Microsoft YaHei","Noto Sans SC",sans-serif;fill:#1F2937}
       .h{font-size:16px;font-weight:700}
       .s{font-size:12.5px;fill:#4B5563}
-      .lbl{font-size:12px;fill:#9D174D;font-weight:700;stroke:#FFFFFF;stroke-width:5;paint-order:stroke fill}
+      .lbl{font-size:12px;fill:#9D174D;font-weight:700}
+      .lblhalo{font-size:12px;font-weight:700;fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linejoin:round}
       .flow{fill:none;stroke:#EB88B4;stroke-width:2.4;marker-end:url(#ar54)}
       .dash{fill:none;stroke:#DB2777;stroke-width:2.6;stroke-dasharray:9 15;stroke-linecap:round}
       .box{fill:#FDF0F5;stroke:#DB2777;stroke-width:2}
@@ -76,6 +77,7 @@
   <path class="dash" d="M846 166 V232 Q846 254 824 254 H70 Q48 254 48 232 V172">
     <animate attributeName="stroke-dashoffset" values="24;0" dur="1.2s" repeatCount="indefinite"/>
   </path>
+  <text class="t lblhalo" x="392" y="248">回到 ①：同一串轨迹又长了一圈</text>
   <text class="t lbl" x="392" y="248">回到 ①：同一串轨迹又长了一圈</text>
 
   <text class="t s" x="28" y="308">动画只是帮你把节奏看清。真正决定行为的是「① 里此刻有什么」——没有写进 prompt 的事实，模型一概看不见。</text>

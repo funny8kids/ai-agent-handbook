@@ -67,7 +67,7 @@
       <text x="695" y="182" font-size="15" font-weight="700" fill="#475569">5 出报告</text>
       <text x="695" y="208" font-size="15" fill="#64748b">待执行</text>
     </g>
-    <path d="M618 156 L 630 168 M630 156 L 618 168" stroke="#dc2626" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M620 152 L 631 163 M631 152 L 620 163" stroke="#dc2626" stroke-width="2.6" fill="none" stroke-linecap="round"/>
 
     <path d="M591 224 C 520 268, 200 270, 124 230" fill="none" stroke="#b45309" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arrAmber)">
       <animate attributeName="stroke-dashoffset" from="0" to="-24" dur="2.4s" repeatCount="indefinite"/>
@@ -110,7 +110,8 @@
     <path d="M814 448 C 700 494, 280 458, 146 500" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrSlate)">
       <animate attributeName="stroke-dashoffset" from="0" to="-24" dur="3s" repeatCount="indefinite"/>
     </path>
-    <text x="470" y="488" text-anchor="middle" font-size="15" font-weight="700" fill="#b45309" stroke="#f8fafc" stroke-width="4" paint-order="stroke">环境突变 → 下一拍就地换策略，不必推倒重来</text>
+    <text x="470" y="488" text-anchor="middle" font-size="15" font-weight="700" fill="none" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round">环境突变 → 下一拍就地换策略，不必推倒重来</text>
+    <text x="470" y="488" text-anchor="middle" font-size="15" font-weight="700" fill="#b45309">环境突变 → 下一拍就地换策略，不必推倒重来</text>
 
     <g text-anchor="middle">
       <text x="142" y="392" font-size="15" font-weight="700" fill="#5b21b6">Thought 思考</text>
