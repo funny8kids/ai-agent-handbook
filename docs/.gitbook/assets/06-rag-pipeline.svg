@@ -86,7 +86,7 @@
 
   <!-- 向量库 -> 混合检索 -->
   <path d="M723 268 L723 312 L482 312 L482 356" fill="none" stroke="#0EA5E9" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arr2)"/>
-  <text x="600" y="306" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#0369A1">检索 Top-K 候选（如 50）</text>
+  <text x="505" y="306" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#0369A1">检索 Top-K 候选（如 50）</text>
 
   <!-- 底部提示 -->
   <text x="482" y="486" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#64748B">关键：检索与生成分开评估；重排后只把 3–5 个高相关块交给模型</text>

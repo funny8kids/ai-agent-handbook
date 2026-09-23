@@ -1,84 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="340" viewBox="0 0 960 340" role="img" aria-label="ReAct 循环动画：轨迹累积、模型出步、工具执行、观察回流">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="400" viewBox="0 0 960 400" role="img" aria-label="ReAct 循环动画：轨迹累积、模型出步、工具执行、观察回流">
   <defs>
     <marker id="ar54" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="#DB2777"/>
     </marker>
     <style>
       .t{font-family:"Microsoft YaHei","Noto Sans SC",sans-serif;fill:#1F2937}
-      .h{font-size:16px;font-weight:700}
-      .s{font-size:12.5px;fill:#4B5563}
-      .lbl{font-size:12px;fill:#9D174D;font-weight:700}
-      .lblhalo{font-size:12px;font-weight:700;fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linejoin:round}
+      .h{font-size:17px;font-weight:700}
+      .s{font-size:15px;fill:#4B5563}
+      .lbl{font-size:15px;fill:#9D174D;font-weight:700}
+      .lblhalo{font-size:15px;font-weight:700;fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linejoin:round}
       .flow{fill:none;stroke:#EB88B4;stroke-width:2.4;marker-end:url(#ar54)}
       .dash{fill:none;stroke:#DB2777;stroke-width:2.6;stroke-dasharray:9 15;stroke-linecap:round}
       .box{fill:#FDF0F5;stroke:#DB2777;stroke-width:2}
     </style>
   </defs>
 
-  <rect x="0" y="0" width="960" height="340" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="960" height="400" fill="#FFFFFF"/>
   <text class="t h" x="28" y="34" font-size="18">ReAct 一圈一圈地跑：亮起来的那一格，就是模型此刻能看到的全部</text>
 
+  <!-- four stages, laid out as a snake (2 x 2): the 15px type a 768px column still shows needs
+       ~250px per card, so one row of four no longer fits. ① → ② down ③ ← ④ up back to ①. -->
   <!-- stage highlight BEHIND the boxes: the box itself is drawn over it -->
-  <rect x="28" y="70" width="190" height="96" rx="12" fill="#F9DCE9" opacity="0">
+  <rect x="28" y="66" width="440" height="96" rx="12" fill="#F9DCE9" opacity="0">
     <animate attributeName="opacity" values="0;0.95;0.95;0;0" keyTimes="0;0.02;0.23;0.27;1" dur="8s" repeatCount="indefinite"/>
   </rect>
-  <rect x="272" y="70" width="190" height="96" rx="12" fill="#F9DCE9" opacity="0">
+  <rect x="492" y="66" width="440" height="96" rx="12" fill="#F9DCE9" opacity="0">
     <animate attributeName="opacity" values="0;0;0.95;0.95;0;0" keyTimes="0;0.25;0.27;0.48;0.52;1" dur="8s" repeatCount="indefinite"/>
   </rect>
-  <rect x="516" y="70" width="190" height="96" rx="12" fill="#F9DCE9" opacity="0">
+  <rect x="492" y="210" width="440" height="96" rx="12" fill="#F9DCE9" opacity="0">
     <animate attributeName="opacity" values="0;0;0.95;0.95;0;0" keyTimes="0;0.5;0.52;0.73;0.77;1" dur="8s" repeatCount="indefinite"/>
   </rect>
-  <rect x="760" y="70" width="172" height="96" rx="12" fill="#F9DCE9" opacity="0">
+  <rect x="28" y="210" width="440" height="96" rx="12" fill="#F9DCE9" opacity="0">
     <animate attributeName="opacity" values="0;0;0.95;0.95;0;0" keyTimes="0;0.75;0.77;0.96;1;1" dur="8s" repeatCount="indefinite"/>
   </rect>
 
-  <!-- four stages -->
   <g>
-    <rect class="box" x="28" y="70" width="190" height="96" rx="12"/>
-    <text class="t h" x="48" y="102">① prompt 累积轨迹</text>
-    <text class="t s" x="48" y="126">Question + 历史</text>
-    <text class="t s" x="48" y="146">Thought / Action / Observation</text>
+    <rect class="box" x="28" y="66" width="440" height="96" rx="12"/>
+    <text class="t h" x="48" y="96">① prompt 累积轨迹</text>
+    <text class="t s" x="48" y="124">Question + 历史</text>
+    <text class="t s" x="48" y="148">Thought / Action / Observation</text>
   </g>
   <g>
-    <rect class="box" x="272" y="70" width="190" height="96" rx="12"/>
-    <text class="t h" x="292" y="102">② 模型出下一步</text>
-    <text class="t s" x="292" y="126">Thought: 先查甲公司</text>
-    <text class="t s" x="292" y="146">Action: search(财报-甲公司)</text>
+    <rect class="box" x="492" y="66" width="440" height="96" rx="12"/>
+    <text class="t h" x="512" y="96">② 模型出下一步</text>
+    <text class="t s" x="512" y="124">Thought: 先查甲公司</text>
+    <text class="t s" x="512" y="148">Action: search(财报-甲公司)</text>
   </g>
   <g>
-    <rect class="box" x="516" y="70" width="190" height="96" rx="12"/>
-    <text class="t h" x="536" y="102">③ 运行时执行工具</text>
-    <text class="t s" x="536" y="126">search / calculator</text>
-    <text class="t s" x="536" y="146">报错也当成结果</text>
+    <rect class="box" x="492" y="210" width="440" height="96" rx="12"/>
+    <text class="t h" x="512" y="240">③ 运行时执行工具</text>
+    <text class="t s" x="512" y="268">search / calculator</text>
+    <text class="t s" x="512" y="292">报错也当成结果</text>
   </g>
   <g>
-    <rect class="box" x="760" y="70" width="172" height="96" rx="12"/>
-    <text class="t h" x="778" y="102">④ 观察回流</text>
-    <text class="t s" x="778" y="126">Observation:</text>
-    <text class="t s" x="778" y="146">6200.0</text>
+    <rect class="box" x="28" y="210" width="440" height="96" rx="12"/>
+    <text class="t h" x="48" y="240">④ 观察回流</text>
+    <text class="t s" x="48" y="268">Observation:</text>
+    <text class="t s" x="48" y="292">6200.0</text>
   </g>
 
   <!-- forward connectors, flowing dashes -->
-  <path class="flow" d="M218 118 H266"/>
-  <path class="flow" d="M462 118 H510"/>
-  <path class="flow" d="M706 118 H754"/>
-  <path class="dash" d="M218 118 H266">
+  <path class="flow" d="M470 114 H488"/>
+  <path class="flow" d="M712 164 V204"/>
+  <path class="flow" d="M490 258 H472"/>
+  <path class="dash" d="M470 114 H488">
     <animate attributeName="stroke-dashoffset" values="24;0" dur="0.9s" repeatCount="indefinite"/>
   </path>
-  <path class="dash" d="M462 118 H510">
+  <path class="dash" d="M712 164 V204">
     <animate attributeName="stroke-dashoffset" values="24;0" dur="0.9s" begin="0.3s" repeatCount="indefinite"/>
   </path>
-  <path class="dash" d="M706 118 H754">
+  <path class="dash" d="M490 258 H472">
     <animate attributeName="stroke-dashoffset" values="24;0" dur="0.9s" begin="0.6s" repeatCount="indefinite"/>
   </path>
 
-  <!-- return arc 4 -> 1, flowing -->
-  <path class="flow" d="M846 166 V232 Q846 254 824 254 H70 Q48 254 48 232 V172"/>
-  <path class="dash" d="M846 166 V232 Q846 254 824 254 H70 Q48 254 48 232 V172">
+  <!-- return 4 -> 1: down from ④, left along the bottom, up the left gutter, into ① -->
+  <path class="flow" d="M248 308 V332 H12 V118 H26"/>
+  <path class="dash" d="M248 308 V332 H12 V118 H26">
     <animate attributeName="stroke-dashoffset" values="24;0" dur="1.2s" repeatCount="indefinite"/>
   </path>
-  <text class="t lblhalo" x="392" y="248">回到 ①：同一串轨迹又长了一圈</text>
-  <text class="t lbl" x="392" y="248">回到 ①：同一串轨迹又长了一圈</text>
+  <text class="t lblhalo" x="130" y="326" text-anchor="middle">回到 ①：同一串轨迹又长了一圈</text>
+  <text class="t lbl" x="130" y="326" text-anchor="middle">回到 ①：同一串轨迹又长了一圈</text>
 
-  <text class="t s" x="28" y="308">动画只是帮你把节奏看清。真正决定行为的是「① 里此刻有什么」——没有写进 prompt 的事实，模型一概看不见。</text>
+  <text class="t s" x="28" y="372">动画只是帮你把节奏看清。真正决定行为的是「① 里此刻有什么」——没有写进 prompt 的事实，模型一概看不见。</text>
 </svg>
