@@ -17,9 +17,9 @@
   <!-- cameras -->
   <rect x="246" y="56" width="140" height="190" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
   <text x="260" y="78" fill="#334155" font-weight="700">感知</text>
-  <text x="260" y="106" fill="#64748b">RGB-D 30fps</text>
-  <text x="260" y="130" fill="#64748b">本体感受 500Hz</text>
-  <text x="260" y="154" fill="#64748b">力 / 触觉</text>
+  <text x="260" y="106" fill="#475569">RGB-D 30fps</text>
+  <text x="260" y="130" fill="#475569">本体感受 500Hz</text>
+  <text x="260" y="154" fill="#475569">力 / 触觉</text>
   <!-- frame dots -->
   <circle cx="300" cy="190" r="5" fill="#0ea5e9">
     <animate attributeName="cy" values="180;228;180" dur="1.2s" repeatCount="indefinite"/>
@@ -33,8 +33,8 @@
   <!-- slow system -->
   <rect x="400" y="56" width="224" height="88" rx="10" fill="#fef3c7" stroke="#d97706"/>
   <text x="414" y="76" fill="#92400e" font-weight="700">慢系统 · VLM 骨干</text>
-  <text x="414" y="94" fill="#a16207">读指令 + 看场景 →</text>
-  <text x="414" y="112" fill="#a16207">出子目标/隐条件</text>
+  <text x="414" y="94" fill="#854d0e">读指令 + 看场景 →</text>
+  <text x="414" y="112" fill="#854d0e">出子目标/隐条件</text>
   <text x="414" y="130" fill="#b45309" font-weight="700">5–10 Hz · 几十 B–几 B 参数</text>
   <rect x="400" y="56" width="224" height="88" rx="10" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.2">
     <animate attributeName="opacity" values="0.15;0.9;0.15" dur="1.05s" repeatCount="indefinite"/>
@@ -114,8 +114,8 @@
   <text x="20" y="298" fill="#475569" font-weight="700">一次「抓杯子」的时间线</text>
   <g>
     <line x1="20" y1="362" x2="960" y2="362" stroke="#cbd5e1"/>
-    <text x="20" y="322" fill="#0284c7">t=0ms</text>
-    <text x="20" y="344" fill="#0284c7">观测帧</text>
+    <text x="20" y="322" fill="#0369a1">t=0ms</text>
+    <text x="20" y="344" fill="#0369a1">观测帧</text>
     <text x="170" y="322" fill="#b45309">t=140ms 慢系统给子目标</text>
     <text x="170" y="344" fill="#b45309">「先移到杯子正上方」</text>
     <text x="520" y="322" fill="#15803d">t=150ms 快系统出</text>

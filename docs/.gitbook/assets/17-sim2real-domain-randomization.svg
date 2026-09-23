@@ -49,7 +49,7 @@
       <animate attributeName="opacity" values="0;0.45;0" dur="5s" repeatCount="indefinite"/>
     </rect>
   </g>
-  <text x="20" y="266" fill="#64748b" font-size="16">同时随机化：摩擦 · 质量 · 阻尼 · 延迟(20–200ms) · 相机内外参 · 光照 · 噪声 · 丢帧 · 未建模负载</text>
+  <text x="20" y="266" fill="#475569" font-size="16">同时随机化：摩擦 · 质量 · 阻尼 · 延迟(20–200ms) · 相机内外参 · 光照 · 噪声 · 丢帧 · 未建模负载</text>
 
   <!-- arrow -->
   <g stroke="#94a3b8" stroke-width="2" fill="none">
@@ -64,8 +64,8 @@
   <text x="676" y="94" fill="#334155" font-weight="700">真实世界</text>
   <rect x="676" y="196" width="268" height="10" rx="3" fill="#cbd5e1"/>
   <rect x="740" y="164" width="46" height="32" rx="5" fill="#38bdf8" stroke="#0284c7"/>
-  <text x="676" y="126" fill="#64748b" font-size="16">磨损、反光、透明、标定漂移、</text>
-  <text x="676" y="142" fill="#64748b" font-size="16">他人碰走物体、线缆拉扯、发热降频</text>
+  <text x="676" y="126" fill="#475569" font-size="16">磨损、反光、透明、标定漂移、</text>
+  <text x="676" y="142" fill="#475569" font-size="16">他人碰走物体、线缆拉扯、发热降频</text>
   <text x="676" y="228" fill="#475569" font-size="16">唯一能作为验收依据的地方</text>
 
   <!-- gap meter -->

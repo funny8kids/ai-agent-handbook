@@ -164,7 +164,11 @@ PAGE = """<!doctype html><meta charset="utf-8">
 
 def measure(svg_text, column=COLUMN):
     """Return (data, None) or (None, reason). One Edge launch per figure."""
-    with tempfile.TemporaryDirectory(prefix="svgfit") as tmp:
+    # Edge keeps a WebView2 log handle inside --user-data-dir after the process is gone, and on
+    # Windows that makes the teardown raise mid-sweep: the axis died at figure 12 of 32 with a
+    # PermissionError and no verdict, which reads like a content failure. Losing a temp directory
+    # is cheap; losing the run is not.
+    with tempfile.TemporaryDirectory(prefix="svgfit", ignore_cleanup_errors=True) as tmp:
         io.open(os.path.join(tmp, "page.html"), "w", encoding="utf-8").write(
             PAGE % {"svg": svg_text, "column": column})
         exe = next((p for p in EDGE_CANDIDATES if os.path.isfile(p)), None)

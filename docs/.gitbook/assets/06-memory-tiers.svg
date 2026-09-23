@@ -105,15 +105,15 @@
 
   <!-- ============ 向下：压缩与蒸馏 ============ -->
   <path d="M280 204 L280 240" stroke="#059669" stroke-width="2.4" marker-end="url(#arrGreen)"/>
-  <text x="296" y="230" font-size="15" font-weight="700" fill="#047857">压缩 / 摘要：窗口将满，旧轮次摘要后落盘</text>
+  <text x="296" y="230" font-size="15" font-weight="700" fill="#065f46">压缩 / 摘要：窗口将满，旧轮次摘要后落盘</text>
   <path d="M280 364 L280 400" stroke="#059669" stroke-width="2.4" marker-end="url(#arrGreen)"/>
-  <text x="296" y="390" font-size="15" font-weight="700" fill="#047857">蒸馏 / 沉淀：从转录提炼事实与偏好</text>
+  <text x="296" y="390" font-size="15" font-weight="700" fill="#065f46">蒸馏 / 沉淀：从转录提炼事实与偏好</text>
 
   <!-- ============ 向左回环：检索回填 ============ -->
   <path d="M150 484 C 88 484, 88 124, 144 124" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrGreen)">
     <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="2s" repeatCount="indefinite"/>
   </path>
-  <text transform="translate(62,304) rotate(-90)" text-anchor="middle" font-size="15" font-weight="700" fill="#047857">检索回填（top-k 注入当前上下文）</text>
+  <text transform="translate(62,304) rotate(-90)" text-anchor="middle" font-size="15" font-weight="700" fill="#065f46">检索回填（top-k 注入当前上下文）</text>
 
   <!-- ============ 右侧：遗忘曲线 ============ -->
   <g>

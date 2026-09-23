@@ -5,7 +5,7 @@
       <stop offset="100%" stop-color="#FFF3E6"/>
     </linearGradient>
     <linearGradient id="gOrg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/>
+      <stop offset="0%" stop-color="#c2410c"/><stop offset="100%" stop-color="#9a3412"/>
     </linearGradient>
     <linearGradient id="gOrgSoft" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FFF7ED"/><stop offset="100%" stop-color="#FFEDD5"/>
@@ -54,7 +54,7 @@
       <circle cx="258" cy="238" r="9" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.6"/>
       <text x="182" y="205" text-anchor="middle" font-size="16" font-weight="700" fill="#FFFFFF">主管</text>
     </g>
-    <text x="266" y="172" font-size="16" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="266" y="172" font-size="16" font-weight="700" fill="#c2410c">何时用</text>
     <text x="266" y="198" font-size="15" fill="#475569">任务可预先分解，</text>
     <text x="266" y="220" font-size="15" fill="#475569">需要总控、汇总与审计；</text>
     <text x="266" y="242" font-size="15" fill="#475569">主管持有全局状态。</text>
@@ -81,7 +81,7 @@
         <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.06;0.9;1" dur="3s" repeatCount="indefinite"/>
       </circle>
     </g>
-    <text x="722" y="172" font-size="16" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="722" y="172" font-size="16" font-weight="700" fill="#c2410c">何时用</text>
     <text x="722" y="198" font-size="15" fill="#475569">对等转交：谁最合适</text>
     <text x="722" y="220" font-size="15" fill="#475569">谁接手，对话在专家</text>
     <text x="722" y="242" font-size="15" fill="#475569">之间流动，无中心调度。</text>
@@ -112,7 +112,7 @@
       <circle cx="139" cy="460" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
       <circle cx="205" cy="460" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.8"/>
     </g>
-    <text x="266" y="438" font-size="16" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="266" y="438" font-size="16" font-weight="700" fill="#c2410c">何时用</text>
     <text x="266" y="464" font-size="15" fill="#475569">多方辩论、交叉评审，</text>
     <text x="266" y="486" font-size="15" fill="#475569">所有 Agent 共享</text>
     <text x="266" y="508" font-size="15" fill="#475569">发言记录。</text>
@@ -141,7 +141,7 @@
         <animate attributeName="opacity" values="1;1;1;1;0" keyTimes="0;0.33;0.66;0.85;1" dur="3.2s" repeatCount="indefinite"/>
       </circle>
     </g>
-    <text x="722" y="438" font-size="16" font-weight="700" fill="#EA580C">何时用</text>
+    <text x="722" y="438" font-size="16" font-weight="700" fill="#c2410c">何时用</text>
     <text x="722" y="464" font-size="15" fill="#475569">工序固定、上下游清晰：</text>
     <text x="722" y="486" font-size="15" fill="#475569">一棒接一棒，每站只</text>
     <text x="722" y="508" font-size="15" fill="#475569">专注一个角色。</text>

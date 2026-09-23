@@ -35,11 +35,11 @@
     <text x="40" y="120" font-size="17" font-weight="700" fill="#78350f">Plan-and-Execute：先谋后动</text>
 
     <rect x="40" y="140" width="160" height="84" rx="10" fill="url(#gPlanner)" filter="url(#sh)"/>
-    <text x="120" y="182" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">规划器</text>
-    <text x="120" y="208" text-anchor="middle" font-size="15" fill="#fef3c7">一次调用出计划</text>
+    <text x="120" y="182" text-anchor="middle" font-size="17" font-weight="700" fill="#451a03">规划器</text>
+    <text x="120" y="208" text-anchor="middle" font-size="15" fill="#451a03">一次调用出计划</text>
 
     <rect x="224" y="136" width="528" height="98" rx="10" fill="none" stroke="#ca8a04" stroke-dasharray="5 4"/>
-    <text x="272" y="120" font-size="15" fill="#a16207">一次性产出的 5 步计划（快照）</text>
+    <text x="272" y="120" font-size="15" fill="#854d0e">一次性产出的 5 步计划（快照）</text>
 
     <path d="M204 182 L 218 182" stroke="#b45309" stroke-width="2.2" fill="none" marker-end="url(#arrAmber)"/>
     <g filter="url(#sh)">
@@ -117,13 +117,13 @@
       <text x="142" y="392" font-size="15" font-weight="700" fill="#5b21b6">Thought 思考</text>
       <text x="142" y="418" font-size="15" fill="#6d28d9">先查竞品 A 定价</text>
       <text x="366" y="392" font-size="15" font-weight="700" fill="#854d0e">Action 行动</text>
-      <text x="366" y="418" font-size="15" fill="#a16207">search(竞品 A)</text>
+      <text x="366" y="418" font-size="15" fill="#854d0e">search(竞品 A)</text>
       <text x="590" y="392" font-size="15" font-weight="700" fill="#075985">Observation 观察</text>
       <text x="590" y="418" font-size="15" fill="#0369a1">拿到定价与评测</text>
       <text x="814" y="392" font-size="15" font-weight="700" fill="#5b21b6">Thought 思考</text>
       <text x="814" y="418" font-size="15" fill="#6d28d9">接着查竞品 B</text>
       <text x="142" y="536" font-size="15" font-weight="700" fill="#854d0e">Action 行动</text>
-      <text x="142" y="562" font-size="15" fill="#a16207">browser 打开 B</text>
+      <text x="142" y="562" font-size="15" fill="#854d0e">browser 打开 B</text>
       <text x="366" y="536" font-size="15" font-weight="700" fill="#7f1d1d">Observation 观察</text>
       <text x="366" y="562" font-size="15" fill="#b91c1c">页面改版，需登录</text>
       <text x="590" y="536" font-size="15" font-weight="700" fill="#5b21b6">Thought 思考</text>

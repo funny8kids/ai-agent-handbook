@@ -24,7 +24,7 @@
       <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
     <linearGradient id="gOut" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#065f46"/>
     </linearGradient>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#0f172a" flood-opacity="0.12"/>
@@ -76,15 +76,15 @@
     <text x="315" y="190" font-size="15" fill="#312e81">45% ≈90k</text>
     <text x="569" y="166" font-size="17" fill="#ffffff">RAG 检索块</text>
     <text x="569" y="190" font-size="15" fill="#cffafe">15% ≈30k</text>
-    <text x="726" y="166" font-size="17" fill="#ffffff">工具观察 / 草稿</text>
-    <text x="726" y="190" font-size="15" fill="#fef3c7">22% ≈44k</text>
+    <text x="726" y="166" font-size="17" fill="#451a03">工具观察 / 草稿</text>
+    <text x="726" y="190" font-size="15" fill="#451a03">22% ≈44k</text>
     <text x="861" y="177" font-size="15" fill="#ffffff">输出</text>
   </g>
   <!-- cumulative scale ticks -->
   <g stroke="#94a3b8" stroke-width="1" stroke-opacity="0.6">
     <path d="M124 204v7"/><path d="M506 204v7"/><path d="M633 204v7"/><path d="M819 204v7"/><path d="M903 204v7"/>
   </g>
-  <g font-size="15" fill="#94a3b8">
+  <g font-size="15" fill="#64748b">
     <text x="128" y="228">16k</text>
     <text x="510" y="228">106k</text>
     <text x="637" y="228">136k</text>
@@ -108,27 +108,27 @@
     <rect x="68" y="256" width="12" height="12" rx="3" fill="url(#gSys)"/>
     <text x="88" y="267" font-size="16" font-weight="700" fill="#0f172a">稳定前缀</text>
     <text x="68" y="292" font-size="15" fill="#475569">8% ≈16k token</text>
-    <text x="68" y="314" font-size="15" fill="#94a3b8">System 与工具定义</text>
+    <text x="68" y="314" font-size="15" fill="#64748b">System 与工具定义</text>
 
     <rect x="238" y="256" width="12" height="12" rx="3" fill="url(#gHist)"/>
     <text x="258" y="267" font-size="16" font-weight="700" fill="#0f172a">历史对话</text>
     <text x="238" y="292" font-size="15" fill="#475569">45% ≈90k token</text>
-    <text x="238" y="314" font-size="15" fill="#94a3b8">最大块，压缩主目标</text>
+    <text x="238" y="314" font-size="15" fill="#64748b">最大块，压缩主目标</text>
 
     <rect x="408" y="256" width="12" height="12" rx="3" fill="url(#gRag)"/>
     <text x="428" y="267" font-size="16" font-weight="700" fill="#0f172a">RAG 检索块</text>
     <text x="408" y="292" font-size="15" fill="#475569">15% ≈30k token</text>
-    <text x="408" y="314" font-size="15" fill="#94a3b8">top-k 截断 + 去重</text>
+    <text x="408" y="314" font-size="15" fill="#64748b">top-k 截断 + 去重</text>
 
     <rect x="578" y="256" width="12" height="12" rx="3" fill="url(#gObs)"/>
     <text x="598" y="267" font-size="16" font-weight="700" fill="#0f172a">工具观察</text>
     <text x="566" y="292" font-size="15" fill="#475569">22% ≈44k token</text>
-    <text x="566" y="314" font-size="15" fill="#94a3b8">截断展示，原文落盘</text>
+    <text x="566" y="314" font-size="15" fill="#64748b">截断展示，原文落盘</text>
 
     <rect x="748" y="256" width="12" height="12" rx="3" fill="url(#gOut)"/>
     <text x="768" y="267" font-size="16" font-weight="700" fill="#0f172a">预留输出</text>
     <text x="736" y="292" font-size="15" fill="#475569">10% ≈20k token</text>
-    <text x="736" y="314" font-size="15" fill="#94a3b8">答案与 tool call</text>
+    <text x="736" y="314" font-size="15" fill="#64748b">答案与 tool call</text>
   </g>
 
   <!-- ===== panel B: after compression ===== -->
@@ -160,17 +160,17 @@
     <text x="175" y="458" font-size="15" fill="#3730a3">12% ≈24k</text>
     <text x="289" y="434" font-size="16" fill="#ffffff">RAG 检索块</text>
     <text x="289" y="458" font-size="15" fill="#cffafe">15% ≈30k</text>
-    <text x="404" y="434" font-size="16" fill="#ffffff">观察截断</text>
-    <text x="404" y="458" font-size="15" fill="#fef3c7">12% ≈24k</text>
+    <text x="404" y="434" font-size="16" fill="#451a03">观察截断</text>
+    <text x="404" y="458" font-size="15" fill="#451a03">12% ≈24k</text>
     <text x="497" y="434" font-size="16" fill="#ffffff">预留输出</text>
     <text x="497" y="458" font-size="15" fill="#d1fae5">10% ≈20k</text>
     <text x="722" y="434" font-size="18" fill="#3730a3">腾出 86k · 约 43%</text>
-    <text x="722" y="458" font-size="15" font-weight="400" fill="#4f46e5">留给下一轮的新消息、检索与更长的推理草稿</text>
+    <text x="722" y="458" font-size="15" font-weight="400" fill="#4338ca">留给下一轮的新消息、检索与更长的推理草稿</text>
   </g>
   <g stroke="#94a3b8" stroke-width="1" stroke-opacity="0.6">
     <path d="M124 472v7"/><path d="M226 472v7"/><path d="M353 472v7"/><path d="M455 472v7"/><path d="M540 472v7"/>
   </g>
-  <g font-size="15" fill="#94a3b8">
+  <g font-size="15" fill="#64748b">
     <text x="128" y="496">16k</text>
     <text x="230" y="496">40k</text>
     <text x="357" y="496">70k</text>

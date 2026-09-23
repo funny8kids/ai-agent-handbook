@@ -48,12 +48,12 @@
   </g>
   <g text-anchor="middle">
     <text x="135" y="154" font-size="17" font-weight="700" fill="#0f172a">① 领任务</text>
-    <text x="135" y="178" font-size="15" fill="#64748B">issue · 验收标准</text>
+    <text x="135" y="178" font-size="15" fill="#475569">issue · 验收标准</text>
     <text x="307" y="154" font-size="17" font-weight="700" fill="#0f172a">② 列计划</text>
-    <text x="307" y="178" font-size="15" fill="#64748B">todo 清单</text>
+    <text x="307" y="178" font-size="15" fill="#475569">todo 清单</text>
     <text x="546" y="142" font-size="17" font-weight="700" fill="#0f172a">③ 改代码</text>
     <text x="491" y="368" font-size="17" font-weight="700" fill="#0f172a">④ 跑测试</text>
-    <text x="491" y="392" font-size="15" fill="#64748B">pytest · 集成检查</text>
+    <text x="491" y="392" font-size="15" fill="#475569">pytest · 集成检查</text>
   </g>
 
   <!-- diff 小卡 -->
@@ -77,8 +77,8 @@
     <text x="124" y="343">└─ retry.py</text>
     <circle cx="103" cy="365" r="3" fill="#16A34A"/><text x="112" y="370">tests/</text>
     <text x="124" y="392">└─ test_loop.py</text>
-    <text x="76" y="410" fill="#94A3B8">tmpfs 可写</text>
-    <text x="76" y="428" fill="#94A3B8">用后即弃</text>
+    <text x="76" y="410" fill="#475569">tmpfs 可写</text>
+    <text x="76" y="428" fill="#475569">用后即弃</text>
   </g>
 
   <!-- ===== 主干箭头 ===== -->
@@ -102,7 +102,7 @@
 
   <!-- 是：出沙箱到 PR -->
   <path d="M330 416 V470 H734" fill="none" stroke="#16A34A" stroke-width="1.8" marker-end="url(#arrG)"/>
-  <text x="344" y="462" font-size="15" font-weight="700" fill="#16A34A">是 · 全绿出箱</text>
+  <text x="344" y="462" font-size="15" font-weight="700" fill="#166534">是 · 全绿出箱</text>
 
   <!-- ===== PR / 人审 ===== -->
   <g filter="url(#shc)">

@@ -14,13 +14,13 @@
       <path d="M40 0H0V40" fill="none" stroke="#0284c7" stroke-opacity="0.07" stroke-width="1"/>
     </pattern>
     <linearGradient id="gTh" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/>
+      <stop offset="0%" stop-color="#0369a1"/><stop offset="100%" stop-color="#075985"/>
     </linearGradient>
     <linearGradient id="gAc" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>
+      <stop offset="0%" stop-color="#b45309"/><stop offset="100%" stop-color="#92400e"/>
     </linearGradient>
     <linearGradient id="gOb" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#065f46"/>
     </linearGradient>
     <filter id="sh2" x="-25%" y="-25%" width="150%" height="150%">
       <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#0f172a" flood-opacity="0.13"/>
@@ -55,16 +55,16 @@
     <rect x="28" y="104" width="240" height="452" rx="14" fill="#f1f5f9" stroke="#cbd5e1"/>
   </g>
   <text x="42" y="130" font-size="16" font-weight="700" fill="#475569">对照：纯 CoT（只有思考）</text>
-  <text x="42" y="152" font-size="15" fill="#94a3b8">整条链只有 thinking token</text>
+  <text x="42" y="152" font-size="15" fill="#475569">整条链只有 thinking token</text>
 
   <rect x="42" y="166" width="212" height="32" rx="8" fill="#e2e8f0" stroke="#cbd5e1"/>
-  <text x="148" y="187" text-anchor="middle" font-size="15" fill="#64748b">Thought 1：先假设是任天堂</text>
+  <text x="148" y="187" text-anchor="middle" font-size="15" fill="#475569">Thought 1：先假设是任天堂</text>
   <path d="M148 198v8" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arrGy)"/>
   <rect x="42" y="208" width="212" height="32" rx="8" fill="#e2e8f0" stroke="#cbd5e1"/>
-  <text x="148" y="229" text-anchor="middle" font-size="15" fill="#64748b">Thought 2：再猜索尼、EA</text>
+  <text x="148" y="229" text-anchor="middle" font-size="15" fill="#475569">Thought 2：再猜索尼、EA</text>
   <path d="M148 240v8" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arrGy)"/>
   <rect x="42" y="250" width="212" height="32" rx="8" fill="#e2e8f0" stroke="#cbd5e1"/>
-  <text x="148" y="271" text-anchor="middle" font-size="15" fill="#64748b">Thought 3：数字我还不知道</text>
+  <text x="148" y="271" text-anchor="middle" font-size="15" fill="#475569">Thought 3：数字我还不知道</text>
 
   <!-- broken arrow: no action, so no observation -->
   <path d="M148 284v12" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 4"/>
@@ -73,13 +73,13 @@
   </g>
   <text x="164" y="317" font-size="15" fill="#b91c1c">断开</text>
   <rect x="42" y="326" width="212" height="52" rx="8" fill="none" stroke="#94a3b8" stroke-dasharray="5 4"/>
-  <text x="148" y="348" text-anchor="middle" font-size="15" fill="#64748b">需要的外部事实</text>
-  <text x="148" y="368" text-anchor="middle" font-size="15" fill="#94a3b8">2026 各季度财报数字</text>
+  <text x="148" y="348" text-anchor="middle" font-size="15" fill="#475569">需要的外部事实</text>
+  <text x="148" y="368" text-anchor="middle" font-size="15" fill="#475569">2026 各季度财报数字</text>
 
   <rect x="42" y="392" width="212" height="86" rx="8" fill="#e2e8f0" stroke="#cbd5e1"/>
   <text x="54" y="416" font-size="16" font-weight="700" fill="#475569">链再长也接触不到世界</text>
-  <text x="54" y="442" font-size="15" fill="#64748b">只能靠记忆：</text>
-  <text x="54" y="464" font-size="15" fill="#64748b">过期、编造、无出处</text>
+  <text x="54" y="442" font-size="15" fill="#475569">只能靠记忆：</text>
+  <text x="54" y="464" font-size="15" fill="#475569">过期、编造、无出处</text>
 
   <!-- ===== centre: the ReAct loop (center 476,300 / ring 126 / hub 46) ===== -->
   <circle cx="476" cy="300" r="126" fill="none" stroke="#bae6fd" stroke-width="1.4" stroke-dasharray="2 6"/>
@@ -123,20 +123,21 @@
     <text x="367" y="370" font-size="15" fill="#d1fae5">真实世界</text>
     <text x="367" y="390" font-size="15" fill="#d1fae5">返回的结果</text>
   </g>
+  <!-- hub -->
+  <circle cx="476" cy="300" r="46" fill="#ffffff" stroke="#0284c7" stroke-width="2.4" filter="url(#sh2)"/>
+  <text x="476" y="307" text-anchor="middle" font-size="22" font-weight="700" fill="#0c4a6a">LLM</text>
+
+  <!-- step badges ride above the hub: their discs are small, the hub's is not -->
   <g filter="url(#sh2s)">
     <circle cx="408" cy="137" r="13" fill="#ffffff" stroke="#0284c7" stroke-width="1.6"/>
     <circle cx="517" cy="326" r="13" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
     <circle cx="299" cy="326" r="13" fill="#ffffff" stroke="#059669" stroke-width="1.6"/>
   </g>
   <g text-anchor="middle" font-size="15" font-weight="700">
-    <text x="408" y="142" fill="#0284c7">1</text>
-    <text x="517" y="331" fill="#d97706">2</text>
-    <text x="299" y="331" fill="#059669">3</text>
+    <text x="408" y="142" fill="#0369a1">1</text>
+    <text x="517" y="331" fill="#b45309">2</text>
+    <text x="299" y="331" fill="#047857">3</text>
   </g>
-
-  <!-- hub -->
-  <circle cx="476" cy="300" r="46" fill="#ffffff" stroke="#0284c7" stroke-width="2.4" filter="url(#sh2)"/>
-  <text x="476" y="307" text-anchor="middle" font-size="22" font-weight="700" fill="#0c4a6a">LLM</text>
   <text x="476" y="466" text-anchor="middle" font-size="15" fill="#475569">同一条链上想与做 · 一次生成 = 一个节点</text>
 
   <!-- arc captions -->
@@ -156,7 +157,7 @@
 
   <rect x="678" y="164" width="240" height="64" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
   <rect x="678" y="164" width="4" height="64" rx="2" fill="#0284c7"/>
-  <text x="692" y="186" font-size="15" font-weight="700" fill="#0284c7">Thought · 得先有公司名单</text>
+  <text x="692" y="186" font-size="15" font-weight="700" fill="#0369a1">Thought · 得先有公司名单</text>
   <text x="692" y="208" font-size="15" fill="#475569">缺口是事实不是推理 → 去查</text>
 
   <rect x="678" y="234" width="240" height="84" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
@@ -190,5 +191,5 @@
   <text x="126" y="598" font-size="15" fill="#075985">：模型输出 final answer，或触顶 MAX_STEPS</text>
   <text x="48" y="622" font-size="15" fill="#075985">（步数 / token / 墙钟时间），任一命中就退出并把控制权交还调用方。</text>
   <text x="48" y="648" font-size="15" fill="#475569">两种失败都要防：不收敛（一直转圈，靠 MAX_STEPS 兜底并告警）· 过早收敛（还没查就答，靠评测与 trace 抓回来）。</text>
-  <text x="48" y="672" font-size="15" fill="#94a3b8">每轮观测都追加在上下文尾部：稳定前缀一字不改，缓存才留得住（见第 16 章前缀缓存）。</text>
+  <text x="48" y="672" font-size="15" fill="#475569">每轮观测都追加在上下文尾部：稳定前缀一字不改，缓存才留得住（见第 16 章前缀缓存）。</text>
 </svg>
