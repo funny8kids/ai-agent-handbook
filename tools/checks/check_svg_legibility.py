@@ -43,10 +43,12 @@ Guards:
   * a ruler pass plants three SVGs (1920 / 960 / 400 viewBox) in the reader's box and requires each
     measured scale to equal min(1, column/natural). Without it, "scale 0.8" would be indistinguishable
     from a probe that reads the container and reports 1.0 for everything.
-  * a classifier selftest reads two synthetic SVGs the other way: a 400px canvas whose labels must
-    flag nothing (and whose font-size must come from the inherited `<g>`), and a 960px canvas that
-    must flag its 9.5px label and NOT its 16px one. Every real figure fails the bar, so without a
-    planted CLEAN figure "flags everything" and "finds the defect" read the same.
+  * a classifier selftest reads three synthetic SVGs the other way: a 400px canvas whose labels must
+    flag nothing (and whose font-size must come from the inherited `<g>`), a 960px canvas that
+    must flag its 9.5px label and NOT its 16px one, and a stylesheet-sized 960px canvas that must
+    resolve `class`/`<style>`/inline sizes through the real cascade instead of calling them all the
+    13px fallback. Every real figure fails the bar, so without a planted CLEAN figure "flags
+    everything" and "finds the defect" read the same.
   * the served `<img>` must still carry `max-width:100%` — if GitBook ever stops scaling, the
     premise (and every number in this file) changes, so the axis says so instead of reading clean.
   * `<main>` must measure the column on the sampled live pages.
@@ -89,15 +91,46 @@ COLUMN_LIVE = 768           # round 62's <main>; re-asserted every run
 MIN_LABEL = 12.0            # px: the bar the Mermaid axis uses; body text is 16px
 ROOT_FONT = 13.0            # the house SVG template sets font-size on <svg>
 FIG_RE = re.compile(r'!\[[^\]]*\]\(([^)\s]+\.svg)')
+CLASS_RULE_RE = re.compile(r"\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}")
+FS_DECL_RE = re.compile(r"font-size\s*:\s*([\d.]+)px")
 
 
 def strip_ns(tag):
     return tag.split("}")[-1]
 
 
+def css_font_rules(root):
+    """[(class, px)] from the figure's <style> blocks, in stylesheet order."""
+    rules = []
+    for node in root.iter():
+        if strip_ns(node.tag) != "style":
+            continue
+        for sel, body in CLASS_RULE_RE.findall(node.text or ""):
+            fs = FS_DECL_RE.search(body)
+            if fs:
+                rules.append((sel, float(fs.group(1))))
+    return rules
+
+
+def css_size(cls, rules):
+    """The px a `class="a b"` element gets: same specificity, so the LAST matching rule wins."""
+    px, best = None, -1
+    for name in (cls or "").split():
+        for i, (sel, size) in enumerate(rules):
+            if sel == name and i > best:
+                px, best = size, i
+    return px
+
+
 def text_sizes(path):
-    """[(authored px, character count)] for every <text>/<tspan>, with inheritance applied."""
+    """[(authored px, character count)] for every <text>/<tspan>, with inheritance applied.
+
+    Cascade, as a browser applies it: inline `style` beats a `<style>` class rule, which beats the
+    `font-size` presentation attribute, which beats inheritance. Ignoring the class layer read
+    `19-lab-react-loop-animated.svg` as 15 labels at the 13px fallback when its CSS says 15/17/18px.
+    """
     root = ET.parse(path).getroot()
+    rules = css_font_rules(root)
     out = []
 
     def walk(node, size):
@@ -110,6 +143,12 @@ def text_sizes(path):
                 m = re.match(r"([\d.]+)", raw.strip())
                 if m:
                     s = float(m.group(1))
+            css = css_size(child.get("class"), rules)
+            if css is not None:
+                s = css
+            inline = FS_DECL_RE.search(child.get("style") or "")
+            if inline:
+                s = float(inline.group(1))
             if strip_ns(child.tag) in ("text", "tspan"):
                 txt = "".join(child.itertext()).strip()
                 if txt:
@@ -128,6 +167,16 @@ def viewbox(path):
         return None, None
     v = [float(x) for x in m.group(1).split()]
     return v[2], v[3]
+
+
+def declared_size(path):
+    """The root tag's own width/height, or None: without them the browser calls an SVG 300px wide."""
+    m = re.search(r"<svg[^>]*>", io.open(path, encoding="utf-8").read())
+    if not m:
+        return None
+    w = re.search(r'\swidth="([\d.]+)"', m.group(0))
+    h = re.search(r'\sheight="([\d.]+)"', m.group(0))
+    return (float(w.group(1)), float(h.group(1))) if (w and h) else None
 
 
 def page_usage():
@@ -167,11 +216,22 @@ def figures(column=COLUMN_LIVE):
                 continue
             scale = min(1.0, column / w)
             rows.append({"asset": fn, "path": path, "vb": (w, h), "scale": scale,
+                         "declared": declared_size(path),
                          "labels": len(sizes), "min_fs": min(s for s, _ in sizes),
                          "eff_min": round(min(s for s, _ in sizes) * scale, 2),
                          "below": sum(1 for s, _ in sizes if s * scale < MIN_LABEL),
                          "pages": sorted(set(usage[fn]))})
     assert len(rows) >= 25, "vacuity floor: only %d authored body figures found" % len(rows)
+    # A figure that paints at all must state its own size: without width/height the browser calls the
+    # SVG 300px wide, so the column stretches it to whatever it likes and every scale reading here --
+    # including the live leg's -- is arithmetic on a number the file never chose.
+    undeclared = [r["asset"] for r in rows if r["declared"] is None]
+    assert not undeclared, \
+        "%d body figure(s) declare no width/height on <svg>: %s" % (len(undeclared), undeclared)
+    wrong = [(r["asset"], r["declared"], r["vb"]) for r in rows
+             if r["declared"] and (abs(r["declared"][0] - r["vb"][0]) > 0.01
+                                   or abs(r["declared"][1] - r["vb"][1]) > 0.01)]
+    assert not wrong, "declared size disagrees with viewBox: %s" % wrong
     return rows
 
 
@@ -181,6 +241,15 @@ CLEAN = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="4
 DIRTY = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">'
          '<text x="10" y="40" font-size="9.5">small label</text>'
          '<text x="10" y="90" font-size="16">big label</text></svg>')
+# Same canvas, sizes set only through a stylesheet: the attribute-blind reader called all three the
+# 13px fallback, so a clean figure reported as 16 defects and a 9px one would have read as 10.4px.
+CSS = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">'
+       '<defs><style>.t{fill:#111}.h{font-size:17px}.s{font-size:15px}.bad{font-size:9px}</style></defs>'
+       '<text class="t h" x="10" y="40">heading</text>'
+       '<text class="t s" x="10" y="90">body copy</text>'
+       '<text class="t bad" x="10" y="140">tiny</text>'
+       '<text class="t bad" x="10" y="190" font-size="16">attribute loses to class</text>'
+       '<text class="t bad" x="10" y="240" style="font-size:20px">inline wins</text></svg>')
 
 
 def classifier_selftest(column):
@@ -192,18 +261,30 @@ def classifier_selftest(column):
     canvas with a 9.5px label fails on exactly the small label, not the 16px one.
     """
     with tempfile.TemporaryDirectory() as d:
-        for name, text in (("clean.svg", CLEAN), ("dirty.svg", DIRTY)):
+        for name, text in (("clean.svg", CLEAN), ("dirty.svg", DIRTY), ("css.svg", CSS)):
             io.open(os.path.join(d, name), "w", encoding="utf-8").write(text)
         clean, dirty = os.path.join(d, "clean.svg"), os.path.join(d, "dirty.svg")
+        css = os.path.join(d, "css.svg")
         assert [s for s, _ in text_sizes(clean)] == [14.0, 14.0, 14.0], \
             "inherited font-size is not applied: %s" % text_sizes(clean)
-        for path, want in ((clean, 0), (dirty, 1)):
+        # the class layer of the cascade, pinned both ways: a stylesheet-sized figure must not read
+        # as the 13px fallback, and a class must outrank the presentation attribute it sits beside.
+        assert [s for s, _ in text_sizes(css)] == [17.0, 15.0, 9.0, 9.0, 20.0], \
+            "font-size from <style>/class/inline misresolved: %s" % text_sizes(css)
+        # The intrinsic-size guard needs its own phantom: a copy with width/height removed must read
+        # None, or the assertion would pass on a parser that never finds the attribute either.
+        assert declared_size(clean) == (400.0, 200.0), "declared size misread"
+        bare = os.path.join(d, "bare.svg")
+        io.open(bare, "w", encoding="utf-8").write(CLEAN.replace(' width="400" height="200"', ""))
+        assert declared_size(bare) is None, "a root with no width/height still read as declared"
+        for path, want in ((clean, 0), (dirty, 1), (css, 2)):
             w, _ = viewbox(path)
             scale = min(1.0, column / w)
             got = sum(1 for s, _ in text_sizes(path) if s * scale < MIN_LABEL)
             assert got == want, "%s should flag %d label(s) at a %dpx column, flagged %d" \
                                 % (os.path.basename(path), want, column, got)
-    print("classifier selftest ok: a 400px canvas reads clean, a 960px one flags its 9.5px label only")
+    print("classifier selftest ok: a 400px canvas reads clean, a 960px one flags its 9.5px label only, "
+          "a stylesheet-sized 960px canvas flags its two 9px labels and not its 15/17/20px ones")
 
 
 def offline_report(rows, column):

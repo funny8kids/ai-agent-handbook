@@ -13,7 +13,7 @@
 
   <rect width="960" height="540" rx="20" fill="url(#bg5)"/>
   <text x="48" y="58" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="28" font-weight="700" fill="#0F172A">Function Calling 完整链路</text>
-  <text x="48" y="86" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="14.5" fill="#64748B">模型只输出「调用意图」，执行永远在你的代码里；结果回填后再由模型收尾</text>
+  <text x="48" y="86" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" fill="#64748B">模型只输出「调用意图」，执行永远在你的代码里；结果回填后再由模型收尾</text>
 
   <!-- 三条泳道头 -->
   <g filter="url(#sh5)">
@@ -33,34 +33,34 @@
 
   <!-- 1: 代码 -> LLM -->
   <path d="M163 200 L 455 200" stroke="#64748B" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="309" y="192" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#334155">1. 消息 + 工具 schema 列表</text>
+  <text x="309" y="192" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">1. 消息 + 工具 schema 列表</text>
 
   <!-- 2: LLM -> 代码 -->
   <path d="M455 246 L 175 246" stroke="#7C3AED" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="315" y="238" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#6D28D9">2. tool_use { name, args }</text>
+  <text x="315" y="238" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#6D28D9">2. tool_use { name, args }</text>
 
   <!-- 3: 代码 -> 工具 -->
   <path d="M163 292 L 759 292" stroke="#64748B" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="461" y="284" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#334155">3. 校验参数并执行（权限 / 沙箱 / 超时）</text>
+  <text x="461" y="284" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">3. 校验参数并执行（权限 / 沙箱 / 超时）</text>
 
   <!-- 4: 工具 -> 代码 -->
   <path d="M759 338 L 187 338" stroke="#059669" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="473" y="330" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#047857">4. 结构化结果或 error</text>
+  <text x="473" y="330" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#047857">4. 结构化结果或 error</text>
 
   <!-- 5: 代码 -> LLM -->
   <path d="M163 384 L 455 384" stroke="#64748B" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="309" y="376" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#334155">5. tool_result 回填对话</text>
+  <text x="309" y="376" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">5. tool_result 回填对话</text>
 
   <!-- 6: LLM -> 代码 -->
   <path d="M455 430 L 175 430" stroke="#7C3AED" stroke-width="2.5" marker-end="url(#arr5)"/>
-  <text x="315" y="422" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" fill="#6D28D9">6. 最终自然语言回答</text>
+  <text x="315" y="422" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#6D28D9">6. 最终自然语言回答</text>
 
   <!-- 循环提示 -->
-  <rect x="656" y="384" width="230" height="86" rx="12" fill="#ECFDF5" stroke="#A7F3D0"/>
-  <text x="771" y="412" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12.5" font-weight="700" fill="#065F46">可循环：模型可连续发起多次调用</text>
-  <text x="771" y="434" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#047857">并行调用、强制工具选择、严格 schema</text>
-  <text x="771" y="454" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" fill="#047857">是各家 API 的关键差异点</text>
+  <rect x="560" y="380" width="330" height="96" rx="12" fill="#ECFDF5" stroke="#A7F3D0"/>
+  <text x="725" y="404" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#065F46">可循环：模型可连续发起多次调用</text>
+  <text x="725" y="432" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#047857">并行调用、强制工具选择、严格 schema</text>
+  <text x="725" y="456" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#047857">是各家 API 的关键差异点</text>
 
-  <text x="48" y="496" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#475569">工具的 description 与参数 schema 就是模型的「使用说明书」：写不好 = 用不好。</text>
-  <text x="48" y="520" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="13" fill="#475569">错误也要结构化回填（含建议动作），模型才能自我修正，而不是收到一句 "error"。</text>
+  <text x="48" y="496" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#475569">工具的 description 与参数 schema 就是模型的「使用说明书」：写不好 = 用不好。</text>
+  <text x="48" y="520" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#475569">错误也要结构化回填（含建议动作），模型才能自我修正，而不是收到一句 "error"。</text>
 </svg>
