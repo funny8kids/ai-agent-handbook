@@ -58,7 +58,7 @@ updated: 2026-09-23
 
 ### 五、本轮复跑读数（离线轴全绿）
 
-- `check_structure pages scanned=198 problems=0`——含本轮新增的 BT 判据与它的两条反例（围栏外必响 / 围栏内必不响）；`check_nav_h1_sync 196 页 0`；`check_readme_stats 全轴一致`；`check_widget_pairing 198 页 0`；`check_quote_fidelity 197 页 / 5 条引用 / 0 未匹配`；`check_char_sanity 326223 字 0`；`check_katex_formulas 108 页 / 928 条 / 0 失败 / version=0.18.7`（埋雷照响）；`check_mermaid_geometry 217 块真渲染 problems=0`，最宽 1116px、最高 1689px。
+- `check_structure pages scanned=198 problems=0`——含本轮新增的 BT 判据与它的两条反例（围栏外必响 / 围栏内必不响）；`check_nav_h1_sync 196 页 0`；`check_readme_stats 全轴一致`；`check_widget_pairing 198 页 0`；`check_quote_fidelity 197 页 / 5 条引用 / 0 未匹配`；`check_char_sanity 326333 字 0`；`check_katex_formulas 108 页 / 928 条 / 0 失败 / version=0.18.7`（埋雷照响）；`check_mermaid_geometry 217 块真渲染 problems=0`，最宽 1116px、最高 1689px。
 - **真实渲染图目检**：`--eyeball 12-applications/README.md`（全站最宽的那一张，1116×94）出 28 KB PNG——5 节横链、章色紫、中文标签两行都完整无截断、箭头不断。
 - 作者侧公式判据：本页 **1 → 0**（同一份文本，改前响、改后不响，两条都是 `assert`）。线上 SSR 对平轴的复跑读数见第八节，旧渲染最终翻转的读数见第九节。
 
@@ -92,6 +92,8 @@ updated: 2026-09-23
 - **分桶后的干净读数（本轮收口）**：`authored=174 checked=174 problems=0 fetch-failures=0 fallback-pages=0`、退出码 0——这条轴**第一次**以"0 内容问题 + 0 未检页"的形式成立；第八节里"要读到一次干净的 0，需在旧页翻转后复跑"那条待办就此了结。
 - **抽查里有一条判据读成 `false`，先归因再收口**：抓线上时"只存在于新修订"的三条里，两条纯文本命中的都对（「四条都是」「旧渲染翻了」），但**写在行内代码里**的那条读数串恒不命中。逐字定位后确认它是**提取器的语义**不是页面的缺失：`body_visible()` 会整段剥掉 `<code>`（第 57 轮定的规矩——代码跨度里的 `{%`、`$$` 是文档示例，不是读者看到的泄漏，LEAK 判据靠它才不误报），所以**任何放在行内代码里的字串都不可能出现在"读者可见正文"里**。线上 HTML 原文里这条读数是完整的（`…hyphens-none">authored=174 checked=174 problems=0 fetch-failures=0 fallback-pages=0</code>`）。教训：往后线上门槛字串要挑正文里的，别挑代码里的——这一条已同步进项目备忘。
 - **线上收口读数**：新修订第一抓即命中，`aria-busy` 空公式占位 **0**、读者可见正文裸 `$$` **0**，第 58 次条目标题在正文里。
+- **本节这条补充自己也是被同一把尺子量的**：推出 `b153628` 后第一抓（11:49:55）仍是 `67f58a4` 那份（8,332,592 B），53 秒后第二抓（11:50:48）已是新文档（8,359,647 B）——本轮的线上门槛字串全部改挑正文里的散文，两条都命中，空公式占位仍 0。所以"旧渲染卡住"的实测节奏是**分钟级到 75 分钟级都出现过**，报"平台没同步"之前至少要跨分钟再抓一次。
+
 
 
 
