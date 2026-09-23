@@ -287,7 +287,7 @@ Permissions、Hooks、Skills 全部写在 `.claude/` 里并由 SDK 加载，配�
 
 1. **框架选型多了一极**：09 章的 LangGraph/CrewAI 仍是「你自己拼图」；Agent SDK / Agents API 是「买整机」
 2. **治理前移到配置**：Permissions、Hooks、Skills 应进版本库，和代码一起 review
-3. **不要品牌误用**：集成产品不能自称 Claude Code（见官方 branding guidelines）
+3. **不要品牌误用**：官方条款禁止把 Claude Code / Anthropic 的名字或标志用作你自己的产品、功能或公司名（[Legal and compliance](https://code.claude.com/docs/en/legal-and-compliance)）
 
 ## 常见误区
 
@@ -307,6 +307,7 @@ Permissions、Hooks、Skills 全部写在 `.claude/` 里并由 SDK 加载，配�
 - [Claude Agent SDK TypeScript](https://github.com/anthropics/claude-agent-sdk-typescript)
 - [Claude Agent SDK Python](https://github.com/anthropics/claude-agent-sdk-python)
 - [A harness for every task（工程博客）](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code)
+- [Legal and compliance（品牌与命名条款）](https://code.claude.com/docs/en/legal-and-compliance)
 
 ## 相关知识点
 

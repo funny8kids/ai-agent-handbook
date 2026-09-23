@@ -65,7 +65,7 @@ sequenceDiagram
 
 1. 先读 [MCP 协议页](../05-tool-protocol/mcp.md) 理解 Tools/Resources/Prompts 三原语
 2. 用 Claude Code / DeepSeek Harness / Pi 任一客户端 `add` 一个 filesystem server 跑通
-3. 自己写一个 ~50 行的 Server（参考官方 TS/Python SDK），理解注册流程
+3. 自己写一个 ~50 行的 Server（参考官方 [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) 与 [Python SDK](https://github.com/modelcontextprotocol/python-sdk)），理解注册流程
 4. 生产接入前检查：Server 来源可信、走 [权限管道](../05-tool-protocol/tool-permission-sandbox.md)、工具描述无注入风险
 
 ## 常见误区

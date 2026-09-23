@@ -14,7 +14,7 @@ updated: 2026-09-23
 ## 先看结论
 
 - 前沿分数：OSWorld 2.0 上 Astra 约 72.6%（partial），Fable 5.1 公布 partial 77.9% / strict 41.7%（配置不同，不可直接混比）
-- 效率同样关键：Astra 官方称较 GPT-5.6 Sol 约 **47% 更少时间/任务**
+- 效率同样关键：Astra 官方称较 GPT-5.6 Sol 约 **47% 更少时间/任务**（[发布页](https://openai.com/index/gpt-6-astra/)）
 - 安全成为产品功能：网站/应用白名单、确认策略、对高后果动作的自动审查
 - 与 [05 章基础](../05-tool-protocol/computer-use-browser-use.md) 的差别：本页对齐 2026 产品与读数
 

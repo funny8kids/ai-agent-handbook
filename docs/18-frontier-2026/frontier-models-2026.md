@@ -29,7 +29,7 @@ updated: 2026-09-23
 |---|---|---|---|---|
 | 定位 | 工作 / computer use / 科研 / 网安 | 编码与知识工作（GA） | 长时程 Opus 档 | Astra 前一代前沿 |
 | API 名 | `gpt-6-astra` | `claude-fable-5-1` | Opus 系列 | GPT-5.6 Sol |
-| 标准价（in/out per 1M） | $10 / $50 | $10 / $50 | 随档位 | 低于 Astra（见官方页） |
+| 标准价（in/out per 1M） | $10 / $50 | $10 / $50 | 随档位 | 低于 Astra（[官方页](https://openai.com/index/gpt-6-astra/)） |
 | 缓存读 | 有 cache 价 | **$0.25**（降 75%） | — | — |
 | Terminal-Bench 4.0 | **57.9%** | 55.8%（Mythos 60.9%） | 52.6% | 37.3% |
 | OSWorld 2.0 | 72.6%（部分分） | 77.9% partial / 41.7% strict | 75.4% partial | — |

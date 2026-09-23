@@ -81,7 +81,7 @@ flowchart LR
 
 1. **回忆**：LangGraph 里的节点为什么建议幂等？不幂等 + checkpoint 重放会导致什么后果？（提示：见 langgraph.md）
 2. **应用**：要搭「模型写代码 → 安全执行 → 报错回填 → 修正」的闭环，选 AutoGen/Agent Framework、CrewAI 还是 LangGraph？说理由。（提示：见 autogen.md、crewai.md、langgraph.md）
-3. **判断**：「先问要不要框架」——用 Pi 约 300 行循环这个例子，评价框架买来的（状态管理 + 生态）和付出的（黑盒 + 依赖）分别是什么。（提示：见 README 选型心法、langgraph.md）
+3. **判断**：「先问要不要框架」——用 Pi 约 300 行循环这个例子，评价框架买来的（状态管理 + 生态）和付出的（黑盒 + 依赖）分别是什么。（提示：本章开头的「选型心法」小节，以及 [LangGraph](langgraph.md)）
 
 ## 本章术语速查
 
