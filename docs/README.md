@@ -97,6 +97,7 @@ updated: 2026-09-23
 - **257 张页内配图**：217 个 Mermaid 内联图（全部带章节配色）+ 32 张页内自绘 SVG（含站内横幅与 4 张高保真工具界面示意）+ **8 张真实产品界面截图**（Langfuse、MCP Inspector、OpenHands、Dify、Open WebUI、Arize Phoenix、AutoGen Studio、LangSmith，逐张标注来源 URL 与访问日期）· 257 in-page figures, parser-verified diagrams + real product UI screenshots。按**放置次数**算是 262 处，差的那 5 处是 4 张 SVG 与 1 张截图跨页复用；另有 3 张自绘 SVG（封面与两枚站标）只在站点设置与仓库 README 里用，不在正文页，故不计入配图数
 - **215 条读者可见图注**：每张 SVG/截图下方都写了一句「读这张图要带走什么」——因为线上量到 GitBook 会把内容图片的 `alt` **属性清空**（`alt=""`），只在 `<figcaption>` 里把作者写的 alt 印出来（第 58 轮实测，此前这里的说法是半对的）；45 处图片放置里 44 处带注（另 1 处是首页装饰横幅），217 张 Mermaid **171 张带图注、46 张由图前或图后实质引导语解释，逐块量过：0 张裸图**，**没有一张图是「如下图所示」四个字打发的**
 - **线上图片真的打得开**：`tools/checks/check_live_images.py` 把本地写的每一张图与**线上页面**实际吐出的 `<img>` 对平（漏图 / 多图 / 图注没到页面 / 图片 404 或非 `image/*` 或小于 200B / SVG 被转成位图丢动画），全站读数 `pages=36 refs=45 唯一资产=40（32 SVG + 8 PNG）problems=0`。绿色是用**线上变异控制**换来的：把一页的作者侧改坏，EXTRA + DROPPED + NOCAPTION 三条必须同时响
+- **标题里没有会被当成标记的符号**：GitBook 会把每个标题的文本**再印一遍**放进侧栏与「本页目录」，那一份**丢掉行内代码格式**——所以标题里写 `` `$$` ``，正文看着是代码，目录里读者看到的是裸 `$$`。这条线上量到（更新日志 2 处，SSR 全站对平轴 `authored=174 checked=174` 里唯一的一条 LEAK-NAV），离线由 `check_structure.py` 的 HEAD 判据守住：围栏外的标题行含 `{%`/`%}`/`$$` 即报，修复后读数 2→0，全站 198 页 0 问题
 - **2026-09 前沿已对齐**：GPT-6 Astra、Agents API、Claude Fable 5.1、System One 决策模型（Jev）、Terminal-Bench 4.0
 
 查资料用 [资源总表](00-index/resources-index.md) 与 [标签索引](00-index/tags.md)，术语卡住查 [术语表](15-glossary/README.md)。

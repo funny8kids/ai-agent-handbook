@@ -245,16 +245,44 @@ def ssr_counts(served):
     return {"tabs": tabs, "katex": katex}
 
 
-def visible(served):
+def visible(served, drop_nav=False):
     """Reader-visible text of the served HTML, with intentional markup removed.
 
     Round 57 found three LEAK false positives here: the changelog and a resources page
     *document* {% %} syntax inside code spans, and every KaTeX element ships its own TeX source
     in an <annotation> node — so a page whose formula writes 95\\% leaks "%}" into the raw
     markup while the reader sees "95%". A literal tag outside those nodes is still a leak.
+
+    drop_nav also removes GitBook's own reprint of heading text: every in-page anchor link
+    (<a href="#...">, which is what the sidebar and the on-this-page list wrap a heading in).
+    The obvious rule was measured and rejected: cutting nav <li> chunks by class left 1 of the
+    live changelog's 2 TOC copies standing, because a top-level entry's <li> carries no sidebar
+    class — only its child <a> does. Cutting before the code strip is likewise rejected here, and
+    the straddle case below is the guard against reintroducing it.
     """
     s = re.sub(r"<(script|style|pre|code|annotation)\b.*?</\1>", " ", served, flags=re.S)
+    if drop_nav:
+        s = re.sub(r'<a\b[^>]*href="#[^"]*"[^>]*>.*?</a>', " ", s, flags=re.S)
     return re.sub(r"<[^>]+>", " ", s)
+
+
+def body_visible(served):
+    """The same, minus GitBook's own sidebar/TOC copy of every heading."""
+    return visible(served, drop_nav=True)
+
+
+def leak_sites(served):
+    """Split bare markup tokens by where a reader can actually see them.
+
+    Round 58 measured the live changelog: 177 literal $$ sit in its HTML, 2 survive visible()'s
+    code stripping, and both of those are in the sidebar — GitBook reprints heading text in the
+    TOC with inline-code formatting removed, so a marker inside a *heading* is visible navigation
+    even when the body copy renders it as code. Same authoring slip, different sight, and the
+    message has to name the right mechanism: only a body hit is an unrendered formula.
+    """
+    body, shown = body_visible(served), visible(served)
+    return ([t for t in ("{%", "%}", "$$") if t in body],
+            [t for t in ("{%", "%}", "$$") if t not in body and t in shown])
 
 
 def fetch(url):
@@ -309,13 +337,15 @@ def headless(rows, workers=8):
                 if got[key] != r[key]:
                     problems.append("SSR-PARITY %s:%s authored=%s served=%s"
                                     % (r["page"], key, r[key], got[key]))
-            shown = visible(served)
-            for token in ("{%", "%}"):
-                if token in shown:
-                    problems.append("LEAK %s serves literal %r" % (r["page"], token))
-            if "$$" in shown:
-                problems.append("LEAK %s serves literal $$ (a formula the parser never took)"
-                                % r["page"])
+            shown, nav_only = leak_sites(served)
+            for token in shown:
+                problems.append("LEAK %s serves literal %r in the body%s"
+                                % (r["page"], token,
+                                   " (a formula the parser never took)" if token == "$$" else ""))
+            for token in nav_only:
+                problems.append("LEAK-NAV %s prints literal %r in the page TOC — that marker is "
+                                "inside a heading, where GitBook drops code formatting"
+                                % (r["page"], token))
     problems += formula_defects()
     print("ssr parity: authored=%d checked=%d problems=%d fallback-pages=%d"
           % (len(rows), checked, len(problems), small))
@@ -375,7 +405,26 @@ def controls():
                       '<div class="katex-display">z</div>')["katex"] == 1, \
         "control: katex-display/katex-mathml must not count as extra formulas"
     assert ssr_counts('<p>nothing here</p>') == {"tabs": 0, "katex": 0}, "control: phantom structures"
-    print("ssr controls ok (token-exact tab/katex counting)")
+    # a heading's TOC reprint must not be reported as an unrendered body formula, and a body
+    # leak must not be lost just because the same page also has sidebar copy
+    nav = ('<div><li class="a sidebar-list-line:b"><a href="#h1">see $$ and {% raw %}</a></li></div>'
+           '<article><p>clean body</p></article>')
+    assert leak_sites(nav) == ([], ["{%", "%}", "$$"]), "control: TOC copy read as a body leak"
+    body = ('<div><li class="a"><a href="#h1">see $$</a></li></div>'
+            '<article><p>literal $$ outside code</p></article>')
+    assert leak_sites(body) == (["$$"], []), \
+        "control: a body leak must stay a body leak with a sidebar on the same page"
+    assert leak_sites('<article><code>$$</code><code>{% raw %}</code></article>') == ([], []), \
+        "control: markers inside code spans are documentation, not leaks"
+    # a nav <a> nested inside a code span must not cut that span open and expose its $$
+    straddle = '<article><code>see <a href="#h1">nav</a> $$</code></article>'
+    assert leak_sites(straddle) == ([], []), "control: nav cut must not split a code pair"
+    assert leak_sites(straddle.replace("<code>", "").replace("</code>", ""))[0] == ["$$"], \
+        "control: the same $$ outside a code span must be a body leak"
+    # the rule must key on in-page anchors only: a cross-file link is body prose, not nav copy
+    assert leak_sites('<article><p>see <a href="../other#x">literal $$ here</a></p></article>')[0] == ["$$"], \
+        "control: a cross-page link must not be dropped as nav copy"
+    print("ssr controls ok (token-exact tab/katex counting, body/TOC leak split)")
     # the two counting rules round 57 had to learn, kept as executable memory
     assert expect_of("写法 `$$x$$` 只是文档示例\n")["katex"] == 0, \
         "control: markup shown inside a code span is not a formula the reader is served"

@@ -21,6 +21,11 @@ KEYS = ("tags", "type", "status", "updated")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 FM = re.compile(r"^---\n(.*?)\n---\n", re.S)
 H1 = re.compile(r"^#\s+(.+?)\s*$", re.M)
+HEAD = re.compile(r"^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*$", re.M)
+# GitBook reprints heading text in the sidebar and the on-this-page list with inline-code
+# formatting dropped, so a marker anywhere in a heading reaches the reader as bare markup even
+# when the body copy renders it as code. Round 58 measured exactly that on the live changelog.
+NAV_TOKENS = ("{%", "%}", "$$")
 # GitBook's nav file and the asset manifest are real files but not published pages.
 NOT_A_PAGE = ("SUMMARY.md", "MANIFEST.md")
 
@@ -59,6 +64,12 @@ def scan(rel, text):
     h1 = H1.findall(body)
     if len(h1) != 1:
         problems.append("H1 %s has %d fence-free H1 lines %r" % (rel, len(h1), h1[:3]))
+    for h in HEAD.findall(body):
+        hit = [t for t in NAV_TOKENS if t in h]
+        if hit:
+            problems.append("HEAD %s heading text carries %s — the TOC reprints headings without "
+                            "code formatting, so the marker reads as bare markup: %r"
+                            % (rel, "/".join(hit), h[:60]))
     return problems
 
 
@@ -85,6 +96,10 @@ echo hi
         "control: a missing frontmatter key went uncounted"
     assert any(p.startswith("FENCE") for p in scan("a.md", good + "\n```\n")), \
         "control: an unclosed fence went uncounted"
+    assert any(p.startswith("HEAD") for p in scan("a.md", good + "\n### 写法 `$$x$$` 的坑\n")), \
+        "control: a marker in heading text (even in inline code) prints bare in the TOC"
+    assert not any(p.startswith("HEAD") for p in scan("a.md", good + "\n```\n### 写法 $$x$$\n```\n")), \
+        "control: the same marker inside a fence is not a heading the TOC reprints"
     assert any("frontmatter" in p for p in scan("a.md", "# 无 frontmatter\n")), \
         "control: a page without frontmatter passed"
     assert scan("SUMMARY.md", "# Summary\n") == [], "control: SUMMARY.md held to the page rules"
