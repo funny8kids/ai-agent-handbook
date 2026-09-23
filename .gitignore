@@ -3,3 +3,6 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# 判据依赖：版本钉在 tools/checks/data/katex/package.json，装出来的东西不入库
+node_modules/

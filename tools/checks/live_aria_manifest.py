@@ -128,7 +128,8 @@ def formula_sources(text):
         pairs = (len(parts) - 1) // 2          # N delimiters make floor(N/2) formulas, at most
         out += [("inline", src) for src in parts[1::2][:pairs]]
         if (len(parts) - 1) % 2:
-            defects.append("unpaired $$ inside one paragraph: %r"
+            defects.append("unpaired $$ inside one paragraph (KaTeX pairs it with the next $$ on "
+                           "the page and the text between renders as an empty formula): %r"
                            % re.sub(r"\s+", " ", para).strip()[:70])
     return out, defects
 

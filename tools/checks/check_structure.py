@@ -26,6 +26,13 @@ HEAD = re.compile(r"^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*$", re.M)
 # formatting dropped, so a marker anywhere in a heading reaches the reader as bare markup even
 # when the body copy renders it as code. Round 58 measured exactly that on the live changelog.
 NAV_TOKENS = ("{%", "%}", "$$")
+# A backslash cannot escape a backtick *inside* a code span: the span closes at the first
+# backtick and the delimiters it strands pair up as a formula. Round 59 measured that on the
+# live changelog: `<code>` held "字面 \" , the two stranded $$ became an EMPTY KaTeX span, and
+# the clause between them vanished from the reader-visible page — while 0 literal $$ stayed, so
+# the live leak scan and the KaTeX count parity are both blind to it. Only this authored-side
+# rule sees the class at all, which is why it belongs here rather than in a browser.
+BACKTICK_ESC = re.compile(r"\\`")
 # GitBook's nav file and the asset manifest are real files but not published pages.
 NOT_A_PAGE = ("SUMMARY.md", "MANIFEST.md")
 
@@ -70,6 +77,12 @@ def scan(rel, text):
             problems.append("HEAD %s heading text carries %s — the TOC reprints headings without "
                             "code formatting, so the marker reads as bare markup: %r"
                             % (rel, "/".join(hit), h[:60]))
+    for i, line in enumerate(body.split("\n"), 1):
+        if BACKTICK_ESC.search(line):
+            problems.append("BT %s:body-line %d uses an escaped backtick — inside a code span a "
+                            "backslash cannot escape the delimiter, so the span closes early and "
+                            "the delimiters it strands become an empty formula that swallows the "
+                            "text between them: %r" % (rel, i, line.strip()[:60]))
     return problems
 
 
@@ -100,10 +113,15 @@ echo hi
         "control: a marker in heading text (even in inline code) prints bare in the TOC"
     assert not any(p.startswith("HEAD") for p in scan("a.md", good + "\n```\n### 写法 $$x$$\n```\n")), \
         "control: the same marker inside a fence is not a heading the TOC reprints"
+    assert any(p.startswith("BT") for p in scan("a.md", good + "\n- 例：`写法 \\`x\\`` 的坑\n")), \
+        "control: an escaped backtick closes the span early and strands the marker outside it"
+    assert not any(p.startswith("BT") for p in scan("a.md", good + "\n```\n`写法 \\`x\\`` 的坑\n```\n")), \
+        "control: the same escape inside a fence is example text, not markup"
     assert any("frontmatter" in p for p in scan("a.md", "# 无 frontmatter\n")), \
         "control: a page without frontmatter passed"
     assert scan("SUMMARY.md", "# Summary\n") == [], "control: SUMMARY.md held to the page rules"
-    print("controls: in-fence heading ignored / real second H1, missing key, unclosed fence caught")
+    print("controls: in-fence heading ignored / real second H1, missing key, unclosed fence caught"
+          " / TOC-reprinted marker and escaped backtick flagged, in-fence copies of both accepted")
 
 
 def main():

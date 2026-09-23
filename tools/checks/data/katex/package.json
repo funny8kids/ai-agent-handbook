@@ -1,0 +1,8 @@
+{
+  "name": "ai-agent-handbook-katex-judge",
+  "private": true,
+  "description": "Engine for tools/checks/check_katex_formulas.py — the build README quotes. Install with: npm install --prefix tools/checks/data/katex",
+  "dependencies": {
+    "katex": "0.18.7"
+  }
+}
