@@ -15,6 +15,11 @@ Scope rules (deliberately explicit — the book's stats are methodology-sensitiv
 Controls: a non-vacuity floor per metric, one hit control (a hand-picked page each ruler
 must see) and one phantom control (a mutated README must be flagged). A metric that
 measures 0 while the floor expects content is an error, not a pass.
+
+Three surfaces are reconciled, not two: the GitHub README, the GitBook homepage prose, and the
+cover banner SVG. The last one is an image, so nothing above ever read its numbers and it stated a
+page count nine rounds out of date (round 64) — its claims are parsed out of the <text> nodes and
+the phantom control replays that exact staleness.
 """
 import os
 import re
@@ -192,6 +197,40 @@ def check_homepage(stats, text=None, quiet=False):
     return problems
 
 
+# The cover banner states the same two numbers as prose, but it is an image: no parser above ever
+# read it, so it kept saying "187 页" for nine rounds under a page whose own headline said 196.
+# Round 64's live screenshot of the homepage is what caught it.
+BANNER = os.path.join(DOCS, ".gitbook", "assets", "banner-home.svg")
+BANNER_TEXT = re.compile(r">([^<>]*)<")
+BANNER_CLAIMS = [
+    ("pages", re.compile(r"(\d+) 页 / \d+ 章")),
+    ("chapters", re.compile(r"\d+ 页 / (\d+) 章")),
+    ("chapters", re.compile(r"(\d+) 章 · \d+ 页全景")),
+    ("pages", re.compile(r"\d+ 章 · (\d+) 页全景")),
+]
+
+
+def check_banner(stats, text=None, quiet=False):
+    text = read(BANNER) if text is None else text
+    # Only the drawn strings are claims — x="196" is a coordinate, not a page count.
+    body = " ".join(BANNER_TEXT.findall(text))
+    problems, seen = [], 0
+    for key, pat in BANNER_CLAIMS:
+        m = pat.search(body)
+        if not m:
+            problems.append("banner: claim pattern %r no longer matches" % pat.pattern)
+            continue
+        seen += 1
+        want, got = int(m.group(1)), stats[key]
+        tag = "banner %s=%d measured=%d" % (key, want, got)
+        if not quiet:
+            print("  %-40s %s" % (tag, "ok" if want == got else "MISMATCH"))
+        if want != got:
+            problems.append(tag)
+    assert seen == len(BANNER_CLAIMS), "banner parser is vacuous (%d of %d)" % (seen, len(BANNER_CLAIMS))
+    return problems
+
+
 HIT_CONTROLS = [
     ("docs/03-llm/transformer-attention.md", "math"),
     ("docs/19-labs/lab1-react.md", "pages"),
@@ -217,6 +256,11 @@ def run_controls(stats):
     hp = check_homepage(stats, home_bad, quiet=True)
     assert any("homepage figures=999" in p for p in hp), \
         "phantom control failed: a bogus homepage figure count slipped through (%s)" % hp
+    # The control replays this round's actual defect: the banner said 187 while the tree said 196.
+    ban_bad = read(BANNER).replace("196 页", "187 页")
+    bp = check_banner(stats, ban_bad, quiet=True)
+    assert sum(1 for p in bp if p.startswith("banner pages")) == 2, \
+        "phantom control failed: a stale banner page count was not flagged in both places (%s)" % bp
     for rel, metric in HIT_CONTROLS:
         path = os.path.join(REPO, rel)
         if metric == "shots":
@@ -226,20 +270,20 @@ def run_controls(stats):
         stripped = math_pairs(read(path))
         if metric == "math":
             assert stripped, "hit control: %s should count as a math page" % rel
-    print("controls: floors ok, ghost refs excluded, 3 phantoms flagged, hit controls found")
+    print("controls: floors ok, ghost refs excluded, 4 phantoms flagged, hit controls found")
 
 
 def main():
     stats = measure()
     print("measured:", ", ".join("%s=%d" % kv for kv in sorted(stats.items())))
     run_controls(stats)
-    problems = check(stats, read(README)) + check_homepage(stats)
+    problems = check(stats, read(README)) + check_homepage(stats) + check_banner(stats)
     if problems:
-        print("\nREADME/homepage are out of sync with the tree:")
+        print("\nREADME/homepage/banner are out of sync with the tree:")
         for p in problems:
             print("  -", p)
         return 1
-    print("\nREADME stats match the tree on every axis.")
+    print("\nREADME, homepage and cover banner match the tree on every axis.")
     return 0
 
 
