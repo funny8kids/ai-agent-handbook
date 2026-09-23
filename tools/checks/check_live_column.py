@@ -123,7 +123,7 @@ def probe_script(rid, port, modes, min_paragraphs=4):
   else poll();
 })();
 </script>
-""" % (rid, port, json.dumps(modes))
+""" % (rid, port, json.dumps(modes), min_paragraphs)
 
 
 def fixture(inject):

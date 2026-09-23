@@ -9,8 +9,12 @@ built from it came back 0.
 Scope rule: the changelog is allowed to reproduce wording it is *criticising*, so it is
 excluded from the source-of-truth corpus; it is still scanned for attributed quotes.
 
-Whole-file ```...``` masking is deliberately NOT a regex: the changelog discusses fence
-syntax inline, and a regex there silently swallowed real prose.
+Retractions are the one case where "verbatim in the tree" is the wrong demand: when a round deletes
+a false sentence from a page and quotes it in the log to record the deletion, no page can still
+carry it. Round 62 shipped exactly that and the axis went red on a correct log line. Rather than
+loosen the rule, such quotes are listed in RETRACTED below and judged by the *opposite* assertion —
+the sentence must be gone from every content page. A quote listed there but still present is a
+finding, so the list cannot quietly become a place to hide unverified citations.
 """
 import io, os, re, sys
 
@@ -21,6 +25,12 @@ QUOTE = r"[「“][^」”]{6,}[」”]"
 VERB = r"(图注|图说|标题|原文|页里|页面里|写着|叫做|结语|引自|说的是|小标题|副标题|原句)"
 ATTR = re.compile(VERB + r"\s*(" + QUOTE + r"+)")
 ONE = re.compile(QUOTE)
+
+# strings the log quotes ONLY to record that they were deleted (page, round, why it was false)
+RETRACTED = {
+    "最宽 1116px，全部落在正文列宽（1120px）内，线上不会被缩放":
+        "docs/README.md, 第 62 轮：1120 是宽版布局的列宽，默认列宽实测 768",
+}
 
 # strings this judge MUST keep finding in content pages
 HIT_CONTROLS = [
@@ -53,12 +63,21 @@ def norm(t):
 def main():
     files = [os.path.join(r, f) for r, d, fs in os.walk(DOCS) for f in fs if f.endswith(".md")]
     content = {p: norm(io.open(p, encoding="utf-8").read()) for p in files if p != LOG}
+    readme = os.path.join(DOCS, "README.md")
 
     for s in HIT_CONTROLS:
         assert any(norm(s) in t for t in content.values()), "HIT CONTROL BROKEN: %s" % s
     for s in PHANTOM_CONTROLS:
         assert not any(norm(s) in t for t in content.values()), "PHANTOM CONTROL NOT PHANTOM: %s" % s
-    print("controls ok (hit=%d, phantom=%d)" % (len(HIT_CONTROLS), len(PHANTOM_CONTROLS)))
+    # The retraction branch is only meaningful while the billboard case is live: README must still
+    # print the deleted wording (next to its verdict), or the exemption below is exempting nothing
+    # and a real 'RETRACTION-NOT-APPLIED' could never fire again.
+    for k in RETRACTED:
+        assert norm(k) in content.get(readme, ""), (
+            "RETRACTION CONTROL BROKEN: README no longer prints %r, so drop it from RETRACTED "
+            "instead of keeping an untested exemption" % k)
+    print("controls ok (hit=%d, phantom=%d, retracted=%d)"
+          % (len(HIT_CONTROLS), len(PHANTOM_CONTROLS), len(RETRACTED)))
 
     checked = bad = 0
     for p in files:
@@ -70,6 +89,18 @@ def main():
                     if len(s) < 6:
                         continue
                     checked += 1
+                    retracted = next((v for k, v in RETRACTED.items() if norm(k) == s), None)
+                    if retracted:
+                        # the sentence is quoted only to record its deletion, so demand the opposite:
+                        # gone from every knowledge page. README is exempt because printing the old
+                        # false claim next to 「是假的」 is how the retraction reaches a reader.
+                        still = [os.path.relpath(q2, DOCS).replace("\\", "/")
+                                 for q2, t in content.items() if s in t and q2 != readme]
+                        if still:
+                            bad += 1
+                            print("  RETRACTION-NOT-APPLIED %s:%d  「%s」 仍在 %s（登记理由：%s）"
+                                  % (rel, i, s, still, retracted))
+                        continue
                     if not any(s in t for t in content.values()):
                         bad += 1
                         print("  UNMATCHED %s:%d  %s「%s」" % (rel, i, m.group(1), s))
