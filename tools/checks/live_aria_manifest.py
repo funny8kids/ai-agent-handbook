@@ -306,6 +306,42 @@ def formula_defects():
     return out
 
 
+def tally(results):
+    """Split a run's per-page outcomes into content findings and probe findings.
+
+    Two consecutive full-site re-runs produced 4 then 3 findings, on disjoint page sets, with zero
+    content mismatches among them: they were all read timeouts. Bucketing them with real parity
+    leaks made `problems=N` unattributable — the same number meant "the network flaked" and "the
+    reader is missing a widget", so a clean 0 looked unattainable and noise looked fixable. Both
+    buckets still exit non-zero: a page we never fetched is evidence of nothing.
+    """
+    problems, fetch_failures, checked, small = [], [], 0, 0
+    for r, served, exc in results:
+        if exc is not None:
+            fetch_failures.append("FETCH %s: %s" % (r["page"], exc))
+            continue
+        if len(served) < 200000:
+            small += 1
+            problems.append("SHAPE %s only %d bytes (fallback page?)" % (r["page"], len(served)))
+            continue
+        checked += 1
+        got = ssr_counts(served)
+        for key in ("tabs", "katex"):
+            if got[key] != r[key]:
+                problems.append("SSR-PARITY %s:%s authored=%s served=%s"
+                                % (r["page"], key, r[key], got[key]))
+        shown, nav_only = leak_sites(served)
+        for token in shown:
+            problems.append("LEAK %s serves literal %r in the body%s"
+                            % (r["page"], token,
+                               " (a formula the parser never took)" if token == "$$" else ""))
+        for token in nav_only:
+            problems.append("LEAK-NAV %s prints literal %r in the page TOC — that marker is "
+                            "inside a heading, where GitBook drops code formatting"
+                            % (r["page"], token))
+    return problems, fetch_failures, checked, small
+
+
 def headless(rows, workers=8):
     """Full-site parity for the two structures the server already renders.
 
@@ -322,37 +358,15 @@ def headless(rows, workers=8):
                 err = "%s (attempt %d)" % (exc, attempt)
         return r, "", err                             # a failed fetch is a finding, not a skip
 
-    problems, checked, small = [], 0, 0
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        for r, served, exc in pool.map(one, rows):
-            if exc is not None:
-                problems.append("FETCH %s: %s" % (r["page"], exc))
-                continue
-            if len(served) < 200000:
-                small += 1
-                problems.append("SHAPE %s only %d bytes (fallback page?)" % (r["page"], len(served)))
-                continue
-            checked += 1
-            got = ssr_counts(served)
-            for key in ("tabs", "katex"):
-                if got[key] != r[key]:
-                    problems.append("SSR-PARITY %s:%s authored=%s served=%s"
-                                    % (r["page"], key, r[key], got[key]))
-            shown, nav_only = leak_sites(served)
-            for token in shown:
-                problems.append("LEAK %s serves literal %r in the body%s"
-                                % (r["page"], token,
-                                   " (a formula the parser never took)" if token == "$$" else ""))
-            for token in nav_only:
-                problems.append("LEAK-NAV %s prints literal %r in the page TOC — that marker is "
-                                "inside a heading, where GitBook drops code formatting"
-                                % (r["page"], token))
+        results = list(pool.map(one, rows))
+    problems, fetch_failures, checked, small = tally(results)
     problems += formula_defects()
-    print("ssr parity: authored=%d checked=%d problems=%d fallback-pages=%d"
-          % (len(rows), checked, len(problems), small))
-    for p in problems:
+    print("ssr parity: authored=%d checked=%d problems=%d fetch-failures=%d fallback-pages=%d"
+          % (len(rows), checked, len(problems), len(fetch_failures), small))
+    for p in problems + fetch_failures:
         print("  - " + p)
-    return 1 if problems else 0
+    return 1 if (problems or fetch_failures) else 0
 
 
 def calibrate(path):
@@ -425,7 +439,21 @@ def controls():
     # the rule must key on in-page anchors only: a cross-file link is body prose, not nav copy
     assert leak_sites('<article><p>see <a href="../other#x">literal $$ here</a></p></article>')[0] == ["$$"], \
         "control: a cross-page link must not be dropped as nav copy"
-    print("ssr controls ok (token-exact tab/katex counting, body/TOC leak split)")
+    # a flaked fetch and a real parity leak must not share a counter: when they did, two runs
+    # reported problems=4 then problems=3 with zero content findings among them
+    row = {"page": "a.md", "tabs": 1, "katex": 0, "mermaid": 0}
+    good = '<div role="tablist"><button role="tab">A</button></div>' + ("p" * 200000)
+    assert tally([(row, good, None)]) == ([], [], 1, 0), "control: a matching page must be checked and silent"
+    probs, fails, checked, _ = tally([(row, "", "timed out (attempt 2)")])
+    assert (probs, fails, checked) == ([], ["FETCH a.md: timed out (attempt 2)"], 0), \
+        "control: a dropped fetch must not be counted as a content problem"
+    probs, fails, _, _ = tally([(dict(row, tabs=7), good, None)])
+    assert len(probs) == 1 and probs[0].startswith("SSR-PARITY") and fails == [], \
+        "control: a genuine mismatch must not hide in the fetch bucket"
+    probs, fails, checked, small = tally([(row, "<p>tiny</p>", None)])
+    assert len(probs) == 1 and probs[0].startswith("SHAPE") and checked == 0 and small == 1, \
+        "control: a fallback-sized page stays a content finding, not a fetch artifact"
+    print("ssr controls ok (token-exact tab/katex counting, body/TOC leak split, fetch/problem split)")
     # the two counting rules round 57 had to learn, kept as executable memory
     assert expect_of("写法 `$$x$$` 只是文档示例\n")["katex"] == 0, \
         "control: markup shown inside a code span is not a formula the reader is served"
