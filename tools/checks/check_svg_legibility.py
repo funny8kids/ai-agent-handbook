@@ -23,10 +23,11 @@ Readings. Round 64 baseline (column 768): 32 authored in-body figures and ALL 32
 one label under the 12px bar — 956 of 1042 text labels, smallest effective size 5.20px (the homepage
 `banner-home.svg`: 13px authored on a 1920 canvas, i.e. 0.4x), per-figure minimums 5.20..10.40px.
 Round 65 batch 1 re-authored 5 of them (the banner plus four 960 canvases) onto >= 15px type; the same
-axis now reads 27 figures / 734 of 1056 labels, and the 1152 what-if drops from 23 figures / 378
-labels to 18 / 204. (The 1056 is 5 above the pre-fix total: the halo labels that used to be one
-`paint-order` text are now two texts each, an invisible `fill="none"` underlay over the visible
-glyph. Both copies are counted, so the denominator grows and no hit is hidden.) The banner was
+axis now reads 27 figures / 735 of 1057 labels, and the 1152 what-if drops from 23 figures / 378
+labels to 18 / 204. (The 1057 is 6 above the pre-fix total: 5 because the halo labels that used to be
+one `paint-order` text are now two texts each, an invisible `fill="none"` underlay over the visible
+glyph, and 1 because a `<br/>` that never broke a line became a real second `<text>`. Both copies are
+counted, so the denominator grows and no hit is hidden.) The banner was
 fixed by narrowing its canvas 1920 -> 1280 (scale 0.4 -> 0.6) with
 22px type; the in-body ones by raising the minimum to 15px (0.8x -> exactly 12.0px) and growing the
 canvas HEIGHT so the re-flowed rows fit — height is free, only width sets the scale.

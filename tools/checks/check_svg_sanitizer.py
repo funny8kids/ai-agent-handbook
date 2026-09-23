@@ -10,6 +10,13 @@ paint-order="stroke"` is a label with a pale halo to the author and, once the at
 unreadable live while the offline axis kept reporting the figure clean: the axis and the reader
 disagreed, and the reader was right.
 
+The full-tree run then found a second, different failure mode on `17-sim2real-domain-randomization.svg`:
+`<animate attributeName="fill">` reaches the reader with the `attributeName` deleted, so the four
+domain-randomization tiles never change colour live. Same sanitizer, opposite lesson — a feature can
+be stripped either quietly enough that nothing moves, or loudly enough that a whole animation dies.
+That file also carried `<br/>` inside a `<text>`, which is not an SVG element: it never broke the line
+locally, and the platform deletes the node, so the label ran into the neighbouring box on both sides.
+
 Two legs, and they answer different questions:
 
   offline leg  (always, no network) — no authored asset may lean on a feature the platform is
@@ -21,8 +28,10 @@ Two legs, and they answer different questions:
                different picture than the one that was drawn.
 
 Controls, because a ruler that cannot fail is not a ruler:
-  * classifier selftest: a planted `paint-order` attribute and a planted `paint-order:` CSS
-    declaration must both be caught, and a clean asset must produce zero hits.
+  * classifier selftest: a planted `paint-order` attribute, a planted `paint-order:` CSS
+    declaration, an `<animate attributeName="fill">` and a `<br/>` inside `<text>` must all be
+    caught, and each of the three portable remedies (two-text halo, opacity overlay, two `<text>`
+    lines) must produce zero hits.
   * live selftest: the served copy of a figure is asserted to still be SVG (a conversion to PNG
     would parse as nothing here) and to keep the authored viewBox, so a "no stripped attributes"
     verdict cannot come from having compared against garbage.
@@ -56,6 +65,15 @@ KNOWN_STRIPPED = {
     "paint-order": "halo strokes paint over their own glyphs; draw the halo as a second, "
                    "fill=\"none\" <text> under the label instead",
 }
+# Measured on the live site (round 65): `attributeName` survives on <animate>, but the sanitizer
+# deletes it when the target is `fill` — while `x`, `opacity` and `width` targets pass through
+# untouched. An <animate> with no attributeName has no target attribute, so the animation is dead
+# and the cell keeps its authored colour forever. Fade a second, top-painted rect's `opacity`
+# (a target the platform does carry) from 0 to 1 to get the same A->B->A colour cycle.
+STRIPPED_ANIMATE_TARGETS = {"fill"}
+# `<br>` is not an SVG element: it never broke a line locally, and the sanitizer deletes the node.
+# The two-text form below is what actually puts the second phrase on a second line.
+LINEBREAK_TAGS = {"br"}
 MIN_ASSETS = 25
 
 _USAGE = {}
@@ -77,7 +95,16 @@ def stripped_uses(text):
         hits.append(("paint-order", "attribute on <%s>" % tag))
     for m in re.finditer(r"\bpaint-order\s*:", text):
         hits.append(("paint-order", "CSS declaration"))
-    return [(f, w) for f, w in hits if f in KNOWN_STRIPPED]
+    for m in re.finditer(r"<animate\b[^>]*>", text):
+        tag = re.search(r"\battributeName\s*=\s*\"([^\"]+)\"", m.group(0))
+        if tag and tag.group(1) in STRIPPED_ANIMATE_TARGETS:
+            hits.append(("attributeName=\"%s\"" % tag.group(1),
+                         "target of <animate> -> the animation is stripped and never runs"))
+    for m in re.finditer(r"<(%s)\b" % "|".join(sorted(LINEBREAK_TAGS)), text):
+        hits.append(("<%s>" % m.group(1), "not an SVG element -> the sanitizer deletes it and no "
+                                          "line break ever happened; use a second <text>"))
+    return [(f, w) for f, w in hits if f in KNOWN_STRIPPED or f.startswith("attributeName")
+            or f.startswith("<")]
 
 
 def offline_leg(only=None):
@@ -94,7 +121,8 @@ def offline_leg(only=None):
         feat = collections.Counter(f for f, _ in hits)
         print("  %-38s %s" % (name, dict(feat)))
         for f, w in hits:
-            print("      %s @ %s -> %s" % (f, w, KNOWN_STRIPPED[f]))
+            remedy = KNOWN_STRIPPED.get(f, w)
+            print("      %s -> %s" % (f, remedy))
     return offenders
 
 
@@ -102,14 +130,28 @@ def classifier_selftest():
     planted = ('<svg><text x="1" y="2" fill="#000" stroke="#fff" stroke-width="4" '
                'paint-order="stroke">label</text></svg>')
     css = '<svg><defs><style>.lbl{font-size:12px;paint-order:stroke fill}</style></defs></svg>'
-    clean = '<svg><text x="1" y="2" fill="none" stroke="#fff" stroke-width="4">label</text>' \
-            '<text x="1" y="2" fill="#000">label</text></svg>'
+    clean = ('<svg><text x="1" y="2" fill="none" stroke="#fff" stroke-width="4">label</text>'
+             '<text x="1" y="2" fill="#000">label</text></svg>')
+    anim = '<svg><rect fill="#fde68a"><animate attributeName="fill" values="a;b;a"/></rect></svg>'
+    overlay = ('<svg><rect fill="#fde68a"/>'
+               '<rect fill="#bfdbfe" opacity="0"><animate attributeName="opacity" '
+               'values="0;1;0"/></rect></svg>')
+    br = '<svg><text x="1" y="2">first line<br/>second line</text></svg>'
+    twolines = ('<svg><text x="1" y="2">first line</text>'
+                '<text x="1" y="16">second line</text></svg>')
     assert [f for f, _ in stripped_uses(planted)] == ["paint-order"], \
         "selftest: a planted paint-order attribute went uncaught"
     assert [f for f, _ in stripped_uses(css)] == ["paint-order"], \
         "selftest: a planted paint-order CSS declaration went uncaught"
-    assert stripped_uses(clean) == [], "selftest: the two-text halo reads as a defect"
-    print("classifier selftest ok: attribute and CSS uses caught, the two-text halo clean")
+    assert [f for f, _ in stripped_uses(anim)] == ['attributeName="fill"'], \
+        "selftest: an <animate> targeting a stripped attribute went uncaught"
+    assert [f for f, _ in stripped_uses(br)] == ["<br>"], \
+        "selftest: a <br> inside SVG went uncaught"
+    for name, sample in (("two-text halo", clean), ("opacity overlay", overlay),
+                         ("two <text> lines", twolines)):
+        assert stripped_uses(sample) == [], "selftest: the %s remedy reads as a defect" % name
+    print("classifier selftest ok: paint-order (attr + CSS), animate@fill and <br> caught; "
+          "the three portable remedies clean")
 
 
 # ---------------------------------------------------------------- served-side comparison
@@ -180,9 +222,12 @@ def live_leg(only=None):
             for k in lost_attrs:
                 stripped[k.split("@")[-1]] += lost_attrs[k]
     print("served copies compared=%d of %d assets" % (checked, len(names)))
-    assert checked >= MIN_ASSETS, \
-        "only %d served copies reached the comparison (floor %d): the axis read a near-empty sample" \
-        % (checked, MIN_ASSETS)
+    if not only:
+        assert checked >= MIN_ASSETS, \
+            "only %d served copies reached the comparison (floor %d): the axis read a near-empty " \
+            "sample" % (checked, MIN_ASSETS)
+    else:
+        print("  (floor skipped: --only asked for %d assets)" % len(names))
     return stripped, dropped
 
 

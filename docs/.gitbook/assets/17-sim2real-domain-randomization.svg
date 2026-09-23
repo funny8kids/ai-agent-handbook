@@ -7,19 +7,23 @@
   <g>
     <!-- 12 randomized cells -->
     <g transform="translate(20,70)">
-      <rect x="0" y="0" width="120" height="80" rx="6" fill="#fde68a"><animate attributeName="fill" values="#fde68a;#bfdbfe;#fde68a" dur="3s" repeatCount="indefinite"/></rect>
+      <rect x="0" y="0" width="120" height="80" rx="6" fill="#fde68a"/>
+      <rect x="0" y="0" width="120" height="80" rx="6" fill="#bfdbfe" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/></rect>
       <rect x="30" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.15"/>
       <rect x="38" y="30" width="18" height="22" rx="4" fill="#0ea5e9"/>
 
-      <rect x="130" y="0" width="120" height="80" rx="6" fill="#e9d5ff"><animate attributeName="fill" values="#e9d5ff;#dcfce7;#e9d5ff" dur="3.6s" repeatCount="indefinite"/></rect>
+      <rect x="130" y="0" width="120" height="80" rx="6" fill="#e9d5ff"/>
+      <rect x="130" y="0" width="120" height="80" rx="6" fill="#dcfce7" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="3.6s" repeatCount="indefinite"/></rect>
       <rect x="160" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.25"/>
       <rect x="168" y="30" width="18" height="22" rx="4" fill="#f97316"/>
 
-      <rect x="260" y="0" width="120" height="80" rx="6" fill="#bae6fd"><animate attributeName="fill" values="#bae6fd;#fde68a;#bae6fd" dur="2.4s" repeatCount="indefinite"/></rect>
+      <rect x="260" y="0" width="120" height="80" rx="6" fill="#bae6fd"/>
+      <rect x="260" y="0" width="120" height="80" rx="6" fill="#fde68a" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="2.4s" repeatCount="indefinite"/></rect>
       <rect x="290" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.08"/>
       <rect x="298" y="30" width="18" height="22" rx="4" fill="#e11d48"/>
 
-      <rect x="390" y="0" width="120" height="80" rx="6" fill="#dcfce7"><animate attributeName="fill" values="#dcfce7;#f1f5f9;#dcfce7" dur="4.2s" repeatCount="indefinite"/></rect>
+      <rect x="390" y="0" width="120" height="80" rx="6" fill="#dcfce7"/>
+      <rect x="390" y="0" width="120" height="80" rx="6" fill="#f1f5f9" opacity="0"><animate attributeName="opacity" values="0;1;0" dur="4.2s" repeatCount="indefinite"/></rect>
       <rect x="420" y="46" width="40" height="24" rx="3" fill="#0f172a" opacity="0.35"/>
       <rect x="428" y="30" width="18" height="22" rx="4" fill="#a855f7"/>
 
@@ -52,7 +56,8 @@
     <path d="M560 156 H640"/>
   </g>
   <polygon points="640,151 650,156 640,161" fill="#94a3b8"/>
-  <text x="566" y="146" fill="#475569" font-size="12">zero-shot 或<br/>少量真机微调</text>
+  <text x="600" y="128" fill="#475569" font-size="12" text-anchor="middle">zero-shot 或</text>
+  <text x="600" y="144" fill="#475569" font-size="12" text-anchor="middle">少量真机微调</text>
 
   <!-- real -->
   <rect x="660" y="70" width="300" height="170" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
