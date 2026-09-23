@@ -19,14 +19,18 @@ by the same factor changes nothing. The only in-repo fix is a better text-to-can
 re-authoring the figure — which is why this axis reports per-figure and per-label counts instead of
 a single number.
 
-Reading on the current tree (round 64, column 768): 32 authored in-body figures, and ALL 32 paint at
-least one label under the 12px bar — 956 of 1042 text labels, smallest effective size 5.20px (the
-homepage `banner-home.svg`: 13px authored on a 1920 canvas, i.e. 0.4x) and the per-figure minimums
-span 5.20..10.40px.
-The wide layout the site has not switched to yet would take the 960 canvases to scale 1.0 (they fit
-an 1152 column), which leaves 23 figures and 378 labels under the bar: it removes the shrink, not the
-small type. A mechanical text bump was tried and rendered, not argued: at the column the 960 canvas
-needs ×1.25 to paint labels at their authored size (that variant is clean on the densest figure) and
+Readings. Round 64 baseline (column 768): 32 authored in-body figures and ALL 32 painted at least
+one label under the 12px bar — 956 of 1042 text labels, smallest effective size 5.20px (the homepage
+`banner-home.svg`: 13px authored on a 1920 canvas, i.e. 0.4x), per-figure minimums 5.20..10.40px.
+Round 65 batch 1 re-authored 5 of them (the banner plus four 960 canvases) onto >= 15px type; the same
+axis now reads 27 figures / 733 of 1051 labels, and the 1152 what-if drops from 23 figures / 378
+labels to 18 / 204. The banner was fixed by narrowing its canvas 1920 -> 1280 (scale 0.4 -> 0.6) with
+22px type; the in-body ones by raising the minimum to 15px (0.8x -> exactly 12.0px) and growing the
+canvas HEIGHT so the re-flowed rows fit — height is free, only width sets the scale.
+The wide layout the site has not switched to yet takes the 960 canvases to scale 1.0 (they fit an
+1152 column), which is why the remaining 27 are still 18 figures deep under the bar there: it removes
+the shrink, not the small type. A mechanical text bump was tried and rendered, not argued: at the column the 960
+canvas needs ×1.25 to paint labels at their authored size (that variant is clean on the densest figure) and
 ×1.58 to reach 12px (that variant overflows its boxes and collides). So the bump buys back part of
 the loss and the bar still needs per-figure re-authoring — a design call, listed here as an open
 finding rather than quietly fixed.

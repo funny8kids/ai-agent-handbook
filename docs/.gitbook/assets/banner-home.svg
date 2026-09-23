@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 480" width="1920" height="480" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="16" role="img" aria-label="GitBook 首页横幅：左侧书名 AI Agent 学习手册与一句话定位及三个信息徽章，右侧是抽象的 Agent 环路——中心 LLM 枢纽被思考、行动、观察、校验四个节点环绕，配观测与记忆两个卫星标签，横向低密度构图">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 540" width="1280" height="540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif" font-size="22" role="img" aria-label="GitBook 首页横幅：左侧书名 AI Agent 学习手册、一句话定位与三个信息徽章，右侧是抽象的 Agent 环路——中心 LLM 枢纽被思考、行动、观察、校验四个节点环绕，配观测与记忆两个卫星标签，横向低密度构图">
   <defs>
     <linearGradient id="bgb" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#f8fafc"/>
@@ -10,8 +10,8 @@
       <stop offset="60%" stop-color="#bae6fd" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="#bae6fd" stop-opacity="0"/>
     </radialGradient>
-    <pattern id="gridb" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0V40" fill="none" stroke="#0284c7" stroke-opacity="0.06" stroke-width="1"/>
+    <pattern id="gridb" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#0284c7" stroke-opacity="0.06" stroke-width="1"/>
     </pattern>
     <linearGradient id="bTh" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/>
@@ -29,106 +29,106 @@
       <stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1e3a8a"/>
     </linearGradient>
     <filter id="shb" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.15"/>
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.15"/>
     </filter>
     <filter id="shbs" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.10"/>
     </filter>
-    <marker id="arrb" markerWidth="11" markerHeight="11" refX="7" refY="3.4" orient="auto">
-      <path d="M0,0 L8,3.4 L0,6.8 z" fill="#0284c7"/>
+    <marker id="arrb" markerWidth="13" markerHeight="13" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L9.5,4 L0,8 z" fill="#0284c7"/>
     </marker>
   </defs>
 
   <!-- ===== 背景 ===== -->
-  <rect width="1920" height="480" rx="24" fill="url(#bgb)"/>
-  <rect width="1920" height="480" rx="24" fill="url(#gridb)"/>
-  <ellipse cx="1450" cy="240" rx="360" ry="260" fill="url(#glowb)"/>
-  <rect x="0.5" y="0.5" width="1919" height="479" rx="24" fill="none" stroke="#cbd5e1"/>
+  <rect width="1280" height="540" rx="20" fill="url(#bgb)"/>
+  <rect width="1280" height="540" rx="20" fill="url(#gridb)"/>
+  <ellipse cx="1010" cy="270" rx="300" ry="250" fill="url(#glowb)"/>
+  <rect x="0.5" y="0.5" width="1279" height="539" rx="20" fill="none" stroke="#cbd5e1"/>
 
   <!-- ===== 左侧：书名与定位 ===== -->
   <g filter="url(#shbs)">
-    <rect x="96" y="58" width="170" height="34" rx="17" fill="#e0f2fe" stroke="#7dd3fc"/>
+    <rect x="64" y="44" width="266" height="40" rx="20" fill="#e0f2fe" stroke="#7dd3fc"/>
   </g>
-  <text x="181" y="81" text-anchor="middle" font-size="16" font-weight="700" fill="#075985">开源 · MIT 许可证</text>
-  <text x="282" y="84" font-size="20" letter-spacing="4" fill="#64748b">AI AGENT HANDBOOK</text>
+  <text x="197" y="71" text-anchor="middle" font-size="22" font-weight="700" fill="#075985">开源 · MIT 许可证</text>
+  <text x="352" y="70" font-size="22" letter-spacing="2" fill="#64748b">AI AGENT HANDBOOK</text>
 
-  <text x="96" y="168" font-size="64" font-weight="800" fill="url(#titlec)">AI Agent 学习手册</text>
-  <path d="M104 194 C 300 186, 560 200, 760 190" fill="none" stroke="#0284c7" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+  <text x="64" y="162" font-size="52" font-weight="800" fill="url(#titlec)">AI Agent 学习手册</text>
+  <path d="M72 186 C 190 178, 350 194, 470 184" fill="none" stroke="#0284c7" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
 
-  <text x="96" y="252" font-size="26" fill="#475569">从原理到生产：196 页 / 19 章，原理给推导、结论给出处、案例给源码</text>
+  <text x="64" y="238" font-size="30" fill="#475569">从原理到生产 · 196 页 / 19 章</text>
+  <text x="64" y="278" font-size="26" fill="#64748b">原理给推导 · 结论给出处 · 案例给源码</text>
 
   <!-- 三个信息徽章 -->
   <g filter="url(#shbs)">
-    <rect x="96" y="298" width="230" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
-    <rect x="342" y="298" width="250" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
-    <rect x="608" y="298" width="252" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
+    <rect x="64" y="352" width="247" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
+    <rect x="327" y="352" width="246" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
+    <rect x="589" y="352" width="188" height="40" rx="20" fill="#ffffff" stroke="#bae6fd"/>
   </g>
-  <g font-size="17" fill="#334155">
-    <circle cx="120" cy="318" r="4" fill="#0284c7"/>
-    <text x="136" y="324">19 章 · 196 页全景</text>
-    <circle cx="366" cy="318" r="4" fill="#d97706"/>
-    <text x="382" y="324">323 个开源项目索引</text>
-    <circle cx="632" cy="318" r="4" fill="#7c3aed"/>
-    <text x="648" y="324">2026-09 前沿已对齐</text>
-  </g>
-
-  <!-- 角色路线小字 -->
-  <text x="96" y="392" font-size="18" fill="#64748b">七条角色路线任选：入门 · 开发者 · 研究者 · 平台底座 · 具身智能 · 选型买家 · 动手实验</text>
-  <text x="96" y="424" font-size="16" fill="#94a3b8">读完的标准不是「看过」，而是「能复现、能上线」</text>
-
-  <!-- ===== 右侧：抽象 Agent 环路 ===== -->
-  <!-- 轨道与辐条 -->
-  <circle cx="1450" cy="240" r="140" fill="none" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="3 8"/>
-  <g stroke="#bae6fd" stroke-width="1.6" stroke-dasharray="5 5">
-    <path d="M1450 194 V164"/>
-    <path d="M1496 240 H1526"/>
-    <path d="M1450 286 V316"/>
-    <path d="M1404 240 H1374"/>
+  <g font-size="22" fill="#334155">
+    <circle cx="88" cy="372" r="5" fill="#0284c7"/>
+    <text x="104" y="379">19 章 · 196 页全景</text>
+    <circle cx="351" cy="372" r="5" fill="#d97706"/>
+    <text x="367" y="379">323 个开源项目索引</text>
+    <circle cx="613" cy="372" r="5" fill="#7c3aed"/>
+    <text x="629" y="379">2026-09 前沿</text>
   </g>
 
-  <!-- 顺时针弧线：Thought → Action → Observation → Check → Thought -->
-  <g fill="none" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" marker-end="url(#arrb)">
-    <path d="M1547.3 138.2 A158 158 0 0 1 1583.6 216.7"/>
-    <path d="M1551.8 342.8 A158 158 0 0 1 1473.3 379.1"/>
-    <path d="M1348.2 341.8 A158 158 0 0 1 1316.5 263.8"/>
-    <path d="M1352.3 138.3 A158 158 0 0 1 1426.7 102.2"/>
+  <!-- 角色路线与通关标准 -->
+  <text x="64" y="436" font-size="22" fill="#64748b">七条角色路线任选：入门 · 开发者 · 研究者 · 平台 · 具身 · 选型 · 实验</text>
+  <text x="64" y="472" font-size="22" fill="#94a3b8">读完的标准不是「看过」，而是「能复现、能上线」</text>
+
+  <!-- ===== 右侧：抽象 Agent 环路（中心 1010,290 / 轨道半径 160）===== -->
+  <circle cx="1010" cy="290" r="160" fill="none" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="3 8"/>
+  <g stroke="#bae6fd" stroke-width="1.8" stroke-dasharray="5 5">
+    <path d="M1010 236 V167"/>
+    <path d="M1064 290 H1088"/>
+    <path d="M1010 344 V413"/>
+    <path d="M956 290 H932"/>
+  </g>
+
+  <!-- 顺时针弧线：思考 → 行动 → 观察 → 校验 → 思考 -->
+  <g fill="none" stroke="#0ea5e9" stroke-width="3.4" stroke-linecap="round" marker-end="url(#arrb)">
+    <path d="M1102 159 A160 160 0 0 1 1141 198"/>
+    <path d="M1141 382 A160 160 0 0 1 1102 421"/>
+    <path d="M918 421 A160 160 0 0 1 879 382"/>
+    <path d="M879 198 A160 160 0 0 1 918 159"/>
   </g>
 
   <!-- 中心枢纽 -->
-  <circle cx="1450" cy="240" r="62" fill="#ffffff" stroke="#0284c7" stroke-width="2.6" filter="url(#shb)"/>
-  <text x="1450" y="236" text-anchor="middle" font-size="26" font-weight="700" fill="#0c4a6a">LLM</text>
-  <text x="1450" y="262" text-anchor="middle" font-size="16" fill="#475569">推理枢纽</text>
+  <circle cx="1010" cy="290" r="54" fill="#ffffff" stroke="#0284c7" stroke-width="2.6" filter="url(#shb)"/>
+  <text x="1010" y="286" text-anchor="middle" font-size="26" font-weight="700" fill="#0c4a6a">LLM</text>
+  <text x="1010" y="312" text-anchor="middle" font-size="22" fill="#475569">推理枢纽</text>
 
   <!-- 四节点 -->
   <g filter="url(#shb)">
-    <rect x="1384" y="44" width="132" height="52" rx="12" fill="url(#bTh)"/>
-    <rect x="1554" y="214" width="132" height="52" rx="12" fill="url(#bAc)"/>
-    <rect x="1384" y="384" width="132" height="52" rx="12" fill="url(#bOb)"/>
-    <rect x="1214" y="214" width="132" height="52" rx="12" fill="url(#bCh)"/>
+    <rect x="930" y="95" width="160" height="70" rx="14" fill="url(#bTh)"/>
+    <rect x="1090" y="255" width="160" height="70" rx="14" fill="url(#bAc)"/>
+    <rect x="930" y="415" width="160" height="70" rx="14" fill="url(#bOb)"/>
+    <rect x="770" y="255" width="160" height="70" rx="14" fill="url(#bCh)"/>
   </g>
   <g text-anchor="middle" font-weight="700">
-    <text x="1450" y="66" font-size="17" fill="#ffffff">思考</text>
-    <text x="1450" y="86" font-size="13" fill="#e0f2fe">还想缺什么</text>
-    <text x="1620" y="236" font-size="17" fill="#ffffff">行动</text>
-    <text x="1620" y="256" font-size="13" fill="#fff7ed">发起一次调用</text>
-    <text x="1450" y="406" font-size="17" fill="#ffffff">观察</text>
-    <text x="1450" y="426" font-size="13" fill="#d1fae5">拿回真实结果</text>
-    <text x="1280" y="236" font-size="17" fill="#ffffff">校验</text>
-    <text x="1280" y="256" font-size="13" fill="#ede9fe">不达标就再来</text>
+    <text x="1010" y="124" font-size="26" fill="#ffffff">思考</text>
+    <text x="1010" y="150" font-size="22" fill="#e0f2fe">还想缺什么</text>
+    <text x="1170" y="284" font-size="26" fill="#ffffff">行动</text>
+    <text x="1170" y="310" font-size="22" fill="#fff7ed">发起一次调用</text>
+    <text x="1010" y="444" font-size="26" fill="#ffffff">观察</text>
+    <text x="1010" y="470" font-size="22" fill="#d1fae5">拿回真实结果</text>
+    <text x="850" y="284" font-size="26" fill="#ffffff">校验</text>
+    <text x="850" y="310" font-size="22" fill="#ede9fe">不达标就再来</text>
   </g>
 
   <!-- 两个卫星小标签 -->
   <g filter="url(#shbs)">
-    <rect x="1662" y="120" width="132" height="38" rx="19" fill="#ffffff" stroke="#fcd34d"/>
-    <rect x="1662" y="330" width="132" height="38" rx="19" fill="#ffffff" stroke="#6ee7b7"/>
+    <rect x="1058" y="58" width="190" height="36" rx="18" fill="#ffffff" stroke="#fcd34d"/>
+    <rect x="1058" y="490" width="190" height="36" rx="18" fill="#ffffff" stroke="#6ee7b7"/>
   </g>
   <g stroke-linecap="round">
-    <path d="M1690 139 h14 M1697 132 v14" stroke="#d97706" stroke-width="2.6"/>
+    <path d="M1076 76 h16 M1084 68 v16" stroke="#d97706" stroke-width="2.8"/>
     <g stroke="#059669" stroke-width="2.2" fill="none">
-      <ellipse cx="1692" cy="343" rx="7" ry="2.6"/>
-      <path d="M1685 343 L1685 351 A7,2.6 0 0 0 1699 351 L1699 343"/>
+      <ellipse cx="1084" cy="503" rx="8" ry="3"/>
+      <path d="M1076 503 L1076 512 A8,3 0 0 0 1092 512 L1092 503"/>
     </g>
   </g>
-  <text x="1716" y="145" font-size="15" font-weight="600" fill="#92400e">工具 · 沙箱</text>
-  <text x="1716" y="355" font-size="15" font-weight="600" fill="#047857">记忆 · 检索</text>
+  <text x="1102" y="83" font-size="22" font-weight="600" fill="#92400e">工具 · 沙箱</text>
+  <text x="1102" y="515" font-size="22" font-weight="600" fill="#047857">记忆 · 检索</text>
 </svg>
