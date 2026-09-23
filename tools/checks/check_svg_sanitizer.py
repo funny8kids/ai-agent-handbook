@@ -37,6 +37,10 @@ Controls, because a ruler that cannot fail is not a ruler:
     verdict cannot come from having compared against garbage.
   * vacuity floor: at least 25 assets must reach the live comparison, or the run fails instead of
     declaring the axis clean off an empty sample.
+  * coverage bucket (round 67): an asset whose fetch never landed is reported as a coverage FAIL
+    separate from the content findings, and the run still exits 1 — clearing the floor on 30 of 35
+    assets must not read as "the other five are fine". `coverage_selftest` plants exactly that
+    near-miss sample (30 compared + 5 fetch failures) and requires RED, plus an empty sample.
 
 Usage:
     python tools/checks/check_svg_sanitizer.py [--no-live] [--only NAME.svg ...]
@@ -47,6 +51,7 @@ import io
 import os
 import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -75,6 +80,9 @@ STRIPPED_ANIMATE_TARGETS = {"fill"}
 # The two-text form below is what actually puts the second phrase on a second line.
 LINEBREAK_TAGS = {"br"}
 MIN_ASSETS = 25
+# Measured in round 67: the CDN resets the connection once the sweep is ~30 fetches deep.
+SWEEP_PAUSE = 0.8
+COOLDOWN = 15
 
 _USAGE = {}
 _LIVE = {}
@@ -189,6 +197,42 @@ def served_copy(name, index):
     return None, None
 
 
+def served_copy_cooled(name, index):
+    """One cool-down before declaring an asset unreachable.
+
+    The CDN answers a mid-sweep burst with a TLS reset and answers the very same URL seconds
+    later (measured in round 67: the failing `05-tool-calling.svg` proxy URL returned 5,234 bytes
+    of `image/svg+xml` on the first standalone try). Without the cool-down the sweep records a
+    coverage failure that is really just our own request rate.
+    """
+    try:
+        return served_copy(name, index)
+    except RuntimeError:
+        time.sleep(COOLDOWN)
+        return served_copy(name, index)
+
+
+def coverage_reads_green(compared, fetch_failed, total, floor):
+    """Green needs every asset actually reached: an undispatched comparison proves nothing.
+
+    This is the round-60 two-bucket rule applied here. The floor alone is not enough — a sweep
+    that reaches 30 of 35 assets clears `floor=25` and would print a clean verdict while five
+    figures the reader can see were never compared.
+    """
+    return not fetch_failed and compared >= min(total, floor)
+
+
+def coverage_selftest():
+    """A near-miss sample and an empty sample must both read as NOT green."""
+    assert coverage_reads_green(35, 0, 35, MIN_ASSETS), "selftest: a full sweep read as red"
+    assert not coverage_reads_green(30, 5, 35, MIN_ASSETS), \
+        "selftest: 5 unreached assets hid behind a sample that cleared the floor"
+    assert not coverage_reads_green(0, 35, 35, MIN_ASSETS), "selftest: an empty sample read green"
+    assert coverage_reads_green(2, 0, 2, MIN_ASSETS), \
+        "selftest: an --only run over 2 assets must not be failed by the whole-tree floor"
+    print("coverage selftest ok: 30/35 with 5 fetch failures reads RED, 35/35 reads green")
+
+
 def live_leg(only=None):
     usage = page_usage()
     names = sorted(n for n in usage if n.endswith(".svg") and os.path.isfile(os.path.join(ASSETS, n)))
@@ -196,9 +240,16 @@ def live_leg(only=None):
         names = [n for n in names if n in only]
     index, ambiguous = wl.page_index(wl.llms_entries())
     assert not ambiguous, "ambiguous published titles: %s" % sorted(ambiguous)
-    stripped, dropped, checked = collections.Counter(), [], 0
+    stripped = collections.Counter()
+    dropped, fetch_failed, mismatched, checked = [], [], [], 0
     for name in names:
-        raw, rel = served_copy(name, index)
+        time.sleep(SWEEP_PAUSE)
+        try:
+            raw, rel = served_copy_cooled(name, index)
+        except RuntimeError as exc:
+            fetch_failed.append(name)
+            print("  %-38s FETCH-FAILED after cool-down: %s" % (name, str(exc)[:110]))
+            continue
         if raw is None:
             print("  %-38s NOT-SERVED (no <img> naming it on %s)" % (name, rel))
             continue
@@ -209,9 +260,11 @@ def live_leg(only=None):
             print("  %-38s NOT-SVG served copy will not parse: %s | head=%r" % (name, exc, raw[:40]))
             dropped.append(name)
             continue
-        assert served_root.get("viewBox") == local_root.get("viewBox"), \
-            "%s: served viewBox %r != authored %r" % (name, served_root.get("viewBox"),
-                                                      local_root.get("viewBox"))
+        if served_root.get("viewBox") != local_root.get("viewBox"):
+            print("  %-38s VIEWBOX served %r != authored %r"
+                  % (name, served_root.get("viewBox"), local_root.get("viewBox")))
+            mismatched.append(name)
+            continue
         checked += 1
         lost_attrs = la - sa
         lost_els = le - se
@@ -221,14 +274,15 @@ def live_leg(only=None):
                      sum(lost_els.values()), dict(lost_els)))
             for k in lost_attrs:
                 stripped[k.split("@")[-1]] += lost_attrs[k]
-    print("served copies compared=%d of %d assets" % (checked, len(names)))
-    if not only:
-        assert checked >= MIN_ASSETS, \
-            "only %d served copies reached the comparison (floor %d): the axis read a near-empty " \
-            "sample" % (checked, MIN_ASSETS)
-    else:
+    print("served copies compared=%d of %d assets  fetch-failures=%d"
+          % (checked, len(names), len(fetch_failed)))
+    green = coverage_reads_green(checked, fetch_failed, len(names), 0 if only else MIN_ASSETS)
+    if not green:
+        print("  coverage NOT green: compared=%d floor=%d fetch-failures=%s"
+              % (checked, 0 if only else MIN_ASSETS, sorted(fetch_failed)))
+    elif only:
         print("  (floor skipped: --only asked for %d assets)" % len(names))
-    return stripped, dropped
+    return stripped, dropped, mismatched, fetch_failed
 
 
 def main():
@@ -238,29 +292,39 @@ def main():
     args = ap.parse_args()
 
     classifier_selftest()
+    coverage_selftest()
     offenders = offline_leg(args.only)
     stripped = collections.Counter()
+    dropped = mismatched = fetch_failed = []
     if not args.no_live:
-        stripped, dropped = live_leg(args.only)
+        stripped, dropped, mismatched, fetch_failed = live_leg(args.only)
         new = {k for k in stripped if k not in KNOWN_STRIPPED}
         if new:
             print("\nnewly stripped by the platform: %s" % sorted(new))
             print("  add them to KNOWN_STRIPPED only after confirming the drawing really changed.")
     else:
-        dropped = []
         print("live leg skipped (--no-live): the strip list is only as current as the last run")
 
     print("\n-- verdict --")
-    bad = bool(offenders) or bool(stripped) or bool(dropped)
+    content_bad = bool(offenders) or bool(stripped) or bool(dropped) or bool(mismatched)
+    coverage_bad = bool(fetch_failed) and not args.no_live
     if offenders:
         print("  FAIL %d authored asset(s) lean on a stripped feature" % len(offenders))
     if stripped:
         print("  FAIL served copies are missing %s" % dict(stripped))
     if dropped:
         print("  FAIL served copies that are not parseable SVG: %s" % dropped)
-    if not bad:
+    if mismatched:
+        print("  FAIL served viewBox != authored viewBox (the page is still the previous build "
+              "for these, or the platform re-wrote the canvas): %s" % sorted(mismatched))
+    if coverage_bad:
+        print("  FAIL %d asset(s) never reached the comparison: %s"
+              % (len(fetch_failed), sorted(fetch_failed)))
+        print("  (coverage bucket, not a content finding: an unreached figure proves nothing about "
+              "what the reader got — re-run, do not read this as green)")
+    if not content_bad and not coverage_bad:
         print("  clean: no authored figure depends on markup the reader does not get")
-    sys.exit(1 if bad else 0)
+    sys.exit(1 if (content_bad or coverage_bad) else 0)
 
 
 if __name__ == "__main__":

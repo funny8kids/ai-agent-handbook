@@ -32,8 +32,14 @@ TOKEN = re.compile(r"\{%-?\s*(stepper|step|tabs|tab)\b((?:%(?!\})|[^%])*)%\}")
 TITLE_ATTR = re.compile(r'title\s*=\s*"([^"]+)"')
 
 
-def fetch(url, binary=False, tries=4):
-    """GitBook's CDN closes TLS connections at will mid-sweep; retry before blaming the page."""
+def fetch(url, binary=False, tries=5):
+    """GitBook's CDN closes TLS connections at will mid-sweep; retry before blaming the page.
+
+    The backoff is cumulative because the resets come in bursts (round 67 measured the sweep dying
+    ~30 fetches deep, with the same URL succeeding standalone seconds later). A caller that must
+    not turn a persistent reset into a false verdict should catch this and record a coverage
+    failure — see check_svg_sanitizer.py's fetch-failures bucket.
+    """
     last = None
     for n in range(tries):
         try:
@@ -45,7 +51,7 @@ def fetch(url, binary=False, tries=4):
             last = exc
             if n == tries - 1:
                 break
-            time.sleep(2 * (n + 1))
+            time.sleep(min(2 * (n + 1), 10))
     raise RuntimeError("fetch failed after %d tries: %s (%s)" % (tries, url, last))
 
 
