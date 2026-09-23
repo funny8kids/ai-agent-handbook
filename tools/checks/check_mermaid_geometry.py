@@ -15,14 +15,18 @@ What it measures, in the order the pitfalls were learned:
              to report numbers until the engines match.
   parse      a block that will not render is a hard failure — stronger than a parser call, because
              it is the same pipeline the reader's browser runs.
-  width      viewBox width vs the ~1120px content column. Over-wide means GitBook scales the
-             diagram down and the labels go unreadable (1321px measured once, 1712px in an older
-             round) — the defect this axis exists to catch.
-  height     reported, not judged: a tall diagram only costs scrolling (max measured 1298px),
+  width      viewBox width vs the reader's content column, plus what the browser ends up painting.
+             Mermaid ships every diagram with `useMaxWidth: true` — the SVG carries
+             `width="100%"` and `style="max-width: <natural>px"` — so a diagram wider than the
+             column is SCALED DOWN to fit it and its labels shrink with it (1108px authored in the
+             live 768px column paints 16px text at 11.1px), while a narrower one is untouched. The
+             wrapper's `overflow-x-auto` never gets a scrollable child, so nothing scrolls to save
+             the reader: over-wide means illegible, and `--font-floor` is what judges that.
+  height     reported, not judged: a tall diagram only costs scrolling (max measured 1689px),
              while a wide one costs legibility.
 
 Two planted counterexamples ride along on every run (one unparsable source, one fan-out that must
-blow past 1120) and MUST be caught. Without them "0 超宽、0 失败" would also be what a silent
+blow past the column) and MUST be caught. Without them "0 超宽、0 失败" would also be what a silent
 no-op prints — see the project's no-silent-zero rule.
 
 Rendering is local and offline on purpose: Edge headless in this sandbox has no external network,
@@ -50,7 +54,12 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
 SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
-COLUMN = 1120                      # measured content column, px
+# The column a reader actually gets. 1120 was believed from round 24 to round 61 and is the WIDE
+# layout's number; `tools/checks/check_live_column.py` measured the live default at 768px
+# (`<main class="max-w-3xl layout-wide:max-w-6xl">`, and `layout-wide` is off by default). Judging
+# against 1120 certified 102 scaled-down diagrams as clean.
+COLUMN = 768
+WINDOW = 1280                       # fixture viewport: the cell has to fit inside it
 SHOT_BUDGET = 20000                # virtual ms the --eyeball screenshot is allowed to paint in
 EDGE_CANDIDATES = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
                    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
@@ -135,7 +144,7 @@ def live_version():
     return hits[0] if hits else ""
 
 
-def fixture_html(srcs, rid, budget, mode="dump"):
+def fixture_html(srcs, rid, budget, mode="dump", column=COLUMN):
     """One page: the engine loaded from localhost, then every diagram rendered in order.
 
     Results come back over an HTTP beacon to /report instead of through --dump-dom, and the two
@@ -162,7 +171,7 @@ def fixture_html(srcs, rid, budget, mode="dump"):
     # 40-block batch produced no report at all.
     hold = "<script src='/hold?rid=%%HOLDRID%%'></script>" if mode == "dump" else ""
     return ("<!doctype html><meta charset='utf-8'>"
-            "<style>body{margin:0;background:#fff}.cell{width:%%COLUMN%%px;overflow:hidden}</style>"
+            "<style>body{margin:0;background:#fff}.cell{width:%%COLUMN%%px;overflow-x:auto}</style>"
             "<script src='/mermaid.min.js'></script><div id='out'></div><script>"
             "const items=%%ITEMS%%;const rid=%%RID%%;const limit=%%BUDGET%%;"
             "let done=false;const cells=[];"
@@ -172,16 +181,21 @@ def fixture_html(srcs, rid, budget, mode="dump"):
             "const run=%%RUN%%;"
             "(async()=>{const o=document.getElementById('out');"
             "for(let i=0;i<items.length;i++){const d=document.createElement('div');d.className='cell';"
-            "o.appendChild(d);const rec={i:i,w:null,h:null,fail:null};cells.push(rec);"
+            "o.appendChild(d);const rec={i:i,w:null,h:null,fail:null,rw:null,sw:null,fs:null,wa:null,st:null};cells.push(rec);"
             "try{const r=await run(i);d.innerHTML=r.svg;"
             "const m=r.svg.match(/viewBox=.([-\\d.]+) ([-\\d.]+) ([-\\d.]+) ([-\\d.]+)./);"
-            "if(m){rec.w=parseFloat(m[3]);rec.h=parseFloat(m[4]);}"
+            "if(m){rec.w=parseFloat(m[3]);rec.h=parseFloat(m[4]);"
+            "const s=d.querySelector('svg'),t=d.querySelector('g.node text,.nodeLabel,text');"
+            "rec.wa=s.getAttribute('width');rec.st=(s.getAttribute('style')||'').slice(0,70);"
+            "rec.rw=Math.round(s.getBoundingClientRect().width);rec.sw=d.scrollWidth;"
+            "if(t){const f=parseFloat(getComputedStyle(t).fontSize);"
+            "if(f){rec.fs=Math.round(f*rec.rw/rec.w*100)/100;}}}"
             "else{rec.fail='rendered with no viewBox';%%FAIL%%}}"
             "catch(e){rec.fail=String(e.message).slice(0,140);%%FAIL2%%}}"
             "done=true;post();"
             "setTimeout(()=>{try{window.close();}catch(e){}},80);})();"
             "setTimeout(()=>{if(!done)post();},limit);"
-            "</script>" + hold).replace("%%COLUMN%%", str(COLUMN)) \
+            "</script>" + hold).replace("%%COLUMN%%", str(column)) \
                         .replace("%%ITEMS%%", json.dumps(srcs)) \
                         .replace("%%RID%%", str(rid)) \
                         .replace("%%HOLDRID%%", str(rid)) \
@@ -288,7 +302,8 @@ class Server:
         if not exe:
             raise SystemExit("no Microsoft Edge found — the geometry axis needs a real renderer")
         cmd = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-               "--user-data-dir=" + self.new_profile(), "--window-size=%d,%d" % (COLUMN, height)]
+               "--user-data-dir=" + self.new_profile(),
+               "--window-size=%d,%d" % (max(WINDOW, COLUMN), height)]
         return subprocess.Popen(cmd + list(extra) + [self.url(name)],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -306,13 +321,13 @@ class Server:
         self.srv.shutdown()
 
 
-def render_batch(srv, blocks, budget, rid, shot=None):
-    """One Edge pass over a batch of blocks; returns [(w, h|fail)] in authoring order."""
+def render_batch(srv, blocks, budget, rid, shot=None, column=COLUMN):
+    """One Edge pass over a batch of blocks; returns the per-diagram cells in authoring order."""
     name = "fixture%d.html" % rid
     if not shot:
         srv.hold(rid, budget / 1000 + 30)
     open(os.path.join(srv.root, name), "w", encoding="utf-8").write(
-        fixture_html([b["src"] for b in blocks], rid, budget, "shot" if shot else "dump"))
+        fixture_html([b["src"] for b in blocks], rid, budget, "shot" if shot else "dump", column))
     if shot:
         # A screenshot fires when Chrome's *virtual* time runs out, so this mode waits for Edge to
         # exit by itself; the sweep mode is held open by the latch and stops when the report lands.
@@ -336,40 +351,56 @@ def render_batch(srv, blocks, budget, rid, shot=None):
             "measure 0-widths — raise --budget (real ms) or lower --batch."
             % (len(cells), len(blocks), rid, "no report at all" if not report
                else "last failure: %s" % str(cells[-1].get("fail"))[:80]))
-    return [(c["w"], c["h"] if c["w"] is not None else c["fail"]) for c in cells]
+    return cells
 
 
-def render(srv, blocks, budget, batch):
-    boxes = []
+def render(srv, blocks, budget, batch, column=COLUMN):
+    cells = []
     for start in range(0, len(blocks), batch):
-        boxes += render_batch(srv, blocks[start:start + batch], budget, start // batch + 1)
-    return boxes
+        cells += render_batch(srv, blocks[start:start + batch], budget,
+                              start // batch + 1, column=column)
+    return cells
 
 
-def judge(rows, boxes):
-    """FAILED / OVERWIDE for real pages, plus the two planted controls that must be caught."""
-    problems, widths, heights, controls = [], [], [], []
-    for row, (w, h) in zip(rows, boxes):
+def judge(rows, cells, column=COLUMN, floor=0.0):
+    """FAILED / OVERWIDE / ILLEGIBLE for real pages, plus the two planted controls that must be caught.
+
+    Width alone is a proxy. What a reader actually loses when a diagram is wider than the column is
+    label size, so `floor` judges the font size the browser ends up painting (`fs`, measured, not
+    computed from the assumed column). With floor=0 the judgement stays width-only, which is what
+    the historic 1120px runs did.
+    """
+    problems, widths, heights, controls, laid = [], [], [], [], []
+    for row, c in zip(rows, cells):
+        w, h = c["w"], c["h"]
         if row["page"] == "CONTROL":
             kind = "OK"
             if w is None:
                 kind = "FAILED" if row["i"] == 2 else "MISS"
-            elif w > COLUMN:
+            elif w > column:
                 kind = "OVERWIDE" if row["i"] == 1 else "MISS"
             controls.append("wide->%s(%s)" % (kind, "w=%s" % w if w else h or ""))
-            if row["i"] == 1 and (w is None or w <= COLUMN):
-                problems.append("CONTROL-DEAD: the planted over-wide diagram did not exceed %dpx" % COLUMN)
+            if row["i"] == 1 and (w is None or w <= column):
+                problems.append("CONTROL-DEAD: the planted over-wide diagram did not exceed %dpx" % column)
             if row["i"] == 2 and w is not None:
                 problems.append("CONTROL-DEAD: the planted unparsable diagram rendered anyway")
             continue
         if w is None:
-            problems.append("FAILED %s#%d: %s" % (row["page"], row["i"], str(h)[:110]))
+            problems.append("FAILED %s#%d: %s" % (row["page"], row["i"], str(c["fail"])[:110]))
             continue
         widths.append(w)
         heights.append(h)
-        if w > COLUMN:
-            problems.append("OVERWIDE %s#%d: %.0fpx > 正文列宽 %dpx" % (row["page"], row["i"], w, COLUMN))
-    return problems, widths, heights, controls
+        scale = (c["rw"] / w) if c.get("rw") and w else 1.0
+        scrolls = bool(c.get("sw") and c["sw"] > column + 1)
+        laid.append({"row": row, "w": w, "h": h, "rw": c.get("rw"), "scale": scale,
+                     "font": c.get("fs"), "scrolls": scrolls})
+        if w > column:
+            problems.append("OVERWIDE %s#%d: %.0fpx > 正文列宽 %dpx" % (row["page"], row["i"], w, column))
+        if floor and c.get("fs") and c["fs"] < floor:
+            problems.append("ILLEGIBLE %s#%d: 标签实绘 %.1fpx < %.1fpx（自然 %.0fpx 挤进 %dpx，"
+                            "缩放 %.2f%s）" % (row["page"], row["i"], c["fs"], floor, w, column,
+                                            round(scale, 2), "，容器横向滚动" if scrolls else ""))
+    return problems, widths, heights, controls, laid
 
 
 def main():
@@ -380,6 +411,17 @@ def main():
     ap.add_argument("--batch", type=int, default=40,
                     help="blocks per fixture page — one page of 217 exhausts the virtual-time budget")
     ap.add_argument("--skip-alignment", action="store_true", help="offline runs only; a real check compares engines")
+    ap.add_argument("--column", type=int, default=COLUMN,
+                    help="content column the reader actually gets, px. Round 62 measured the live "
+                         "default at 768 (1152 only in GitBook's wide layout), which is now the "
+                         "default here; pass --column 1120 to reproduce the historic reading.")
+    ap.add_argument("--widths", type=int, default=0, metavar="N",
+                    help="also print the N widest authored diagrams with their scale vs --column")
+    ap.add_argument("--font-floor", type=float, default=0.0, metavar="PX",
+                    help="judge legibility, not just width: fail any diagram whose label is painted "
+                         "smaller than PX in the --column container. 0 keeps the historic width-only "
+                         "verdict. The reader's body text is 16px; round 62 measures what a diagram "
+                         "label actually costs them.")
     ap.add_argument("--eyeball", metavar="PAGE", help="render one page's diagrams to a PNG and exit")
     args = ap.parse_args()
 
@@ -418,21 +460,47 @@ def main():
                {"page": "CONTROL", "i": 2, "src": CONTROL_BROKEN}]
     srv = Server(js)
     try:
-        boxes = render(srv, rows + planted, args.budget, args.batch)
+        cells = render(srv, rows + planted, args.budget, args.batch, args.column)
     finally:
         srv.close()
-    problems, widths, heights, controls = judge(rows + planted, boxes)
+    problems, widths, heights, controls, laid = judge(rows + planted, cells, args.column,
+                                                      args.font_floor)
     print("rendered=%d/%d authored diagrams  max width=%.0fpx  max height=%.0fpx (column %dpx)"
-          % (len(widths), len(rows), max(widths), max(heights), COLUMN))
+          % (len(widths), len(rows), max(widths), max(heights), args.column))
     print("planted counterexamples: %s" % ", ".join(controls))
+    # The instrument has to answer before the content does: if nothing in the sweep is scaled and
+    # nothing scrolls, a "0 ILLEGIBLE" reading would be a silent zero rather than a measurement.
+    scaled = [x for x in laid if x["scale"] < 0.985]
+    scrolling = [x for x in laid if x["scrolls"]]
+    print("  laid out in a %dpx column: %d scaled down, %d in a horizontal scroller, "
+          "%d neither (fonts: min %.1fpx  median %.1fpx)"
+          % (args.column, len(scaled), len(scrolling),
+             len([x for x in laid if x["scale"] >= 0.985 and not x["scrolls"]]),
+             min([x["font"] for x in laid if x["font"]] or [0]),
+             sorted([x["font"] for x in laid if x["font"]] or [0])[len(
+                 [x for x in laid if x["font"]]) // 2]))
     # The two extremes by name, so a future round can judge them without re-running anything:
     # "max width 1116px" is only useful if you know which diagram is at 1116 and how close it is.
-    ranked = sorted(((r, w, h) for r, (w, h) in zip(rows, boxes) if w is not None),
-                    key=lambda t: -t[1])
-    for r, w, h in ranked[:3]:
+    ranked = sorted(((x["row"], x["w"], x["h"], x) for x in laid), key=lambda t: -t[1])
+    for r, w, h, x in ranked[:3]:
         print("  widest  %-56s #%d  %.0fx%.0fpx" % (r["page"], r["i"], w, h))
-    for r, w, h in sorted(ranked, key=lambda t: -t[2])[:3]:
+    for r, w, h, x in sorted(ranked, key=lambda t: -t[2])[:3]:
         print("  tallest %-56s #%d  %.0fx%.0fpx" % (r["page"], r["i"], w, h))
+    if args.widths:
+        over = [t for t in ranked if t[1] > args.column]
+        print("  width distribution vs %dpx: %d of %d diagrams exceed it"
+              % (args.column, len(over), len(ranked)))
+        for band in (900, 800, 768, 720, 640):
+            print("     >%-5d %3d" % (band, len([t for t in ranked if t[1] > band])))
+        for r, w, h, x in ranked[:args.widths]:
+            print("     %-56s #%d %5.0fpx -> painted %5spx (scale %.2f) label %.1fpx %s"
+                  % (r["page"], r["i"], w, x["rw"], x["scale"], x["font"] or 0,
+                     "SCROLLS" if x["scrolls"] else ""))
+    if args.font_floor:
+        byfont = sorted([x for x in laid if x["font"]], key=lambda x: x["font"])
+        for x in byfont[:args.widths or 10]:
+            print("     smallest-label %-52s #%d %5.1fpx (natural %.0f, painted %s)"
+                  % (x["row"]["page"], x["row"]["i"], x["font"], x["w"], x["rw"]))
     for p in problems[:30]:
         print("  -", p)
     print("problems=%d" % len(problems))
@@ -449,10 +517,10 @@ def eyeball(js_path, blocks, budget):
         os.remove(out)
     srv = Server(js_path)
     try:
-        boxes = render_batch(srv, blocks, budget, 1, shot=out)
+        cells = render_batch(srv, blocks, budget, 1, shot=out)
     finally:
         srv.close()
-    failed = [(b["i"], h) for b, (w, h) in zip(blocks, boxes) if w is None]
+    failed = [(b["i"], c["fail"]) for b, c in zip(blocks, cells) if c["w"] is None]
     size = os.path.getsize(out) if os.path.isfile(out) else -1
     print("eyeball PNG: %s (%s bytes, %d diagrams, source=%s)"
           % (out, size, len(blocks), " ".join(b["page"] for b in blocks)[:60]))
