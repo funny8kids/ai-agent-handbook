@@ -2,7 +2,7 @@
 tags: [evaluation]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 基准测试总览
@@ -41,11 +41,7 @@ $$
 
 好处是客观、可复现；代价是任务必须自带可执行验证，且对环境的依赖极重。
 
-**生成式多解评分**：对一题多解的任务用 pass@k（见 [Agent 评估指标](evaluation-metrics.md)）：
-
-$$
-\text{pass@}k=\mathbb{E}_{\text{problems}}\left[1-\frac{\dbinom{n-c}{k}}{\dbinom{n}{k}}\right]
-$$
+**生成式多解评分**：对一题多解的任务用 pass@k——跑 $$n$$ 个样本、其中 $$c$$ 个通过测试，报告「取 $$k$$ 个至少中一个」的无偏估计（定义式见 [Agent 评估指标](evaluation-metrics.md)）。它衡量的是能力上限，而单次通过率衡量的是稳定性，两者要分开报。
 
 **LLM 评分**：用于开放式任务（GAIA 的部分题、对话质量），必须报告与人类的一致度（Cohen's $$\kappa$$），否则分数不可信。
 

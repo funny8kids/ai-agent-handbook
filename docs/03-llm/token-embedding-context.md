@@ -2,7 +2,7 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Token、Embedding、上下文窗口
@@ -59,13 +59,9 @@ $$
 \text{Time}\sim O(n^2 d),\qquad \text{Attn memory}\sim O(n^2)
 $$
 
-此外 KV 缓存随长度线性增长（每 token 每层都要存 K/V）：
+此外 KV 缓存随长度线性增长（每 token 每层都要存一份 K 和 V；逐项符号与 GQA/MLA 的影响见 [推理、量化与部署](inference-quantization-deployment.md) 的 KV 缓存公式）。
 
-$$
-\text{KV bytes}=2\times L\times H_{kv}\times d_{head}\times S\times B\times\frac{\text{bits}}{8}
-$$
-
-这两条式子合起来说明：**窗口从 128K 扩到 1M，不是简单地「能装更多」，而是成本与延迟显著上升**，且长上下文中部信息的利用率会衰减（lost in the middle）。因此检索与压缩不是「窗口小才需要」的权宜之计，而是长期有效的架构手段。
+这两条合起来说明：**窗口从 128K 扩到 1M，不是简单地「能装更多」，而是成本与延迟显著上升**，且长上下文中部信息的利用率会衰减（lost in the middle）。因此检索与压缩不是「窗口小才需要」的权宜之计，而是长期有效的架构手段。
 
 ### 5. 成本公式
 

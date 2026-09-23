@@ -29,15 +29,7 @@ $$
 
 ### 2. 检索质量怎么量化
 
-检索环节的好坏用排序指标衡量（定义见 [Agent 评估指标](../10-evaluation-safety/evaluation-metrics.md)）：
-
-$$
-\text{Recall@}k=\frac{\#\{\text{前 }k\text{ 个结果中的相关文档}\}}{\#\{\text{全部相关文档}\}}
-$$
-
-$$
-\text{MRR}=\frac{1}{|Q|}\sum_{i=1}^{|Q|}\frac{1}{\mathrm{rank}_i}
-$$
+检索环节的好坏用排序指标衡量：**Recall@k** 看前 $$k$$ 个结果捞回了多少该捞的，**MRR** 看第一条相关结果排在第几位（两者定义式见 [Agent 评估指标](../10-evaluation-safety/evaluation-metrics.md)）。RAG 的日常调参里 Recall@k 决定「重排之前有没有料」，MRR 决定「喂给 LLM 的前几块有没有用」。
 
 **为什么要分开测检索与生成**：最终答案错，可能是没检索到（召回问题），也可能是检索到了但模型没用对（生成问题）。不分开测就只能猜。
 

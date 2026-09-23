@@ -2,7 +2,7 @@
 tags: [llm, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 推理、量化、蒸馏与部署
@@ -64,13 +64,7 @@ $$
 
 ### 4. Prompt 缓存能省多少
 
-多轮调用中，若前缀字节级一致，服务端可复用其 prefill 的 KV，不必重算。按输入输出分别计价，一次调用的成本为：
-
-$$
-\text{cost}=c_{\text{in}}\cdot T_{\text{in}}+c_{\text{out}}\cdot T_{\text{out}}
-$$
-
-开启缓存后，命中的输入部分按更低单价（常见为 $$c_{\text{in}}/\alpha$$，$$\alpha\approx10$$）计：
+多轮调用中，若前缀字节级一致，服务端可复用其 prefill 的 KV，不必重算。输入输出分别计价（基础式与符号见 [Token、Embedding、上下文窗口](token-embedding-context.md) 的成本公式），开启缓存后命中的输入部分按更低单价（常见为 $$c_{\text{in}}/\alpha$$，$$\alpha\approx10$$）计：
 
 $$
 \text{cost}'=c_{\text{in}}\cdot\Big(T_{\text{cached}}/\alpha+T_{\text{uncached}}\Big)+c_{\text{out}}\cdot T_{\text{out}}
