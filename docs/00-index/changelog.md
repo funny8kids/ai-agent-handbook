@@ -67,12 +67,16 @@ updated: 2026-09-23
    - 那条「丢的元素」是 `<text>zero-shot 或<br/>少量真机微调</text>` 里的 `<br/>`。`<br>` 不是 SVG 元素：它在本地**从来没换出行**（真渲染截图里那一行字直接压进右侧「真实世界」方框），sanitizer 删掉节点后文字照样连成一行。所以这条不是「平台弄坏了作者的东西」，是**作者写了一个不存在的写法，平台顺手把它藏了起来**——两种账都得记，但处方不同：前者换成平台确实带的 `opacity` 目标，后者换成两个 `<text>`。
    - 修法（文字一字未删）：每格后面加一块同几何、`fill=目标色`、`opacity="0"` 的覆盖矩形，动画改成 `<animate attributeName="opacity" values="0;1;0">`，覆盖矩形排在格子的前景块**之前**，所以机器人和阴影照旧压在上面。`opacity` 是这条轴当场验证过能活着到读者的目标。
    - 断言不是靠眼睛：把四个覆盖矩形冻结成 `opacity="1"`、把扫光矩形冻结成 `opacity="0"`、删掉所有 `<animate>` 后渲染，再按像素采样——四格覆盖色分别读到 `#bfdbfe`/`#dcfce7`/`#fde68a`/`#f1f5f9`，四格前景块分别读到 `(14,165,233)`/`(249,115,22)`/`(225,29,72)`/`(168,85,247)`，**8/8 命中**。截图时刻用了 `--virtual-time-budget`，但扫光本身是时变的，所以「冻一帧再采样」比直接截动图可靠。
-   - 判据跟着加两条离线规则（`STRIPPED_ANIMATE_TARGETS = {"fill"}`、`LINEBREAK_TAGS = {"br"}`）与两条常驻反例：种一个 `attributeName="fill"` 的 animate、种一个 `<br/>`，都必须被抓；`opacity` 覆盖矩形与两行 `<text>` 两种**修法写法**必须 0 命中（否则判据会把未来的自己一起锁死）。线上腿从此对全树要求「元素与属性多重集与 authored 完全相同」，读数 `served copies compared=32 of 32`。
+   - 判据跟着加两条离线规则（`STRIPPED_ANIMATE_TARGETS = {"fill"}`、`LINEBREAK_TAGS = {"br"}`）与两条常驻反例：种一个 `attributeName="fill"` 的 animate、种一个 `<br/>`，都必须被抓；`opacity` 覆盖矩形与两行 `<text>` 两种**修法写法**必须 0 命中（否则判据会把未来的自己一起锁死）。
+   - **线上腿的全树读数（本轮收尾跑的，约 7 分钟、32 张全中）**：`authored assets=35 依赖被剥特性=0` → `served copies compared=32 of 32 assets` → `clean: no authored figure depends on markup the reader does not get`，**退出码 0**。这条轴从落库到全树第一次绿，中间红了两次，两次的红都是真缺陷（`paint-order`、`animate@fill`），不是噪声。
 5. **改完这张图，可读性轴的分母动了**：标签总数 1056 → **1057**（`<br/>` 变成真的第二行 `<text>`），命中 734 → **735**，因为这一行是 12px 写在 980 画布上、落纸 9.4px。`--column 1152` 的宽版 what-if 命中数不变（18 张 / 204 个），1152 列下 980 画布 1:1，这行刚好够线。**这张图仍在批 2 的 27 张名单里**，本轮只修「读者拿到的与作者画的不一样」，不顺手做重排。
 
 ### 七、留下的
 
 - 还有 **27 张**正文图在门槛下。最险的六张：`11-trace-waterfall`、`12-coding-agent-loop`、`16-sandbox-layers`（都是 8.00px），`03-attention`、`06-memory-tiers`、`08-collab-patterns`（8.40px）。批 2 从 8.00px 这三张开始。
+- **`KNOWN_STRIPPED` 只有 `paint-order` 一条，另外两条规则住在别的表里**（`STRIPPED_ANIMATE_TARGETS`、`LINEBREAK_TAGS`）。三张表在离线腿里等价生效，但只有第一张带处方文案；下次再量到新的被剥写法，应该并成一张表，别再开第四个变量。
+- **`labs/out/lab{1,2,4,6}.out` 长期显示为「已修改」，但内容与 HEAD 逐字节相同**（`git hash-object` 与索引 blob 一致，`git diff` 零输出）。这是重跑实验只动 mtime 留下的 stat-cache 假象，不是待提交的改动——别再为它开一轮。
+- **上线的两条腿会轮流落后**：第 64 轮是 `.md` 领先、HTML 落后两轮；本轮推送后 3 分钟复测是 **HTML 已到第 65 次、`.md` 还停在 64**。所以「哪条腿先新」没有规律，`check_live_sync.py` 取较差判决的设计是对的，别把它改回单腿。
 - 更新日志页按操作者的决定**保持单页**，249KB / 渲染 10MB 那条账原样留着。
 - 未做：`check_table_overflow.py --pages all`、移动端宽度读数、图注两级合并、线上正文完整性轴。
 
