@@ -67,6 +67,7 @@ Usage:
 import argparse
 import io
 import json
+import math
 import os
 import re
 import sys
@@ -93,6 +94,9 @@ ROOT_FONT = 13.0            # the house SVG template sets font-size on <svg>
 FIG_RE = re.compile(r'!\[[^\]]*\]\(([^)\s]+\.svg)')
 CLASS_RULE_RE = re.compile(r"\.([A-Za-z0-9_-]+)\s*\{([^}]*)\}")
 FS_DECL_RE = re.compile(r"font-size\s*:\s*([\d.]+)px")
+SCALE_RE = re.compile(r"scale\(\s*(-?[\d.]+)(?:[\s,]+(-?[\d.]+))?")
+MATRIX_RE = re.compile(r"matrix\(\s*(-?[\d.]+)[\s,]+(-?[\d.]+)[\s,]+(-?[\d.]+)[\s,]+(-?[\d.]+)")
+CSS_TRANSFORM = re.compile(r'transform\s*:\s*([^;"]+)')
 
 
 def strip_ns(tag):
@@ -122,18 +126,47 @@ def css_size(cls, rules):
     return px
 
 
+def transform_scale(attr):
+    """The linear factor a `transform` applies to type: the SMALLEST axis of every scale()/matrix()
+    in it, multiplied together. A non-uniform scale shrinks glyphs by the narrow axis, and several
+    transforms compose. rotate()/translate() cost nothing; skew is not used in this book.
+
+    Without this the axis reads a `<g transform="scale(0.95)">` card at its authored px and reports
+    a label 5% larger than the reader sees -- `08-collab-patterns.svg` has four such groups.
+    """
+    if not attr:
+        return 1.0
+    k = 1.0
+    for m in SCALE_RE.finditer(attr):
+        sx = abs(float(m.group(1)))
+        sy = abs(float(m.group(2) if m.group(2) is not None else m.group(1)))
+        k *= min(sx, sy)
+    for m in MATRIX_RE.finditer(attr):
+        a, b, c, d = (float(m.group(i)) for i in (1, 2, 3, 4))
+        k *= min(math.hypot(a, b), math.hypot(c, d))
+    return k
+
+
+def element_scale(node):
+    """Scale an element applies to its subtree, from either place it can be written."""
+    css = CSS_TRANSFORM.search(node.get("style") or "")
+    return transform_scale(node.get("transform")) * transform_scale(css.group(1) if css else "")
+
+
 def text_sizes(path):
-    """[(authored px, character count)] for every <text>/<tspan>, with inheritance applied.
+    """[(effective px, character count)] for every <text>/<tspan>, with inheritance applied.
 
     Cascade, as a browser applies it: inline `style` beats a `<style>` class rule, which beats the
     `font-size` presentation attribute, which beats inheritance. Ignoring the class layer read
     `19-lab-react-loop-animated.svg` as 15 labels at the 13px fallback when its CSS says 15/17/18px.
+    "Effective" here means *after the transforms above it in the tree* -- still canvas px, so the
+    column ratio is applied on top by the caller.
     """
     root = ET.parse(path).getroot()
     rules = css_font_rules(root)
     out = []
 
-    def walk(node, size):
+    def walk(node, size, ts):
         for child in list(node):
             if strip_ns(child.tag) in ("style", "defs", "title", "desc"):
                 continue
@@ -149,14 +182,15 @@ def text_sizes(path):
             inline = FS_DECL_RE.search(child.get("style") or "")
             if inline:
                 s = float(inline.group(1))
+            k = ts * element_scale(child)
             if strip_ns(child.tag) in ("text", "tspan"):
                 txt = "".join(child.itertext()).strip()
                 if txt:
-                    out.append((s, len(txt)))
-            walk(child, s)
+                    out.append((round(s * k, 4), len(txt)))
+            walk(child, s, k)
 
     r = re.match(r"([\d.]+)", root.get("font-size") or str(ROOT_FONT))
-    walk(root, float(r.group(1)))
+    walk(root, float(r.group(1)), element_scale(root))
     return out
 
 
@@ -250,6 +284,11 @@ CSS = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960
        '<text class="t bad" x="10" y="140">tiny</text>'
        '<text class="t bad" x="10" y="190" font-size="16">attribute loses to class</text>'
        '<text class="t bad" x="10" y="240" style="font-size:20px">inline wins</text></svg>')
+# A canvas the column never shrinks, whose only defect is a group that scales its own subtree down.
+# `08-collab-patterns.svg` draws four cards this way, so this is the book's own shape, not a guess.
+SCALED = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">'
+          '<g transform="translate(20,20) scale(0.7)"><text x="10" y="40" font-size="16">shrunk</text></g>'
+          '<text x="10" y="120" font-size="13">untouched</text></svg>')
 
 
 def classifier_selftest(column):
@@ -283,8 +322,22 @@ def classifier_selftest(column):
             got = sum(1 for s, _ in text_sizes(path) if s * scale < MIN_LABEL)
             assert got == want, "%s should flag %d label(s) at a %dpx column, flagged %d" \
                                 % (os.path.basename(path), want, column, got)
+        # `transform="scale(k)"` is a second, independent shrink the column ratio cannot see. This
+        # phantom is the differential: before round 72 the axis read 16.0 and flagged nothing.
+        scaled = os.path.join(d, "scaled.svg")
+        io.open(scaled, "w", encoding="utf-8").write(SCALED)
+        assert [s for s, _ in text_sizes(scaled)] == [11.2, 13.0], \
+            "a scale(0.7) ancestor is not folded into the effective size: %s" % text_sizes(scaled)
+        w, _ = viewbox(scaled)
+        got = sum(1 for s, _ in text_sizes(scaled) if s * min(1.0, column / w) < MIN_LABEL)
+        assert got == 1, "the scaled phantom should flag the shrunk label only, flagged %d" % got
+        assert transform_scale("translate(54,140) scale(0.95) translate(-62,-144)") == 0.95, \
+            "translates must not change the factor"
+        assert transform_scale("scale(2) scale(0.5)") == 1.0, "composed scales must multiply"
+        assert transform_scale("matrix(2,0,0,0.5,0,0)") == 0.5, "matrix read on the wrong axis"
     print("classifier selftest ok: a 400px canvas reads clean, a 960px one flags its 9.5px label only, "
-          "a stylesheet-sized 960px canvas flags its two 9px labels and not its 15/17/20px ones")
+          "a stylesheet-sized 960px canvas flags its two 9px labels and not its 15/17/20px ones, "
+          "and a scale(0.7) ancestor takes a 16px label down to 11.2px")
 
 
 def offline_report(rows, column):

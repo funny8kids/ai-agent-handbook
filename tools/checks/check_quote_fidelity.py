@@ -25,6 +25,21 @@ citation the ruler cannot look up is a citation the ruler reports as a defect:
 Sample code fences (`python`, `bash`, ...) stay OUT of the corpus: a quote that only matches a code
 snippet is not evidence the reader was told that in prose.
 
+WHICH BRACKETED TEXT IS AN ATTRIBUTION (round 72 widened this). Not every 「…」 is a citation — most
+are term names and section titles, which the corpus has no business vouching for. This axis asks
+about one only when an attribution verb (写着/标题/图注/原文/...) owns it, i.e. sits within a few
+characters in front of the bracket: `图注：「…」` and `结论原文是「…」` are claims about a text just as
+much as `写着「…」`, and reading them as prose-with-a-term-name made the axis silently skip them.
+
+WHAT THE AXIS CANNOT SETTLE (round 72 made these visible instead of green). Two verdicts are printed
+but are NOT verifications, and the summary line counts `verified=` without them:
+  * SELF-EVIDENCED — the wording exists in the tree exactly once, inside the 「」 being checked, so
+    the judge verified the quote by finding the quote. These are pages quoting an OUTSIDE source;
+    round 72 hand-checked its one instance against the live blog it cites and it was verbatim, which
+    is the point: the bucket is not an accusation, it is a declaration that this script did not check.
+  * NEGATED — the sentence claims the wording is ABSENT (`没有一处写着「…」`). Presence proves nothing
+    and absence proves nothing either, since the corpus is the handbook, not the external document.
+
 Retractions are the one case where "verbatim in the tree" is the wrong demand: when a round deletes
 a false sentence from a page and quotes it in the log to record the deletion, no page can still
 carry it. Round 62 shipped exactly that and the axis went red on a correct log line. Rather than
@@ -49,7 +64,14 @@ LOG = os.path.join(DOCS, "00-index", "changelog.md")
 
 QUOTE = r"[「“][^」”]{6,}[」”]"
 VERB = r"(图注|图说|标题|原文|页里|页面里|写着|叫做|结语|引自|说的是|小标题|副标题|原句)"
-ATTR = re.compile(VERB + r"\s*(" + QUOTE + r"+)")
+# A citation is usually written with the verb touching the quote, but the log also writes
+# `图注：「…」` and `结论原文是「…」`. Without the copula/colon in the grammar those two claims are
+# invisible — and an invisible citation is worse than a red one, because `findings=0` then reads as
+# "every quote checked out". The gap is capped at 3 characters so the verb still owns the quote: a
+# sentence that happens to contain a verb and, further along, a term name in brackets, is not a claim
+# about that text and must not be graded as one.
+GAP = r"[\s，、：:是为的“”\"']{0,3}"
+ATTR = re.compile(VERB + GAP + r"(" + QUOTE + r"+)")
 ONE = re.compile(QUOTE)
 # a citation of a diagram may join several drawn labels; each part must live in the same source
 SPLIT = re.compile(r"[/／·、，,|]")
@@ -225,6 +247,40 @@ def norm_to_rel(path):
     return os.path.relpath(os.path.join(os.path.dirname(DOCS), path), DOCS).replace("\\", "/")
 
 
+# A citation can be NEGATED: `这份契约里没有任何一处写着「…」` asserts the wording is ABSENT, so
+# demanding that it be findable is backwards, and the next honest sentence of that shape would be
+# flagged as a misquote. Round 72 measured 1 such quote tree-wide (09-frameworks/llamaindex.md:142)
+# — kept alive only because the judge never looked past its own quotation marks.
+NEG = r"(没有任何|没有|没写|不含|不写|未出现|未提及|不存在|找不到)"
+NEG_NEAR = re.compile(NEG + r"[^「”\"']{0,12}$")
+
+
+def negated(line, verb_at):
+    """Is the attribution inside a negation? Look only at the clause in front of the verb."""
+    return bool(NEG_NEAR.search(line[:verb_at]))
+
+
+def blob_minus_line(text, lineno):
+    """The page's corpus with one line blanked — used to ask what a citation evidences by ITSELF."""
+    lines = text.splitlines()
+    if 0 < lineno <= len(lines):
+        lines[lineno - 1] = ""
+    t = "\n".join(lines)
+    return prose_blob(t) + mermaid_blob(t)
+
+
+def evidenced(s, rel, lineno, text, srcs):
+    """Does this citation have evidence outside its own quotation marks?
+
+    A knowledge page that quotes an outside source is the corpus's blind spot: the quote appears in
+    the tree exactly once, inside the 「」 that are being checked, so `find()` answers "yes, found it"
+    by finding the claim itself. Counting that as verified is what made `findings=0` overstate.
+    """
+    if any(p != rel for p in find(s, srcs)):
+        return True
+    return rel in srcs and match(s, blob_minus_line(text, lineno))
+
+
 def controls(srcs, prose, mer, kinds):
     """Every guard in this file has to be shown to bite on the real tree, not just to be present."""
     figs = [p for p in srcs if p.endswith(".svg")]
@@ -299,7 +355,7 @@ def selftest():
         "sample code leaked into the prose corpus"
     assert find(norm("只在图里的句子"), {"p.md": mermaid_blob("```mermaid\nA[只在图里的句子]\n```")}), \
         "mermaid node label not indexed"
-    # 9. the bug this round actually hit: a BARE ``` closes a ```mermaid block. Treating the closing
+    # 7. the bug this round actually hit: a BARE ``` closes a ```mermaid block. Treating the closing
     #    line's (empty) info string as a new block left the diagram open and filed the rest of the
     #    page as drawn text — a real page-level citation graded UNMATCHED because its paragraph
     #    happened to sit under a diagram.
@@ -309,7 +365,51 @@ def selftest():
     assert "只在图里的句子" in mermaid_blob(page), "a diagram after prose is not indexed"
     # an unclosed fence at EOF must not retroactively erase the prose above it either
     assert "开头" in prose_blob("开头\n```python\nx=1\n"), "prose before an unterminated fence vanished"
-    print("selftest ok (10 plants graded through grade()/find()/prose_blob())")
+    # 8. the gap branch (round 72): `图注：「…」` and `结论原文是「…」` are citations too. The grammar
+    #    used to need the verb to touch the bracket, which made three real claims tree-wide never-asked
+    #    questions — the quietest failure this axis has, since `findings=0` still printed.
+    got = [q for m in ATTR.finditer("图注：「亮起来的一格就是模型当前能看到的全部」") for q in ONE.findall(m.group(2))]
+    assert got == ["「亮起来的一格就是模型当前能看到的全部」"], "a colon-separated citation is invisible"
+    assert [m.group(1) for m in ATTR.finditer("结论原文是「promising, but early」")] == ["原文"], \
+        "a copula-separated citation is invisible"
+    # 9. the CAP bites. These two lines are deliberately artificial prose — the point is not that anyone
+    #    writes like this, it is that the widening must stay a *short* gap. Unbounded, and every
+    #    bracketed term name anywhere after a verb becomes a citation to vouch for.
+    assert not ATTR.search("原文是为的：「命中率从 20% 提到 80%」"), \
+        "gap cap broken: a 4-character gap still reads as an attribution"
+    assert not ATTR.search("原文要讲的其实是下面这句，改天再说：「命中率从 20% 提到 80%」"), \
+        "gap unbounded: a verb and a far-away quote read as an attribution"
+    # 10. the CLASS bites, and this one is not artificial: it is the two real lines the loose grammar
+    #    would have invented findings out of (measured on this tree — `.{0,3}` reads 19 quotes with
+    #    2 UNMATCHED, the calibrated one 15 with 0). Both quote wording the log is *criticising or
+    #    recording as deleted*, which is exactly what this file's scope rule refuses to vouch for;
+    #    a gap holding content words (抄成了, （…) cannot establish that the verb owns the quote.
+    assert not ATTR.search("把 README 原句抄成了「最宽 1116px，全部落在正文列宽内」"), \
+        "gap untyped: a quoted transcription error reads as a live citation"
+    assert not ATTR.search("被吃掉的第 58 次标题（「上一轮把公式判据落了库」）也回到正文"), \
+        "gap untyped: a bracketed retired heading reads as a live citation"
+    # 11. negated citations. `没有任何一处写着「…」` claims ABSENCE; run through the plain rule it
+    #     would be flagged the moment the handbook honestly says a source omits something.
+    assert negated("**这份契约里没有任何一处写着「你的文档长什么样」**", 13), \
+        "a negated citation is not recognised, so absence-claims get flagged as misquotes"
+    assert not negated("页面里写着「命中率从 20% 提到 80%」", 3), \
+        "negation too broad: an ordinary citation reads as an absence-claim"
+    far = "这一页没有别的图，也没有别的表，下面这句是抄来的原文，写着「命中率从 20% 提到 80%」"
+    assert not negated(far, far.find("写着")), \
+        "negation window too wide: a 没有 three clauses back owns an unrelated citation"
+    # 12. circular evidence. A page quoting an outside source is the corpus's blind spot: the only
+    #     place the wording exists is inside the 「」 being checked.
+    page = "本页写着「这是一句外部原文」，别处不再出现。\n"
+    src = {"a.md": prose_blob(page)}
+    assert not evidenced(norm("这是一句外部原文"), "a.md", 1, page, src), \
+        "a quote counts as verified by finding itself"
+    echoed = page + "\n后面又提了一次「这是一句外部原文」。\n"
+    assert evidenced(norm("这是一句外部原文"), "a.md", 1, echoed, {"a.md": prose_blob(echoed)}), \
+        "independent second occurrence not credited"
+    assert evidenced(norm("这是一句外部原文"), "00-index/changelog.md", 7, "标题「这是一句外部原文」",
+                     {"19-labs/lab.md": prose_blob(echoed)}), \
+        "evidence in another page not credited"
+    print("selftest ok (23 assertions, 12 groups, through ATTR/negated()/evidenced()/find()/grade())")
     return 0
 
 
@@ -329,7 +429,8 @@ def main():
     tally = {}
     for p in files:
         rel = os.path.relpath(p, DOCS).replace("\\", "/")
-        for i, line in enumerate(read(p).splitlines(), 1):
+        text = read(p)
+        for i, line in enumerate(text.splitlines(), 1):
             for m in ATTR.finditer(line):
                 for q in ONE.findall(m.group(2)):
                     s = norm(q.strip("「”“」"))
@@ -337,6 +438,12 @@ def main():
                         continue
                     checked += 1
                     kind, detail = grade(s, srcs)
+                    if kind in ("PROSE", "FIGURE", "UNMATCHED") and negated(line, m.start(1)):
+                        # the claim is that this wording is ABSENT, so neither a find nor a miss
+                        # settles it — report the shape, keep it out of the verified count
+                        kind, detail = "NEGATED", [rel]
+                    elif kind in ("PROSE", "FIGURE") and not evidenced(s, rel, i, text, srcs):
+                        kind, detail = "SELF-EVIDENCED", [rel]
                     tally[kind] = tally.get(kind, 0) + 1
                     if kind == "RETRACTION-NOT-APPLIED":
                         bad += 1
@@ -345,8 +452,13 @@ def main():
                     elif kind == "UNMATCHED":
                         bad += 1
                         print("  UNMATCHED %s:%d  %s「%s」  %s" % (rel, i, m.group(1), q[:40], detail[:2]))
-    print("content sources=%d  attributed quotes=%d  findings=%d  %s"
-          % (len(srcs), checked, bad, tally))
+                    elif kind in ("SELF-EVIDENCED", "NEGATED"):
+                        # not a defect, and not a verification either — printed so the two buckets
+                        # cannot quietly grow into "the axis checked these"
+                        print("  %-14s %s:%d  %s %s" % (kind, rel, i, m.group(1), q[:44]))
+    verified = sum(v for k, v in tally.items() if k in ("PROSE", "FIGURE", "RETRACTED-OK"))
+    print("content sources=%d  attributed quotes=%d  findings=%d  verified=%d  %s"
+          % (len(srcs), checked, bad, verified, tally))
     return 1 if bad else 0
 
 

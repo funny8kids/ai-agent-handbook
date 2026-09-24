@@ -9,6 +9,86 @@ updated: 2026-09-24
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-24（第 72 次）两把尺子各自量不到的那一半：字号轴**看不见图内部的 `scale(k)`**（全站 1127 个标签里 1 个中招，读数 12.80px → 12.16px，浏览器逐像素认了），引用轴**把「动词必须贴着引号」当成了引用的定义**（被归因的引用 12 → 15）；引用轴另外装上「自证」和「否定式引用」两个新桶——`findings=0` 从今往后不再被读成「所有引用都核过」
+
+本轮动正文 0 页、0 张图，判据改动 2 个文件：`tools/checks/check_svg_legibility.py`、`tools/checks/check_quote_fidelity.py`。README 统计不动（196 页 / 19 章没变）。顺带把第 71 轮 §八 那段线上记录改对了：当时写「读者可见那条腿本轮没跟上」，第 24 次探测证明它跟上了（HEAD 之后约 40 分钟），日志不该留下一句比实测更悲观的话。
+
+### 一、字号轴把「画布缩放」当成了唯一的缩放
+
+第 71 轮 §七 第 4 条点名的就是它：有效字号 = 作者字号 × min(1, 列宽/viewBox 宽)，这个式子里没有 SVG **自己内部**的缩放。而 `<g transform="translate(54,140) scale(0.95) translate(-62,-144)">` 是房规里为了把徽章塞进格子常用的手法——它把整组内容连字一起缩了，轴看不见。
+
+改法是 `transform_scale()` / `element_scale()`：沿祖先链把每个 `scale()` / `matrix()` 的**最小轴**乘起来（取最小是因为压扁文字的是短轴），`style="transform:…"` 里的也算。
+
+| 量什么 | 读数 |
+| --- | --- |
+| 落在被缩放组里的标签 | **1127 个里 1 个**（`08-collab-patterns.svg` 的「主管」徽章） |
+| 那个标签的作者字号 | 16.00 → **15.20** px |
+| 768px 读者列里画出来 | 12.80 → **12.16** px（门槛 12.0） |
+| 判决 | 不变：`0 张图 / 1109 个标签越线` |
+
+所以这条**不是修缺陷，是补一条会咬人的守卫**：那个徽章离门槛只有 0.16px，下次谁再给它加一层 `scale(0.9)`，旧尺子会照样报绿灯。分类器多种子第 10 张现在钉着这个分支：`a scale(0.7) ancestor takes a 16px label down to 11.2px`。
+
+**目检用浏览器量，不用我的算术**：把真图内联进 768px 宽的盒子，旁边再放一张同 viewBox、同 `translate/scale` 构造的对照图（16px 缩放 / 15.2px 不缩放 / 16px 不缩放三个样本），让 Edge 报 `getBoundingClientRect()`：
+
+```
+逐字宽度  plain-16px 12.850 | scale(0.95) 12.160 | plain-15.2px 12.160 | 真图那个徽章 12.164
+```
+
+`scale(0.95)×16px` 与 `15.2px` 是**同一笔像素**，真图那个徽章和它们也同一笔——轴现在的说法和浏览器一致。
+
+> 这一腿差点自欺：文字盒子的 **height 是行盒**，浏览器取整（16 与 17），拿高度算比值会得到 0.941 这种看着像 0.95 又不是的假数。宽度是墨迹推进、连续的，所以断言全部改用宽度，比值只当参考。
+
+线上腿复跑 `check_svg_legibility.py`（不带 `--no-live`）`exit=0`：`<main>` 仍是 768，960 画布的图在线上确实按 0.8 缩（`live 02-agent-basics: scales [0.8]`）。
+
+### 二、引用轴把「动词贴着引号」当成了引用存在的条件
+
+旧判据是 `ATTR = VERB + \s* + QUOTE`：动词和引号之间只许有空白。于是 `图注：「…」`、`结论原文是「…」` 这类句子——中间隔一个冒号或系动词——在轴眼里只是「一句带引号的话」，**根本不提问**。按第 71 轮 §七 第 1 条定的规矩先量再修：沿用现有动词表、把间隔放宽到 ≤3 字，全站这样的引用有 2 处（本轮 §八 那段补完之后是 3 处）。
+
+改法是 `GAP = r"[\s，、：:是为的“”\"']{0,3}"`：**被归因的引用 12 → 15**，`findings` 仍是 0。三条新账全部逐字落位：
+
+| 位置 | 句子 | 归因到 |
+| --- | --- | --- |
+| `14-templates/style-guide.md:…` | `图注：图下方空一行写 …` | 房规本身，不涉外部 |
+| `00-index/changelog.md:1164/1165` | 第 55 轮那两条 `页面上的图注原文是…` | `19-labs/lab1-react.md`、`16-ai-infrastructure/prefix-cache-context-engineering.md`（逐字） |
+| `18-frontier-2026/system-one-decision-models.md:107` | `结论原文是「promising, but early」` | 见第三节 |
+
+**间隔不是越宽越好，这一条是变异测试量出来的**：把 `GAP` 换成 `.{0,3}`（不看词表、只看长度），轴的读数变成 `attributed quotes=19 findings=2`。那两条红的都是**日志在复述自己已经改掉的错**——`原句抄成了「最宽 1116px…」`、`被吃掉的第 58 次标题（「上一轮把公式判据落了库」）`——正是本文件 scope rule 拒绝担保的那类。所以那个字符表是校准出来的，不是随手列的：内容词（`抄成了`、`（`）一旦能填进间隔，动词就不真正「拥有」那个引号了。
+
+9 个变异体现在全部被 `--selftest` 抓住（GAP 三种、否定分支三种、自证分支三种）。其中两个是**第一轮活下来、逼我补种子的**：`negation window 12→400` 与 `evidence check always fails`——前者说明我只钉了间隔词表没钉窗口，后者说明跨文件取证那条腿没有专属反例。
+
+### 三、`findings=0` 之前把两种「轴其实没检查」混在 PASS 里报
+
+加宽动词间隔之所以值得配两个新桶，是因为新收进来的引用暴露了这条轴的循环论证：
+
+- **SELF-EVIDENCED**——引号里的话在全站只出现在**它自己那一句**里。知识页引用外部原文就是这个形状：旧判据等于「在自己的引号里找到了自己的引用」，白拿一个 `PROSE`。本轮 1 条。
+- **NEGATED**——句子说的是**没有**一处写着它（`09-frameworks/llamaindex.md:142`：这份契约里没有任何一处写着 …）。旧判据对它是**反的**：它要求那句话在树里找得到，而作者的主张恰恰是它不在。存在证明不了、不存在也证明不了（语料是手册，不是 LlamaIndex 的文档）。今天它靠自证侥幸没红；下一句诚实的「文档里没写「X」」就会红。本轮 1 条。
+
+摘要行因此多了两个数：`attributed quotes=15 findings=0 verified=13`，两个新桶逐条打印，谁也不能把它们读成「核过了」。
+
+那条 SELF-EVIDENCED 的外部引用手工补核了一次（离线轴到不了的地方，按页面自己列出的参考链接抓 LangChain 那篇）：原文确实是 `The results are promising, but early.`，同一行表格里的每个数字也都对得上——5 条固定轨迹、每条 100 次共 500 次判定、与人类标注一致率 100%/99.8%/96.4%/80.0%、单次 $0.00035、总计 $0.34 vs $28.17。**SELF-EVIDENCED 不是指控，是这条脚本在说「这一条我没查」。**
+
+### 四、回归读数（同一棵树 `096126f` + 本轮两个判据文件，正文与图都没动）
+
+| 腿 | 读数 |
+| --- | --- |
+| `check_quote_fidelity --selftest` | `23 assertions, 12 groups` 全对 |
+| `check_quote_fidelity`（写完本条目**之前**） | `sources=230 attributed quotes=15 findings=0 verified=13 {FIGURE 1, RETRACTED-OK 6, PROSE 6, NEGATED 1, SELF-EVIDENCED 1}` |
+| `check_quote_fidelity`（写完本条目**之后**，本轮末读数） | `sources=230 attributed quotes=16 findings=0 verified=14 {FIGURE 1, RETRACTED-OK 6, PROSE 7, NEGATED 1, SELF-EVIDENCED 1}`。多出来那 1 条是本条目第二节表格里 `system-one-decision-models.md:107` 那一行的英文引用——它归因到正文页，跨文件命中所以判 `PROSE`，也就是这条日志被自己新写下的话核了一次。（这一行的数字**不能再含被引号包住的原文**，否则它一边记录读数一边把读数改掉——本行本身因此写成不带括号的指称。） |
+| `check_svg_legibility --no-live` | `labels below 12px at a 768px column: 0 figures, 0 of 1109`；分类器 4 种子里含 scale 那一张 |
+| `check_svg_legibility`（含线上腿） | `exit=0`，`<main>=768`，960 画布 scales `[0.8]` |
+| `check_svg_phase_legibility --selftest` / `--mode all` | `25/25`；`findings: 0 label(s) across 0 figure(s)`，`swept 1063 labels over 456 phases`，未定价 0 |
+| 其余 9 条离线腿 | `check_structure 198 页 problems=0`、`check_nav_h1_sync problems=0`、`check_readme_stats`（README/首页/横幅三口径全对）、`check_char_sanity problems=0`、`check_katex_formulas 108 页 927 式 failures=0`、`check_prose_duplicates exit=0`（3 对 0.73–0.78 的近重复， informational）、`check_source_pointers 191 页 findings=0`、`check_widget_pairing 198 页 problems=0`、`check_changelog_headings HEAD=63 tree=63 lost=0` |
+| 附带复跑 | `check_svg_fit figures with a fatal problem=0 of 32`、`check_content_overflow bar=16px drag -> 0 formulas to fix` |
+
+### 五、留下什么
+
+1. **覆盖率仍然要连着分母读**：markdown 里 ≥6 字的 「…」 串 **2265** 个，被归因语法看见 **15** 个（0.66%）。绝大多数是术语名和小节名，不是引用；但把剩下的分类需要一个判据，而以误报为主的轴没人会信——这条第 71 轮就挂着，本轮没有动它。
+2. `NEGATED` 的 12 字窗口**对今天的语料不承重**：把窗口放宽到 400 字，本轮整棵树读数一模一样（`verified=13`，即「写完本条目之前」那一行的口径）。它是保险，不是当前判决——这一点写在这里，免得后来人以为它在挑毛病。
+3. `SELF-EVIDENCED` 的正解是内容侧的：外部原文该配可抓的链接和明确的「以下为原文」标位，而不是让判据去猜。本轮只把它标出来，没改页面。
+4. 动词表还是闭合词表（本轮新收的 3 条靠的是间隔，不是新动词）。表外动词 = 静默漏检，同第 71 轮第 3 条。
+5. 8 张真实产品截图（PNG）里的字仍然没有任何一根轴能读：图内文字腿只覆盖自绘 SVG。
+6. 第 71 轮那本账原样：102 张超宽 mermaid 在等站点那个开关；静态腿只有 1 个相位；宽版（`--column 1152`）与移动宽度未重测。
+
 ## 2026-09-24（第 71 次）引用回核轴补上它一直读不到的两类字：**画在图里的标签**和 **Mermaid 节点标签**，登记旧措辞改成「旧句消失 + 新句在位」两侧断言；修尺子时又挖出它自己的围栏状态机 bug（会把图后面的整段正文吞掉）——同一棵树上手改前后 `unmatched 3 → 0`
 
 本轮动正文 0 页、0 张图，判据改动 1 个文件 `tools/checks/check_quote_fidelity.py`。README 统计不动。
@@ -88,7 +168,7 @@ updated: 2026-09-24
 | 服务副本图内文字 | 临时腿：把第 65/64 轮登记的**新**措辞在被代理的 SVG 字节里逐条找回来，同时确认**旧**措辞不在 | `assets=2 findings=0`（`拉财报`/`出报告` 在位，`拉财报数据`/`生成报告` 不在；横幅 `196 页` 在位，`187 页` 不在） |
 | 真机渲染目检 | Edge headless 抓线上整页 | 首页 `.tmp-projects/r71_live_home.png`：横幅读作「从原理到生产 · 196 页 / 19 章」、第 70 轮改过色的章节胶囊逐枚可辨；`11-engineering/logging-tracing-monitoring` 整页 `.tmp-projects/r71_live_11.png`（1280×12000）按色块密度切带后目检 band 3：第 68 轮重画的可观测性控制台示意图**在读者列宽里原样画出**，`状态·错误`/`耗时·大于 5 秒`/`查财报 超时` 与那枚红 `×` 全部清晰、无裁切，两级图注都在 |
 
-**读者可见那条腿本轮没跟上**：`check_live_sync.py` 连测 23 次 / 38 分钟，`.md` 腿已经是第 71 次，HTML 腿仍停在第 69 次（`missing 70, 71`，字节数一直锁在 12,879,630）。这不是推送失败——`git ls-remote` 的 `refs/heads/main` 与本地 HEAD 同哈希——而是第 59 轮量过的同一种每页独立滞后（那次 75 分钟），只是又一次证明**它没有常数**。上面那张整页截图因此是「第 69 次那一版页面」画的；本轮 0 页正文变动，被抽查的两张图分别在第 68、70 轮就已上线，所以目检仍然有效。
+**读者可见那条腿一度没跟上，第 24 次探测追平**：`check_live_sync.py` 连测 23 次 / 38 分钟，`.md` 腿已经是第 71 次而 HTML 腿仍停在第 69 次（字节数一直锁在 12,879,630）；第 24 次探测（HEAD 之后约 40 分钟）读到 `leg md newest round=71 (184,267 B) / leg html newest round=71 (14,347,202 B, 359 rounds)`——**本轮线上抽查到此全部通过**。这不是推送失败（`git ls-remote` 的 `refs/heads/main` 与本地 HEAD 同哈希），而是第 59 轮量过的同一种每页独立滞后（那次 75 分钟），只是又一次证明**它没有常数**。上面那张整页截图是在追平之前画的，因此是「第 69 次那一版页面」；本轮 0 页正文变动，被抽查的两张图分别在第 68、70 轮就已上线，所以目检仍然有效。
 
 **这一腿里我自己踩的两个坑，值得留在日志里**（都属于第 62 轮「404 页也照样打印自信数字」那一类）：
 
