@@ -145,7 +145,7 @@ changelog headings: HEAD=79 tree=79 lost=0
 4. **首页两条自移动计数器复测未动**：`prose_units=7414`、`link-graph relative=1582`，与 `docs/README.md` 印的数逐位相同（`check_link_graph` 的 homepage claim 腿同时报 `pages=196 relative=1582 fragments=0 unchecked=0` 全等），所以 §七 那句首页 0 改动是复测出来的，不是沿用的。
 5. **目检腿**：把本节 12–124 行在 900px 列宽里真渲一张 5337px 高的图（Edge headless，`--user-data-dir` 自带 profile），切四片逐片看——§一 的英文围栏渲成代码块且没溢出列宽、§三 变异表和 §五 电池表都没横向溢出、§六 改过标记的那一行粗体范围正确。数裸 `**` 的活没有手写计数器，而是把判据请回来代劳：对整段调 `check_emphasis_flanking.unpaired()` 读空集，再把那一行的标记挪回缺陷形状读 `LEAF-STRONG len=2 word/punct cannot pair`——一次渲图同时证「读者看到的是对的」和「这把尺子看得见错的」。
 
-**本节自己也是移动计数器，而且翻脸比想象快**：这二十来行写完、还没推送时，`--page 00-index/changelog` 从 §五 记的 `MISS=0 STALE-COPY=85` 变成 `units=3438 MISS=18 STALE-COPY=0`——同一批「读者此刻拿不到」的文字，因为换了格子被换了一次名字（原因见 §六 倒数第二条）。推送后这一行重新回到 `MISS=0`，那才是收尾要盯的量。
+**本节自己也是移动计数器，而且翻脸比想象快**：这二十来行写完、还没推送时，`--page 00-index/changelog` 从 §五 记的 `MISS=0 STALE-COPY=85` 变成 `units=3438 MISS=18 STALE-COPY=0`——同一批「读者此刻拿不到」的文字，因为换了格子被换了一次名字（原因见 §六 倒数第二条）。收尾提交推上去、线上追上之后，同一条腿读 `MISS=0 STALE-COPY=0`，全站那条读 `pages=196 units=13149 MISS=0`（上面那块转录里的 13124 是主提交那一趟，差的 25 个单位就是本节自己；这三个数按本轮 §五 第 3 条的规矩各归各的趟，写下这一句的手同样在挪它们），`--page 14-templates` 仍是 `pages=3 units=182 MISS=0`。收尾要盯的自始至终只有 `MISS`。
 
 
 ## 2026-09-25（第 86 次）规范写着「不达标不得标 `published`」，而那张表 **5 行里 0 行**钉了 `type:` 键、`type: lab` 的 6 页连一行都没有：落库 `tools/checks/check_genre_floors.py`，首跑不报「0 问题」而报「尺子断了」，把表绑上键之后 196 页全受管
