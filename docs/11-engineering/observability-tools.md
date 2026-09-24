@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # LangSmith、LangFuse、Phoenix、OpenTelemetry
@@ -38,6 +38,8 @@ Langfuse 的界面把这句话变成了三栏实物：
 ![Langfuse Trace 真实界面：左筛选器与 trace 表、中 span 瀑布、右单步 Input/Output](../.gitbook/assets/screenshots/01-langfuse-trace-ui.png)
 
 *《图：左侧 SPAN 与 GENERATION 分开计数（全项目 7K 对 6）——工具/中间步骤比模型调用高三个量级，钱却全花在那 6 次生成上，这就是按类型分面筛选存在的理由》*
+
+*读图提示：左栏 SPAN 与 GENERATION 的计数、中间瀑布的标签，是 1280px 截图里 13px 的字，排在 608px 列里会缩到 0.475——要点开图片放大，才数得清那 7K 对 6 的差距。*
 
 *来源：Langfuse 官方文档 [langfuse.com/docs/tracing](https://langfuse.com/docs/tracing) 内嵌截图，访问日期 2026-09-22。*
 

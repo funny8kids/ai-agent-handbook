@@ -2,7 +2,7 @@
 tags: [evaluation]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # Agent 评估指标
@@ -110,6 +110,8 @@ flowchart TB
 ![LangSmith 实验对比真实界面：逐用例的多个评估器得分、延迟与 Tokens 同行排列，Heat Map 开关把分数染色](../.gitbook/assets/screenshots/08-langsmith-experiment-ui.png)
 
 *《图：一行一用例、多评估器并排成列，Latency 与 Tokens 和得分同表；那列 Random 稳在 0.5 附近——把随机打分器当对照组跑进来，就能量出 LLM-as-judge 到底比瞎猜强多少》*
+
+*读图提示：表格里的分数、Latency 与 Tokens 都是 1280px 原图上的小字，缩进 608px 列只剩 0.475 倍；点开图片放大，才能逐列核对 Random 那一列到底稳不稳。*
 
 *来源：LangSmith 官方文档 [docs.smith.langchain.com/evaluation](https://docs.smith.langchain.com/evaluation) 内嵌截图，访问日期 2026-09-22。*
 

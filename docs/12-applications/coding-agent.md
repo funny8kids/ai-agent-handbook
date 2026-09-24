@@ -2,7 +2,7 @@
 tags: [application, agent, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 编程 Agent
@@ -76,6 +76,8 @@ flowchart LR
 ![OpenHands Automate 真实界面：左侧会话列表、中间 Active/Inactive 自动化任务卡、下方工作流模板](../.gitbook/assets/screenshots/03-openhands-automate-ui.png)
 
 *《图：五条并行会话各挂「仓库范围·触发时机·模板」三个标签（acme/frontend-app · Weekdays 09:00 · triage-fast），把通用循环固化成定时自动化，每张卡的 Run now 是随时手动插一脚的安全阀》*
+
+*读图提示：五张任务卡上的「仓库范围 · 触发时机 · 模板」标签是 1280px 原图里的小字，压进 608px 正文列后约剩 6px——点开图片按原始尺寸读，标签文字才不粘连。*
 
 *来源：OpenHands 官方仓库 README 的产品截图（[assets.openhands.dev/screenshot/automation-preview.png](https://assets.openhands.dev/screenshot/automation-preview.png)），访问日期 2026-09-22。*
 

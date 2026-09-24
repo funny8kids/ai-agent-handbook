@@ -2,7 +2,7 @@
 tags: [products, general-agent, computer-use, applications]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 通用 Agent 产品
@@ -50,6 +50,8 @@ flowchart TD
 ![Open WebUI 真实界面：模型选择器、内联渲染的图表与表格、可折叠的工具调用流水、右侧工作区文件面板](../.gitbook/assets/screenshots/05-openwebui-chat-ui.png)
 
 *《图：工具调用流水可折叠审计、右侧 Files 面板显式列出工作区、本地与云端模型并列——那句「openpyxl 没装，改用 stdlib zip/XML 解析」正是环境受限时会自己换路、说明理由的分水岭》*
+
+*读图提示：这张是 1040×1082 的竖版截图，排进 608px 列后缩到 0.585，气泡里那句「openpyxl 没装…」会挤成一片——点开图片即可按原始尺寸读全。*
 
 *来源：Open WebUI 官方文档 [docs.openwebui.com](https://docs.openwebui.com) 首页产品图，访问日期 2026-09-22。*
 

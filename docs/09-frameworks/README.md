@@ -2,7 +2,7 @@
 tags: [framework]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 09 框架与生态 · 本章导读
@@ -64,6 +64,8 @@ flowchart LR
 ![Dify 工作流画布真实界面：START→LLM→LLM 节点连线 + 右侧 LLM 节点配置面板](../.gitbook/assets/screenshots/04-dify-workflow-ui.png)
 
 *《图：右侧一个抽屉装下模型/上下文变量/SYSTEM 提示词，左上 Auto-Saved 与右上 Run、Publish 分离——试跑和上线是两个动作，这是低代码编排相对裸代码最实在的便利》*
+
+*读图提示：这张 Dify 画布截图有 1280px 宽，落到 608px 列里缩到 0.475；想看清右侧抽屉里模型与上下文变量的具体取值，点开它（放大后 1216px）再读。*
 
 *来源：Dify 官方文档 [docs.dify.ai/en/guides/workflow/node/llm](https://docs.dify.ai/en/guides/workflow/node/llm) 内嵌截图，访问日期 2026-09-22。*
 

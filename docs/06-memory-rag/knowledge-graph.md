@@ -2,7 +2,7 @@
 tags: [rag, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 知识图谱

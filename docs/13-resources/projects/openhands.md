@@ -2,7 +2,7 @@
 tags: [application, resource]
 type: resource
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # OpenHands
@@ -14,6 +14,8 @@ updated: 2026-09-22
 ![OpenHands Automate 视图真实界面：会话列表 + 自动化任务卡 + 工作流模板](../../.gitbook/assets/screenshots/03-openhands-automate-ui.png)
 
 *《图：Automate 视图把「会话列表 + 定时任务卡 + 工作流模板」排成产品，而非丢给用户一个 CLI 自己悟》*
+
+*读图提示：Automate 视图的标签与模板名按 1280px 原图排到 608px 正文列，缩放只有 0.475——把图片点开放大回原始尺寸，会话列表那一栏才看得清。*
 
 *来源：OpenHands 官方仓库 README 产品截图（[assets.openhands.dev](https://assets.openhands.dev/screenshot/automation-preview.png)），访问日期 2026-09-22。*
 

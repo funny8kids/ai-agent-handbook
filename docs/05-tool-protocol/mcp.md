@@ -2,7 +2,7 @@
 tags: [mcp, tooling]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # MCP：Model Context Protocol
@@ -241,6 +241,8 @@ Client 把这块文本当作工具结果并回对话，模型据此续答。到�
 ![MCP Inspector 真实界面：Tools 列表、Results 结果区、右侧 Messages 协议流水](../.gitbook/assets/screenshots/02-mcp-inspector-ui.png)
 
 *《图：右侧 Messages 流水把每次 JSON-RPC 往返（TOOLS/CALL、RESOURCES/LIST）连 41ms、43ms 耗时一起摊开——协议长什么样，这里比任何规范文本都直观》*
+
+*读图提示：原图 1280px 排进 608px 正文列只剩 0.475 倍，右侧 Messages 那串 41ms、43ms 会糊成一团——点开图片放大到 1216px，逐条 JSON-RPC 往返才读得清。*
 
 *来源：MCP 官方文档 [modelcontextprotocol.io/docs/tools/inspector](https://modelcontextprotocol.io/docs/tools/inspector) 内嵌的 demo 截图，访问日期 2026-09-22。*
 

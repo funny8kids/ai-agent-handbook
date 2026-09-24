@@ -2,7 +2,7 @@
 tags: [framework, multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # AutoGen
@@ -57,6 +57,8 @@ flowchart TD
 ![AutoGen Studio Team Builder 真实界面：左侧团队列表、中间组件库（Agents/Models/Tools/Terminations）、右侧节点连线画布](../.gitbook/assets/screenshots/07-autogen-studio-ui.png)
 
 *《图：组件库里 Terminations(3) 与 Agents/Models/Tools 平级——终止条件被当一等组件（画布那根写着 Max Messages: 10），team 节点只是往插槽里装配的壳》*
+
+*读图提示：组件库那几行小字（Agents/Models/Tools/Terminations）在 1280px 原图里本来只有 13px，被排进 608px 列后只剩约 6px——点开图片按原始尺寸看，画布上那根 Max Messages: 10 才不糊。*
 
 *来源：AutoGen 官方仓库文档截图（microsoft/autogen · `python/packages/autogen-studio/docs/ags_screen.png`），访问日期 2026-09-22。*
 

@@ -2,7 +2,7 @@
 tags: [safety, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # 权限控制与沙箱隔离

@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 部署与扩缩容

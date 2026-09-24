@@ -2,7 +2,7 @@
 tags: [agent, basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # Agent 与 Workflow、Chatbot、Copilot 的区别

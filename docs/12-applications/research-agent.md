@@ -2,7 +2,7 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 研究 Agent

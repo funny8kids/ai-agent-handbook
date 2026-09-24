@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 日志、追踪与监控
@@ -148,6 +148,8 @@ $$
 ![Phoenix Trace Details 真实界面：左侧 span 树带逐级耗时，右侧选中 span 的 prompt 原文与延迟/Tokens 指标](../.gitbook/assets/screenshots/06-arize-phoenix-trace-ui.png)
 
 *《图：左树从 BaseQueryEngine.query 1.00s 一路缩到 OpenAI.chat 0.54s——一半时间花在一个 LLM 调用上不用问人，看条子长度就知道》*
+
+*读图提示：左侧 span 树那些耗时（1.00s、0.54s）写在 1280px 的原图上，进 608px 正文列就缩成约 6px 的小字——点开图片放大到原始尺寸，条子长短与数字才对得上。*
 
 *来源：Arize Phoenix 官方文档 [arize.com/docs/phoenix/tracing/llm-traces](https://arize.com/docs/phoenix/tracing/llm-traces) 内嵌截图，访问日期 2026-09-22。*
 
