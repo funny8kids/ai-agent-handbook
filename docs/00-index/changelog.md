@@ -86,18 +86,18 @@ witness: 2 reader page(s) HEAD~1 touched carry HEAD~1's added text
 
 | 判据 | 读数 |
 |---|---|
-| `check_structure.py` | `pages scanned=198 problems=0`；`mermaid=217 json=79 text=64 markdown=11 yaml=10 (no tag)=9`，可执行语言 0，79 份 json 契约全解析。`text` 从第 86 轮记录的 60 涨到 64 是**本节自己的围栏**加的 4 块（首跑读数与这一行同趟现场再量），这条轴上只有 `executable-tagged=0` 与 `unclosed=0` 是钉死的等式，围栏清单按惯例只报数不锚数 |
+| `check_structure.py` | `pages scanned=198 problems=0`；`mermaid=217 json=79 text=65 markdown=11 yaml=10 (no tag)=9`，可执行语言 0，79 份 json 契约全解析。`text` 从第 86 轮记录的 60 涨到 65 是**本节自己的围栏**加的 5 块（首跑读数与这一行同趟现场再量，§八 收尾又添一块），这条轴上只有 `executable-tagged=0` 与 `unclosed=0` 是钉死的等式，围栏清单按惯例只报数不锚数 |
 | `check_emphasis_flanking.py` | `pages=0 leaked_strong_markers=0 lone_star_runs=1 (context only)` |
 | `check_genre_floors.py` | `pages=196 published=196 graded=159 免检(不限)=37 不可判(同键高档)=40 \| problems=0` |
 | `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0 unreadable=0` |
 | `check_changelog_headings.py` | `HEAD=78 tree=79 lost=1`（`tree=79` 是新增第 87 次那一节；`lost=1` 是本轮按引用轴要求**改写**了第 86 轮的标题，旧那行在 HEAD 里、树里已删——这条腿对「重写一个轮标题」的预期读数就是 `lost=1`，提交后即归零） |
 | `check_prose_survival --selftest` / `check_live_sync --selftest` | `controls: OK`（M / N 两条新控制各跑过变异） |
 | `check_quote_fidelity.py`（上表初稿没有这条腿，收尾补跑） | 首跑 `attributed=23 verified=19 findings=2` → 两处引用改完 + 登记一条撤回后 `attributed=25 verified=23 findings=0`，`PROSE` 命中 11→14、`RETRACTED-OK` 7→8（详见本节末） |
-| `check_prose_survival --page 00-index/changelog` | `units=3420 MISS=0 STALE-COPY=85`（线上发布稿只证到第 242 行，以下全是本轮还没推出的文字，按第 84 轮的语义进 `STALE-COPY` 而不是绿；推送后的尾腿必须读到 MISS=0） |
+| `check_prose_survival --page 00-index/changelog` | 首跑 `units=3420 MISS=0 STALE-COPY=85`（线上发布稿只证到第 242 行，以下全是本轮还没推出的文字，按第 84 轮的语义进 `STALE-COPY` 而不是绿）；§八 收尾那一节写完后同一条腿读 `units=3438 MISS=18 STALE-COPY=0`——**同一个数从 STALE-COPY 变成 MISS**，原因见 §六 最后一条。推送后的尾腿必须回到 MISS=0 |
 
 **这一栏的数字是改过三处才读到的**，如实记下，因为三处都是本轮自己写下的：
 
-1. `text` 围栏从第 86 轮记录的 60 涨到 **64**，差额就是本节自己那 4 块（用 `git show HEAD` 与工作树各数一遍 ` ```text ` 开场：8 → 12）。首跑我在这张表里写的是 60——那是把上一轮的快照当本轮读数抄了一遍，`check_structure.py` 现场再量才露馅。
+1. `text` 围栏从第 86 轮记录的 60 涨到 **65**，差额就是本节自己那 5 块（用 `git show HEAD` 与工作树各数一遍 ` ```text ` 开场：8 → 13）。首跑我在这张表里写的是 60——那是把上一轮的快照当本轮读数抄了一遍，`check_structure.py` 现场再量才露馅。
 2. 强调标记轴在 §六 那一行抓到 **1 个读者可见的裸 `**`**（`pages=1 leaked_strong_markers=1`）：`排除本轮**没动**：` 一行里三对星号，第二对把 `**` 卡在「轮」与「没」之间当闭合用了，第三对前面是汉字、后面是全角冒号，两侧条件都不成立，于是原样印到读者眼前。改成「**……排除，本轮没有动**：」——内容一字未动，只挪了标点和重音范围。这是第 84 轮那条轴**连续第二轮抓到当轮作者刚写下的字**（上一轮是 `style-guide.md` 里 1 页 2 枚，本轮是这里 1 页 1 枚）。修的是这一行的字面排版，判据一个字没动。
 3. 第三件是**计数器自己挪**：本节往更新日志加字，`--page 00-index/changelog` 那条尾腿的 units 与 STALE-COPY 就跟着涨，上表这两个数是最后一趟现场重量的。第 86 轮 §七把「尾腿集合必须覆盖自移动计数器」写进规范之后，本轮第一次在**同一页内**撞上这条：被量的那页正是写这句话的那页。收尾提交前必须再读一次这两个数，而不是沿用本节初稿。
 
@@ -113,13 +113,39 @@ witness: 2 reader page(s) HEAD~1 touched carry HEAD~1's added text
 
 - **`live_aria_manifest.build()` 里的 `14-templates` 排除，本轮没有动**：它现在只是省一次 fetch（模板页没有 widgets/formulas/mermaid），语义无害；但同一段代码里两条排除的**原因不同**，一条已经死了、另一条还活着，未来谁读到这里都可能一起删掉。第 88 轮把这条 docstring 与 §一 那段话对齐。
 - **`UNWITNESSED` 桶的分桶仍未动**（第 86 轮 §八第 1 条留下的账）：`long-context-degradation.md` 那种「本轮只改 Mermaid 指令行颜色」的修订永远进不了 witness——本轮撤 `head_reader_pages` 排除让**这一类**（对模板页的修订）能进，但「没有可切片的中文散文」的那一类**仍需重分桶**。仍是第 88 轮。
-- **新的一条覆盖缺口（§五 末力度量出来的）**：`check_prose_survival.chunks()` 不把标题行算作单位，所以「已发布轮的 H2 标题在线上缺一截 / 被人改坏」这类事它判不了，本轮改第 86 轮标题就是靠引用轴 + 渲染图两道验证。第 88 轮候选：标题进单位集合（要和 `check_nav_titles`、`check_changelog_headings` 的口径对齐，别造出第二条重复腿），或明确写进规范「标题由哪条腿管」。
+- **新的一条覆盖缺口（§五 末力度量出来的）**：`check_prose_survival.chunks()` 不把标题行算作单位，所以「已发布轮的 H2 标题在线上缺一截 / 被人改坏」这类事它判不了，本轮改第 86 轮标题就是靠引用轴 + 渲染图两道验证。第 88 轮候选：标题进单位集合（要和 `check_nav_h1_sync`、`check_changelog_headings` 的口径对齐，别造出第二条重复腿），或明确写进规范「标题由哪条腿管」。
+- **`published_cut()` 分不开「本轮稍后会推」与「平台吞了」**（§五 表格最后一行那次 STALE-COPY→MISS 的翻转就是它）：这条腿拿页面自己印的轮次号给发布稿定位，读者侧已经到第 87 轮时它返回 `None` 走全量判，于是收尾那一节 18 句还没上线的文字读成 `MISS=18` 而不是 `STALE-COPY`。语义上不算错（那 18 句读者此刻确实拿不到），但它和真正的吞句共用同一个格子，收尾时被量的数还会随写作进度翻脸。第 88 轮候选：让这条腿拿发布稿尾部与树逐句对，而不是只取轮次号；**不许**用「收尾别看这条腿」这种约定糊过去。
 - **移交操作者未动**：`knowledge` 子体裁键、emoji 预算措辞、标题跳级 48/271/53、changelog 分页、图注两档合并、608 列宽 `COLUMN-MISMATCH`、未钉死的 Mermaid 文字变量、**GitHub PAT 撤销轮换**。
 - **本轮的元教训**：`check_prose_survival` 从第 83 轮起被 README 当作「读者能不能拿到每一句」的**唯一**判据引用，而它一直有 3 页视而不见——**一个自称为「完整性」的判据，它「不完整」的那部分需要另一条正向控制来钉住，不能靠 docstring 讲道理**。第 88 轮候选：把「一条判据扫了多少页」这件事本身变成一条跨判据的覆盖率对平轴（比如 `walk 覆盖 == status:published 页集合`），任何一把尺子悄悄缩视野都响。
 
 ### 七、改动清单
 
 `tools/checks/check_prose_survival.py`（`walk()` 排除撤回 + 控制 M）· `tools/checks/check_live_sync.py`（`head_reader_pages()` 排除撤回 + 控制 N）· 本页 1 节 + §六 那一行的强调标记位置 1 处（内容未动）+ 引用改写 2 处（§一 docstring 引用改成围栏贴原文；第 86 轮标题里那句规范引用改成原句「不达标不得标 `published`」）。首页统计本轮 0 改动：两条自移动计数器（`prose_units`、`link-graph relative`）现场再量仍与首页写的数一致，所以没有需要重新锚定的徽章。
+
+### 八、收尾：撤回的排除在**线上**追一遍，新覆盖的 3 页第一次拿到 served 读数
+
+主提交推上去只用一条判据定音：`git ls-remote refs/heads/main` 与本地 `HEAD` 逐字符相等（退出码不算证据）。之后本轮 Promise 过的尾腿逐条复跑：
+
+```text
+leg md   newest round=87  (306060 bytes, 143 rounds)
+leg html newest round=87  (23548841 bytes, 508 rounds)
+witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness
+prose survival: pages=196 units=13124 plain=11589 widget=1535 | all
+lost sentences: MISS=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+prose survival: pages=3 units=182 plain=173 widget=9 | all      (--page 14-templates)
+live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
+changelog headings: HEAD=79 tree=79 lost=0
+```
+
+逐条对上本轮的 Promise：
+
+1. **`--page 14-templates` 那一行是本轮的全部目的**：这三页第一次拿到线上侧完整性读数，规范页的每一句都被证实到了读者手里。§四 那句首跑读数因此不再是本地断言。
+2. **`units` 从 §四 的 13038 涨到 13124（+86）**，而 `STALE-COPY` 从 §五 记的 85 归零：§五 第 3 条说的自移动计数器**本轮第一次在线上闭环**——那 86 个单位就是本节自己那批当时还没上线的句子，推送后被发布稿追上，所以尾腿读到的是 `MISS=0 STALE-COPY=0` 而不是 85 条待同步。
+3. **`changelog headings` 由 `lost=1` 归零**，与 §五 表格里预告的「提交后即归零」对平：这条腿对「改写一个轮标题」的预期读数就是 1，不是 0。
+4. **首页两条自移动计数器复测未动**：`prose_units=7414`、`link-graph relative=1582`，与 `docs/README.md` 印的数逐位相同（`check_link_graph` 的 homepage claim 腿同时报 `pages=196 relative=1582 fragments=0 unchecked=0` 全等），所以 §七 那句首页 0 改动是复测出来的，不是沿用的。
+5. **目检腿**：把本节 12–124 行在 900px 列宽里真渲一张 5337px 高的图（Edge headless，`--user-data-dir` 自带 profile），切四片逐片看——§一 的英文围栏渲成代码块且没溢出列宽、§三 变异表和 §五 电池表都没横向溢出、§六 改过标记的那一行粗体范围正确。数裸 `**` 的活没有手写计数器，而是把判据请回来代劳：对整段调 `check_emphasis_flanking.unpaired()` 读空集，再把那一行的标记挪回缺陷形状读 `LEAF-STRONG len=2 word/punct cannot pair`——一次渲图同时证「读者看到的是对的」和「这把尺子看得见错的」。
+
+**本节自己也是移动计数器，而且翻脸比想象快**：这二十来行写完、还没推送时，`--page 00-index/changelog` 从 §五 记的 `MISS=0 STALE-COPY=85` 变成 `units=3438 MISS=18 STALE-COPY=0`——同一批「读者此刻拿不到」的文字，因为换了格子被换了一次名字（原因见 §六 倒数第二条）。推送后这一行重新回到 `MISS=0`，那才是收尾要盯的量。
 
 
 ## 2026-09-25（第 86 次）规范写着「不达标不得标 `published`」，而那张表 **5 行里 0 行**钉了 `type:` 键、`type: lab` 的 6 页连一行都没有：落库 `tools/checks/check_genre_floors.py`，首跑不报「0 问题」而报「尺子断了」，把表绑上键之后 196 页全受管
