@@ -9,7 +9,120 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
-## 2026-09-25（第 86 次）规范写着「按体裁设硬下限，不达标不得 `published`」，而那张表 **5 行里 0 行**钉了 `type:` 键、`type: lab` 的 6 页连一行都没有：落库 `tools/checks/check_genre_floors.py`，首跑不报「0 问题」而报「尺子断了」，把表绑上键之后 196 页全受管
+## 2026-09-25（第 87 次）第 86 轮 §十 现场把 `check_prose_survival.walk()` 的 docstring 前提问倒了：「14-templates/ 不在发布站上」——三份文件全部 `status: published`、H1 都能在 `url_index()` 命中——也就是**载有判据规范的那一页本身，在完整性判据的眼皮底下**；同源第二处（`check_live_sync.head_reader_pages`）也在做同样的排除，第 86 轮主提交对 `style-guide.md` 的读者可见改动**从来没有被 witness 腿追过**
+
+本轮正文 **0 页知识页改动**，只在两把尺子上各撤一处 dirpath 排除 + 各补一条「不许再把这一页装看不见」的控制（M / N），并把第 86 轮主提交的 `style-guide.md` 用新的 witness 腿当场追到 **3/3 needles live**；读者可见文字只动本页（新节 1 个 + 引用改写 2 处 + 第 86 轮标题 1 处）。**没有为过线删掉或加厚任何一页正文**：这条轴修的全是「尺子看不见」。
+
+### 一、缺陷：一处 dirpath skip，两把尺子共用，同一句错前提
+
+`check_prose_survival.walk()` 的旧 docstring 给这条排除的理由，逐字如下（`git show 0b02bf4:tools/checks/check_prose_survival.py` 里 `walk()` 的那三行，原文是英文，所以这里贴原文而不是译述——第 62 轮定下的规矩就是引用不许在「」里改写）：
+
+```text
+`14-templates/` is excluded for the same reason `live_aria_manifest.build` excludes it: those
+files are authoring scaffolding and are not in the published site, so "the page has no
+published address" is their correct shape, not a finding.
+```
+
+而**这段前提本轮现场测伪**：
+
+```text
+knowledge-template.md | h1: 知识点模板 | in index: True | status: published
+resource-template.md  | h1: 资源模板   | in index: True | status: published
+style-guide.md        | h1: 风格指南   | in index: True | status: published
+```
+
+三份文件都 `status: published`，H1 都命中 `live_aria_manifest.url_index()`（这个 index 就是从 `llms.txt` 建的，是权威地址表）——「页没有已发布地址」的形状**不是**它们的正确形状。也就是**载有「体裁硬下限表」+「强调标记规范」+「Mermaid 章色表」这三条硬要求定义的那一页，本身没被完整性判据扫过**。
+
+同源第二处：`check_live_sync.head_reader_pages` 用 `and "14-templates" not in f` 把这条排除搬到了见证腿，也就是**第 86 轮主提交 `0236613` 里 `style-guide.md` 的读者可见改动从来没进过 witness 集合**——上一轮 §六第 2 条刚写下「尾腿集合必须覆盖自移动计数器」，同一份 docstring 里就藏着第二条「尾腿集合必须覆盖所有已发布页」的破口。
+
+排除前提是从 `live_aria_manifest.build` 抄来的，那里它只是**省一次 fetch**（那个 walker 只保留带 widgets/formulas/mermaid 的页，模板页本来就落不进去）。完整性判据没有这个理由。
+
+### 二、修法：两处 dirpath 排除各撤一行，各加一条控制
+
+1. `check_prose_survival.walk()`：删掉 `if "14-templates" in dirpath: continue`，docstring 换成上面这段事实陈述——下一轮作者想再撤，会读到「为什么不该撤」。
+2. `check_live_sync.head_reader_pages()`：把 `"14-templates" not in f` 从条件里摘掉，`00-index/changelog.md` 的排除保留（changelog 有它自己的两条腿，与本轮缺陷无关）。
+3. **两处各补一条正向控制**（见 §三），钉住「覆盖不许静默缩回去」。
+
+### 三、控制 M / N：一条一个 walker，跑过变异
+
+`check_prose_survival.py --selftest` 原本 11 条控制全部围绕「切分/判绿/归因会不会漏判」，没有一条问过「扫到了没有」——那正是这类 bug 藏身的地方。控制 **M** 现读 `len([p for p in walk() if "14-templates" in p]) >= 3` 并且必须**包含 `style-guide.md` 本身**（不只数量够，还要具体那一页在）。
+
+`check_live_sync.py --selftest` 的控制 **N** 从 `git log -1 --format=%H -- docs/14-templates/style-guide.md` 现场找最近一次改到规范页的修订（**不硬编码 rev**，不然下一次改这页它就失效），再要求 `head_reader_pages(that_rev)` 输出包含这条路径。
+
+**变异验证**（一次一把尺子）：
+
+| 变异（把判据改回原样） | 翻掉的控制 | 输出 |
+|---|---|---|
+| `walk()` 里把 dirpath skip 加回来 | 只翻 M | `control M: walk() must cover published 14-templates pages (>=3, incl. style-guide.md), got []` |
+| `head_reader_pages()` 里把 `"14-templates" not in f` 加回来 | 只翻 N | `control N: head_reader_pages(0236613) must include docs/14-templates/style-guide.md, got ['docs/README.md']` |
+
+两条各自独立、各只翻自己那一条，且 N 的输出**顺手指出第 86 轮主提交的 SHA**——上一轮那种「我改了规范页但尺子看不见」的失败模式，从此在 selftest 里就能看见。
+
+### 四、首跑读数：视野从 193 页扩到 196 页，新覆盖的 3 页**恰好合规**
+
+撤掉排除后 `check_prose_survival` 全站扫描：
+
+```text
+prose survival: pages=196 units=13038 plain=11503 widget=1535 | all
+lost sentences: MISS=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+OK: every graded sentence reaches the reader
+```
+
+对比第 86 轮收尾的旧读数（`pages=193 units=12828`）：**+3 页 +210 units，MISS 仍为 0**。也就是说这三页此前**没有**任何读者拿不到的句子——但那是运气（作者写它们的时候手没有滑），不是「有判据在守」。撤回排除的价值是把「运气好」变成「量出来的没问题」，把「作者下轮把 style-guide 写坏」变成能被下一节 §六第 2 条那一类尾腿当场抓住的事。
+
+`--page 14-templates` 单跑读数 `pages=3 units=182 plain=173 widget=9 MISS=0`，也就是 3 页里 9 个 widget 单元（`{% hint %}` 里那句「按下面模板写」的提示也到了读者手里）。
+
+新覆盖的第 2 条腿（撤 `head_reader_pages` 排除）现场追一次第 86 轮主提交：
+
+```text
+witness ok  docs/14-templates/style-guide.md               3/3 added needles live
+witness ok  docs/README.md                                 3/3 added needles live
+witness: 2 reader page(s) HEAD~1 touched carry HEAD~1's added text
+```
+
+——上一轮那条「witness 只报 `README 3/3`」的绿灯，其实漏了同一次提交改的另一半。**本轮不再重跑 §六第 2 条那类尾腿**（`check_live_column` 的 argparse 坑与 `--page 14-templates` 的新探测是同一件事），只在 §六写清下一轮的尾腿要多带一条：witness 已覆盖到规范页，任何改动 `14-templates/*.md` 的那一轮都要现场看它的 3/3 是否兑现。
+
+### 五、离线电池：判据各撤一行排除，读者可见文字只动本页，读数全部保持绿
+
+| 判据 | 读数 |
+|---|---|
+| `check_structure.py` | `pages scanned=198 problems=0`；`mermaid=217 json=79 text=64 markdown=11 yaml=10 (no tag)=9`，可执行语言 0，79 份 json 契约全解析。`text` 从第 86 轮记录的 60 涨到 64 是**本节自己的围栏**加的 4 块（首跑读数与这一行同趟现场再量），这条轴上只有 `executable-tagged=0` 与 `unclosed=0` 是钉死的等式，围栏清单按惯例只报数不锚数 |
+| `check_emphasis_flanking.py` | `pages=0 leaked_strong_markers=0 lone_star_runs=1 (context only)` |
+| `check_genre_floors.py` | `pages=196 published=196 graded=159 免检(不限)=37 不可判(同键高档)=40 \| problems=0` |
+| `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0 unreadable=0` |
+| `check_changelog_headings.py` | `HEAD=78 tree=79 lost=1`（`tree=79` 是新增第 87 次那一节；`lost=1` 是本轮按引用轴要求**改写**了第 86 轮的标题，旧那行在 HEAD 里、树里已删——这条腿对「重写一个轮标题」的预期读数就是 `lost=1`，提交后即归零） |
+| `check_prose_survival --selftest` / `check_live_sync --selftest` | `controls: OK`（M / N 两条新控制各跑过变异） |
+| `check_quote_fidelity.py`（上表初稿没有这条腿，收尾补跑） | 首跑 `attributed=23 verified=19 findings=2` → 两处引用改完 + 登记一条撤回后 `attributed=25 verified=23 findings=0`，`PROSE` 命中 11→14、`RETRACTED-OK` 7→8（详见本节末） |
+| `check_prose_survival --page 00-index/changelog` | `units=3420 MISS=0 STALE-COPY=85`（线上发布稿只证到第 242 行，以下全是本轮还没推出的文字，按第 84 轮的语义进 `STALE-COPY` 而不是绿；推送后的尾腿必须读到 MISS=0） |
+
+**这一栏的数字是改过三处才读到的**，如实记下，因为三处都是本轮自己写下的：
+
+1. `text` 围栏从第 86 轮记录的 60 涨到 **64**，差额就是本节自己那 4 块（用 `git show HEAD` 与工作树各数一遍 ` ```text ` 开场：8 → 12）。首跑我在这张表里写的是 60——那是把上一轮的快照当本轮读数抄了一遍，`check_structure.py` 现场再量才露馅。
+2. 强调标记轴在 §六 那一行抓到 **1 个读者可见的裸 `**`**（`pages=1 leaked_strong_markers=1`）：`排除本轮**没动**：` 一行里三对星号，第二对把 `**` 卡在「轮」与「没」之间当闭合用了，第三对前面是汉字、后面是全角冒号，两侧条件都不成立，于是原样印到读者眼前。改成「**……排除，本轮没有动**：」——内容一字未动，只挪了标点和重音范围。这是第 84 轮那条轴**连续第二轮抓到当轮作者刚写下的字**（上一轮是 `style-guide.md` 里 1 页 2 枚，本轮是这里 1 页 1 枚）。修的是这一行的字面排版，判据一个字没动。
+3. 第三件是**计数器自己挪**：本节往更新日志加字，`--page 00-index/changelog` 那条尾腿的 units 与 STALE-COPY 就跟着涨，上表这两个数是最后一趟现场重量的。第 86 轮 §七把「尾腿集合必须覆盖自移动计数器」写进规范之后，本轮第一次在**同一页内**撞上这条：被量的那页正是写这句话的那页。收尾提交前必须再读一次这两个数，而不是沿用本节初稿。
+
+**另有两处不是数字，是引用轴出声的**——而 §五 上表本来就没列它，本轮收尾补跑才响：`check_quote_fidelity.py` 首跑读 `findings=2`（`attributed quotes=23 verified=19`）。两条都是「写着 + 「」」句式的引用，都不是本轮新写的正文，而是一把常驻尺子从没被要求跑过的那类缺陷：
+
+1. §一 那句 `walk()` docstring 的引用是**中文译述**，而且被引物是 `tools/checks/` 里的 Python docstring——读者拿不到它，引用轴的词表（读者页正文 + 图内文字 + Mermaid 标签）天然查不到。改成围栏贴英文原文（`git show 0b02bf4:tools/checks/check_prose_survival.py` 现场取出那三行），中文解释放在围栏之后。这是第 71 轮「判据看不到出处就是缺陷」的同一类，只不过这次出处是仓库自己的代码。
+2. 第 86 轮**那一节的标题**写着「按体裁设硬下限，不达标不得 `published`」，可规范第八节那里写着「不达标不得标 `published`」——多写了一截「按体裁设硬下限」、少打了一个「标」字。这正是第 62 轮定下的「不许在「」里改写」要抓的形状，标题改成原句之后轴绿。
+3. 改完标题，本节引用那句**旧的错写法**就成了第 62 轮那一类：原句已从树里删掉，日志留它是为了记录这次删改，所以按规矩登记进 `check_quote_fidelity.py` 的 `RETRACTIONS`（`old` 必须全书再也找不到、`new` 必须在它指向的规范页里找得到，两边都判）。登记之后 `RETRACTED-OK` 从 7 涨到 8，`findings` 保持 0——**没有为了让它绿而放宽「原句必须可查」这条**。
+
+第 2 条还顺带量出一条**覆盖缺口**（写进 §六 当第 88 轮候选）：`chunks()` 不把标题行当单位——现场测过，给一行 `## …` 加一句正文，返回的单位列表里只有那句正文。所以「改坏一个已发布轮的 H2 标题」这件事，线上正文完整性轴是**看不见**的；线上那一侧只有 `check_live_sync` 的轮次号腿会追它，而轮次号没变。本轮这一处标题改动的验证手段因此只有两条：离线引用轴（已绿）+ 下面那张真实渲染图。
+
+### 六、留下的账 & 下一轮第一件事
+
+- **`live_aria_manifest.build()` 里的 `14-templates` 排除，本轮没有动**：它现在只是省一次 fetch（模板页没有 widgets/formulas/mermaid），语义无害；但同一段代码里两条排除的**原因不同**，一条已经死了、另一条还活着，未来谁读到这里都可能一起删掉。第 88 轮把这条 docstring 与 §一 那段话对齐。
+- **`UNWITNESSED` 桶的分桶仍未动**（第 86 轮 §八第 1 条留下的账）：`long-context-degradation.md` 那种「本轮只改 Mermaid 指令行颜色」的修订永远进不了 witness——本轮撤 `head_reader_pages` 排除让**这一类**（对模板页的修订）能进，但「没有可切片的中文散文」的那一类**仍需重分桶**。仍是第 88 轮。
+- **新的一条覆盖缺口（§五 末力度量出来的）**：`check_prose_survival.chunks()` 不把标题行算作单位，所以「已发布轮的 H2 标题在线上缺一截 / 被人改坏」这类事它判不了，本轮改第 86 轮标题就是靠引用轴 + 渲染图两道验证。第 88 轮候选：标题进单位集合（要和 `check_nav_titles`、`check_changelog_headings` 的口径对齐，别造出第二条重复腿），或明确写进规范「标题由哪条腿管」。
+- **移交操作者未动**：`knowledge` 子体裁键、emoji 预算措辞、标题跳级 48/271/53、changelog 分页、图注两档合并、608 列宽 `COLUMN-MISMATCH`、未钉死的 Mermaid 文字变量、**GitHub PAT 撤销轮换**。
+- **本轮的元教训**：`check_prose_survival` 从第 83 轮起被 README 当作「读者能不能拿到每一句」的**唯一**判据引用，而它一直有 3 页视而不见——**一个自称为「完整性」的判据，它「不完整」的那部分需要另一条正向控制来钉住，不能靠 docstring 讲道理**。第 88 轮候选：把「一条判据扫了多少页」这件事本身变成一条跨判据的覆盖率对平轴（比如 `walk 覆盖 == status:published 页集合`），任何一把尺子悄悄缩视野都响。
+
+### 七、改动清单
+
+`tools/checks/check_prose_survival.py`（`walk()` 排除撤回 + 控制 M）· `tools/checks/check_live_sync.py`（`head_reader_pages()` 排除撤回 + 控制 N）· 本页 1 节 + §六 那一行的强调标记位置 1 处（内容未动）+ 引用改写 2 处（§一 docstring 引用改成围栏贴原文；第 86 轮标题里那句规范引用改成原句「不达标不得标 `published`」）。首页统计本轮 0 改动：两条自移动计数器（`prose_units`、`link-graph relative`）现场再量仍与首页写的数一致，所以没有需要重新锚定的徽章。
+
+
+## 2026-09-25（第 86 次）规范写着「不达标不得标 `published`」，而那张表 **5 行里 0 行**钉了 `type:` 键、`type: lab` 的 6 页连一行都没有：落库 `tools/checks/check_genre_floors.py`，首跑不报「0 问题」而报「尺子断了」，把表绑上键之后 196 页全受管
 
 本轮正文动 **2 页**（`14-templates/style-guide.md`：第八节表格 + 第三节新增「实验型」体裁小节 + 口径后果一句），首页 1 条统计，判据 1 个新文件。**没有为过线删掉或加厚任何一页正文**：这条轴修的全是「规矩没法判」。
 

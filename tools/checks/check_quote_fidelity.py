@@ -111,6 +111,13 @@ RETRACTIONS = [
      "new": "它不许当等号用",
      "source": "docs/README.md", "billboard": False, "round": 83,
      "why": "这句自我豁免没有判据盯着：读数被后来的正文推了 246 个单元，首页仍印 20 轮前的 7116"},
+    # Round 86's changelog heading paraphrased the style guide (dropped 标, added a clause the guide
+    # never prints); round 87 re-ran this axis at close-out, restored the original wording in the
+    # heading, and the log quotes the paraphrase to record that deletion.
+    {"old": "按体裁设硬下限，不达标不得 `published`",
+     "new": "不达标不得标 `published`",
+     "source": "docs/14-templates/style-guide.md", "billboard": False, "round": 87,
+     "why": "标题里的规范引用是改写不是原句：原句只有一个「标」字，没有前半句"},
 ]
 
 # strings this judge MUST keep finding, each in the source family named by its list

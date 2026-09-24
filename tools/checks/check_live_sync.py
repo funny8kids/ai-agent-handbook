@@ -93,13 +93,21 @@ def sliceable(lines):
 
 
 def head_reader_pages(rev="HEAD"):
-    """`docs/*.md` files REV changed, minus the changelog (that one has its own legs)."""
+    """`docs/*.md` files REV changed, minus the changelog (that one has its own legs).
+
+    Round 87 dropped the `14-templates` clause: the three files under it all carry
+    `status: published`, their H1s resolve in `LA.url_index()`, and `check_prose_survival` now
+    grades them — so a revision that edits the style guide or the knowledge template has real
+    reader-visible prose that the witness leg must be able to track. The old premise ("authoring
+    scaffolding, not on the site") was inherited from `live_aria_manifest.build`, where the same
+    skip is only a work-saver because that walker keeps only widget-bearing pages anyway.
+    """
     out = subprocess.run(["git", "show", "--name-only", "--format=", rev],
                          cwd=os.path.dirname(DOCS), capture_output=True).stdout
     files = [f.decode("utf-8", "replace").strip().replace("\\", "/") for f in out.splitlines()]
     return [f for f in files
             if f.startswith("docs/") and f.endswith(".md") and "SUMMARY.md" not in f
-            and "14-templates" not in f and "00-index/changelog.md" not in f]
+            and "00-index/changelog.md" not in f]
 
 
 def reader_body(path):
@@ -276,6 +284,20 @@ def controls():
             if got != want:
                 errs.append("control: %s (added=%r removed=%r want=%r got=%r)"
                             % (what, added, removed, want, got))
+    # N: coverage. `head_reader_pages` used to drop any path under `docs/14-templates/` on the
+    # premise those pages were authoring scaffolding. Round 87 measured the premise false (all three
+    # are `status: published` with H1s in the URL index), and round 86's own main commit changed
+    # `style-guide.md` — a revision whose reader-visible prose the witness leg should have tracked
+    # and could not. Look up the newest rev that really touched the guide (via git, so this stays
+    # true as history moves) and require it to appear in that rev's reader-page set.
+    guide = "docs/14-templates/style-guide.md"
+    probe = subprocess.run(["git", "log", "-1", "--format=%H", "--", guide],
+                           cwd=os.path.dirname(DOCS), capture_output=True)
+    rev = probe.stdout.decode("utf-8", "replace").strip()
+    if not rev:
+        errs.append("control N: no rev in history touched %s — the coverage probe is blind" % guide)
+    elif guide not in head_reader_pages(rev):
+        errs.append("control N: head_reader_pages(%s) must include %s, got %r" % (rev[:7], guide, head_reader_pages(rev)))
     return errs
 
 

@@ -161,15 +161,17 @@ def chunks(text):
 def walk(root=DOCS):
     """Every markdown page a reader can be sent to.
 
-    `14-templates/` is excluded for the same reason `live_aria_manifest.build` excludes it: those
-    files are authoring scaffolding and are not in the published site, so "the page has no
-    published address" is their correct shape, not a finding.
+    Round 86 close-out measured that `14-templates/` carries three `status: published` pages whose
+    H1s all resolve in `LA.url_index()` — including `style-guide.md`, the page that *defines* the
+    emphasis rules and the genre-floor table every other judge reads. The old dirpath skip was
+    inherited from `live_aria_manifest.build`, where the same filter is only a work-saver (that
+    walker keeps pages with widgets/formulas/mermaid, and a scaffold-only page falls out anyway).
+    A completeness judge has no such reason to look away. Now the only filter is per-file: no
+    published address => nothing to compare, so the row never enters the fetch set (see run()).
     """
     rows = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        if "14-templates" in dirpath.replace("\\", "/"):
-            continue
         for fn in sorted(filenames):
             if fn.endswith(".md") and fn != "SUMMARY.md":
                 rows.append(os.path.join(dirpath, fn))
@@ -383,6 +385,17 @@ def controls():
     if not grade(bold, served_chunks(bold_served.replace("那条轴<strong>", "那条轴"))):
         errs.append("control L: a bold run the platform opened somewhere else must stay a MISS, "
                     "not be paid for by deleting markers")
+    # M: coverage. `walk()` used to `continue` on any dirpath containing `14-templates`, on the
+    # premise those files were not on the site. Round 86 close-out measured that premise false:
+    # all three files carry `status: published` and their H1s resolve in `LA.url_index()`, so the
+    # page that *defines* the emphasis rules had no resident completeness judge. The scan-blind
+    # shape a judge can slide back into is "0 pages graded, 0 problems", so pin a positive floor
+    # on the templates subset and, more sharply, on the guide itself.
+    tpls = [p for p in walk() if "14-templates" in p.replace("\\", "/")]
+    if len(tpls) < 3 or not any(p.replace("\\", "/").endswith("14-templates/style-guide.md")
+                                for p in tpls):
+        errs.append("control M: walk() must cover published 14-templates pages (>=3, incl. "
+                    "style-guide.md), got %r" % (tpls,))
     # G: the list marker. H: the pinned-page cut, which must fire on the page's own round text only.
     items = chunks("1. **这是一条足够长的自测清单项目**：说明部分同样足够长\n")
     if not items or items[0][1].startswith("1 "):
