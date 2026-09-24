@@ -2,7 +2,7 @@
 tags: [frontier, models, agents, 2026]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 18 2026 前沿 · 本章导读
@@ -66,7 +66,7 @@ flowchart TB
 - [GPT-6 Astra](https://openai.com/index/gpt-6-astra/)（OpenAI, 2026-09-09）
 - [Introducing the Agents API](https://openai.com/index/introducing-the-agents-api/)（OpenAI, 2026-09-10）
 - [Claude Fable 5.1 and Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)（Anthropic, 2026-09）
-- [Claude Agent SDK overview](https://docs.claude.com/en/api/agent-sdk/overview)
+- [Claude Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview)
 - [Terminal-Bench 4.0](https://www.tbench.ai/)
 
 ## 读完能做到

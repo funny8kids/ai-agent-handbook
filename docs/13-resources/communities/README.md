@@ -2,7 +2,7 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 社区
@@ -16,12 +16,12 @@ updated: 2026-09-22
 | 社区 | 语言 / 形态 | 适合谁 | 链接 |
 |---|---|---|---|
 | r/LocalLLaMA | 英文 · Reddit | 跑开源权重的人。量化、显存、哪个模型能替换 GPT 的一线问答密度最高 | <https://www.reddit.com/r/LocalLLaMA/> |
-| Hugging Face Discord | 英文 · 即时聊天 | 上 [Agent 课程](https://huggingface.co/learn/agents-course) 的人，作业与 Hub 问题在这里问最快 | <https://hf.co/join/discord> |
+| Hugging Face Discord | 英文 · 即时聊天 | 上 [Agent 课程](https://huggingface.co/learn/agents-course) 的人，作业与 Hub 问题在这里问最快 | <https://discord.com/invite/JfAtkvEtRb> |
 | Hugging Face Forum | 英文 · 论坛 | 报错检索库。训练/推理的坑九成有人贴过全栈日志，比 Discord 好搜 | <https://discuss.huggingface.co/> |
 | EleutherAI Discord | 英文 · 即时聊天 | 做后训练与评测的人，能碰到造轮子的原作者；研究向，不解答入门问题 | <https://www.eleuther.ai/community> |
 | LangChain Forum | 英文 · 论坛 | LangGraph 用户。状态机、checkpoint、持久化的坑基本都有帖 | <https://forum.langchain.com/> |
 | OpenAI Developer Community | 英文 · 论坛 | 踩 API 计费、限流、Agents SDK 的人，官方员工会回帖确认边界行为 | <https://community.openai.com/> |
-| Anthropic Discord | 英文 · 即时聊天 | Claude Code 与 API 限额的一线反馈场，版本变更消息比邮件快 | <https://www.anthropic.com/discord> |
+| Anthropic Discord | 英文 · 即时聊天 | Claude Code 与 API 限额的一线反馈场，版本变更消息比邮件快 | <https://discord.com/invite/6PPFFzqPDZ> |
 | MCP GitHub Discussions | 英文 · issue/讨论 | 写 MCP Server 的人。协议演进与 transport 变更先在这里落地，看 PR 比看文档新 | <https://github.com/modelcontextprotocol/modelcontextprotocol/discussions> |
 | Hacker News | 英文 · 聚合 | 看工程圈怎么拆台新模型与新框架，评论区常有作者本人下场 | <https://news.ycombinator.com/> |
 | LINUX DO | 中文 · Discourse 论坛 | 中文圈最活跃的 AI 工具实操场，网络、代理、部署环境问题问得到人 | <https://linux.do/> |

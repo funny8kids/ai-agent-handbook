@@ -2,7 +2,7 @@
 tags: [computer-use, browser-use, astra, claude]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Computer Use 2026
@@ -194,8 +194,8 @@ AX 树里没有这个节点（自绘控件常见），就换成「『提交』�
 
 - [GPT-6 Astra](https://openai.com/index/gpt-6-astra/)
 - [Claude Fable 5.1 and Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)
-- [OSWorld](https://os-world.github.io/)
-- [Anthropic Computer Use](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [OSWorld](https://osworld-v1.xlang.ai/)
+- [Anthropic Computer Use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 
 ## 相关知识点
 

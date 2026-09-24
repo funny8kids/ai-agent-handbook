@@ -89,7 +89,7 @@ $$
 ## 源码案例
 
 - **DeepSeek Harness 的多模式部署**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：一键起本地全栈；同一内核提供 Headless 模式做服务端部署——开发态与生产态共享运行时，接入面（Surface 层）按场景替换
-- **Claude Code 的多实例并发**（[官方文档](https://docs.anthropic.com/en/docs/claude-code)）：git worktree 隔离支持同仓库多 Agent 并行——「扩容」不只是服务实例，还包括**工作区隔离**这种 Agent 特有维度
+- **Claude Code 的多实例并发**（[官方文档](https://code.claude.com/docs)）：git worktree 隔离支持同仓库多 Agent 并行——「扩容」不只是服务实例，还包括**工作区隔离**这种 Agent 特有维度
 - **Serverless 注意点**：Agent 长任务（>15 分钟）不适合 FaaS 默认超时；要么拆步（每步一个 invocation + checkpoint 续跑），要么用常驻 Worker
 
 ## 生产清单

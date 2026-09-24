@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 缓存与成本优化
@@ -215,7 +215,7 @@ flowchart LR
 
 ## 参考资料
 
-- [Anthropic: Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+- [Anthropic: Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
 - [LiteLLM](https://github.com/BerriAI/litellm)（多模型路由与成本记账）
 - [How we built our multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system)
 

@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 错误处理、重试与降级
@@ -218,7 +218,7 @@ $$
 
 ## 参考资料
 
-- [AWS Builders Library：超时、重试与带抖动的退避](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+- [AWS Builders Library：超时、重试与带抖动的退避](https://builder.aws.com/content/3EumjoZascWd1oZiEgL8ORlv3qE/timeouts-retries-and-backoff-with-jitter)
 - [Google SRE Book：Handling Overload（过载与重试风暴的处置）](https://sre.google/sre-book/handling-overload)
 - [tenacity（Python 重试策略的事实标准库）](https://github.com/jd/tenacity)
 - [SWE-agent（把失败轨迹回灌进下一步的重试设计）](https://github.com/SWE-agent/SWE-agent)

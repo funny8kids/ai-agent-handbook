@@ -2,7 +2,7 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 浏览器自动化
@@ -84,7 +84,7 @@ flowchart TD
 
 - **Playwright MCP**（[microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)）：微软官方，把页面转 accessibility 快照、用 ref 引用元素——主流 harness 均可直接接入；读它的工具定义（click/fill/snapshot）就是「DOM 路线工具设计」的标准答案
 - **browser-use**（[GitHub](https://github.com/browser-use/browser-use)）：开源视觉 + DOM 混合 Agent，自带重试与等待策略；其源码是学习「页面变化时的工程兜底」（元素找不到 → 滚动 → 截图 → 视觉定位）的最佳材料
-- **Claude Computer Use 参考实现**（[文档](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)）：虚拟桌面 + 截图循环，适合非浏览器 GUI；「每天从快照重置环境」的设计值得所有自动化项目借鉴
+- **Claude Computer Use 参考实现**（[文档](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)）：虚拟桌面 + 截图循环，适合非浏览器 GUI；「每天从快照重置环境」的设计值得所有自动化项目借鉴
 - **真实工作流**：用浏览器 MCP 做「写完代码 → 自动打开页面验证 UI」的闭环——编程与浏览器自动化组合的典型生产力场景
 
 ## 常见误区
@@ -103,7 +103,7 @@ flowchart TD
 
 - [Playwright 文档](https://playwright.dev/) / [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)
 - [browser-use](https://github.com/browser-use/browser-use)
-- [Anthropic: Computer Use](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Anthropic: Computer Use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 
 ## 相关知识点
 

@@ -71,10 +71,10 @@ flowchart TD
 ## 参考资料
 
 - [OpenHands GitHub](https://github.com/All-Hands-AI/OpenHands)
-- [官方文档](https://docs.all-hands.dev/)
+- [官方文档](https://docs.openhands.dev/overview/introduction)
 - [项目论文（arXiv:2407.16741）](https://arxiv.org/abs/2407.16741)
 - [CodeAct 论文：可执行代码动作（arXiv:2402.01030）](https://arxiv.org/abs/2402.01030)
-- [官网 All Hands AI](https://www.all-hands.dev/)
+- [官网 OpenHands](https://www.openhands.dev/)
 
 ## 相关知识点
 

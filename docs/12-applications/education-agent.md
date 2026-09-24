@@ -2,7 +2,7 @@
 tags: [application]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 教育 Agent
@@ -54,7 +54,7 @@ $$
 
 ## 源码案例
 
-- **可汗学院 Khanmigo**（[官网](https://www.khanacademy.org/khan-labs)）：GPT-4 时代苏格拉底辅导的标杆产品——「不直接给答案」写进系统 prompt 的产品级实践；其公开的设计理念文章是教育 Agent prompt 设计的必读材料
+- **可汗学院 Khanmigo**（[官网](https://www.khanmigo.ai/)）：GPT-4 时代苏格拉底辅导的标杆产品——「不直接给答案」写进系统 prompt 的产品级实践；其公开的设计理念文章是教育 Agent prompt 设计的必读材料
 - **Speak / 多邻国 Max**：语言学习场景的对话练习 + 即时纠错——「角色扮演 + 发音/语法反馈」的工具组合模式；2026 后普遍叠加实时语音链路，延迟与打断模型见 [实时语音 Agent](voice-agent.md)
 - **斯坦福小镇的方法迁移**（[论文](https://arxiv.org/abs/2304.03442)）：其「记忆流 + 反思」架构被广泛用于学情记忆——把学生的历史错误作为情景记忆检索，辅导时「记得你上次栽在负数上」
 - **托管 harness 路线**：一节课级连续辅导需要长会话压缩、子 Agent 并行（答疑 Agent + 批改 Agent + 规划 Agent），可对照 [OpenAI Agents API](../18-frontier-2026/openai-agents-api.md) 与 [Claude Agent SDK](../18-frontier-2026/claude-agent-sdk.md) 的能力面；开源参考仍是各类 AI tutor 模板，重点看 system prompt 如何平衡「提示」与「给答案」
@@ -91,7 +91,7 @@ $$
 
 ## 参考资料
 
-- [Khanmigo / Khan Academy Labs](https://www.khanacademy.org/khan-labs)
+- [Khanmigo / Khan Academy Labs](https://www.khanmigo.ai/)
 - [Generative Agents](https://arxiv.org/abs/2304.03442)（Stanford，学情记忆方法迁移来源）
 - [Hugging Face Agents Course（免费系统课，含辅导型 Agent 单元）](https://huggingface.co/learn/agents-course)
 

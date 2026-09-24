@@ -2,7 +2,7 @@
 tags: [resource, evaluation]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 基准测试
@@ -26,7 +26,7 @@ updated: 2026-09-22
 | AgentBench | 八场景综合 | <https://github.com/THUDM/AgentBench> |
 | ToolBench / BFCL | 工具调用 | <https://gorilla.cs.berkeley.edu/leaderboard> |
 | Terminal-Bench | 终端操作 | <https://www.tbench.ai/> |
-| OSWorld | 真实桌面环境 | <https://os-world.github.io/> |
+| OSWorld | 真实桌面环境 | <https://osworld-v1.xlang.ai/> |
 | τ-bench | 客服域工具+策略遵守 | <https://github.com/sierra-research/tau-bench> |
 
 ## 使用基准的三条纪律

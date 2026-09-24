@@ -2,7 +2,7 @@
 tags: [frontier, models, decision-models, system-one, agents, 2026]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # System One 决策模型：不生成文字的 Jev
@@ -153,7 +153,7 @@ $$
 - [What Is Jev? A Guide to TypeSafe AI's System One Model — LangChain](https://www.langchain.com/blog/building-a-harness-with-jev)（middleware 接入：风险门与模型路由）
 - [Can Jev Be a Better Agent Evaluator? — LangChain](https://www.langchain.com/blog/jev-agent-evals-langsmith)（评估器对照实验与数字）
 - [JEV Classifier: 5.43x as Fast as Haiku, 96% Lower Cost — LiteLLM](https://docs.litellm.ai/blog/jev-auto-router-benchmark)（第三方基准与其自陈局限）
-- [A new kind of AI model from a ChatGPT inventor — TechCrunch](https://techcrunch.com/2026-09-18/a-new-kind-of-ai-model-from-a-chatgpt-inventor-is-thrilling-developers/)（团队与舆论面）
+- [A new kind of AI model from a ChatGPT inventor — TechCrunch](https://techcrunch.com/2026/09/18/a-new-kind-of-ai-model-from-a-chatgpt-inventor-is-thrilling-developers/)（团队与舆论面）
 
 ## 相关知识点
 

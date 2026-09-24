@@ -2,7 +2,7 @@
 tags: [framework]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # LlamaIndex
@@ -162,7 +162,7 @@ flowchart LR
 
 ## 源码案例
 
-- **SentenceWindowNodeParser**（[文档](https://docs.llamaindex.ai/)）：检索时以「句」为单位匹配、返回时带上下文窗口——解决「切太碎丢上下文」的经典方案；配合 AutoMergingRetriever 自动合并父块。读这两个组件胜过读十篇 RAG 调优博客
+- **SentenceWindowNodeParser**（[文档](https://developers.llamaindex.ai/python/framework/)）：检索时以「句」为单位匹配、返回时带上下文窗口——解决「切太碎丢上下文」的经典方案；配合 AutoMergingRetriever 自动合并父块。读这两个组件胜过读十篇 RAG 调优博客
 - **LlamaHub**（[首页](https://llamahub.ai)）：数百个数据连接器与现成模板——找你的数据源（飞书/Notion/数据库/网盘）是否已有连接器，往往是选型第一站
 - **LlamaCloud**：官方托管的解析/索引/检索服务——把「解析烂 PDF」这个 RAG 最大痛点产品化，可作为自建管线的质量基准
 
@@ -190,7 +190,7 @@ flowchart LR
 
 ## 参考资料
 
-- [LlamaIndex 官方文档](https://docs.llamaindex.ai/)
+- [LlamaIndex 官方文档](https://developers.llamaindex.ai/python/framework/)
 - [LlamaIndex GitHub](https://github.com/run-llama/llama_index)
 - [RAG 原始论文](https://arxiv.org/abs/2005.11401)（Lewis et al., 2020）
 

@@ -2,7 +2,7 @@
 tags: [framework, basics]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # LangChain：框架用法与选型
@@ -180,7 +180,7 @@ LangChain 的真实价值在集成层：几十种向量库、文档加载器、�
 
 ## 参考资料
 
-- [LangChain 官方文档](https://python.langchain.com)
+- [LangChain 官方文档](https://docs.langchain.com/oss/python/langchain/overview)
 - [LangChain GitHub](https://github.com/langchain-ai/langchain)
 - [LangGraph 文档](https://langchain-ai.github.io/langgraph/)
 

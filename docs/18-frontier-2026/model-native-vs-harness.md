@@ -2,7 +2,7 @@
 tags: [harness, architecture, taxonomy, agents]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 模型原生 vs 自建 Harness
@@ -114,7 +114,7 @@ $$
 ## 参考资料
 
 - [Introducing the Agents API](https://openai.com/index/introducing-the-agents-api/)
-- [Agent SDK overview](https://docs.claude.com/en/api/agent-sdk/overview)
+- [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview)
 - [earendil-works/pi](https://github.com/earendil-works/pi)
 - [openai/codex](https://github.com/openai/codex)
 

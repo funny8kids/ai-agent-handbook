@@ -2,7 +2,7 @@
 tags: [infrastructure, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 训练与微调基础设施
@@ -204,7 +204,7 @@ QLoRA 训练出的适配器上线前，要把 merge 与否想清楚——合并�
 
 ## 参考资料
 
-- [PEFT / LoRA](https://github.com/huggingface/peft)、[DeepSpeed](https://github.com/deepspeedai/DeepSpeed)、[PyTorch FSDP](https://pytorch.org/docs/stable/fsdp.html)、[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)
+- [PEFT / LoRA](https://github.com/huggingface/peft)、[DeepSpeed](https://github.com/deepspeedai/DeepSpeed)、[PyTorch FSDP](https://docs.pytorch.org/docs/stable/fsdp.html)、[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)
 - [TRL（SFT/DPO/PPO 一体）](https://github.com/huggingface/trl)、[OpenRLHF](https://github.com/OpenRLHF/OpenRLHF)
 
 ## 相关知识点

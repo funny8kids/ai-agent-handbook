@@ -113,7 +113,7 @@ flowchart TB
 
 *读图提示：表格里的分数、Latency 与 Tokens 都是 1280px 原图上的小字，缩进 608px 列只剩 0.475 倍；点开图片放大，才能逐列核对 Random 那一列到底稳不稳。*
 
-*来源：LangSmith 官方文档 [docs.smith.langchain.com/evaluation](https://docs.smith.langchain.com/evaluation) 内嵌截图，访问日期 2026-09-22。*
+*来源：LangSmith 官方文档 [docs.langchain.com/langsmith/evaluation](https://docs.langchain.com/langsmith/evaluation) 内嵌截图，访问日期 2026-09-22。*
 
 三个细节值得抄：① **一行一个用例，多个评估器并排成列**（`Hallucination` / `Helpful` / `Random`），于是「同一条输出幻觉满分但有用性 0 分」这种冲突会直接摊在眼前——单一总分会把它抹平；② `Latency` 和 `Tokens` 与得分同表，**慢和贵会被当成质量问题一起看**，而不是等成本月报才发现；③ 那列 `Random` 稳定在 0.5 附近——把随机打分器当对照组跑进同一张表，是检验「LLM-as-judge 到底比瞎猜强多少」最省事的做法，正好对应本节前面那条 judge 可信度。
 
@@ -124,7 +124,7 @@ flowchart TB
 ## 源码案例与工具
 
 - **Ragas**（[GitHub](https://github.com/explodinggradients/ragas) / [论文](https://arxiv.org/abs/2309.15217)）：RAG 专项评估（忠实度、答案相关性、上下文精确率/召回率）——检索与生成分开打分，是分环节评估的工程落地
-- **LangSmith 评估流**（[文档](https://docs.smith.langchain.com/)）：数据集 + 评估器（规则/LLM judge）+ 实验对比的完整闭环；把每次 prompt 改动变成一次「实验」
+- **LangSmith 评估流**（[文档](https://docs.langchain.com/langsmith/observability)）：数据集 + 评估器（规则/LLM judge）+ 实验对比的完整闭环；把每次 prompt 改动变成一次「实验」
 - **OpenAI Agents SDK**（[文档](https://openai.github.io/openai-agents-python/)）：内置 tracing + evaluation 钩子，Agent 运行即产出可评估轨迹
 - **SWE-bench 的启示**（[仓库](https://github.com/princeton-nlp/SWE-bench)）：编程任务用「测试通过」做客观指标——凡是有可执行验证的任务，优先用程序化指标
 

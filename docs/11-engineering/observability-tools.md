@@ -119,7 +119,7 @@ flowchart TB
 
 | 方案 | 类型 | 优势 | 适合 |
 |---|---|---|---|
-| [LangSmith](https://docs.smith.langchain.com/) | SaaS | 与 LangChain 无缝、评估/数据集/实验管理一体 | LangChain/LangGraph 深度用户 |
+| [LangSmith](https://docs.langchain.com/langsmith/observability) | SaaS | 与 LangChain 无缝、评估/数据集/实验管理一体 | LangChain/LangGraph 深度用户 |
 | [LangFuse](https://github.com/langfuse/langfuse) | 开源（MIT 核心） | 自托管、成本追踪细、多语言 SDK | 要数据主权 + 全框架 |
 | [Phoenix](https://github.com/Arize-ai/phoenix) | 开源 | RAG 评估强、trace 可视化 | RAG 重度项目 |
 | [OpenTelemetry](https://opentelemetry.io/docs/specs/semconv/gen-ai/) | 协议标准 | 厂商中立、接企业现有观测栈 | 大企业统一观测 |
@@ -241,7 +241,7 @@ RAG 重度项目优先：检索命中与生成质量放在同一张联合 trace 
 
 ## 源码案例
 
-- **Claude Code 的 OTel 支持**（[官方文档](https://docs.anthropic.com/en/docs/claude-code)）：企业可把使用指标、工具调用统计导出到自有 OTel 后端——「开发工具也要接企业观测」的行业信号
+- **Claude Code 的 OTel 支持**（[官方文档](https://code.claude.com/docs)）：企业可把使用指标、工具调用统计导出到自有 OTel 后端——「开发工具也要接企业观测」的行业信号
 - **LangFuse 的成本追踪**（[GitHub](https://github.com/langfuse/langfuse)）：按模型/用户/会话聚合 token 与费用，读它的用量计算逻辑可理解成本归因设计
 - **Phoenix 的 RAG 评估视图**（[GitHub](https://github.com/Arize-ai/phoenix)）：检索命中与生成质量的联合 trace 视图——调试「答非所问」时能直接看到是「检索就错了」还是「生成跑偏了」
 
@@ -268,7 +268,7 @@ RAG 重度项目优先：检索命中与生成质量放在同一张联合 trace 
 ## 参考资料
 
 - [OpenTelemetry GenAI 语义约定](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [LangFuse](https://github.com/langfuse/langfuse) / [Phoenix](https://github.com/Arize-ai/phoenix) / [LangSmith](https://docs.smith.langchain.com/)
+- [LangFuse](https://github.com/langfuse/langfuse) / [Phoenix](https://github.com/Arize-ai/phoenix) / [LangSmith](https://docs.langchain.com/langsmith/observability)
 - [Google SRE Book: Monitoring Distributed Systems](https://sre.google/sre-book/monitoring-distributed-systems/)
 
 ## 相关知识点

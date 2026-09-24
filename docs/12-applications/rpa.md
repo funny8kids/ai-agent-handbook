@@ -52,7 +52,7 @@ $$
 ## 源码案例与生态
 
 - **UiPath / Microsoft Power Automate 的 LLM 化**：传统 RPA 双雄都已内置 LLM 活动（文档理解、邮件分类）——「脚本为主、模型为辅」的渐进路线，存量流程平滑升级
-- **Computer Use 路线的 RPA**（[Anthropic 文档](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)）：无 API 的老系统（绿屏、桌面客户端）用视觉路线接管——传统 RPA 啃不动的最硬骨头；配合每日虚拟机快照重置保证环境纯净。2026 前沿模型在桌面 GUI 上的分数与 partial/strict 读法见 [Computer Use 2026](../18-frontier-2026/computer-use-2026.md)（如 Astra 的 OSWorld 2.0 partial 72.6%、Fable 5.1 partial 77.9% / strict 41.7%——配置不同，不可直接混比）
+- **Computer Use 路线的 RPA**（[Anthropic 文档](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)）：无 API 的老系统（绿屏、桌面客户端）用视觉路线接管——传统 RPA 啃不动的最硬骨头；配合每日虚拟机快照重置保证环境纯净。2026 前沿模型在桌面 GUI 上的分数与 partial/strict 读法见 [Computer Use 2026](../18-frontier-2026/computer-use-2026.md)（如 Astra 的 OSWorld 2.0 partial 72.6%、Fable 5.1 partial 77.9% / strict 41.7%——配置不同，不可直接混比）
 - **browser-use**（[GitHub](https://github.com/browser-use/browser-use)）：Web 流程的轻量替代——比传统 RPA 的浏览器录制的适应性更强
 - **Playwright MCP**（[GitHub](https://github.com/microsoft/playwright-mcp)）：把浏览器操作标准化为工具，RPA 场景可直接编排调用
 - **DeepSeek Harness 的流水线借鉴**（[仓库](https://github.com/deepseek-ai/deepseek-harness)）：其「Hook → 审批 → 权限 → 沙箱 → 超时」的执行管道 + append-only 审计，正是合规型 RPA 需要的执行骨架
@@ -90,7 +90,7 @@ $$
 
 - [GPT-6 Astra](https://openai.com/index/gpt-6-astra/)
 - [Claude Fable 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1)
-- [Anthropic Computer Use](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Anthropic Computer Use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 - [browser-use](https://github.com/browser-use/browser-use) · [Playwright MCP](https://github.com/microsoft/playwright-mcp)
 
 ## 相关知识点

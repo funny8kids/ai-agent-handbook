@@ -2,7 +2,7 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # Graph of Thoughts
@@ -87,7 +87,7 @@ ToT 是一个人尝试三条路、走不通退回来；GoT 是三个人各走一
 ## 源码案例
 
 - **GoT 论文官方实现**（[spcl/graph-of-thoughts](https://github.com/spcl/graph-of-thoughts)）：ETH 组的开源库，用「Controller + 思考图」的架构实现排序、集合运算、关键词抽取等任务，是理解聚合操作语义的最好材料
-- **Map-Reduce 汇总**（[LlamaIndex 文档](https://docs.llamaindex.ai/)）：超长文档先分块并行总结（map，多条思路），再合并成总纲（reduce，聚合）——GoT「聚合」的生产化形态；LangGraph 的 reducer 模式同理
+- **Map-Reduce 汇总**（[LlamaIndex 文档](https://developers.llamaindex.ai/python/framework/)）：超长文档先分块并行总结（map，多条思路），再合并成总纲（reduce，聚合）——GoT「聚合」的生产化形态；LangGraph 的 reducer 模式同理
 - **多 Agent 辩论**（[AutoGen](https://github.com/microsoft/autogen)）：多个 Agent 各自给方案再互相批评合并，本质是 GoT「精炼 + 聚合」在多 Agent 场景的映射（→ [辩论、共识与投票](../08-multi-agent/debate-consensus-voting.md)）
 
 ## 常见误区

@@ -2,7 +2,7 @@
 tags: [application, rag]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 企业知识库
@@ -85,7 +85,7 @@ flowchart TB
 
 ## 源码案例
 
-- **LlamaIndex 企业模板**（[文档](https://docs.llamaindex.ai/)）：连接器矩阵（SharePoint/Confluence/飞书/Google Drive）+ 权限感知检索——企业接入的第一站
+- **LlamaIndex 企业模板**（[文档](https://developers.llamaindex.ai/python/framework/)）：连接器矩阵（SharePoint/Confluence/飞书/Google Drive）+ 权限感知检索——企业接入的第一站
 - **Qdrant / Weaviate 的多租户过滤**（[Qdrant](https://github.com/qdrant/qdrant)）：payload 过滤在检索层强制执行，无权文档根本不进候选——权限即元数据
 - **GraphRAG 用于跨文档问题**（[microsoft/graphrag](https://github.com/microsoft/graphrag)）：「我们部门去年 Q3 的整体结论是什么」这类汇总型问题，GraphRAG 的社区摘要比逐条检索更合适（→ [GraphRAG](../06-memory-rag/graphrag.md)）
 
@@ -105,7 +105,7 @@ flowchart TB
 
 - [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)（Lewis et al., 2020）
 - [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217)（Es et al., 2023）
-- [LlamaIndex 文档](https://docs.llamaindex.ai/) / [Qdrant](https://github.com/qdrant/qdrant)
+- [LlamaIndex 文档](https://developers.llamaindex.ai/python/framework/) / [Qdrant](https://github.com/qdrant/qdrant)
 
 ## 相关知识点
 

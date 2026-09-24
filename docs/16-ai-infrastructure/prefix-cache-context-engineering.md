@@ -2,7 +2,7 @@
 tags: [infrastructure, rag, memory, advanced]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 前缀缓存与上下文工程
@@ -193,8 +193,8 @@ MCP 挂了三个 Server，每轮拼接顺序随连接时序变化，命中率在
 
 - [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)、[vLLM Automatic Prefix Caching 文档](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html)
 - 各家 Prompt Caching 说明（Anthropic / OpenAI / Google 定价页，字段与折扣差异较大，以官方为准）
-- [Anthropic Prompt Caching 文档（折扣与 TTL 的原文）](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
-- [OpenAI Prompt Caching 指南（自动缓存的计费口径）](https://platform.openai.com/docs/guides/prompt-caching)
+- [Anthropic Prompt Caching 文档（折扣与 TTL 的原文）](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+- [OpenAI Prompt Caching 指南（自动缓存的计费口径）](https://developers.openai.com/api/docs/guides/prompt-caching)
 
 ## 相关知识点
 

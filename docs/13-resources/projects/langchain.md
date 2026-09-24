@@ -2,7 +2,7 @@
 tags: [framework, resource]
 type: resource
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # LangChain：项目档案与点评
@@ -14,7 +14,7 @@ updated: 2026-09-23
 | 属性 | 内容 |
 |---|---|
 | 类型 | 开源项目（框架） |
-| 链接 | <https://github.com/langchain-ai/langchain> · [文档](https://python.langchain.com) |
+| 链接 | <https://github.com/langchain-ai/langchain> · [文档](https://docs.langchain.com/oss/python/langchain/overview) |
 | 来源 | LangChain Inc. |
 | 协议 | MIT |
 | 难度 | 入门 |
@@ -143,7 +143,7 @@ LLM 圈争议最多的框架，但价值经常被用错位置：拿它当业务�
 
 ## 参考资料
 
-- [LangChain 文档](https://python.langchain.com)
+- [LangChain 文档](https://docs.langchain.com/oss/python/langchain/overview)
 - [新版统一文档站](https://docs.langchain.com/)
 - [LangChain GitHub](https://github.com/langchain-ai/langchain)
 - [LangGraph 文档](https://langchain-ai.github.io/langgraph/)

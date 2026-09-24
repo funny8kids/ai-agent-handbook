@@ -185,7 +185,7 @@ flowchart LR
 ## 源码案例
 
 - **LlamaIndex**（[GitHub](https://github.com/run-llama/llama_index)）：为 RAG 而生的框架，上面那四步契约就是它的全部主线（读文档 → `from_documents` 建索引 → `as_query_engine(similarity_top_k=3)` → 提问）；进阶看它的 `SentenceWindowNodeParser`（句窗检索）与 `AutoMergingRetriever`（自动合并父块）——两个经典「切块两难」解法
-- **LangChain 的 RAG 教程**（[文档](https://python.langchain.com/docs/tutorials/rag/)）：生产级管线模板（加载→切分→存储→检索→生成），适合对照理解每个环节的可替换点
+- **LangChain 的 RAG 教程（Deep Agents 形态）**（[文档](https://docs.langchain.com/oss/python/deepagents/rag)）：生产级管线模板（加载→切分→存储→检索→生成），适合对照理解每个环节的可替换点
 - **Anthropic 的多 Agent 研究系统**（[工程博客](https://www.anthropic.com/engineering/built-multi-agent-research-system)）：其 Lead Agent 把「搜索」拆给多个子 Agent 并行 RAG，披露了 token 消耗与准确率的真实权衡——RAG 与多 Agent 组合的一手工程数据
 
 ## 常见误区

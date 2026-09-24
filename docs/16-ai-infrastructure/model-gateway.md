@@ -2,7 +2,7 @@
 tags: [infrastructure, engineering, tooling]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 模型网关与路由
@@ -233,7 +233,7 @@ in / out / cached 三类 token **分开记账**（cached 通常按输入价 1 �
 ## 参考资料
 
 - [LiteLLM](https://github.com/BerriAI/litellm)、[Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway)、[OpenRouter](https://openrouter.ai/docs)
-- [限流与退避](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+- [限流与退避](https://builder.aws.com/content/3EumjoZascWd1oZiEgL8ORlv3qE/timeouts-retries-and-backoff-with-jitter)
 
 ## 相关知识点
 

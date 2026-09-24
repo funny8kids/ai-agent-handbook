@@ -95,7 +95,7 @@ $$
 
 - [GPT-6 Astra: The next generation in intelligence for work](https://openai.com/index/gpt-6-astra-next-generation-work/)
 - [Claude 产品线](https://claude.com/product/overview)
-- [Computer Use（Anthropic 文档）](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Computer Use（Anthropic 文档）](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 - [browser-use](https://github.com/browser-use/browser-use)
 
 ## 相关知识点

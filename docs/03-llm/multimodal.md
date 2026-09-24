@@ -2,7 +2,7 @@
 tags: [llm, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 多模态模型
@@ -87,7 +87,7 @@ flowchart LR
 
 ## 源码案例
 
-- **Claude 的 Computer Use**（[官方文档](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)）：模型输出「点击坐标 + 键盘输入」的结构化动作，依赖视觉模态对截图的精确理解；配合「截图 → 行动 → 再截图」的循环执行 GUI 任务，见 [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
+- **Claude 的 Computer Use**（[官方文档](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)）：模型输出「点击坐标 + 键盘输入」的结构化动作，依赖视觉模态对截图的精确理解；配合「截图 → 行动 → 再截图」的循环执行 GUI 任务，见 [Computer Use / Browser Use](../05-tool-protocol/computer-use-browser-use.md)
 - **开源多模态模型**：Qwen-VL（[论文](https://arxiv.org/abs/2308.12966)）、Llama 3.2 Vision、MiniCPM-V 等（[Hugging Face](https://huggingface.co/models?pipeline_tag=image-text-to-text)）可本地部署，适合对数据隐私敏感的文档处理 Agent
 - **CLIP / ViT**（[CLIP 论文](https://arxiv.org/abs/2103.00020) / [ViT 论文](https://arxiv.org/abs/2010.11929)）：理解「图文如何对齐」「图像如何变成 token」的两篇奠基工作
 
@@ -107,7 +107,7 @@ flowchart LR
 - [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020)（Radford et al., 2021，CLIP）
 - [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)（Dosovitskiy et al., 2020，ViT）
 - [Qwen-VL: A Versatile Vision-Language Model for Understanding, Localization, Text Reading, and Beyond](https://arxiv.org/abs/2308.12966)（Bai et al., 2023）
-- [Anthropic: Computer Use](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Anthropic: Computer Use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 
 ## 相关知识点
 

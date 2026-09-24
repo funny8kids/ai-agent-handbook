@@ -2,7 +2,7 @@
 tags: [framework, multi-agent, resource]
 type: resource
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # CrewAI：项目档案与点评
@@ -68,7 +68,7 @@ flowchart TB
 
 - [CrewAI GitHub](https://github.com/crewAIInc/crewAI)
 - [官方文档](https://docs.crewai.com)
-- [官网](https://www.crewai.com/)
+- [官网](https://crewai.com/)
 
 ## 相关知识点
 

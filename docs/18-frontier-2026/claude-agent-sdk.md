@@ -2,7 +2,7 @@
 tags: [claude, agent-sdk, harness, framework]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Claude Agent SDK
@@ -303,10 +303,10 @@ Permissions、Hooks、Skills 全部写在 `.claude/` 里并由 SDK 加载，配�
 
 ## 参考资料
 
-- [Agent SDK overview](https://docs.claude.com/en/api/agent-sdk/overview)
+- [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview)
 - [Claude Agent SDK TypeScript](https://github.com/anthropics/claude-agent-sdk-typescript)
 - [Claude Agent SDK Python](https://github.com/anthropics/claude-agent-sdk-python)
-- [A harness for every task（工程博客）](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code)
+- [A harness for every task（工程博客）](https://claude.dev/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code/)
 - [Legal and compliance（品牌与命名条款）](https://code.claude.com/docs/en/legal-and-compliance)
 
 ## 相关知识点

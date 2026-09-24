@@ -2,7 +2,7 @@
 tags: [resource]
 type: index
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 博客
@@ -17,7 +17,7 @@ updated: 2026-09-22
 
 - [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) —— Anthropic。工作流 vs Agent 的工程共识，全书引用最多的一篇
 - [How we built our multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system) —— Anthropic。多 Agent 成本/收益/失败模式的一手数据
-- [Claude Code: Best practices](https://www.anthropic.com/engineering/claude-code-best-practices) —— Anthropic（现跳转至 code.claude.com 文档）。Coding Agent 的使用方法论
+- [Claude Code: Best practices](https://code.claude.com/docs/en/best-practices) —— Anthropic。Coding Agent 的使用方法论
 - [DeepSeek Harness 发布解读](https://www.sohu.com/a/1062640652_122014422) —— InfoQ。一切皆插件架构的中文深度报道
 
 ## 博客清单

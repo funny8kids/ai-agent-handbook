@@ -2,7 +2,7 @@
 tags: [framework, advanced]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # LangGraph：框架用法与选型
@@ -219,7 +219,7 @@ checkpoint 重放会重复执行节点。若节点直接下单、发信、写库
 
 - [LangGraph 官方文档](https://langchain-ai.github.io/langgraph/)
 - [LangGraph GitHub（含模板库）](https://github.com/langchain-ai/langgraph)
-- [LangChain 文档](https://python.langchain.com)
+- [LangChain 文档](https://docs.langchain.com/oss/python/langchain/overview)
 
 ## 相关知识点
 

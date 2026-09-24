@@ -2,7 +2,7 @@
 tags: [tooling, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # Computer Use / Browser Use
@@ -46,7 +46,7 @@ flowchart LR
 
 - **Playwright MCP**（[microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp)）：微软官方实现，把页面转成结构化快照，模型用 `ref` 引用元素操作而非坐标——token 省一个数量级、可靠性大增，浏览器自动化的首选底座
 - **browser-use**（[GitHub](https://github.com/browser-use/browser-use)）：开源 GUI 自动化框架，DOM + 视觉混合定位，自带失败重试与元素等待策略，是目前 Star 最高的 browser-use 实现，源码是学习「GUI Agent 工程兜底」的活教材
-- **Claude 的 Computer Use API**（[文档](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)）：模型输出 `screenshot / click / type / key` 等动作原语，官方参考实现（agent loop + Docker 沙箱）开源在 anthropic-quickstarts 仓库——虚拟机隔离 + 每日快照重置的安全模型值得细读
+- **Claude 的 Computer Use API**（[文档](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)）：模型输出 `screenshot / click / type / key` 等动作原语，官方参考实现（agent loop + Docker 沙箱）开源在 anthropic-quickstarts 仓库——虚拟机隔离 + 每日快照重置的安全模型值得细读
 - **DeepSeek Harness 与 Pi 的选择**：两者都未把 Computer Use 做成核心内置，而是通过工具/MCP 扩展接入——GUI 自动化的成熟度尚不足以成为 harness 的一等公民
 
 ## 最佳实践
@@ -114,7 +114,7 @@ $$
 
 ## 参考资料
 
-- [Anthropic Computer Use 工具文档（截图-坐标循环的官方规范）](https://docs.anthropic.com/en/docs/agents-and-tools/computer-use)
+- [Anthropic Computer Use 工具文档（截图-坐标循环的官方规范）](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool)
 - [Playwright MCP（有 DOM 时的首选替代）](https://github.com/microsoft/playwright-mcp)
 - [browser-use（网页任务闭环的开源实现）](https://github.com/browser-use/browser-use)
 - [OpenAI Agents SDK（Computer Use / 浏览器工具的另一种抽象层）](https://openai.github.io/openai-agents-python/)

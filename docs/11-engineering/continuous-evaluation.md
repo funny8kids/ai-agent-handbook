@@ -2,7 +2,7 @@
 tags: [engineering, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-24
 ---
 
 # 持续评估
@@ -94,7 +94,7 @@ flowchart TB
 
 ## 源码案例
 
-- **LangSmith 的实验管理**（[文档](https://docs.smith.langchain.com/)）：dataset → experiment → 对比视图，每次变更生成一份「成绩单」；配 CI 可在 PR 里直接显示评估结果
+- **LangSmith 的实验管理**（[文档](https://docs.langchain.com/langsmith/observability)）：dataset → experiment → 对比视图，每次变更生成一份「成绩单」；配 CI 可在 PR 里直接显示评估结果
 - **LangFuse + 定时评估**（[GitHub](https://github.com/langfuse/langfuse)）：线上 trace 按比例抽样跑 LLM-judge 评分，趋势入看板——「线上持续评估」的开源自托管方案
 - **promptfoo**（[GitHub](https://github.com/promptfoo/promptfoo)）：轻量 prompt 回归工具，YAML 定义用例矩阵（prompt × 模型 × 断言），本地/CI 都能跑
 - **SWE-bench Verified 的启示**（[仓库](https://github.com/princeton-nlp/SWE-bench)）：人工核验过的 500 题成为全行业共同标尺——**评估集的质量与可信度本身就是工程资产**
@@ -115,7 +115,7 @@ flowchart TB
 
 - [SWE-bench: Can Language Models Resolve Real-World GitHub Issues?](https://arxiv.org/abs/2310.06770)（Jimenez et al., 2023）
 - [RAGAS: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217)（Es et al., 2023）
-- [LangSmith 文档](https://docs.smith.langchain.com/) / [promptfoo](https://github.com/promptfoo/promptfoo)
+- [LangSmith 文档](https://docs.langchain.com/langsmith/observability) / [promptfoo](https://github.com/promptfoo/promptfoo)
 
 ## 相关知识点
 
