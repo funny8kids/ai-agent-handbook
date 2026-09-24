@@ -250,6 +250,12 @@ def build(sample, want_all):
     index = url_index()
     rows = []
     for dirpath, _, filenames in os.walk(DOCS):
+        # Only a work-saver, and only for this axis: the pages below carry no widgets, formulas or
+        # mermaid, so `expect_of()` would return an empty expectation for each. This is NOT a claim
+        # that they are unpublished — round 86 close-out measured that all three have
+        # `status: published` and resolve in `url_index()`, which is why `check_prose_survival.walk()`
+        # dropped its copy of this filter and judges them. Delete this line and nothing goes blind;
+        # it just fetches three pages whose expected structure is `nothing`.
         if "14-templates" in dirpath.replace("\\", "/"):
             continue
         for fn in sorted(filenames):

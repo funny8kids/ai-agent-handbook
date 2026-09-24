@@ -21,8 +21,18 @@ the served page.
     line is exactly what goes missing.
   - a chunk is a sentence-run split on 。；;！？ — long enough that an accidental substring match
     costs real text, short enough that a finding names the words the reader lost.
-  - heading lines (`#`, `##`, ...) are not units: `check_nav_h1_sync.py` already judges those,
-    and GitBook reprints heading text in its own TOC, which would let the body hide a gap.
+  - `##`-and-deeper heading lines are units of their own (`kind` is `heading`). Round 87 left that
+    as an open account: no live axis had ever read a published heading, so a section title that
+    disappeared from the page — or lost the words that carry its TOC entry — stayed green everywhere.
+    A body `# H1` is still excluded, because GitBook drops it and publishes the SUMMARY label in its
+    place (measured round 55); `check_nav_h1_sync.py` owns that equality and this judge does not
+    duplicate it. A heading shorter than the sentence floor is not graded either: two characters can
+    match anywhere in the body, so the leg's resolution limit is 14 normalized characters.
+  - `>` blockquote lines are units too (`kind` is `quote`). Round 88 measured what the old skip cost:
+    42 such lines on 32 pages, which produce 57 units on 28 of them — prose a reader sees inside a
+    styled box, which this judge had walked past since the day it was written. An image line (`![…]`)
+    is still skipped: its alt text is not the page's body copy, and the picture itself is another
+    axis's object (controls T-U).
   - a bare `<https://…>` autolink ends a unit exactly like a link does: the published page prints
     the address itself between the two halves of the sentence, so a joined unit could never match.
   - a reference with no terminating `;` stays literal text on the authored side, because that is what
@@ -33,6 +43,16 @@ the served page.
     provably finished. Round 83 measured the live changelog holding round 79's heading but not the
     close-out prose added to that section after the push — a revision gap no fetch can distinguish,
     so that one section is graded a round late rather than forgiven.
+  - that history anchor is a blunt instrument: it says nothing about a page with no round numbers,
+    and nothing about an edit made in the round the page already reached (round 87's own addendum
+    read `MISS=3` for eight minutes for exactly that reason). So a loss is also excused — as
+    `REVISION-BEHIND`, not `MISS` — when the published copy prints, in the gap between the two
+    sentences the tree still agrees with, a run containing wording the tree has nowhere at all.
+    A revision adds words and then loses old ones; a renderer swallow only makes tree words
+    adjacent, so a glued-together run of tree text (what round 88's live mutation control produced)
+    can never excuse itself. The excuse is local to that gap and requires both anchors to be unique
+    on the page; a swallow one section away stays a `MISS` (controls N-S). `check_live_sync.py`
+    owns the lag itself.
   - `body_visible()` (nav-stripped served text) is the target, so a chunk cannot pass by
     matching the sidebar.
   - chunks inside a GitBook widget body (`{% tabs %}`, `{% stepper %}`, ...) are graded, but in a
@@ -40,6 +60,12 @@ the served page.
     and "the SSR markup has no room for it" is not yet a reader defect. The bucket must stay
     empty to claim the SSR leg covers them; when it is not, name the pages and check them in a
     browser.
+
+  - the homepage sentence that advertises this judge is read back against its own counters
+    (`homepage_parity()`): how many pages it claims to walk, and how many planted controls it names.
+    Round 87 recorded that as its open account — a scope that shrinks in silence is the one failure
+    mode a completeness judge cannot report about itself, and this axis's object is exactly "what
+    this file chose to read".
 
 A green here is only as good as the fetch: a page that could not be downloaded proves nothing, so
 fetch failures go to their own bucket and exit non-zero, never to "0 problems" (round 59's split).
@@ -61,6 +87,14 @@ DOCS = os.path.join(REPO, "docs")
 
 MIN_CHUNK = 14          # normalized characters, spaces excluded
 SENT_END = re.compile(r"[。；;！!？?]")
+# Where the published page may not be read as one continuous sentence: the enders, plus the strings
+# the platform inserts into the reader's text (its assistant button after every cell and section end,
+# its search box, its opener prompts). Round 88's mutation control proved a glued-together run of
+# ordinary table cells can otherwise be pointed at as "proof" that a swallowed sentence was only a
+# revision gap.
+CHROME = re.compile(SENT_END.pattern +
+                    r"|gitbook assistant|ask gitbook|powered by gitbook|ctrl\+?[ik]"
+                    r"|what should i read next|can you give an example|\bsend\b", re.I)
 # A markup name never starts with a digit: round 83 measured the changelog's own prose `（W<420 且 H>380，
 # 宽高比 <0.55）`, and a permissive `<...>` pattern deleted `420 且 H` from the authored side, turning a
 # perfectly published sentence into a MISS. Entities arrive from the platform already escaped (`&lt;`),
@@ -108,13 +142,14 @@ def frontmatter_end(lines):
 
 
 def chunks(text):
-    """[(kind, chunk, line)] for every authored prose sentence-run; kind is 'plain' or 'widget'.
+    """[(kind, chunk, line)] for every authored sentence-run a reader should be able to find.
 
-    A chunk never straddles a code span, a formula, a link, a `<br>` or a widget tag, because the
-    published page does not print those as plain text either: KaTeX ships its own characters
-    between two halves of a sentence, so a joined unit could never match and the MISS would be
-    the ruler's, not the reader's. Round 83's first pass on one page read 19 MISS, and every
-    single one was a straddle, a fence/formula body or a tag attribute.
+    kind is 'plain' (prose), 'heading' (an `##`-and-deeper title), 'quote' (a `>` blockquote line)
+    or 'widget' (a line inside a `{% %}` component body). A chunk never straddles a code span, a formula, a link, a `<br>` or a
+    widget tag, because the published page does not print those as plain text either: KaTeX ships
+    its own characters between two halves of a sentence, so a joined unit could never match and the
+    MISS would be the ruler's, not the reader's. Round 83's first pass on one page read 19 MISS,
+    and every single one was a straddle, a fence/formula body or a tag attribute.
     """
     lines = text.replace("\r\n", "\n").split("\n")
     mask, _ = LA.fence_prose_mask(text)
@@ -126,8 +161,25 @@ def chunks(text):
         if s == "$$":                                   # a display block is not prose
             display = not display
             continue
-        if display or not s or s.startswith(("#", ">")) or s.startswith("!["):
+        if display or not s or s.startswith("!["):
             continue
+        heading = quote = False
+        if s.startswith(">"):
+            # A blockquote is the reader's own sentence, printed inside a styled box. Round 88
+            # measured 42 such lines on 32 pages, which produce 57 units on 28 of them —
+            # prose this judge had been walking straight past.
+            quote = True
+            s = re.sub(r"^>+\s*", "", s).strip()
+            if not s:
+                continue
+        if s.startswith("#"):
+            # A body `# H1` is deliberately excluded: measured in round 55, GitBook drops it and
+            # publishes the SUMMARY label as the reader's heading, so grading it would report the
+            # platform's documented swap as a swallow. `check_nav_h1_sync.py` owns that equality.
+            if not re.match(r"^#{2,6} +\S", s):
+                continue
+            heading = True
+            s = s.lstrip("#").strip()
         # GitBook numbers an ordered list with CSS, so the "1." the author typed is nowhere in the
         # served text. Round 83 measured this on four pages and every one of their 30 losses was
         # this: a self-test item graded as "the reader never got 1 …" while the item is fully there.
@@ -142,7 +194,8 @@ def chunks(text):
                 depth += 1
         body = INLINE_MATH.sub(HOLE, LINK.sub(HOLE, AUTOLINK.sub(HOLE, BR.sub(HOLE, body))))
         body = HTML_TAG.sub(" ", body)
-        kind = "widget" if (depth or on_tag_line) else "plain"
+        kind = ("heading" if heading else ("widget" if (depth or on_tag_line)
+                                           else ("quote" if quote else "plain")))
         for pi, part in enumerate(body.split(HOLE)):
             for i, piece in enumerate(SENT_END.split(decode_as_platform(part))):
                 if pi == 0 and i == 0 and ordered:
@@ -241,6 +294,100 @@ def grade(units, served_norm):
             if re.sub(r"\s+", " ", u) not in flat]
 
 
+def served_only_sentences(html_text, nflat, tree_norm):
+    """Published sentences the authored file has nowhere, minus platform chrome.
+
+    The served text is cut on the sentence enders *and* on the strings the platform inserts — the
+    "gitbook assistant" label it tacks after every table cell and section end (round 83), its
+    search box and its opener prompts. Round 88's live mutation control is what proved this
+    necessary: hiding one real sentence let the judge point at a neighbouring piece that read
+    `gitbook assistant 8 张真实产品 ui 截图 目录内 url 与访问日期 …`, i.e. a list of ordinary table
+    cells glued together by button labels. Cut at the labels, each cell is tree text again and the
+    false proof disappears.
+
+    Positions are into `nflat`, the same view the anchors are located in: `LA.norm` turns every run
+    of markup/punctuation into one space, so a sentence found here and a sentence found there are
+    coordinates in one ruler. Against the punctuated copy a normalized sentence would simply fail
+    to be found, and the bucket would silently never fire.
+    """
+    speech = decode_as_platform(html.unescape(HTML_TAG.sub(" ", LA.body_visible(html_text))))
+    out, start = [], 0
+    for cut in CHROME.finditer(speech):
+        piece, start = speech[start:cut.start()], cut.end()
+        u = re.sub(r"\s+", " ", LA.norm(piece)).strip()
+        if len(u.replace(" ", "")) < MIN_CHUNK or not says_something_new(u, tree_norm) \
+                or nflat.count(u) != 1:
+            continue
+        out.append((nflat.index(u), u))
+    return sorted(out)
+
+
+def says_something_new(u, tree_norm):
+    """Does this published run say a word the authored tree never says anywhere?
+
+    This is what separates the two failures the run's text could evidence:
+
+      - a *revision* — the published page is an older copy of this region, so it carries wording the
+        tree has deleted. At least one of its stretches exists nowhere in the tree.
+      - a *swallow* — the page is the tree with a hole punched in it, so whatever the page prints
+        around the hole is tree text, merely adjacent. Nothing is new; the difference is all
+        subtraction.
+
+    Round 88's live mutation control is the case that forced the distinction: hiding one sentence in
+    the changelog's figure table glued `8 张真实产品 ui 截图 目录内 …` into a run the tree has nowhere,
+    and that run excused the very deletion that produced it. Every word of it came from the tree.
+
+    `LA.norm` leaves one stretch per run of CJK/alphanumerics, so a `token` here is a whole phrase,
+    not a character — which is why a two-character floor is enough to keep single digits and letters
+    from counting as novelty.
+    """
+    return any(t not in tree_norm for t in u.split(" ") if len(t) > 1)
+
+
+def classify(units, flat, html_text, tree_norm):
+    """(rows, evidence) for the units a reader cannot find.
+
+    rows are [(kind, line, chunk, verdict, excuser)]; verdict is MISS or REVISION-BEHIND, and an
+    excuser is the [(position, sentence)] entry that proved it — the published copy's own older
+    wording, carried on the row it excuses rather than printed from the top of the page.
+
+    `published_cut()` dates a page that prints round numbers, and says nothing about a page that
+    does not — nor about a same-round close-out edit. Round 87 measured that hole twice on its own
+    page: its addendum read `MISS=3` for eight minutes while the served copy still printed the
+    previous commit's wording of that very paragraph, and the round anchor had already returned
+    None because the reader *was* at round 87.
+
+    So the evidence is made local instead: a loss is an unreleased revision only when the published
+    copy prints, in the gap between the two sentences the tree still agrees with, a sentence that
+    says something the tree never says anywhere (see `says_something_new`). That is a different
+    revision of *this* region, and nothing excuses a swallow one section away — the anchors must be
+    unique on the page, or the judge keeps the failure.
+    """
+    nflat = re.sub(r"\s+", " ", LA.norm(flat))
+    present = [re.sub(r"\s+", " ", u) in flat for _k, u, _l in units]
+    evidence = served_only_sentences(html_text, nflat, tree_norm)
+    rows = []
+    for i, (kind, u, ln) in enumerate(units):
+        if present[i]:
+            continue
+        before = next((j for j in range(i - 1, -1, -1) if present[j]), None)
+        after = next((j for j in range(i + 1, len(units)) if present[j]), None)
+        verdict, excuser = "MISS", None
+        if before is not None and after is not None:
+            prev_n = re.sub(r"\s+", " ", LA.norm(units[before][1]))
+            next_n = re.sub(r"\s+", " ", LA.norm(units[after][1]))
+            # A unit present in the punctuated copy is present in this view too, so a unique hit
+            # here means the two anchors bracket exactly one region of the published page.
+            if nflat.count(prev_n) == 1 and nflat.count(next_n) == 1:
+                lo = nflat.index(prev_n) + len(prev_n)
+                hi = nflat.index(next_n)
+                in_gap = [it for it in evidence if lo <= it[0] < hi]
+                if in_gap:
+                    verdict, excuser = "REVISION-BEHIND", in_gap[0]
+        rows.append((kind, ln, u, verdict, excuser))
+    return rows, evidence
+
+
 def fetch_page(url):
     # A reset connection is noise, not a swallowed sentence, so one retry; a page that survives two
     # attempts is still a bucket of its own and still exits non-zero (round 83 saw two SSL resets).
@@ -277,6 +424,8 @@ def run(sample=None, workers=6, only=None):
     problems, fetch_fail, pages_lost = [], [], []
     total = sum(len(r["units"]) for r in picked)
     plain = sum(1 for r in picked for k, _u, _l in r["units"] if k == "plain")
+    heading = sum(1 for r in picked for k, _u, _l in r["units"] if k == "heading")
+    quote = sum(1 for r in picked for k, _u, _l in r["units"] if k == "quote")
     with ThreadPoolExecutor(max_workers=workers) as pool:
         # pool.map keeps the input order, so a row is graded against its own page and one HTML
         # document is held in memory at a time (the changelog alone is 18 MB).
@@ -294,26 +443,77 @@ def run(sample=None, workers=6, only=None):
             # document, whose round-79 section had since been amended by its own close-out commit);
             # text below it, or on a page with no round history, the renderer swallowed.
             cut = published_cut(r["text"], served)
-            stale = [x for x in lost if cut and x[1] < cut]
-            miss = [x for x in lost if not (cut and x[1] < cut)]
-            pages_lost.append((r["page"], len(miss), len(stale), len(r["units"]), cut, miss[:3]))
-            for tag, items in (("MISS", miss), ("STALE-COPY", stale)):
-                for kind, ln, u in items:
+            rows, _evidence = classify(r["units"], flat, served,
+                                        re.sub(r"\s+", " ", LA.norm(r["text"])))
+            unreleased = [t for t in rows if cut and t[1] < cut]
+            rest = [t for t in rows if not (cut and t[1] < cut)]
+            behind = [t for t in rest if t[3] == "REVISION-BEHIND"]
+            miss = [t for t in rest if t[3] == "MISS"]
+            pages_lost.append((r["page"], len(miss), len(unreleased), len(r["units"]), cut,
+                               miss[:3], len(behind), behind[:1]))
+            for tag, items in (("MISS", miss), ("REVISION-BEHIND", behind), ("STALE-COPY", unreleased)):
+                for kind, ln, u, _v, _exc in items:
                     problems.append("%s %s %s:%d %s" % (tag, kind.upper(), r["page"], ln, u))
     n_miss = sum(p[1] for p in pages_lost)
     n_stale = sum(p[2] for p in pages_lost)
-    print("prose survival: pages=%d units=%d plain=%d widget=%d | %s" %
-          (len(picked), total, plain, total - plain, _label))
-    print("lost sentences: MISS=%d STALE-COPY=%d | pages-with-MISS=%d fetch-failures=%d not-listed=%d"
-          % (n_miss, n_stale, sum(1 for p in pages_lost if p[1]), len(fetch_fail), _unl))
-    for pg, nm, ns, nu, cut, sample in sorted(pages_lost, key=lambda p: (-p[1], -p[2]))[:12]:
-        print("   %-44s MISS=%-4d unpublished=%-4d of %d units%s"
-              % (pg, nm, ns, nu, "" if not cut else "  (published copy proves nothing below line %d)" % cut))
-        for kind, ln, u in sample:
+    n_behind = sum(p[6] for p in pages_lost)
+    print("prose survival: pages=%d units=%d plain=%d heading=%d quote=%d widget=%d | %s" %
+          (len(picked), total, plain, heading, quote, total - plain - heading - quote, _label))
+    print("lost sentences: MISS=%d REVISION-BEHIND=%d STALE-COPY=%d | pages-with-MISS=%d "
+          "fetch-failures=%d not-listed=%d"
+          % (n_miss, n_behind, n_stale, sum(1 for p in pages_lost if p[1]), len(fetch_fail), _unl))
+    for pg, nm, ns, nu, cut, sample, nb, bsample in sorted(pages_lost, key=lambda p: (-p[1], -p[6], -p[2]))[:12]:
+        print("   %-44s MISS=%-4d behind=%-4d unpublished=%-4d of %d units%s"
+              % (pg, nm, nb, ns, nu, "" if not cut else "  (published copy proves nothing below line %d)" % cut))
+        for kind, ln, u, _v, _exc in sample:
             print("       %s:%d %s" % (kind.upper(), ln, u[:70]))
+        if nb:
+            bkind, bln, bu, _v, exc = bsample[0]
+            print("       e.g. %s:%d %s" % (bkind.upper(), bln, bu[:60]))
+            print("       excused because the published copy prints this instead, and the tree "
+                  "has it nowhere (offset %d): %s" % (exc[0], exc[1][:60]))
     for f in fetch_fail[:10]:
         print("   FETCH", f)
-    return n_miss, n_stale, len(fetch_fail) + len(unlabeled if _label == "all" else [])
+    return n_miss, n_stale, len(fetch_fail) + len(unlabeled if _label == "all" else []), n_behind
+
+
+def control_letters():
+    """The control letters this file asserts on, read back out of its own source."""
+    src = io.open(os.path.abspath(__file__), encoding="utf-8").read()
+    return sorted(set(re.findall(r'errs\.append\("control ([A-Z])', src)))
+
+
+def homepage_parity():
+    """The homepage's two numbers about this judge must be this judge's own numbers.
+
+    Round 87's meta-lesson was that a completeness judge is trusted for a scope nobody measures: its
+    视野 shrank by three published pages and every one of its own controls stayed green, because a
+    control can only fire inside the text the walker hands it. This is that alarm, and it reads the
+    page a reader reads: 「把 N 篇正文。」「N 条种植控制（A–T）」 must equal `len(walk())` and the
+    letters asserted above. Adding a page costs nothing; adding a control without telling the reader
+    does not pass.
+    """
+    out = []
+    line = next((l for l in io.open(os.path.join(DOCS, "README.md"), encoding="utf-8").read().split("\n")
+                 if "check_prose_survival.py" in l), None)
+    if line is None:
+        return ["homepage: no sentence cites check_prose_survival.py, so its 完整性 claim has no judge"]
+    pages = re.search(r"把 (\d+) 篇正文", line)
+    if not pages or int(pages.group(1)) != len(walk()):
+        out.append("homepage: 「%s 篇正文」 is not this judge's view of %d pages"
+                   % (pages and pages.group(1), len(walk())))
+    letters = control_letters()
+    ctrl = re.search(r"(\d+) 条种植控制（([A-Z])[–-]([A-Z])", line)
+    if not ctrl:
+        out.append("homepage: the controls must be cited as 「N 条种植控制（A–T）」 so this assertion "
+                   "can check them")
+    else:
+        span = [chr(c) for c in range(ord(ctrl.group(2)), ord(ctrl.group(3)) + 1)]
+        if span != letters or int(ctrl.group(1)) != len(letters):
+            out.append("homepage: 「%s 条种植控制（%s–%s）」 is not the %d controls asserted here (%s)"
+                       % (ctrl.group(1), ctrl.group(2), ctrl.group(3), len(letters),
+                          "".join(letters)))
+    return out
 
 
 def controls():
@@ -436,6 +636,131 @@ def controls():
     if grade(angle, served_chunks(angle_served)):
         errs.append("control J: an escaped-angle-bracket sentence must reach the reader intact, got %r"
                     % (grade(angle, served_chunks(angle_served)),))
+    # N/O/P/Q: the third bucket, which must be able to fire AND must not be able to excuse a real
+    # loss. Round 87's close-out read `MISS=3` on its own page for eight minutes because the served
+    # copy still printed the previous commit's wording of that paragraph; `published_cut()` could
+    # not see it, since the page had already published round 87. These four cases are that incident
+    # and the three ways an excuse built on it could overreach.
+    a = "甲段第一句读者完整看得到，它写得足够长，所以必然成为一个单位。\n"
+    bn = "甲段第二句在本次修订里换了新措辞，旧版那句话已经不在树里。\n"
+    bo = "甲段第二句从前是一种旧措辞，它此刻还留在已经发布的页面上。\n"
+    c = "甲段第三句读者完整看得到，它同样写得足够长以成为一个单位。\n"
+    dd = "乙段第一句被渲染器整个吞掉了，读者在页面上找不到它的任何一个字。\n"
+    e = "乙段第二句读者完整看得到，它也足够长所以能够成为一个单位。\n"
+
+    def bucketed(authored, printed):
+        html = "<article>" + "".join("<p>%s</p>" % s for s in printed) + "</article>"
+        flat = re.sub(r"\s+", " ", served_chunks(html))
+        return classify(chunks(authored), flat, html, re.sub(r"\s+", " ", LA.norm(authored)))
+
+    rows, evid = bucketed(a + bn + c, [a, bo, c])
+    if [(u[:6], v) for _k, _l, u, v, _x in rows] != [("甲段第二句在", "REVISION-BEHIND")] or not evid:
+        errs.append("control N: an older revision printed where the tree has new wording must be "
+                    "REVISION-BEHIND with evidence, got %r / %r" % (rows, evid))
+    if rows[0][4] is None or "从前是一种旧措辞" not in rows[0][4][1]:
+        errs.append("control N: an excused row must carry its own proof, got %r" % (rows,))
+    rows2, _ = bucketed(a + bn + c, [a, c])
+    if [(u[:6], v) for _k, _l, u, v, _x in rows2] != [("甲段第二句在", "MISS")]:
+        errs.append("control O: a clause with nothing printed in its gap must stay MISS, got %r" % (rows2,))
+    if rows2[0][4] is not None:
+        errs.append("control O: a MISS must not claim an excuser, got %r" % (rows2,))
+    rows3, evid3 = bucketed(a + bn + c + dd + e, [a, bo, c, e])
+    if sorted((u[:6], v) for _k, _l, u, v, _x in rows3) != [("乙段第一句被", "MISS"), ("甲段第二句在", "REVISION-BEHIND")]:
+        errs.append("control P: stale text in one region must not excuse a swallow in another, got %r" % (rows3,))
+    if evid3 and evid3[0][1] != re.sub(r"\s+", " ", LA.norm(bo)).strip():
+        errs.append("control P: the evidence must be the page's own older sentence, got %r" % (evid3[:1],))
+    rows4, _ = bucketed(a + bn + c, [a, bo, c, a])
+    if [(u[:6], v) for _k, _l, u, v, _x in rows4] != [("甲段第二句在", "MISS")]:
+        errs.append("control Q: anchors that occur twice on the page bracket no single region, so "
+                    "the loss must stay MISS, got %r" % (rows4,))
+    # R: the shape the live page actually produced when round 88 hid one real sentence in the
+    # changelog's own figure table. The judge pointed at `gitbook assistant 8 张真实产品 ui 截图
+    # 目录内 url 与访问日期 …` as "proof of an older revision" — but that run is ordinary cells
+    # glued together by the button label the platform inserts after each one, and every cell is
+    # tree text. Cutting at the labels makes each fragment a substring of the tree, and a fragment
+    # the tree has cannot excuse anything.
+    cells = ("| 这一段是表格里的第一格内容甲 | 这一段是表格里的第二格内容乙 |\n")
+    glued = ("<article><table><tbody><tr>"
+             "<td>这一段是表格里的第一格内容甲<span>gitbook assistant</span></td>"
+             "<td>这一段是表格里的第二格内容乙<span>gitbook assistant</span></td>"
+             "</tr></tbody></table></article>")
+    glued_flat = re.sub(r"\s+", " ", LA.norm(served_chunks(glued)))
+    false_proof = served_only_sentences(glued, glued_flat, re.sub(r"\s+", " ", LA.norm(cells)))
+    if false_proof:
+        errs.append("control R: cells glued by the assistant label are tree text and must not "
+                    "count as an older revision, got %r" % (false_proof,))
+    stale_in_table = glued.replace("第一格内容甲", "第一格内容甲从前是这么写的")
+    if not served_only_sentences(stale_in_table,
+                                 re.sub(r"\s+", " ", LA.norm(served_chunks(stale_in_table))),
+                                 re.sub(r"\s+", " ", LA.norm(cells))):
+        errs.append("control R: an older cell beside them must still be found — the chrome cut "
+                    "must not blind the bucket")
+    # S: `says_something_new`, the rule that round 88's live mutation control actually needed. Hiding
+    # one sentence in the changelog's figure table made the page read `[tail of the vandalised cell]
+    # + [the next cells]` — a run the tree has nowhere, because the deleted words sit inside it. That
+    # is a swallow's fingerprint: the page added no words, it only lost them, so every stretch it
+    # prints is still tree text. An older revision is the opposite — it prints wording the tree
+    # deleted. The synthetic page cannot reproduce the fingerprint (delete anything there and the run
+    # stays a substring of the tree), so the rule that decides it is pinned directly, both ways.
+    frag_a, frag_b = "这一段是表格里的第一格内容甲在这里", "这一段是表格里的第二格内容乙在这里"
+    glued_run, tree_with_gap = "%s %s" % (frag_a, frag_b), "%s 中间被删掉的那一格 %s" % (frag_a, frag_b)
+    if says_something_new(LA.norm(glued_run), LA.norm(tree_with_gap)):
+        errs.append("control S: two tree fragments glued across a deletion say nothing the tree "
+                    "never says, so they must not excuse a loss")
+    if not says_something_new(LA.norm(bo), LA.norm(a + bn + c)):
+        errs.append("control S: a page's own older sentence must count as new words, or the bucket "
+                    "cannot tell a lag from a swallow")
+    # T: the heading leg. Before round 88 no live axis had ever read a published section title, so a
+    # swallowed `##` — or one that lost the words its 本页目录 entry is built from — stayed green in
+    # every judge the repo has. Three shapes must hold at once: a `##` becomes a unit of its own
+    # kind, a body `#` never does (measured round 55: GitBook publishes the SUMMARY label there),
+    # and a `##` inside a fenced example is not a reader's heading at all.
+    heads_doc = ("# 一级标题由平台换成侧栏标签所以这一条永远不是单位\n"
+                 "## 二到六级标题必须作为独立单位到达读者的眼睛\n"
+                 "正文这一句足够长，它必须仍然按散文单独判一次。\n"
+                 "```markdown\n## 围栏里演示的假标题绝不该算作读者的标题\n```\n")
+    hu = chunks(heads_doc)
+    if [(k, u[:6]) for k, u, _l in hu] != [("heading", "二到六级标题"), ("plain", "正文这一句足")]:
+        errs.append("control T: an `##` must become exactly one heading unit beside the prose, got %r"
+                    % (hu,))
+    if any("一级标题由平台" in u or "围栏里演示" in u for _k, u, _l in hu):
+        errs.append("control T: a body `#` and a fenced example title must not become units, got %r"
+                    % (hu,))
+    on_page = ("<article><h2>二到六级标题必须作为独立单位到达读者的眼睛</h2>"
+               "<p>正文这一句足够长，它必须仍然按散文单独判一次。</p>"
+               "<h1>一级标题由平台换成侧栏标签所以这一条永远不是单位</h1></article>")
+    flat_head = re.sub(r"\s+", " ", served_chunks(on_page))
+    if grade(hu, flat_head):
+        errs.append("control T: a published heading must read clean, got %r" % (grade(hu, flat_head),))
+    hits = grade(hu, re.sub(r"\s+", " ", served_chunks(on_page.replace("<h2>%s</h2>" %
+               "二到六级标题必须作为独立单位到达读者的眼睛", ""))))
+    if len(hits) != 1 or hits[0][0] != "heading" or "二到六级" not in hits[0][2]:
+        errs.append("control T: a swallowed heading must be named as the only loss, got %r" % (hits,))
+    # U: the blockquote leg. Round 88 measured 42 `>` lines carrying 57 floor-clearing runs of prose
+    # that this judge had walked past since it was written — a sentence inside a styled box is still
+    # the reader's sentence. The leg has to gain that prose without gaining the syntax that documents
+    # it (`![...]` image lines and a `>` sitting inside a fenced example).
+    quote_doc = ("> 引用块里的这句话必须作为独立单位到达读者的眼睛\n"
+                 "正文这一句足够长，它必须仍然按散文单独判一次。\n"
+                 "![一张图的替代文字并不作为正文出现在读者面前](/assets/nope.svg)\n"
+                 "```\n> 围栏里演示的假引用绝不该算作读者的句子\n```\n")
+    qu = chunks(quote_doc)
+    if [(k, u[:6]) for k, u, _l in qu] != [("quote", "引用块里的这"), ("plain", "正文这一句足")]:
+        errs.append("control U: a `>` line must become exactly one quote unit beside the prose, got %r"
+                    % (qu,))
+    if any("围栏里演示" in u or "替代文字" in u for _k, u, _l in qu):
+        errs.append("control U: a fenced example quote and an image alt text must not become units, "
+                    "got %r" % (qu,))
+    q_page = ("<article><blockquote><p>引用块里的这句话必须作为独立单位到达读者的眼睛</p></blockquote>"
+              "<p>正文这一句足够长，它必须仍然按散文单独判一次。</p></article>")
+    if grade(qu, re.sub(r"\s+", " ", served_chunks(q_page))):
+        errs.append("control U: a published blockquote must read clean, got %r"
+                    % (grade(qu, re.sub(r"\s+", " ", served_chunks(q_page))),))
+    qhits = grade(qu, re.sub(r"\s+", " ", served_chunks(
+        q_page.replace("<p>引用块里的这句话必须作为独立单位到达读者的眼睛</p>", ""))))
+    if len(qhits) != 1 or qhits[0][0] != "quote" or "引用块" not in qhits[0][2]:
+        errs.append("control U: a swallowed blockquote must be named as the only quote loss, got %r"
+                    % (qhits,))
     return errs
 
 
@@ -446,8 +771,11 @@ def mutation_control(page):
     produced it. The deletion happens on the downloaded HTML, never in a repo file.
     """
     index = LA.url_index()
+    # Match the way `--page` matches: against the same relative, forward-slashed path run() prints.
+    # Comparing the argument to raw absolute Windows paths made `--mutate 00-index/changelog` report
+    # "no page matches" while the very same string selects that page in a full run.
     hit = next(((os.path.relpath(p, DOCS).replace("\\", "/"), io.open(p, encoding="utf-8").read())
-                for p in walk() if page in p), None)
+                for p in walk() if page in p.replace("\\", "/")), None)
     if not hit:
         return ["mutation control: no page matches %r" % page]
     rel, text = hit
@@ -470,7 +798,17 @@ def mutation_control(page):
     out = grade([("plain", victim, 1)], served_chunks(cut))
     if not out:
         return ["mutation control did NOT fire: hiding real text on %s read as clean" % rel]
-    print("mutation control: hid %r on %s and the judge named it (%d chars)" % (probe[:24], rel, len(victim)))
+    # `grade()` only sees that a sentence went missing; `classify()` decides whether anything is
+    # allowed to excuse it. Round 87's lesson is that the excuse is the blind side of a
+    # completeness judge, so the real-page control must be graded by the bucketed judge.
+    rows, _ev = classify([("plain", u, 1) for u in units],
+                         re.sub(r"\s+", " ", served_chunks(cut)), cut,
+                         re.sub(r"\s+", " ", LA.norm(text)))
+    verdicts = {u: (v, exc) for _k, _l, u, v, exc in rows}
+    if verdicts.get(victim, ("clean", None))[0] != "MISS":
+        return ["mutation control: hiding real text on %s was excused as %r" % (rel, verdicts.get(victim))]
+    print("mutation control: hid %r on %s and the judge named it a MISS, not a lag (%d chars)"
+          % (probe[:24], rel, len(victim)))
     return []
 
 
@@ -483,7 +821,7 @@ def main():
     ap.add_argument("--mutate", metavar="PAGE", help="hide a real sentence on one published page and require a finding")
     args = ap.parse_args()
     if args.selftest:
-        errs = controls()
+        errs = controls() + homepage_parity()
         print("controls: %s" % ("OK, every bucket able to fire" if not errs else "BROKEN"))
         for e in errs:
             print("   ", e)
@@ -493,12 +831,18 @@ def main():
         for e in errs:
             print("   ", e)
         return 1 if errs else 0
-    miss, stale, other = run(args.sample, args.workers, args.page)
-    if stale:
-        # Loud but not this axis's verdict: the platform has not published that revision, which
-        # check_live_sync.py reports as the reader-facing lag it is. Red here would be red twice.
-        print("NOTE %d lost sentences sit above the round the published page itself reached "
-              "(unpublished revision, see check_live_sync)" % stale)
+    miss, stale, other, behind = run(args.sample, args.workers, args.page)
+    if stale or behind:
+        # Loud but not this axis's verdict: both mean the published copy is a *different revision*
+        # of the text, proven against the page itself rather than guessed from a round number.
+        # check_live_sync.py owns the reader-facing lag; red here would be red twice.
+        if stale:
+            print("NOTE %d lost sentences sit above the round the published page itself reached "
+                  "(unpublished revision, see check_live_sync)" % stale)
+        if behind:
+            print("NOTE %d lost sentences are excused by local evidence: in the same gap the reader "
+                  "agrees on, the published copy prints a sentence the tree has nowhere "
+                  "(another revision of this region; see check_live_sync)" % behind)
     if miss or other:
         print("FAILED: %d sentences did not reach the reader (plus %d unfetched/unlisted pages)"
               % (miss, other))
