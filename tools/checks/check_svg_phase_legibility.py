@@ -698,7 +698,7 @@ def sweep(srv, name, src, args, rid, na=1):
                 os.remove(stale)
     else:
         flags = ["--dump-dom", "--virtual-time-budget=200000"]
-    proc = srv.edge("phase-%s.html" % rid, flags, height=args.height)
+    proc = srv.render("phase-%s.html" % rid, flags, height=args.height)
     try:
         if args.shots:
             try:

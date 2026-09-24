@@ -27,19 +27,25 @@ What it measures, in the order the pitfalls were learned:
 
 Two planted counterexamples ride along on every run (one unparsable source, one fan-out that must
 blow past the column) and MUST be caught. Without them "0 超宽、0 失败" would also be what a silent
-no-op prints — see the project's no-silent-zero rule.
+no-op prints — see the project's no-silent-zero rule. Those two ride *through* the browser, so they
+cannot catch a browser that renders nothing (round 81: six axes went blind in one run that way);
+the preflight's own controls are `--engine-selftest`.
 
-Rendering is local and offline on purpose: Edge headless in this sandbox has no external network,
-so the engine is served from 127.0.0.1 together with the fixture, and each batch beacons its
-measurements back over HTTP (see fixture_html for why --dump-dom was dropped).
+Rendering is local and offline on purpose: the headless engine in this sandbox has no external
+network, so the engine is served from 127.0.0.1 together with the fixture, and each batch beacons
+its measurements back over HTTP (see fixture_html for why --dump-dom was dropped). Which engine is
+used is decided by `browser()`, not by a remembered path.
 
 Usage:
     python tools/checks/check_mermaid_geometry.py --mermaid-js <dir-with-node_modules>
     python tools/checks/check_mermaid_geometry.py --eyeball 04-prompt-reasoning/react.md
         -> writes a PNG of that page's diagrams for a real rendered look
+    python tools/checks/check_mermaid_geometry.py --engine-selftest
+        -> proves the engine preflight refuses a browser that hands back no DOM
 """
 import argparse
 import functools
+import glob
 import http.server
 import json
 import os
@@ -69,6 +75,130 @@ WINDOW = 1280                       # fixture viewport: the cell has to fit insi
 SHOT_BUDGET = 20000                # virtual ms the --eyeball screenshot is allowed to paint in
 EDGE_CANDIDATES = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
                    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
+# Round 82: this machine's Edge stopped answering --dump-dom (rc=0, stdout 0 bytes, across six flag
+# variants), and six render axes went blind in the same run. The lesson is not "use another path" —
+# it is that a launcher must *prove* its engine renders before any threshold is read from it. So
+# the engine is now chosen by a sentinel probe, and Playwright's CLI-mode Chromium
+# (chrome-headless-shell) is a candidate: it answers --dump-dom / --screenshot /
+# --virtual-time-budget, which is the whole flag surface these axes use.
+SHELL_GLOBS = [os.path.join(root, "chromium_headless_shell-*", "*", "chrome-headless-shell.exe")
+               for root in [os.environ.get("PLAYWRIGHT_BROWSERS_PATH", ""),
+                            os.path.join(os.environ.get("LOCALAPPDATA", ""), "ms-playwright")]
+               if root]
+SENTINEL = "@@ENGINE@@"
+
+
+def engine_candidates():
+    """An explicit override is the engine under test, alone; otherwise Edge, then shells (newest first).
+
+    Exclusive on purpose. A reader who pins `HANDBOOK_BROWSER` to measure one build must not get a
+    silently different one, and the launcher's own blind-engine control (see `engine_selftest`)
+    depends on the pinned path being the only thing tried.
+    """
+    if os.environ.get("HANDBOOK_BROWSER"):
+        return [os.environ["HANDBOOK_BROWSER"]]
+    out = [p for p in EDGE_CANDIDATES if os.path.isfile(p)]
+    for pattern in SHELL_GLOBS:
+        if "*" in pattern:
+            out += sorted(glob.glob(pattern), reverse=True)
+    seen, uniq = set(), []
+    for path in out:
+        if path and os.path.isfile(path) and path not in seen:
+            seen.add(path)
+            uniq.append(path)
+    return uniq
+
+
+def headless_flags(exe):
+    """The shell is headless by construction; a full Chrome/Edge binary needs the switch."""
+    return [] if "headless-shell" in os.path.basename(exe).lower() else ["--headless=new"]
+
+
+def engine_alive(exe, timeout=90):
+    """True only if this binary hands back a rendered DOM containing the sentinel."""
+    with tempfile.TemporaryDirectory(prefix="engine", ignore_cleanup_errors=True) as tmp:
+        page = os.path.join(tmp, "probe.html")
+        open(page, "w", encoding="utf-8").write(
+            "<!doctype html><meta charset='utf-8'><body><pre>%s</pre></body>" % SENTINEL)
+        cmd = [exe] + headless_flags(exe) + [
+            "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+            "--user-data-dir=" + os.path.join(tmp, "p"), "--window-size=900,600", "--dump-dom",
+            "file:///" + page.replace("\\", "/")]
+        try:
+            proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                  timeout=timeout)
+        except (subprocess.TimeoutExpired, OSError):
+            # OSError is a real branch: `HANDBOOK_BROWSER` is a path the operator points at, and a
+            # path that is not an executable must be *skipped* like a blind engine, not crash the run.
+            return False
+        return SENTINEL in proc.stdout.decode("utf-8", "replace")
+
+
+_RESOLVED = []
+
+
+def browser():
+    """The first engine that proves it renders, cached for the run. No engine is a loud exit."""
+    if _RESOLVED:
+        return _RESOLVED[0]
+    tried = []
+    for exe in engine_candidates():
+        if engine_alive(exe):
+            _RESOLVED.append(exe)
+            # Recorded on stderr so every axis says which engine produced its numbers: an engine
+            # switch moves thresholds, and a reading with no engine attached cannot be re-anchored.
+            sys.stderr.write("# engine: %s\n" % exe)
+            return exe
+        tried.append(os.path.basename(exe))
+    raise SystemExit(
+        "no headless browser answers --dump-dom (tried: %s). Set HANDBOOK_BROWSER to a working "
+        "engine: a blind renderer must exit, not report 0 problems."
+        % (", ".join(tried) if tried else "nothing installed"))
+
+
+ENGINE_SELFTEST = """
+import os, sys
+sys.path.insert(0, %r)
+os.environ['HANDBOOK_BROWSER'] = sys.argv[1]
+import check_mermaid_geometry as m
+print('ACCEPTED', m.browser())
+"""
+
+
+def engine_selftest():
+    """The launcher's own controls, because every other plant here rides the engine it is checking.
+
+    Round 81 lost six render axes at once to an engine that exited 0 and handed back no DOM, and not
+    one plant caught it: the planted counterexamples all *measure through* that engine, so a blind
+    one makes them measure nothing. These legs pin the preflight itself: the engine that answers is
+    accepted, and the two shapes a browser goes blind in (exit 0 with an empty stdout -- this
+    machine's Edge -- and a path that is not an executable at all) must end the run, not print zeros.
+    """
+    real = browser()                       # resolved here; the three legs run in fresh processes
+    blind = os.path.join(tempfile.gettempdir(), "handbook-blind-engine.cmd")
+    open(blind, "w", encoding="ascii").write(
+        "@echo off\r\nrem exits 0 and prints no DOM: the shape a dead headless browser makes\r\n"
+        "exit /b 0\r\n")
+    fake = os.path.join(tempfile.gettempdir(), "handbook-not-an-executable.py")
+    open(fake, "w", encoding="ascii").write("print('not an executable')\n")
+    for path, why in ((blind, "an engine that exits 0 with an empty stdout"),
+                      (fake, "a path that is not an executable at all")):
+        proc = subprocess.run([sys.executable, "-c", ENGINE_SELFTEST % HERE, path],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+        err = proc.stderr.decode("utf-8", "replace")
+        assert proc.returncode != 0 and "no headless browser" in err, \
+            "%s was accepted by the preflight (rc=%s, stdout=%r, stderr=%r): a blind engine would " \
+            "print 0 problems" % (why, proc.returncode, proc.stdout[-120:], err[-200:])
+    pinned = subprocess.run([sys.executable, "-c", ENGINE_SELFTEST % HERE, real],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+    assert pinned.returncode == 0 and \
+        os.path.basename(real) in pinned.stdout.decode("utf-8", "replace"), \
+        "the working engine was refused by its own preflight (rc=%s, stderr=%r)" % (
+            pinned.returncode, pinned.stderr.decode("utf-8", "replace")[-200:])
+    print("engine preflight controls ok: the working engine is accepted; empty-DOM and "
+          "not-an-executable are both refused with an exit, never a 0-problems reading")
+    return 0
+
 
 CONTROL_WIDE = ("flowchart LR\n"
                 "  A1[分支一 的很长很长标签文字] --> A2[分支二 的很长很长标签文字] --> "
@@ -302,14 +432,20 @@ class Server:
             time.sleep(0.15)
         return best
 
-    def edge(self, name, extra=(), height=1400):
-        """One headless Edge run owned by this process — terminate() only ever touches our own PID."""
-        exe = next((p for p in EDGE_CANDIDATES if os.path.isfile(p)), None)
-        if not exe:
-            raise SystemExit("no Microsoft Edge found — the geometry axis needs a real renderer")
-        cmd = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-               "--user-data-dir=" + self.new_profile(),
-               "--window-size=%d,%d" % (max(WINDOW, COLUMN), height)]
+    def render(self, name, extra=(), height=1400, window=None):
+        """One headless browser run owned by this process — terminate() only ever touches our own PID.
+
+        `window` is here because a caller that lays out a *copy of a reader's page* has to own the
+        viewport: the site's article column is a CSS max-width next to two navigation panels, so the
+        number such a leg asserts on only exists at one window width (see check_live_column's
+        `COPY_VIEWPORT`). Chromium is not reliable about a later `--window-size`, so this is the only
+        place the flag goes.
+        """
+        exe = browser()
+        cmd = [exe] + headless_flags(exe) + [
+            "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+            "--user-data-dir=" + self.new_profile(),
+            "--window-size=%d,%d" % (window or max(WINDOW, COLUMN), height)]
         return subprocess.Popen(cmd + list(extra) + [self.url(name)],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -337,14 +473,14 @@ def render_batch(srv, blocks, budget, rid, shot=None, column=COLUMN):
     if shot:
         # A screenshot fires when Chrome's *virtual* time runs out, so this mode waits for Edge to
         # exit by itself; the sweep mode is held open by the latch and stops when the report lands.
-        proc = srv.edge(name, ["--virtual-time-budget=%d" % SHOT_BUDGET, "--screenshot=" + shot],
+        proc = srv.render(name, ["--virtual-time-budget=%d" % SHOT_BUDGET, "--screenshot=" + shot],
                         min(900 * len(blocks), 9000))
         try:
             proc.wait(SHOT_BUDGET / 1000 + 120)
         except subprocess.TimeoutExpired:
             pass
     else:
-        proc = srv.edge(name, ["--dump-dom"])
+        proc = srv.render(name, ["--dump-dom"])
     try:
         report = srv.wait(rid, 20 if shot else budget / 1000 + 25, None if shot else proc)
     finally:
@@ -468,7 +604,13 @@ def main():
                          "verdict. The reader's body text is 16px; round 62 measures what a diagram "
                          "label actually costs them.")
     ap.add_argument("--eyeball", metavar="PAGE", help="render one page's diagrams to a PNG and exit")
+    ap.add_argument("--engine-selftest", action="store_true",
+                    help="check only that the launcher's engine preflight has teeth: it accepts a "
+                         "browser that renders and refuses one that exits 0 without a DOM")
     args = ap.parse_args()
+
+    if args.engine_selftest:
+        return engine_selftest()
 
     rows = authored_blocks()
     print("authored mermaid blocks=%d across %d pages"

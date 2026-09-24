@@ -90,7 +90,7 @@ except AttributeError:
     pass
 
 import check_widget_visibility_live as wl                      # noqa: E402
-from check_live_column import live_copy                        # noqa: E402
+from check_live_column import live_copy, COPY_VIEWPORT            # noqa: E402
 from check_mermaid_geometry import Server                      # noqa: E402
 
 COLUMN_LIVE = 768           # round 62's <main>; re-asserted every run
@@ -468,7 +468,7 @@ def ruler(srv, rid, column):
         # releases this request when the report for `rid` lands (same latch the geometry axis uses).
         "<script src='/hold?rid=%d'></script>" % rid)
     srv.hold(rid, 60)
-    proc = srv.edge("ruler-%d.html" % rid, ["--dump-dom"], height=900)
+    proc = srv.render("ruler-%d.html" % rid, ["--dump-dom"], height=900)
     try:
         rep = srv.wait(rid, 45, proc)
     finally:
@@ -521,8 +521,8 @@ LIVE_PROBE = """
     var f = figs();
     if ((f.length && f.every(function (x) { return x.nat > 0; })) || tries++ > 24) {
       var m = document.querySelector('main');
-      send({main: m ? Math.round(m.getBoundingClientRect().width) : null, figs: f,
-            imgs: document.querySelectorAll('img').length});
+      send({main: m ? Math.round(m.getBoundingClientRect().width) : null, vw: innerWidth,
+            figs: f, imgs: document.querySelectorAll('img').length});
       return;
     }
     setTimeout(poll, 500);
@@ -597,11 +597,12 @@ def worst_pages(rows, count):
 def live_leg(srv, rows, column, count=4):
     """Measure the platform's scaling on a copy of the reader's page, on the worst figures' pages.
 
-    Round 73 names this leg for what it is: the HTML is fetched from the live site, but it is laid
-    out as a local copy, and a copy has no navigation panels beside the article (the site's client
-    router cannot resolve a localhost file name, so the furniture never mounts). So the column this
-    leg sees is the copy's 768px cap, not the 608px a laptop reader is given - `laptop_leg` below is
-    the leg that reads the reader's own page.
+    Round 73 called this the copy-with-no-furniture leg and took its 768px cap on trust. Round 82
+    measured the same copies on the sentinel-checked engine: the chapter sidebar and the page TOC
+    mount there too, so the copy's column is the live page's minus a scrollbar gutter (593px at a
+    1280 window, 609px at 1024), and the 768px cap only binds from 1440 up. The leg therefore asks
+    for `COPY_VIEWPORT`, asserts the browser confirms that window, and keeps asserting the cap —
+    now because the cap really is what binds at that width, not because the panels were missing.
     """
     pages = worst_pages(rows, count)
     seen = []
@@ -619,7 +620,7 @@ def live_leg(srv, rows, column, count=4):
         # No `--dump-dom` here (unlike the ruler): that flag exits at the load event, and this page's
         # figure is laid out by hydration afterwards, so the async poll would never report. The
         # synchronous `/hold` fetch inside send() is what keeps this process alive instead.
-        proc = srv.edge(name, [], height=1600)
+        proc = srv.render(name, [], height=1600, window=COPY_VIEWPORT)
         try:
             rep = srv.wait(rid, 60, proc)
         finally:
@@ -636,10 +637,13 @@ def live_leg(srv, rows, column, count=4):
         assert rep and rep.get("figs"), \
             "copy leg read no SVG figure on %s (imgs on page: %s; probe JS error: %r)" \
             % (rel, rep and rep.get("imgs"), fatal_of(srv, rid))
+        assert rep.get("vw") == COPY_VIEWPORT, \
+            "asked for a vw=%d window, the copy of %s reported %s — the column asserted next is then" \
+            " read off some other viewport" % (COPY_VIEWPORT, rel, rep.get("vw"))
         measured += 1
         assert rep["main"] == column, \
-            "<main> measures %s on the copy of %s, not %d — the column this axis is about changed" \
-            % (rep["main"], rel, column)
+            "<main> measures %s on the copy of %s at vw=%d, not %d — the column this axis is about " \
+            "changed" % (rep["main"], rel, COPY_VIEWPORT, column)
         for f in rep["figs"]:
             assert "max-width:100%" in f["style"], \
                 "the served <img> no longer carries max-width:100%% (%s on %s): the scaling " \
@@ -670,8 +674,10 @@ def live_leg(srv, rows, column, count=4):
 
 LAPTOP_VW = 1280          # the window whose reader gets the narrowest desktop column (round 73)
 
-# Read off the LIVE url, never a copy: a copy loses the 288px chapter sidebar and the 256px page TOC
-# that mount beside the article on the real page, and those are exactly what squeezes the column.
+# Read off the LIVE url, never a copy: this leg exists to report the room a reader actually brings,
+# and Playwright sets the viewport exactly, while a headless shell run reserves a 15px classic
+# scrollbar gutter (round 82: the same page measures 608px live and 593px on a copy at vw=1280, and a
+# real Windows reader sits between those two depending on their scrollbar setting).
 # Controls are planted AFTER the reading, and figures are identified by the asset name inside the
 # served src (GitBook rewrites it into a `~gitbook/image?...&width=` URL, so an extension match would
 # see nothing) - see check_live_column's HYDRATED_PROBE for why the order is load-bearing.

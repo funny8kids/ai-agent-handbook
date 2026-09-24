@@ -25,12 +25,14 @@ Guards, each of which caught a real reading while this file was written:
     the column.
   * a page that never hydrates is a harness failure, not a verdict (round 56: Mermaid containers
     stay aria-busy in this sandbox, so nothing here waits for a diagram to paint).
-  * round 73 added the hydrated live leg (`hydrated_leg`), because the copy leg has a structural
-    blind spot: the site's client router has no route for a localhost file name, so a copy renders
-    the article with no chapter sidebar and no page TOC beside it, and <main> gets its full 768px
-    cap. On the live URL those two panels (288px + 256px) are open by default and the same window
-    leaves the article 608px. Both numbers are printed; the gap is an `AWAITING-DECISION` line, not
-    a problem this axis can fix by editing itself.
+  * round 73 added the hydrated live leg (`hydrated_leg`), because a copy has a structural blind
+    spot: <main> can be laid out beside navigation panels that only the live URL mounts. Round 73
+    measured that as copy=768 vs live=608 and blamed the site's client router; round 82's engine
+    swap showed the copy mounts both panels too (see the COPY_VIEWPORT ladder), so the gap that day
+    was a *scrollbar gutter*, and the copy at a 1280 window reads 15px narrower than the live page
+    rather than 160px wider. Both numbers are still printed, and they are now cross-checked against
+    each other (`COPY-NOT-LIVE`), because a copy that stops matching the live page is the failure
+    this leg exists to catch.
   * round 73 also fixed a contamination bug of its own making: measurement order matters. A probe
     that plants a 960px control box inside a figure's own wrapper stretches that shrink-to-fit
     wrapper, and the figure measured afterwards then reads natural-size instead of column-size -
@@ -56,23 +58,55 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import check_widget_visibility_live as wl            # noqa: E402  llms.txt index + retrying fetch
-from check_mermaid_geometry import (COLUMN, EDGE_CANDIDATES, Server)  # noqa: E402  assumption under test
+from check_mermaid_geometry import (COLUMN, Server, browser, headless_flags)  # noqa: E402  assumption under test
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
-VIEWPORTS = [1024, 1280]        # the widest window this sandbox can actually get (see `run`)
 SPREAD_TOL = 16                 # px of disagreement between pages before the selector is suspect
-# Why 1024/1280 is enough: the cap being tested (max-w-3xl = 768px, max-w-6xl = 1152px) is a
-# CSS max-width, so once the window is wider than the cap the reading is the cap and is the same
-# for a 1440 or 1920 reader. Measured here, requests above ~1280 come back as innerWidth 1250,
-# so a "column at vw=1920" printed from this machine would be a fabricated viewport.
+
+# ---------------------------------------------------------------- the copy's column (round 82)
+# Round 73 wrote down that a copy of a live page lays the article out at its full 768px cap, because
+# the site's client router cannot resolve a localhost file name and so never mounts the 288px chapter
+# sidebar and the 256px page TOC beside it. That was an ENGINE reading, not a property of copies: on
+# the sentinel-checked chromium shell the same copy mounts both panels. The ladder below is what
+# proved it — `<main>` of a copy of `00-index/learning-path.md`, one browser run per row, every row
+# confirmed by the page's own reported `innerWidth`:
+#     asked vw    copy <main>   live <main>   copy - live
+#     1024        609           624           -15
+#     1280        593           608           -15
+#     1440        753           768           -15
+#     1455        768            -             the cap binds here, 15px above where it binds live
+#     1500        768            -
+#     1600        768            -
+# So a copy is the live page minus a 15px classic-scrollbar gutter at every window, and `max-w-3xl`
+# (768px) binds on a copy only from 1455px up. Two consequences, both of which a leg that asks a
+# 1280 window and asserts 768 gets wrong:
+#   * a reader on a 1280-wide laptop gets 608px (or 593 with a classic scrollbar), not 768;
+#   * a leg that measures a COPY and asserts the 768 cap must ask a window where the cap can bind at
+#     all, and must say which window it asked. That window is COPY_VIEWPORT, and every downstream
+#     axis that lays a reader page out now renders at it.
+# The old excuse for not asking wider ("this sandbox's Edge clamps innerWidth at ~1250px") is gone:
+# the shell honours `--window-size` exactly, measured above and asserted per run in `run()`.
+COPY_VIEWPORT = 1500
+
+# The ladder the copy leg walks: the two laptop windows, and the window where the cap binds. Asking
+# only the narrow ones is how this axis spent 20 rounds reporting a copy column it never re-checked
+# against the live page.
+VIEWPORTS = [1024, 1280, COPY_VIEWPORT]
+
 WIDE_NEEDS = 1152 + 520         # a window this wide is needed before max-w-6xl could bind here
-# The breakpoints a reader actually arrives at. Read off the LIVE page rather than a copy, because a
-# copy is measured with the site's client router unable to resolve a localhost file name: round 73
-# found the copy renders the article with no navigation furniture beside it, so <main> gets its full
-# 768px cap there, while the live page at the same window puts a 288px chapter sidebar and a 256px
-# page TOC beside the article and leaves it 608px. `is_mobile` is the phone case the Edge leg cannot
-# ask for at all (this sandbox's Edge clamps innerWidth at ~504px minimum).
+# The breakpoints a reader actually arrives at, read off the LIVE page. Round 82 keeps that split for a
+# different reason than round 73 gave: a copy does mount the panels (ladder above), but it is laid out
+# by a CLI shell that reserves a 15px classic-scrollbar gutter, while this leg runs in Playwright, which
+# sets the viewport exactly and reserves nothing. So the live leg answers "what does the reader get" and
+# the copy leg answers "what does a leg that renders a copy get" — only the first is a content bar.
+# `is_mobile` is the phone case, which the CLI flag set cannot ask for at all.
+#
+# And a copy must not be screenshotted to "eyeball the premise": round 82 shot one and got GitBook's
+# own error boundary ("This page couldn't load", Reload/Back) instead of the article — the bundle
+# throws once it hydrates on a copied URL. The copy's numbers survive that because the probe runs
+# earlier, on the server-rendered DOM (which is also why `check_svg_legibility` beacons a `fatal`).
+# Eyeball evidence for a reader's column has to come from the live page.
 HYDRATED_AT = [(1024, False), (1280, False), (1440, False), (1920, False), (390, True)]
 
 
@@ -194,19 +228,18 @@ def diagram_pages(n):
 
 
 def shoot(srv, name, vw, height=1200):
-    """One Edge run with EXACTLY one --window-size.
+    """One browser run with EXACTLY one --window-size.
 
-    Server.edge passes its own --window-size before `extra`, and Chromium does not
-    reliably take the later one: a control box authored at 1600px came back measuring 1250px, i.e.
-    the viewport we thought we asked for. A column read at the wrong viewport is a fabricated
-    number, so this axis owns its browser flags and then asserts on innerWidth (see `run`).
+    Server.render passes its own --window-size before `extra`, and Chromium does not reliably take
+    the later one: a control box authored at 1600px came back measuring 1250px, i.e. the viewport we
+    thought we asked for. A column read at the wrong viewport is a fabricated number, so this axis
+    owns its browser flags and then asserts on innerWidth (see `run`).
     """
-    exe = next((p for p in EDGE_CANDIDATES if os.path.isfile(p)), None)
-    if not exe:
-        raise SystemExit("no Microsoft Edge found - the column axis needs a real renderer")
-    cmd = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-           "--user-data-dir=" + srv.new_profile(), "--window-size=%d,%d" % (vw, height),
-           srv.url(name)]
+    exe = browser()
+    cmd = [exe] + headless_flags(exe) + [
+        "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+        "--user-data-dir=" + srv.new_profile(), "--window-size=%d,%d" % (vw, height),
+        srv.url(name)]
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
@@ -301,9 +334,8 @@ def hydrated_leg(urls):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3)
-    print("note: this sandbox's Edge clamps innerWidth at ~1250px, so a vw=1920 reading cannot be"
-          " faked here; the caps under test are CSS max-widths, which are viewport-independent once"
-          " the window is wider than the cap.")
+    print("note: the engine this axis runs on honours --window-size exactly (round 82 measured the "
+          "copy ladder from 1024 to 1920), so every vw below is an asked-and-confirmed viewport.")
     ap.add_argument("--assume", type=int, default=COLUMN,
                     help="the column the Mermaid geometry axis assumes (check_mermaid_geometry.COLUMN)")
     ap.add_argument("--all-viewports", action="store_true")
@@ -389,7 +421,38 @@ def main():
     if low is None:
         print("  no live reading at all -> refusing to report a pass")
         return 2
-    print("  narrowest reader column measured: %dpx; geometry axis assumes %dpx" % (low, args.assume))
+    print("  narrowest column on a saved copy: %dpx (viewports %s); geometry axis assumes %dpx"
+          % (low, sorted(asis), args.assume))
+
+    # ---- round 82's two premise guards ------------------------------------------------
+    # (1) The cap downstream legs judge against has to bind on the copy they ask for. Every axis that
+    #     lays a reader page out renders at COPY_VIEWPORT and asserts <main> == its column constant,
+    #     so this is where that shared premise is proved once, with the whole ladder in view.
+    # (2) A copy must stay the live page minus a scrollbar. If the panels ever stop mounting again
+    #     (round 73's reading), the copy jumps ~160px ABOVE the live column and every leg that judges
+    #     on a copy over-states the reader's room - so the copy is only trusted while it is not wider
+    #     than the live page, and not narrower than one gutter's worth.
+    if COPY_VIEWPORT in asis:
+        cap = min(v for _, v in asis[COPY_VIEWPORT])
+        assert cap == args.assume, \
+            "the %dpx cap does not bind on a copy at vw=%d: measured %dpx. Every leg that lays a " \
+            "reader page out at COPY_VIEWPORT asserts this number, so re-anchor them on the reading " \
+            "above before trusting their verdicts" % (args.assume, COPY_VIEWPORT, cap)
+        print("  cap guard: a copy at vw=%d lays the article out at %dpx == the %dpx the geometry "
+              "axes judge against" % (COPY_VIEWPORT, cap, args.assume))
+    for vw in sorted(asis):
+        if vw not in hyd:
+            continue
+        c, h = min(v for _, v in asis[vw]), min(r["para"] for r in hyd[vw])
+        gutter = h - c
+        if 0 <= gutter <= 24:
+            print("  copy vs live at vw=%-5d: copy=%-4d live=%-4d gutter=%-2dpx (a saved copy is the"
+                  " live page minus its scrollbar)" % (vw, c, h, gutter))
+        else:
+            problems.append("COPY-NOT-LIVE vw=%d: the copy lays the article out at %dpx while the"
+                            " live page gives %dpx (%dpx apart - not a scrollbar). One of the two is"
+                            " no longer the reader's page, so no copy-based leg's column is"
+                            " trustworthy until this is explained" % (vw, c, h, gutter))
 
     # ---- copy vs live, and the phone case -------------------------------------------
     # Reported rather than counted as a problem: this axis now sees both numbers, and closing the gap
@@ -426,9 +489,15 @@ def main():
         elif vals:
             print("  wide layout at vw=%d did not widen the column here (%s) -> the toggle still has"
                   " to be tested in the editor" % (vw, sorted(set(vals))))
-    if low < args.assume:
-        problems.append("COLUMN-MISMATCH: readers get %dpx but the Mermaid axis assumes %dpx -> "
-                        "re-run it with --column %d" % (low, args.assume, low))
+    on_live = {vw: min(r["para"] for r in hyd[vw]) for vw in desktop if vw in hyd}
+    if on_live:
+        narrow_vw, narrow = min(on_live.items(), key=lambda kv: kv[1])
+        where = "the live page at vw=%d" % narrow_vw
+    else:
+        narrow, where = low, "a saved copy - the live leg read nothing, so this is the copy's number"
+    if narrow < args.assume:
+        problems.append("COLUMN-MISMATCH: readers get %dpx (%s) but the Mermaid axis assumes %dpx ->"
+                        " re-run it with --column %d" % (narrow, where, args.assume, narrow))
     for p in problems:
         print("  -", p)
     for a in advisories:

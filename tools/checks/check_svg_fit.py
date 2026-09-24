@@ -74,7 +74,7 @@ except AttributeError:
     pass
 
 import check_svg_legibility as leg                                      # noqa: E402
-from check_mermaid_geometry import EDGE_CANDIDATES                      # noqa: E402
+from check_mermaid_geometry import (browser, headless_flags)                  # noqa: E402
 
 COLUMN = 768          # the reader column `<main>` reports; host width, see the note below
 PAD = 2.0             # viewBox px of slack before an edge counts as outside
@@ -171,12 +171,12 @@ def measure(svg_text, column=COLUMN):
     with tempfile.TemporaryDirectory(prefix="svgfit", ignore_cleanup_errors=True) as tmp:
         io.open(os.path.join(tmp, "page.html"), "w", encoding="utf-8").write(
             PAGE % {"svg": svg_text, "column": column})
-        exe = next((p for p in EDGE_CANDIDATES if os.path.isfile(p)), None)
-        assert exe, "no Edge candidate found"
-        cmd = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-               "--user-data-dir=" + os.path.join(tmp, "p"), "--window-size=900,1400",
-               "--virtual-time-budget=4000", "--dump-dom",
-               "file:///" + os.path.join(tmp, "page.html").replace("\\", "/")]
+        exe = browser()
+        cmd = [exe] + headless_flags(exe) + [
+            "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+            "--user-data-dir=" + os.path.join(tmp, "p"), "--window-size=900,1400",
+            "--virtual-time-budget=4000", "--dump-dom",
+            "file:///" + os.path.join(tmp, "page.html").replace("\\", "/")]
         p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=240)
         # --dump-dom serialises the page source too, so the sentinel appears twice: once inside the
         # <script> text, once in the node the script appended. The appended one is the last.

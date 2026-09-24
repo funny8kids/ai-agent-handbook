@@ -2,12 +2,80 @@
 tags: [index, changelog]
 type: index
 status: published
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # 更新日志
 
 本页记录手册的结构调整与重要内容更新。
+
+## 2026-09-25（第 82 次）六条浏览器轴在同一趟里集体瞎掉——共享启动器从此必须**自证会渲染**；重新锚定时撞破一个记了 20 轮的前提：「复制稿没有导航面板」是引擎读数，不是复制稿的性质
+
+本轮改动全部在 `tools/checks`（8 个文件），**正文 0 页**——所以 README 的统计一个数字都不动（`check_readme_stats` 逐键 `ok`）。
+
+### 一、缺陷在量具上：一个「退出码 0、stdout 空」的浏览器能让六条轴同时报绿
+
+第 81 轮收尾时发现本机 Edge 对 `--dump-dom` 返回 rc=0 而 stdout 0 字节，六种 flag 变体全一样。这条轴体系里所有「0 问题」的读数在那一刻同时失去了意义——**因为种在页面里的反例要穿过浏览器才能被抓住，浏览器不渲染时反例也跟着消失**。所以本轮不是「换个路径」，而是给共享启动器加了一条硬要求：**没证明自己会渲染的引擎，不许进入判决阶段**。
+
+| 落库的东西 | 作用 | 本轮读数 |
+|---|---|---|
+| `engine_alive(exe)` | 用 `@@ENGINE@@` 哨兵页跑一次真渲染；90s 超时与 `OSError` 都算「瞎」（`HANDBOOK_BROWSER` 指向一个不是可执行文件的路径时必须**跳过**而不是崩） | 通过才继续 |
+| `browser()` | 候选顺序 Edge → 各 `chrome-headless-shell`（新在前），第一个自证的胜出并**把引擎名打到 stderr**——换引擎会移动阈值，没署名的读数无法重锚定；全瞎则 `SystemExit`，绝不打印 0 problems | `# engine: …chromium_headless_shell-1234…` |
+| `headless_flags(exe)` | shell 本来就 headless，完整 Chrome/Edge 才需要 `--headless=new` | 每轴共用 |
+| `--engine-selftest` | 启动器自己的三条腿：会渲染的引擎必须被接受；空 DOM 的引擎与「不是可执行文件」必须**带退出码**被拒 | `engine preflight controls ok` |
+
+**变异测试的顺序值得记**：控制先写完时，那一趟打印的是 `AssertionError: an engine that exits 0 with an empty stdout was accepted by the preflight … a blind engine would print 0 problems`——**发射的是控制抓住启动器，不是启动器抓住控制**。补上哨兵预检后同一条腿才读成上面那行绿。
+
+顺带把这台机器的引擎事实钉进注释：`chrome-headless-shell` 精确遵守 `--window-size`（1024/1280/1440/1455/1500/1600 全部由页面自报的 `innerWidth` 确认），Playwright 的完整 Chromium 在 CLI `--dump-dom` 下 8 个 flag 变体全部 45s 挂死，而旧引擎 Edge 曾把一个 1600px 控制盒夹到 ~1250px。
+
+**换引擎没有移动这条轴的读数**：`check_mermaid_geometry` 在新引擎上 217/217 真渲染、`local=11.14.0 live=11.14.0`、`102 超宽 / 101 缩放 / 0 横向滚动 / 116 原样`、最宽 1116px、最小字号 11.0px 中位 16.0px——与第 62 / 73 轮那笔旧账逐项一致。
+
+### 二、重新锚定第二条轴时，一个 20 轮的老前提塌了
+
+`check_svg_legibility` 的复制稿腿在 vw=1440 读 `<main>=753`，而它断言的是 768——按「先验尺子再下判决」的规矩，先怀疑尺子。一趟阶梯量测（每行都由页面自报 `innerWidth` 确认）：
+
+| 问的 vw | 复制稿 `<main>` | 线上 `<main>` | 差 |
+|---|---|---|---|
+| 1024 | 609 | 624 | −15 |
+| 1280 | 593 | 608 | −15 |
+| 1440 | 753 | 768 | −15 |
+| 1455 / 1500 / 1600 | 768 | — | 上限在这里才咬合 |
+
+第 73 轮写下的「复制稿挂不上 288px 章节侧栏和 256px 页内 TOC，所以正文独占 768」**是当时那台引擎的读数，不是复制稿的性质**：同一份复制稿在哨兵验证过的 shell 里两个面板都挂上了，差的只是 headless 预留的 15px 经典滚动条槽。本轮把这条从推断升级成直接读数——在复制稿的 SSR DOM 里量 `aside,nav`：`["aside.side-sheet=288","aside.side-sheet=256"]`，与线上腿逐字相同。
+
+修法不是把断言放宽，而是**让每条腿先声明自己问的是哪个窗口，再按那个窗口真给出的列宽判决**：
+
+* `COPY_VIEWPORT = 1500`（上限能咬合的最窄窗口，实测下界 1455 留了余量），`VIEWPORTS` 与两条下游轴的渲染窗口都改挂它；
+* 两条下游轴各加 `assert rep["vw"] == COPY_VIEWPORT`——问的窗口与报的窗口不一致时，列宽数字毫无意义；
+* 新增 `cap guard`：复制稿在 1500 必须读 768，否则**所有**用 768 当常数的轴先失效，红在常数上而不是红在内容上；
+* 新增 `COPY-NOT-LIVE`：同一窗口下复制稿与线上的差必须落在 0–24px（滚动条槽的量级），否则判红。这条专门用来防第 73 轮那个盲区回来——那时复制稿比读者真拿到的列宽**宽 160px**，而下游六条轴都在替读者担保那个宽数；
+* `COLUMN-MISMATCH` 从复制稿的 593 改挂线上读数：`readers get 608px (the live page at vw=1280)`。
+
+**门槛没有放松**：内容判决仍在 768 上做（那是上限真正生效处），笔记本读数仍按线上量出的 608 报——本轮换掉的是一条假前提，不是一条严标准。
+
+顺带一条新事实：宽版开关在复制稿的 1280 窗口下把列宽从 593 抬到 **768**（`wide layout at vw=1280 would give [768]`），在 1500 则 as-is 已经饱和在 768——也就是说它到底能不能超过 768，仍要到 `WIDE_NEEDS=1672` 以上的窗口才测得出来。
+
+### 三、目检这一项本轮先失败了一次，而且失败得有价值
+
+给「复制稿也挂面板」配图时，拍到的却是 GitBook 自己的错误边界页（`This page couldn't load` + Reload/Back）。加不加 `--virtual-time-budget` 两张 PNG 字节数完全一样（18062 / 16820），说明**崩溃发生在截图之前**；而探针的读数仍然有效，是因为它跑得更早、读的是服务端渲染好的那份 DOM——`check_svg_legibility` 里那个用独立 id 发报的 `fatal` 信标正是为这件事留的。结论写进了 `HYDRATED_AT` 上方：**复制稿可以量，不可以拍**；目检证据必须来自线上页。
+
+改拍线上页后两张图都成立：vw=1500 `main=768`、vw=1280 `main=608`，两张都带 288/256 两个面板，控制盒 200/960 读准、`phantom=False`。1280 那张肉眼可见左侧章节栏、右侧 ON THIS PAGE、中间被挤窄的正文，与「读者在 1280 笔记本上拿到 608px」这句话对平。
+
+### 四、本轮复跑与留下的账
+
+八条受影响的东西全部在新引擎上重跑：`--engine-selftest`、`check_mermaid_geometry`、`check_svg_legibility`、`check_table_overflow --pages 4`、`check_live_column`、`check_content_overflow`、`check_svg_fit`、`check_svg_phase_legibility`。除两条**已知在等产品取舍**的红之外全部 `exit=0`：
+
+* `check_table_overflow`：4 页 2332 格 `spill=0 bust=0`，`main=768`（本轮之前那 4 页全报 `main=753` 并计 4 条 COLUMN 问题），控制盒仍逐个溢出 267–298px；
+* `check_svg_legibility`：32 图 / 1109 标签，768 列下 `0` 张有低于 12px 标签；笔记本 608 列下 32 图 / 1066 标签低于门槛，仍只报不判；
+* `check_content_overflow`：276 条公式 `over-column=1`、最大 drag=12px（门槛 16px）、`unreachable=0`、`render-errors=0`；
+* 离线结构面：`check_structure` 198 页 `problems=0`（mermaid 217 / json 79 / text 52 / markdown 11 / yaml 10 / 无标签 8，可执行标签 0，json 契约解析 79/79，未闭合 0）、`check_link_graph FAILED: 0`（717 个去重外链全有判决、`oldest-check=2026-09-24`）、`check_char_sanity` 389970 正文汉字 `findings=0`、`check_changelog_headings HEAD=73 tree=74 lost=0`（74 是本轮这条新标题）。
+
+留下的账（都不是本轮能靠改尺子关掉的）：
+
+1. **102 张超宽 Mermaid 仍在等站点那个宽版开关**，`--column 1152 / 608` 的重读也仍未做；本轮新量到「开关在 1280 复制稿上给 768」，但**是否超过 768 要到 ≥1672 窗口才测得出**，这条比上一轮更具体。
+2. `check_live_column` 仍 `exit=1`：`COLUMN-MISMATCH readers get 608px`——为 608 重画全书图与收窄超宽图都是版式取舍，按停一停条款等操作者定。
+3. 复制稿的 15px 滚动条槽是**这台机器的 headless 配置**给的，不是 GitBook 给的；若哪天换引擎或换平台，`COPY-NOT-LIVE` 的 0–24px 带需要重新量一次而不是照抄。
+4. **GitHub PAT 早先贴在聊天里，仍需操作者去 GitHub 撤销轮换**（不是本轮能修的）。
 
 ## 2026-09-24（第 81 次）「每条结论都点得回一手来源」这句话被量过六次，六次的量具全用完就扔——落库 `tools/checks/check_link_graph.py`（站内跳转图 + 外部来源缓存判决 + 平台侧锚点腿），首趟量出 **22 个一手来源地址已经搬家（51 处引用 / 34 页，含 1 条 404）**，而另外三类「红」经查是尺子自己的错
 

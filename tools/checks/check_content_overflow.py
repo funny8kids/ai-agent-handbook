@@ -302,7 +302,7 @@ def sweep(srv, rows, cols, rid, budget=90):
     name = "overflow-%d.html" % rid
     io.open(os.path.join(srv.root, name), "w", encoding="utf-8").write(fixture(rows, cols, rid))
     srv.hold(rid, budget + 25)
-    proc = srv.edge(name, ["--dump-dom"])
+    proc = srv.render(name, ["--dump-dom"])
     try:
         return srv.wait(rid, budget, proc)
     finally:

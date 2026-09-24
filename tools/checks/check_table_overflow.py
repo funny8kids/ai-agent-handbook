@@ -40,7 +40,10 @@ Guards:
     `overflow-wrap:normal` (must spill). Without the pair, "0 spills" would be indistinguishable
     from a ruler that reads nothing.
   * `<main>` must measure 768 on every page — reported as a problem when it does not, since a page
-    that breaks the premise makes that page's widths mean something else.
+    that breaks the premise makes that page's widths mean something else. The copy is laid out at
+    `COPY_VIEWPORT` (1440px) for that to mean anything: round 82 measured the same page at 593px in
+    a 1280 window, because the article column is a max-width sitting beside two navigation panels
+    and the panels mount on a copy too.
   * the served markup must still carry `role=cell` + the clamp() min-width; otherwise the axis is
     measuring something other than what this file documents.
 
@@ -68,10 +71,10 @@ except AttributeError:
     pass
 
 import check_widget_visibility_live as wl                      # noqa: E402
-from check_live_column import live_copy                        # noqa: E402  <base>-rewritten page copy
-from check_mermaid_geometry import Server                      # noqa: E402  localhost + Edge runner
+from check_live_column import live_copy, COPY_VIEWPORT           # noqa: E402  <base>-rewritten page copy
+from check_mermaid_geometry import Server                        # noqa: E402  localhost + browser runner
 
-COLUMN_LIVE = 768           # round 62's measurement of <main>; asserted per run, not assumed
+COLUMN_LIVE = 768           # round 62's measurement of <main>; re-asserted every run
 CELL_FLOOR = 100            # px: the platform's clamp() floor, read from the served style
 SPILL_TOL = 8               # px: one glyph at the cell's 14px text — below this, sub-pixel noise
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -323,7 +326,7 @@ def main():
                           PROBE.replace("@@RID@@", str(rid)).replace("@@PORT@@", str(srv.port))
                              .replace("@@TOK@@", json.dumps(CONTROL_TOKEN))))
             srv.hold(rid, 120)
-            proc = srv.edge(name, [], height=2600)
+            proc = srv.render(name, [], height=2600, window=COPY_VIEWPORT)
             try:
                 rep = srv.wait(rid, 90, proc)
             finally:
@@ -332,11 +335,18 @@ def main():
                 problems.append("NOHYDRATE %s (%s) — harness/CDN, not a content verdict" % (rel, rep))
                 continue
             assert rep.get("cells", 0) >= 4, "vacuity: %s reported %s cells" % (rel, rep.get("cells"))
+            # The column this axis judges against is a max-width sitting beside two navigation
+            # panels, so it only exists at a window wide enough for it: check_live_column measured
+            # 593px for the same page at a 1280 window and 768px from 1440 up. Asking for the narrow
+            # one and asserting the wide number is how this axis went red on an engine swap.
+            assert rep.get("vw") == COPY_VIEWPORT, \
+                "asked for a vw=%d window, the copy reported %s — every column number below is then" \
+                " read off a different viewport" % (COPY_VIEWPORT, rep.get("vw"))
             if rep.get("main") != COLUMN_LIVE:
                 # Reported rather than asserted: one page rendering at another column is a finding
                 # about that page, while aborting the run would hide every page after it.
-                problems.append("COLUMN %s measured <main>=%s, not the %dpx under test"
-                                % (rel, rep.get("main"), COLUMN_LIVE))
+                problems.append("COLUMN %s measured <main>=%s at vw=%d, not the %dpx under test"
+                                % (rel, rep.get("main"), COPY_VIEWPORT, COLUMN_LIVE))
             assert "clamp(" in rep.get("style", ""), \
                 "%s: cells no longer carry the clamp() min-width the axis documents: %r" % (rel, rep.get("style"))
             broken = [r for r in rep["rows"] if max(r["spillR"], r["spillL"]) > SPILL_TOL]

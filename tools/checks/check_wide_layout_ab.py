@@ -153,7 +153,7 @@ try:
     fixture = fixture.replace("@@MAIN@@", MAIN_CLASS).replace("@@RID@@", str(RID))
     io.open(os.path.join(srv.root, "wide.html"), "w", encoding="utf-8").write(fixture)
     srv.hold(RID, 120)
-    proc = srv.edge("wide.html", ["--dump-dom"])
+    proc = srv.render("wide.html", ["--dump-dom"])
     try:
         rep = srv.wait(RID, 150, proc)
     finally:
