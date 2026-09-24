@@ -64,6 +64,24 @@ lost sentences: MISS=3 REVISION-BEHIND=20 STALE-COPY=0 | pages-with-MISS=1 fetch
 
 ① **活体变异控制只藏散文句**——标题与引用块的吞句由离线控制 T/U 证明，还没在真实发布页上藏过一条标题（藏 `<h2>` 要先处理它在目录副本里的同一串字，本轮没做，第 89 轮候选）。② **14 归一字符地板**对三条腿一律适用：短标题、短引用不判，77 条过地板却因链接/代码剥离而失格的标题尤其要记住。③ 第 87 轮记的 `UNWITNESSED` 重挂（把 witness 腿的未观测页改判成桶而不是名单）本轮**没做**，仍欠。④ `check_live_sync` 的落后判断没有因为本轮而变松：`REVISION-BEHIND` 只是不再冒充 `MISS`，滞后本身照旧由那条腿报。
 
+### 九、收尾：线上追上之后，那三个数实测归零
+
+`check_live_sync.py --watch` 以退出码 0 收工，两腿各读 `newest round=88`（`md` 313302 字节 / 144 轮，`html` 23902611 字节 / 512 轮），首页 witness 腿 `3/3 added needles live`。**尾腿**：
+
+```text
+prose survival: pages=196 units=13923 plain=11691 heading=640 quote=57 widget=1535 | all
+lost sentences: MISS=0 REVISION-BEHIND=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+OK: every graded sentence reaches the reader
+```
+
+推送前那一趟的 `3/17/60` 全部归零，而 `units`、`plain`、`heading`、`quote` 四个数与推送前**一字不差**——本轮新长的 691 条标题与引用单元，在读者一侧既没报出一条假丢失，也没让一条真丢失藏在新增的覆盖面底下。强调标记的 `--live` 腿同趟读 `pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`。
+
+目检走**线上页**（第 82 轮的规矩：复制稿能测不能截图），三张真实渲染帧各盯本轮改动的一个对象：`00-index/README.md` 那条 `>` 引用以带左竖线的引用框到达读者眼前、句末的冒号也在；更新日志页「第 88 次」那一节的标题粗体生效、右侧目录把 §一–§五 列全；首页那一条 bullet 的加粗正常、没有裸星号。三页 `main` 里字面 `**` 的计数是首页 5 个（5 个都在代码跨度里）、更新日志 93 个（93 个都在代码跨度里）、导读页 0 个，也就是**代码跨度之外一个都没有**，与 `--live` 腿的 `served_markers=0` 各自独立对上。
+
+这两趟目检先把**探针自己的两处错**量了出来，两处都改在探针上、内容一个字没动：① 拿判据的**归一化单元串**去在读者的 `innerText` 里做子串匹配——`norm` 把「——」与「，」折成空格，于是那条 `>` 单元永远匹配不上，第一条引用单元被误报成「没到读者眼前」；改成两侧都只留字母数字与汉字再比。② 数代码跨度里的 `**` 时用了 `main pre, main code`，`<pre>` 里那层 `<code>` 被数了两遍，「代码跨度之外」算出 **-8** 这个物理上不可能的数；只保留最外层节点之后才是 93/93。**如果没有那个负号，第 ② 处会被当成「读者眼前一个裸星号都没有」而直接记成一条绿**——记在这里，是因为这条轴第 83 轮的立轴理由就是「人眼发现了一次尺子的假绿」。
+
+§八 那四条账一字未动。收尾之后首页与更新日志又有了新字，下一轮推送前那趟会再次看到 `REVISION-BEHIND>0`：那是 §八 ① 记下的机制在照章办事，不是这条轴回归。
+
 ## 2026-09-25（第 87 次）第 86 轮 §十 现场把 `check_prose_survival.walk()` 的 docstring 前提问倒了：「14-templates/ 不在发布站上」——三份文件全部 `status: published`、H1 都能在 `url_index()` 命中——也就是**载有判据规范的那一页本身，在完整性判据的眼皮底下**；同源第二处（`check_live_sync.head_reader_pages`）也在做同样的排除，第 86 轮主提交对 `style-guide.md` 的读者可见改动**从来没有被 witness 腿追过**
 
 本轮正文 **0 页知识页改动**，只在两把尺子上各撤一处 dirpath 排除 + 各补一条「不许再把这一页装看不见」的控制（M / N），并把第 86 轮主提交的 `style-guide.md` 用新的 witness 腿当场追到 **3/3 needles live**；读者可见文字只动本页（新节 1 个 + 引用改写 2 处 + 第 86 轮标题 1 处）。**没有为过线删掉或加厚任何一页正文**：这条轴修的全是「尺子看不见」。
