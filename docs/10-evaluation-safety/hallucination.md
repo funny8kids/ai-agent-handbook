@@ -55,7 +55,7 @@ $$
 \text{Factual Precision}=\frac{\big|\{s\in S:\ s\ \text{有来源支持}\}\big|}{|S|}
 $$
 
-这与 RAG 评估里的**忠实度（Faithfulness）**是同一思想。
+这与 RAG 评估里的**忠实度**（Faithfulness）是同一思想。
 
 对应地，还要看**召回**：该说的关键事实有没有漏。两者的检索侧写法见 [RAG 基础](../06-memory-rag/rag-basics.md)。
 
