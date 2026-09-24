@@ -76,11 +76,11 @@ live formula verdict: pages=105/106 checked=273 hidden=0 problems=0 fetch-failur
 ```
 check_structure            pages scanned=198 problems=0
 check_changelog_headings   HEAD=65 tree=66 lost=0
-check_char_sanity          pages=198 prose CJK chars=365145 traditional-form findings=0
+check_char_sanity          pages=198 prose CJK chars=365337 traditional-form findings=0
 check_prose_duplicates     pages=191 prose_units=7254 formula_units=274 dup=0 near-band(0.72-0.85)=3
 ```
 
-`prose_units` 从第 73 轮落库的 7237 涨到 7254、CJK 从 363289 涨到 365145，都是本轮首页那两条新 bullet 与更新日志正文贡献的（本首页自己算一篇，改它这些数就动，判据读数只认当前树）；`formula_units` 仍 274（本轮 0 增删公式），近重复带仍 3 条 advisory（模板页互说「收录标准/配图要求」，语义本应一致）。全站 display 公式线上判决（见 §三）：**106/106 页、276 条公式、`problems=0`、`hidden=0`、覆盖桶那 1 个 webfont 超时页复跑即闭**；`--selftest` 六条种植全过。
+`prose_units` 从第 73 轮落库的 7237 涨到 7254、CJK 从 363289 涨到 365337，都是本轮首页那两条新 bullet 与更新日志正文贡献的（本首页自己算一篇，改它这些数就动，判据读数只认当前树）；`formula_units` 仍 274（本轮 0 增删公式），近重复带仍 3 条 advisory（模板页互说「收录标准/配图要求」，语义本应一致）。全站 display 公式线上判决（见 §三）：**106/106 页、276 条公式、`problems=0`、`hidden=0`、覆盖桶那 1 个 webfont 超时页复跑即闭**；`--selftest` 六条种植全过。
 
 ### 五、留下的账
 
@@ -89,6 +89,12 @@ check_prose_duplicates     pages=191 prose_units=7254 formula_units=274 dup=0 ne
 - **产品级取舍仍等操作者拍板（带数）**：① 32 张手绘 SVG 按 608/≈350 列重排（authored ≥18.9px 才够 12px 门槛）；② 开 GitBook 宽版布局（`--column 1152` 的 what-if 已读 0 越宽，但公式包裹层是硬 `max-w-3xl`、开了也不加宽）；③ 接受笔记本缩放、把 608 定为作者目标。本轮三选一都没替操作者决定。
 - ** carried 候选**：102 张超宽 Mermaid 等同一个宽版开关落地后用 `--column 1152` 重读；8 张真实产品 PNG 截图仍没有任何轴量过它们的内容；`10-eval-console-ui` 的「长文问答·跌」措辞像被截断的半句（措辞可读性轴第一个样本）；**GitHub PAT 早先贴在聊天里，仍需操作者去 GitHub 撤销轮换**（不是本轮能修的）。
 - **本条轴的覆盖桶仍可能因 CDN 速率触发**：`--selftest` 保证触发时 `exit 1` 且明写"重跑别读成绿"，但没有把它变成自动重扫——重扫是操作者的 `python tools/checks/check_live_formulas.py` 一条命令。
+
+### 六、推送与线上复核
+
+提交 `b10e40f`，SSH 推送 `42f0bb3..b10e40f → main`，`git ls-remote` 读回 `b10e40f0cba…` 与 HEAD 逐字相等——**推送结论只看这条对平**，与历轮口径一致。
+
+本轮 0 改正文页，所以读者拿到的**内容**就是 §三 那趟全站水合扫描量过的状态（106/106 页、276 条公式 `problems=0`），内容侧线上复核已在扫描里完成，无单独改页需复查。还在同步的只有 changelog / README 两份元数据页：`check_live_sync.py` 首探读 `.md` 腿停在第 73 次、`html` 腿停在第 72 次（第 74 次尚未上线）——这与第 73 轮收尾那次同族（发布延迟是每页、随时长的长量）。按既定口径，**changelog 页 HTML 腿的延迟不算本轮未完成**，内容是否上线看上面的水合复核。`.md` 腿到第 74 次后本节读数记入下方。
 
 ## 2026-09-24（第 73 次）四条「读者列宽」轴一直在量**复制稿**：同一页在真浏览器里被侧栏和页内 TOC 吃掉 160px（768 → 608），11 条 display 公式在这一列里得横向拖动（最宽 767px、拖 159px）→ **0**；目检另抓到一条 `[t]` 被 KaTeX 当正文画给读者的静默缺陷，如今守卫和反例都落库
 
