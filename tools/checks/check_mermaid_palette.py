@@ -13,8 +13,13 @@
 
 用法：
   python tools/checks/check_mermaid_palette.py                    # 作者侧，离线
-  python tools/checks/check_mermaid_palette.py --selftest         # 10 条控制项（8 条种缺陷 + 2 条锚点）
+  python tools/checks/check_mermaid_palette.py --selftest         # 13 条控制项（8 条种缺陷 + 2 条锚点 + 3 条线上腿的尺子）
   python tools/checks/check_mermaid_palette.py --live 8           # 线上抽样：发出的颜色就是写的颜色
+
+线上腿的口径（第 85 轮首跑就是它自己判瞎）：读者页面并不原样打印那一行，而是把它嵌在编辑器
+文档的 JSON 里，引号全部带反斜杠转义。所以比较前先剥掉转义反斜杠；命中与否之外还钉两条反向控制
+（改过一处章色的幽灵指令必须不命中、别页的指令行必须不命中），否则「全命中」与「什么都匹配」读起来一样。
+抽样里一条都没命中时报 LIVE-BLIND 退出 2（要么没同步要么尺子坏了），不读成内容通过，也不读成缺陷。
 """
 import argparse
 import io
@@ -204,6 +209,14 @@ def run():
 
 
 LIVE_PAGE = "06-memory-rag/long-context-degradation.md"
+PHANTOM = "#0E0E0E"  # 全书没用了这个色；指令行里拿它替换一处就该找不到
+
+
+def flatten(html):
+    """读者页面把作者写的指令行嵌在编辑器文档 JSON 里，引号全部带反斜杠转义
+    （\\"theme\\"），所以「原样子串」在这张页面上永远不可能命中——先剥掉转义反斜杠
+    再比。判决的对象不变：这一整行（含全部键名与九个色值）必须真的到了读者手里。"""
+    return html.replace("\\", "")
 
 
 def live(n):
@@ -218,7 +231,7 @@ def live(n):
         if rel not in pages:
             pages.append(rel)
     want = [LIVE_PAGE] + [p for p in pages if p != LIVE_PAGE][:n - 1]
-    bad, checked = [], 0
+    bad, blind, checked, hit = [], [], 0, 0
     for rel in want:
         h1 = re.search(r"^# (.+)$", read(os.path.join(DOCS, *rel.split("/"))), re.M)
         url = idx.get(LA.norm(h1.group(1).strip())) if h1 else None
@@ -226,25 +239,39 @@ def live(n):
             bad.append("NOT-LISTED %s" % rel)
             continue
         served = LA.fetch(url)
+        if not served or h1.group(1).strip() not in served:
+            # 连本页标题都没有：这一页什么都没证明，不许读成「指令丢了」
+            blind.append("FETCH/STALE %s" % rel)
+            continue
+        flat = flatten(served)
         for r2, i, src in rows:
             if r2 != rel:
                 continue
             line = src.split("\n", 1)[0].strip()
-            if line not in served:
-                bad.append("DIRECTIVE-AWOL %s#%d 线上这一页里找不到作者写的章色指令行" % (rel, i))
             checked += 1
+            if line in flat:
+                hit += 1
+                ghost = line.replace(re.search(r"#\w\w\w\w\w\w", line).group(0), PHANTOM)
+                if ghost in flat:
+                    bad.append("PHANTOM-HIT %s#%d 改色后的幽灵指令也命中，等式判不出东西" % (rel, i))
+            else:
+                bad.append("DIRECTIVE-AWOL %s#%d 线上这一页里找不到作者写的章色指令行" % (rel, i))
             for bucket, msg in grade(src, palette, form, ink, rel):
                 if bucket == "CONTRAST":
                     tv = json.loads(re.match(r"^%%\{init:\s*(\{.*\})\}%%$", line).group(1)
                                     )["themeVariables"]
-                    if (tv.get("primaryTextColor") or "").upper() in served:
+                    if (tv.get("primaryTextColor") or "").upper() in flat:
                         bad.append("READER-INVISIBLE %s#%d 低对比的标签色确实发到了读者页面上"
                                    % (rel, i))
-    print("live palette leg: pages=%d directives-checked=%d problems=%d"
-          % (len(want), checked, len(bad)))
-    for x in bad[:10]:
+    print("live palette leg: pages=%d directives-checked=%d hit=%d fetch-blind=%d problems=%d"
+          % (len(want), checked, hit, len(blind), len(bad)))
+    for x in (blind + bad)[:10]:
         print("   " + x)
-    return 1 if bad or checked < n else 0
+    if checked and not hit:
+        print("   LIVE-BLIND 一条指令都没命中：要么站点没同步，要么这条腿找错了字符串——"
+              "先跑 check_live_sync 定同步，再重读这条腿，不许读成内容通过")
+        return 2
+    return 1 if bad or blind or checked < n else 0
 
 
 def selftest():
@@ -307,6 +334,17 @@ def selftest():
     check("K 公式必须复现规范自己给的示例行",
           all((json.loads(example).get("themeVariables") or {}).get(k) == mix(palette[2], w)
               for k, w in form.items()))
+    # L/M/N 是线上腿的尺子控制：读者页面把指令行嵌在编辑器文档 JSON 里（引号带反斜杠），
+    # 第 85 轮那版腿拿原样子串去比，于是把 6 页全报成 DIRECTIVE-AWOL——包括本轮没碰过的页。
+    line0 = real[0].split("\n", 1)[0].strip()
+    escaped_blob = '{"nodes":[{"text":"%s"}]' % line0.replace('"', '\\"')
+    check("L 转义过的读者页面必须命中（旧尺子在这里判瞎）",
+          line0 in flatten(escaped_blob) and line0 not in escaped_blob)
+    ghost = line0.replace(re.search(r"#\w\w\w\w\w\w", line0).group(0), PHANTOM)
+    check("M 改过一处章色的幽灵指令不得命中", ghost not in flatten(escaped_blob))
+    other = [s.split("\n", 1)[0].strip() for r, _i, s in blocks() if r != LIVE_PAGE]
+    check("N 别页的指令行不得在本页命中",
+          all(o not in flatten(escaped_blob) for o in other if o != line0))
     print("mermaid palette controls: %d checks, %d not caught"
           % (len(planted), len(fails)))
     for f in fails:

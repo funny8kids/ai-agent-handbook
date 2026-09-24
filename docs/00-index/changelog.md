@@ -60,7 +60,7 @@ mermaid palette: blocks=217 chapters=21 formula=lineColor45%,primaryColor90%,sec
 
 ### 六、留下的账
 
-- `--live` 腿是**抽样**（`--live N`，核对发出的章色指令行是否逐字出现在读者页面上），不是穷尽 196 页；本轮用它复核的是修复前那份证据，推送后再跑一次。
+- `--live` 腿是**抽样**（`--live N`），不是穷尽 196 页。这条原本是写错的：它自称核对的是指令行**逐字**出现在读者页面上，而**逐字**这个前提根本不成立——推送后第一次真跑，6 页全部报 `DIRECTIVE-AWOL`，其中 **5 页本轮压根没碰过**，所以那是尺子的病不是书的病。归因量过：读者页面不打印那一行，而是把它嵌在编辑器文档的 JSON 里，引号全部带反斜杠转义（原页面实测 `"text":"%%{init: {\"theme\":\"base\",…`），任何原样子串比对都不可能命中。修在尺子上：比对前先剥转义反斜杠，并补两条**反向**控制钉住「命中」是有判别力的（把一处章色换成全书没用过的 `#0E0E0E` 得到的幽灵指令必须不命中；别页的指令行必须不命中）。控制从 10 条加到 **13 条**，三条新控制各自做过变异验证：把剥转义改回原样 → L 响；把幽灵色换成本页真实色（幽灵==原文）→ M 响；负样本集合不再去掉自身 → N 响；未变异的基线 `13 checks, 0 not caught`。还加了一条 `LIVE-BLIND`：抽样里一条都没命中就退出 2 并说明「要么没同步要么尺子坏了」，**不许读成内容通过**——上一版的失败模式正是把「判不了」印成 6 条内容缺陷。修完复跑 `--live 6`：`pages=6 directives-checked=6 hit=6 fetch-blind=0 problems=0`，样本第一页就是本轮修过的 `06-memory-rag/long-context-degradation.md`，也就是**修复后的那行颜色确实到了读者手里**（比对对象是工作区当前那一行，旧版页面不可能命中它）。
 - 规范只钉了 `primaryTextColor` 一个文字变量，`actorTextColor`/`noteTextColor`/`tertiaryColor`/`signalColor` 等键**没有掺白比例可判**——判据不替规范发明规则，这些键只受 ≥4.5:1 那条底线管着。要不要把它们也写进规范，是下一轮的内容决定。
 - 对比度腿算的是**作者写的颜色字面量**与 Mermaid 默认 16px 小字档；若某张图显式设了 `fontSize`/大字标签，本轴不会知道（全站当前 0 处显式字号，是盲区不是缺陷）。
 - 第 84 轮 §十 的尾巴**没有**在本轮开始时就已经到齐：`check_live_sync` 两腿各读 `newest round=84`、witness 腿 `docs/README.md 3/3 added needles live`，强调轴 `--live` 腿读 `pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`，这三条都过了；但散文轴仍报更新日志 **32 句**没到读者眼前（`MISS=32 STALE-COPY=0`，前一晚盯 §十 那个小标题原文的轮询也读 `False`）。也就是说线上那份更新日志停在第 84 次的**前半截**——`round=84` 这个标题在场并不等于整节都发出去了，「同步」不能只按标题判定。本轮推送后与第 85 次一起复跑，记在收尾那一节。
@@ -68,6 +68,8 @@ mermaid palette: blocks=217 chapters=21 formula=lineColor45%,primaryColor90%,sec
 ### 七、日期轴当场又抓到 7 条 BEHIND：第 84 轮修完正文没告诉读者
 
 `check_updated_dates.py` 是第 75 轮落的判据，当时它预言「第 17 轮手工回填过 80 个失真日期，没判据六个轮次就攒出 17 个」。本轮首跑读到 **7 条 BEHIND**：**6 条是第 84 轮的尾巴**（`01/machine-learning-basics`、`05/browser-code-filesystem-tools`、`06/text-to-sql`、`07/error-recovery-retry`、`07/tool-selection-routing`、`11/agent-failure-playbook`——那一轮挪过这些页的加粗标记，`updated:` 一个字没动，读者看到的仍是 09-22/09-23），第 7 条是本轮自己改的 `14-templates/style-guide.md`。`--fix` 一次写回 → `problems=7 → 0`，`git diff --numstat` 逐页恰好 1/1（**七页正文一个字没动**，脚本自己拦住任何 1/1 之外的页）。这条轴又一次证明它值得常驻：上一轮的收尾把这条漏了过去，而漏的方式正是「改了正文、忘了告诉读者」。
+
+**同一轮推送后又抓到第 8 条，而这条更值得记**：本轮自己修过颜色的 `06-memory-rag/long-context-degradation.md` 仍写着 `updated: 2026-09-22`。首跑没报它，是因为这条轴读的是**提交日期**，而当时那一处还躺在工作区里（轴把它记进 `pending-commit` 桶而不是缺陷桶——一个还没提交的改动谈不上骗读者）。提交之后重跑，`problems=1`：正文今天动了、页面向读者宣布的却是三天前。`--fix` 后 `1 → 0`，`git diff --numstat` 仍是恰好 1/1。**口径因此要说全**：`--fix` 在提交前跑一遍不够，同一轮至少还要在提交后复跑一遍，否则本轮改过的那一页会带着旧日期上线。
 
 ### 八、改动清单
 
