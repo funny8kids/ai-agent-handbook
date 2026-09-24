@@ -365,6 +365,24 @@ def controls():
     blind = served_chunks(bare_served.replace("它后面的汉字也足够长能成为单位", " "))
     if not grade(bare, blind):
         errs.append("control K: hiding the clause after a bare reference must still read as a swallow")
+    # L: emphasis markers, pinned in the direction the platform actually goes. Round 86's one site-wide
+    # MISS (changelog L75) tempted the ruler to delete `**` from the authored unit; measured on the
+    # changelog that "fix" turned 1 MISS into 643, because `served_chunks` replaces every tag with a
+    # space, so a normally rendered mid-clause `**x**` really does print `x` with spaces around it. A
+    # MISS of that shape is therefore the platform pairing the markers somewhere the author did not —
+    # a reader-visible defect in the copy, and it must stay a MISS.
+    bold = chunks("这一句读者完整看得到，那条轴**中段加粗的那半句**，前几轮它抓的都是历史欠账。\n")
+    if not any("那条轴 中段加粗的那半句" in u for _k, u, _l in bold):
+        errs.append("control L: a marker must enter the unit as the space the page prints, got %r" % (bold,))
+    bold_served = "<p>这一句读者完整看得到，那条轴<strong>中段加粗的那半句</strong>，前几轮它抓的都是历史欠账。</p>"
+    if grade(bold, served_chunks(bold_served)):
+        errs.append("control L: a rendered <strong> sentence must not read as a swallow, got %r"
+                    % (grade(bold, served_chunks(bold_served)),))
+    if not grade(bold, served_chunks(bold_served.replace("中段加粗的那半句", " "))):
+        errs.append("control L: hiding the bold clause must still read as a swallow")
+    if not grade(bold, served_chunks(bold_served.replace("那条轴<strong>", "那条轴"))):
+        errs.append("control L: a bold run the platform opened somewhere else must stay a MISS, "
+                    "not be paid for by deleting markers")
     # G: the list marker. H: the pinned-page cut, which must fire on the page's own round text only.
     items = chunks("1. **这是一条足够长的自测清单项目**：说明部分同样足够长\n")
     if not items or items[0][1].startswith("1 "):

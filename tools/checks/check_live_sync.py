@@ -78,6 +78,18 @@ STAMP = re.compile(r"^(?:updated|last_updated|date):\s*(20\d\d-\d\d-\d\d)", re.M
 # A tag name never starts with a digit, so a needle's own prose `<` cannot open a deletion (round 83
 # measured the changelog write `（W<420 且 H>380）` disappear under a loose `<[^>]+>`).
 WITNESS_TAG = re.compile(r"<[a-zA-Z/!][^>]*>")
+# What a line looks like to a reader is not what it looks like in a diff: backticked runs are
+# printed inside a code box that the visibility pipeline drops, and a link's target never prints at
+# all — only its label does. Slicing needles out of either yields a needle no reader page can show,
+# i.e. a STALE red that no amount of syncing clears (round 84's lesson, applied to the other side).
+CODE_SPAN = re.compile(r"`[^`\n]*`")
+LINK_TARGET = re.compile(r"\[([^\]]*)\]\(([^)\n]*)\)")
+
+
+def sliceable(lines):
+    """The reader-visible characters of authored lines: code-box contents and link targets removed."""
+    raw = "\n".join(lines)
+    return LINK_TARGET.sub(r"\1", CODE_SPAN.sub(" ", raw))
 
 
 def head_reader_pages(rev="HEAD"):
@@ -106,46 +118,58 @@ def reader_body(path):
     return "\n".join(lines[PS.frontmatter_end(lines):])
 
 
-def needles_from(added_lines, body):
-    """Slice witness needles from the lines a revision added, keeping only text the page prints.
+def needles_from(added_lines, body, removed_lines=()):
+    """Slice witness needles from text the revision INTRODUCTED and the page prints.
 
     Round 84: every needle — the prose runs as well as the two fallbacks — must survive in `body`,
     because frontmatter is never printed on a reader page. A commit that touches only
     `description:` or `cover:` otherwise yields an invisible needle, which is a STALE red no amount
     of syncing can clear (the same bug item ② caught in the fallbacks, sitting one line higher).
+
+    Round 86 added the other half of the same question. `git show` hands back whole ADDED LINES, and
+    a line whose only change is a digit counts as added, so slicing prose off it certifies a
+    sentence that was already live one revision ago — a needle that can never fail. A candidate
+    therefore also has to be absent from the lines the revision REMOVED. Without that filter the
+    homepage's three "live" needles were round 80's text, on a page whose round-86 sentences had
+    not reached readers at all.
     """
-    raw = "\n".join(added_lines)
+    raw = sliceable(added_lines)
+    old = sliceable(removed_lines)
     text = re.sub(r"[`*_\[\]()#|>-]", " ", raw)
     seen, needles = set(), []
     for r in (x[:18] for x in CJK_RUN.findall(text)):
-        if r not in seen:
-            seen.add(r)
-            if r in body:
-                needles.append(r)
+        if r in old or r in seen:
+            continue                     # survived the edit unchanged => witnesses nothing
+        seen.add(r)
+        if r in body:
+            needles.append(r)
     if needles:
         return needles[:3]
     # No printable prose was added: witness the link the commit introduced, or the day it stamped.
     for host in URL_ADDED.findall(raw):
         h = host.rstrip("/.")
-        if h and h not in needles and h in body:
+        if h and h not in old and h not in needles and h in body:
             needles.append(h)
     stamp = STAMP.search(raw)
-    if stamp and stamp.group(1) not in needles and stamp.group(1) in body:
+    if stamp and stamp.group(1) not in old and stamp.group(1) not in needles \
+            and stamp.group(1) in body:
         needles.append(stamp.group(1))
     return needles[:3]
 
 
 def added_needles(path, rev="HEAD"):
-    """Needles sliced from the lines REV ADDED on that page — never from the whole file.
+    """Needles sliced from text REV introduced on that page — never from the whole file.
 
     A needle from an unchanged paragraph is on the published page either way, so it witnesses
-    nothing; the added lines are the only text whose presence proves the reader got this revision.
+    nothing; the added lines are the only text whose presence proves the reader got this revision,
+    and the removed lines say which part of them the revision actually wrote (round 86).
     """
-    out = subprocess.run(["git", "show", "--unified=0", "--format=", rev, "--", path],
-                         cwd=os.path.dirname(DOCS), capture_output=True).stdout
-    added = [l[1:] for l in out.decode("utf-8", "replace").splitlines()
-             if l.startswith("+") and not l.startswith("+++")]
-    return needles_from(added, reader_body(path))
+    diff = subprocess.run(["git", "show", "--unified=0", "--format=", rev, "--", path],
+                          cwd=os.path.dirname(DOCS), capture_output=True).stdout
+    lines = diff.decode("utf-8", "replace").splitlines()
+    added = [l[1:] for l in lines if l.startswith("+") and not l.startswith("+++")]
+    removed = [l[1:] for l in lines if l.startswith("-") and not l.startswith("---")]
+    return needles_from(added, reader_body(path), removed)
 
 
 def witness_leg(rev="HEAD"):
@@ -180,7 +204,14 @@ def witness_leg(rev="HEAD"):
         # Tags first, entities after — the order `check_prose_survival` uses, so a `&gt;` inside an
         # attribute can never fake a tag close, and an address or quoted phrase shipped as `&quot;`
         # is read as the characters the reader sees rather than the word "quot" (round 83).
-        page = unicodedata.normalize("NFC", unescape(WITNESS_TAG.sub(" ", html.decode("utf-8", "replace"))))
+        # Round 86 moved the haystack from the raw document to the reader's text: the served HTML
+        # also carries GitBook's editor payload, which embeds the page's NEWEST markdown while the
+        # paragraph a reader is shown is still the previous revision's. Matching the raw document
+        # certified three round-80 sentences as "live" on a homepage whose round-86 sentences had
+        # not arrived — the two faults in one line, since those sentences also survived the edit.
+        raw_html = html.decode("utf-8", "replace")
+        page = unicodedata.normalize(
+            "NFC", unescape(WITNESS_TAG.sub(" ", LA.body_visible(raw_html))))
         lost = [n for n in ns if n not in page]
         phantom = ns[0][:8] + u"墙" + ns[0][9:]
         if phantom in page:
@@ -210,27 +241,41 @@ def controls():
             "---\ntitle: 演示页\nupdated: 2026-09-25\n---\n\n# 演示页\n\n"
             "这一天 2026-09-25 写在正文里，读者看得见它。\n"
             "参考 https://example.com/spec#section 里的说法。\n"
-            "这一句新写的正文读者一定会看到，所以它是合法的见证针。\n")
+            "这一句新写的正文读者一定会看到，所以它是合法的见证针。\n"
+            "这一句是上一版就印在页面上的旧话，本轮只把行尾的数字改成 57。\n"
+            "`代码盒子里那句新写的正文，读者页面的可见文字里并没有它，所以它当不了针。`\n")
         prose_run = [x[:18] for x in CJK_RUN.findall(
             "这一句新写的正文读者一定会看到，所以它是合法的见证针。")][0]
-        for what, page, added, want in (
-                ("a frontmatter date must not be a needle", fm, ["updated: 2026-09-25"], []),
+        kept_run = [x[:18] for x in CJK_RUN.findall(
+            "这一句是上一版就印在页面上的旧话，本轮只把行尾的数字改成 60。")][0]
+        assert kept_run in reader_body(body), \
+            "control needs the kept sentence on the page: the filter, not the body gate, must exclude it"
+        for what, page, added, removed, want in (
+                ("a frontmatter date must not be a needle", fm, ["updated: 2026-09-25"], [], []),
                 ("a date printed in the body must be a needle",
-                 body, ["updated: 2026-09-25"], ["2026-09-25"]),
+                 body, ["updated: 2026-09-25"], [], ["2026-09-25"]),
                 ("a frontmatter cover address is not reader text",
-                 fm, ["cover: https://example.com/cover.png"], []),
+                 fm, ["cover: https://example.com/cover.png"], [], []),
                 ("an address printed in the body must be a needle",
-                 body, ["参考 https://example.com/spec#section 里的说法。"],
+                 body, ["参考 https://example.com/spec#section 里的说法。"], [],
                  ["example.com/spec#section"]),
                 ("Chinese that lives only in frontmatter is no needle",
-                 fm, ["description: 这一句只写在元数据里，读者页面上永远不会看到它。"], []),
+                 fm, ["description: 这一句只写在元数据里，读者页面上永远不会看到它。"], [], []),
                 ("new prose the page prints must stay a needle",
-                 body, ["这一句新写的正文读者一定会看到，所以它是合法的见证针。"], [prose_run]),
+                 body, ["这一句新写的正文读者一定会看到，所以它是合法的见证针。"], [], [prose_run]),
                 ("ordinary unchanged prose is no witness: the line must come from the revision",
-                 body, ["updated: 2031-01-01"], [])):
-            got = needles_from(added, reader_body(page))
+                 body, ["updated: 2031-01-01"], [], []),
+                # The two faults round 86 measured on the live homepage, in one control each.
+                ("a sentence that merely survived the edit witnesses nothing",
+                 body, ["这一句是上一版就印在页面上的旧话，本轮只把行尾的数字改成 60。"],
+                 ["这一句是上一版就印在页面上的旧话，本轮只把行尾的数字改成 57。"], []),
+                ("prose inside a code box is not reader-visible text",
+                 body, ["`代码盒子里那句新写的正文，读者页面的可见文字里并没有它，所以它当不了针。`"],
+                 [], [])):
+            got = needles_from(added, reader_body(page), removed)
             if got != want:
-                errs.append("control: %s (added=%r want=%r got=%r)" % (what, added, want, got))
+                errs.append("control: %s (added=%r removed=%r want=%r got=%r)"
+                            % (what, added, removed, want, got))
     return errs
 
 

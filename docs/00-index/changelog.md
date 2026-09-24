@@ -72,7 +72,7 @@ M6 如实记：抬高地板不只让「同键取最低」那条锚点响，连�
 
 第 86 轮改的全是规范页与首页，所以收尾跑了一趟离线电池（19 条腿）。三处出声：
 
-1. **强调标记轴抓到本轮自己写的新缺陷**：`14-templates/style-guide.md` 1 页 **2 个**读者可见的裸星号。原因是 §四那段写成了「按**最低那档（600）**硬判」——闭合那对星号紧跟全角 `）`，按 CommonMark 的 flanking 表右侧条件不成立，配对失败、两颗星原样印到读者眼前。改成「按最低那档（**600 字**）」，内容一个字没动。这是第 84 轮那条轴**第一次抓到当轮作者刚写下的字**，前几轮它抓的都是历史欠账。
+1. **强调标记轴抓到本轮自己写的新缺陷**：`14-templates/style-guide.md` 1 页 **2 个**读者可见的裸星号。原因是 §四那段写成了「按 `**最低那档（600）**` 硬判」——闭合那对星号紧跟全角 `）`，按 CommonMark 的 flanking 表右侧条件不成立，配对失败、两颗星原样印到读者眼前。改成「按最低那档（`**600 字**`）」，内容一个字没动。这是第 84 轮那条轴**第一次抓到当轮作者刚写下的字**，前几轮它抓的都是历史欠账。
 2. **`link-graph` 的首页徽章在 HEAD 上就已经红了**：`HOMEPAGE-BADGE relative: homepage says 1578, tree reads 1581`（HEAD 快照实测），本轮加了一个站内链接后树读到 1582。同一趟 `check_prose_duplicates` 的自移动计数器也飘着：首页写 7377，HEAD 树里是 7393，工作区 7414。两条都是**第 85 轮收尾时没跑这两条腿**留下的：那一轮自己写的尾腿清单（散文物种、章色 `--live`、强调 `--live`、线上对平、日期、结构、首页统计）恰好不含「会随文档改动自己挪数」的那两条。本轮两处徽章重新锚定，并把「尾腿集合必须覆盖自移动计数器」记进 §七。
 3. **字数地板这条轴自己是绿的**：`problems=0`，也就是第 14/15 轮之后这 70 轮里没有一页薄页偷偷发布——这是好消息，但也说明这条轴本轮的价值在**绑定缺口 + 回归护栏**，而不是当场清缺陷（不为凑缺陷去挪阈值）。
 
@@ -93,6 +93,37 @@ M6 如实记：抬高地板不只让「同键取最低」那条锚点响，连�
 ### 九、改动清单
 
 `tools/checks/check_genre_floors.py`（新增，10 条控制 + 7 条变异验证）· `docs/14-templates/style-guide.md`（§三 新增「实验型」体裁小节；§八 表格 6 行绑定 `type` 键 + 新增实验型一行 + 「本节即判据的规范来源」+ 口径后果；强调标记位置 1 处）· `docs/README.md`（新增 1 条统计；`link-graph` 与 `prose_units` 两处自移动计数器重新锚定）· 本页 1 节。
+
+### 十、收尾（主提交 `0236613` 之后：把 §六第 1 条那处 L75 缺陷改掉 + 把这条误修的路钉在判据里 + 走完第 85 轮尾腿）
+
+**第 85 轮的线上尾腿已追平**（task 收尾清单里挂了两轮的那三条）：`check_live_sync` 现场读到 `leg md newest round=86 (290456 bytes, 141 rounds)` 与 `leg html newest round=86 (22584246 bytes, 500 rounds)`，两腿都在 86；`witness ok docs/README.md 3/3 added needles live`——首页本轮新写的三句都到了读者手里。§八第 1 条的 `UNWITNESSED docs/06-memory-rag/long-context-degradation.md (HEAD~1 added no sliceable text there)` 本轮按承诺**未动尺子**（`--rev HEAD~1` 复测仍在，因为第 85 轮那处真的只改了 Mermaid 指令行颜色），列为第 87 轮第一件事。
+
+**§六第 1 条那处的修法只算了一半**：本轮把 §四的强调标记位置改了，但 `check_prose_survival --page 00-index/changelog` 在**已推的 HEAD** 上仍读到 `units=3304 MISS=1 STALE-COPY=0`——被点名的单元是 §六第 1 条尾部「这是第 84 轮那条轴**第一次抓到当轮作者刚写下的字**，前几轮…」。原因不在这一句，而在同一行前半段那两处把 `**…**` 当示例写的字面量：它们各自让 GitBook 的水合把 `<strong>` 边界挪了一次，第二段挪到了这句正常写法的 `**…**` 两侧，把它该带的空格吃掉了。**修法**是把那两处字面量放进行内代码（`` `**…**` ``）让星号以字面样子给读者，内容一字未改；后半段这一句的正确写法**保留原样**，因为它本来就是合规的。
+
+**这次差点把尺子改错**：我先入为主以为 `MISS=1` 是判据假阳——理由是 `served_chunks` 把标签替成空格，看着像「作者写 bold、页面正常渲染 → 两侧应带空格」——于是动手在 `chunks()` 里把成对的 `**` 从切分单元里删了。**A/B 一跑，同一页 `MISS` 从 1 涨到几百量级**（准确数字已经写进控制 L 的注释里，本轮不再重跑变异）——因为 `<strong>x</strong>` 被替成 ` x ` 是判据**正确**的模型，删掉 `**` 会让所有中段子句系统性假阴。这条「把真 MISS 当假阳 → 修尺子 → 制造假绿」正是 §七那类老账的镜像版本；`check_prose_survival.py` 控制 L 从此钉住它：`a bold run the platform opened somewhere else must stay a MISS, not be paid for by deleting markers`。判据回退到 HEAD 状态（`git diff --stat` 只剩 +18 行的控制 L），`--selftest` 现读 `controls: OK, every bucket able to fire`。
+
+**§八目检补记**：本轮唯一读者可见的新表在 §八（emoji 计数分桶）。真实渲染截图在临时目录 `sec8.png`（194,741 B，1280×1000），目检过：5 行都完整可读、列宽没把中文挤到错位。附带一条**平台事实**：GitBook 水合后的 DOM 里 `document.querySelectorAll('table').length === 0`（表格渲染成 div grid），而 SSR HTML 里确有 `<table>`——未来的浏览器端表格判据不能选 `table`。
+
+**本段提交前的最后一趟离线电池**（全绿；数字全部本段现场再量）：
+
+| 判据 | 读数 |
+|---|---|
+| `check_structure.py` | `pages scanned=198 problems=0`；围栏 `mermaid=217 json=79 text=60 markdown=11 yaml=10 (no tag)=9`，可执行语言 0，79 份 json 契约全解析 |
+| `check_emphasis_flanking.py` | `pages=0 leaked_strong_markers=0 lone_star_runs=1 (context only)` |
+| `check_genre_floors.py` | `pages=196 published=196 graded=159 免检(不限)=37 不可判(同键高档)=40 \| problems=0` |
+| `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0 unreadable=0` |
+| `check_changelog_headings.py` | `HEAD=78 tree=78 lost=0` |
+| `check_prose_duplicates.py` | `pages=191 prose_units=7414 formula_units=274 dup=0 near-band=3` |
+| `check_link_graph.py` | `pages=196 relative=1582 distinct=717 ok=702 blocked=14 net=1 unchecked=0 / FAILED: 0` |
+| `check_content_overflow.py` | 768 与 608 双扫：两档 `bar=16px drag -> 0 formulas to fix`；608 唯一 `over-column=1` 是 `03-llm/rlhf-dpo-alignment.md`（nat=620.28 drag=12px，在 16px 底线以内） |
+| `check_live_sync.py` | 上面第 1 段三条腿 |
+| `check_prose_survival.py --page 00-index/changelog` | 对旧 HEAD 的线上页判：`MISS=1`（就是这一处），本段推送之后要读到 `MISS=0` |
+
+两条自移动计数器（`prose_units=7414`、`link-graph relative=1582`）**未飘**，因此本段不再重锚首页两处徽章——这也是 §六第 2 条落进规范里那条「尾腿集合必须覆盖自移动计数器」的第一次回归使用。
+
+**推送后的尾腿（本轮完成条件）**：`prose_survival --page 00-index/changelog` 读到 `MISS=0`、`emphasis_flanking --live`（作者侧刚过 0，线上追平后应为 0）、`live_sync` witness 对新 HEAD。
+
+**发现的判据缺口（第 87 轮候选，本轮未修）**：`check_prose_survival.walk()` 的 docstring 声明「`14-templates/` 里的文件是作者脚手架，不在发布站上」——**这条前提刚被现场测伪**：目录三份文件全部 `status: published`，H1 均在 `live_aria_manifest.url_index()` 命中；`--page 14-templates/style-guide` 读到 `pages=0 units=0`。也就是说载有「体裁硬下限表」与「强调标记规范」的这一页本身**没有**完整性判据在守。与 §八第 1 条（UNWITNESSED 分桶）一起列第 87 轮前两件。
 
 
 ## 2026-09-25（第 85 次）「全书 217 张 Mermaid 都带章色」这句话由谁来复核？此前是**一个人、一次、2026-09-22**——落库 `tools/checks/check_mermaid_palette.py`（判据的规范来源就是读者看到的那一页），首趟量出 **1 页 4 组 1.00–1.19:1 的白底白字**，只改 4 个颜色字面量后 **0**
