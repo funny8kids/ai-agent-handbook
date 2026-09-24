@@ -25,6 +25,10 @@ the served page.
     and GitBook reprints heading text in its own TOC, which would let the body hide a gap.
   - a bare `<https://…>` autolink ends a unit exactly like a link does: the published page prints
     the address itself between the two halves of the sentence, so a joined unit could never match.
+  - a reference with no terminating `;` stays literal text on the authored side, because that is what
+    the platform ships: round 84 read the raw HTML behind changelog L128 and found the authored
+    `&quot` arriving as `&amp;quot`, i.e. the reader is shown the word `quot`. Python's `unescape`
+    decodes that legacy form, so decoding authored source erases characters the reader has.
   - a page that prints its own round history is graded only from the first round its published copy
     provably finished. Round 83 measured the live changelog holding round 79's heading but not the
     close-out prose added to that section after the push — a revision gap no fetch can distinguish,
@@ -63,6 +67,19 @@ SENT_END = re.compile(r"[。；;！!？?]")
 # so the served side loses nothing by the same, stricter rule.
 HTML_TAG = re.compile(r"<(?!br\s*/?>)[a-zA-Z/!][^>]*>")
 BR = re.compile(r"<br\s*/?>", re.I)
+# A reference with no terminating `;` is shipped as literal text by the platform: round 84 read the
+# live raw HTML of changelog L128 and found the authored `&quot` arriving as `&amp;quot`, i.e. the
+# reader is shown the word `quot`. Python's `html.unescape` decodes that legacy form, so applying it
+# to the *authored source* deleted characters the reader really has and the two sides disagreed about
+# the same sentence (one MISS on a page whose text is fully published). Decoding on the authored side
+# therefore follows the platform: only `;`-terminated references. The served side keeps plain
+# `unescape`, because everything the platform escapes it escapes with a `;`.
+BARE_REF = re.compile(r"&(?![A-Za-z][A-Za-z0-9]{1,31};|#(?:\d+|[xX][0-9a-fA-F]+);)")
+AMP = "\x02"
+
+
+def decode_as_platform(text):
+    return html.unescape(BARE_REF.sub(AMP, text)).replace(AMP, "&")
 INLINE_MATH = re.compile(r"\$\$[^$]*\$\$|\$[^$\n]+\$")
 LINK = re.compile(r"!?\[[^\]]*\]\([^)]*\)")
 # A bare `<https://…>` autolink is not a tag: the reader's page prints the URL itself between the two
@@ -127,7 +144,7 @@ def chunks(text):
         body = HTML_TAG.sub(" ", body)
         kind = "widget" if (depth or on_tag_line) else "plain"
         for pi, part in enumerate(body.split(HOLE)):
-            for i, piece in enumerate(SENT_END.split(html.unescape(part))):
+            for i, piece in enumerate(SENT_END.split(decode_as_platform(part))):
                 if pi == 0 and i == 0 and ordered:
                     piece = re.sub(r"^\s*\d+[.)]\s+", " ", piece)
                 # `|` is a HOLE, not a space: round 83 found the published page printing its own
@@ -334,6 +351,20 @@ def controls():
     if grade(quoted, served_chunks(ent)):
         errs.append("control F: an HTML-quoted sentence must not read as a swallow, got %r"
                     % (grade(quoted, served_chunks(ent)),))
+    # K: the semicolon-less reference, which is the mirror image of F. Round 84's post-sync sweep read
+    # one MISS on a sentence the reader does have: the authored `&quot` reaches the page as the literal
+    # word `quot`, so the authored side must not decode it away. Both directions are asserted — the
+    # word survives slicing, and the two sides agree on the shipped HTML.
+    bare = chunks("这一句里写着一个不带分号的实体引用 &quot 它后面的汉字也足够长能成为单位。\n")
+    if not any("quot" in u for _k, u, _l in bare):
+        errs.append("control K: a semicolon-less reference must stay literal text, got %r" % (bare,))
+    bare_served = "<p>这一句里写着一个不带分号的实体引用 &amp;quot 它后面的汉字也足够长能成为单位。</p>"
+    if grade(bare, served_chunks(bare_served)):
+        errs.append("control K: a literal-ampersand sentence must reach the reader intact, got %r"
+                    % (grade(bare, served_chunks(bare_served)),))
+    blind = served_chunks(bare_served.replace("它后面的汉字也足够长能成为单位", " "))
+    if not grade(bare, blind):
+        errs.append("control K: hiding the clause after a bare reference must still read as a swallow")
     # G: the list marker. H: the pinned-page cut, which must fire on the page's own round text only.
     items = chunks("1. **这是一条足够长的自测清单项目**：说明部分同样足够长\n")
     if not items or items[0][1].startswith("1 "):

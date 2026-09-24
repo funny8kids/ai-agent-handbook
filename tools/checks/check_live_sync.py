@@ -90,6 +90,51 @@ def head_reader_pages(rev="HEAD"):
             and "14-templates" not in f and "00-index/changelog.md" not in f]
 
 
+def reader_body(path):
+    """The part of an authored page a reader is actually shown.
+
+    Round 84 measured five reader pages touched by recent rounds: none of their served documents —
+    raw HTML included — contained the page's own `updated:` value, because frontmatter is never
+    printed. A needle no page prints converts a markup-only revision into a permanent STALE red,
+    which is the ruler failing rather than the site; the honest bucket for such a page is
+    UNWITNESSED ("cannot witness", never "in sync"). The frontmatter rule is borrowed from
+    `check_prose_survival` so the two judges cannot disagree about where prose starts.
+    """
+    sys.path.insert(0, HERE)
+    import check_prose_survival as PS
+    lines = open(path, encoding="utf-8").read().split("\n")
+    return "\n".join(lines[PS.frontmatter_end(lines):])
+
+
+def needles_from(added_lines, body):
+    """Slice witness needles from the lines a revision added, keeping only text the page prints.
+
+    Round 84: every needle — the prose runs as well as the two fallbacks — must survive in `body`,
+    because frontmatter is never printed on a reader page. A commit that touches only
+    `description:` or `cover:` otherwise yields an invisible needle, which is a STALE red no amount
+    of syncing can clear (the same bug item ② caught in the fallbacks, sitting one line higher).
+    """
+    raw = "\n".join(added_lines)
+    text = re.sub(r"[`*_\[\]()#|>-]", " ", raw)
+    seen, needles = set(), []
+    for r in (x[:18] for x in CJK_RUN.findall(text)):
+        if r not in seen:
+            seen.add(r)
+            if r in body:
+                needles.append(r)
+    if needles:
+        return needles[:3]
+    # No printable prose was added: witness the link the commit introduced, or the day it stamped.
+    for host in URL_ADDED.findall(raw):
+        h = host.rstrip("/.")
+        if h and h not in needles and h in body:
+            needles.append(h)
+    stamp = STAMP.search(raw)
+    if stamp and stamp.group(1) not in needles and stamp.group(1) in body:
+        needles.append(stamp.group(1))
+    return needles[:3]
+
+
 def added_needles(path, rev="HEAD"):
     """Needles sliced from the lines REV ADDED on that page — never from the whole file.
 
@@ -100,24 +145,7 @@ def added_needles(path, rev="HEAD"):
                          cwd=os.path.dirname(DOCS), capture_output=True).stdout
     added = [l[1:] for l in out.decode("utf-8", "replace").splitlines()
              if l.startswith("+") and not l.startswith("+++")]
-    text = re.sub(r"[`*_\[\]()#|>-]", " ", "\n".join(added))
-    raw = "\n".join(added)
-    seen, needles = set(), []
-    for r in (x[:18] for x in CJK_RUN.findall(text)):
-        if r not in seen:
-            seen.add(r)
-            needles.append(r)
-    if needles:
-        return needles[:3]
-    # No prose was added: witness the link the commit introduced, or the day it stamped.
-    for host in URL_ADDED.findall(raw):
-        h = host.rstrip("/.")
-        if h and h not in needles:
-            needles.append(h)
-    stamp = STAMP.search(raw)
-    if stamp and stamp.group(1) not in needles:
-        needles.append(stamp.group(1))
-    return needles[:3]
+    return needles_from(added, reader_body(path))
 
 
 def witness_leg(rev="HEAD"):
@@ -167,6 +195,45 @@ def witness_leg(rev="HEAD"):
     return bad, witnessed
 
 
+def controls():
+    """The witness needles must be text a reader can be shown — and must survive when they are."""
+    import tempfile
+    errs = []
+    with tempfile.TemporaryDirectory(prefix="witness", ignore_cleanup_errors=True) as tmp:
+        fm = os.path.join(tmp, "a.md")
+        open(fm, "w", encoding="utf-8").write(
+            "---\ntitle: 演示页\nupdated: 2026-09-25\ncover: https://example.com/cover.png\n"
+            "description: 这一句只写在元数据里，读者页面上永远不会看到它。\n---\n\n"
+            "# 演示页\n\n这一页的正文里既没有日期也没有地址。\n")
+        body = os.path.join(tmp, "b.md")
+        open(body, "w", encoding="utf-8").write(
+            "---\ntitle: 演示页\nupdated: 2026-09-25\n---\n\n# 演示页\n\n"
+            "这一天 2026-09-25 写在正文里，读者看得见它。\n"
+            "参考 https://example.com/spec#section 里的说法。\n"
+            "这一句新写的正文读者一定会看到，所以它是合法的见证针。\n")
+        prose_run = [x[:18] for x in CJK_RUN.findall(
+            "这一句新写的正文读者一定会看到，所以它是合法的见证针。")][0]
+        for what, page, added, want in (
+                ("a frontmatter date must not be a needle", fm, ["updated: 2026-09-25"], []),
+                ("a date printed in the body must be a needle",
+                 body, ["updated: 2026-09-25"], ["2026-09-25"]),
+                ("a frontmatter cover address is not reader text",
+                 fm, ["cover: https://example.com/cover.png"], []),
+                ("an address printed in the body must be a needle",
+                 body, ["参考 https://example.com/spec#section 里的说法。"],
+                 ["example.com/spec#section"]),
+                ("Chinese that lives only in frontmatter is no needle",
+                 fm, ["description: 这一句只写在元数据里，读者页面上永远不会看到它。"], []),
+                ("new prose the page prints must stay a needle",
+                 body, ["这一句新写的正文读者一定会看到，所以它是合法的见证针。"], [prose_run]),
+                ("ordinary unchanged prose is no witness: the line must come from the revision",
+                 body, ["updated: 2031-01-01"], [])):
+            got = needles_from(added, reader_body(page))
+            if got != want:
+                errs.append("control: %s (added=%r want=%r got=%r)" % (what, added, want, got))
+    return errs
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--watch", action="store_true", help="keep polling until live catches up")
@@ -176,7 +243,16 @@ def main():
     ap.add_argument("--rev", default="HEAD",
                     help="which revision's added reader-page text the witness leg looks for "
                          "(a past round works as a positive control for this leg)")
+    ap.add_argument("--selftest", action="store_true",
+                    help="judge the needle slicer on synthetic pages, no network")
     args = ap.parse_args()
+
+    if args.selftest:
+        errs = controls()
+        print("controls: %s" % ("OK, every needle rule able to fire" if not errs else "BROKEN"))
+        for e in errs:
+            print("   ", e)
+        return 1 if errs else 0
 
     local = local_rounds()
     want = max(local) if local else 0
