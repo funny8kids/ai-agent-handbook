@@ -26,9 +26,10 @@ updated: 2026-09-22
 研究质量由两个维度共同决定，而它们竞争同一份预算：
 
 $$
-\text{质量}\;\approx\;f\big(\underbrace{\text{覆盖度}}_{\text{搜了多少角度}},\;\underbrace{\text{深度}}_{\text{每个角度读多透}}\big)
-\qquad\text{s.t.}\quad
-\text{成本}=\text{角度数}\times\text{每角度成本}\le B
+\begin{aligned}
+\text{质量}&\;\approx\;f\big(\underbrace{\text{覆盖度}}_{\text{搜了多少角度}},\;\underbrace{\text{深度}}_{\text{每个角度读多透}}\big)\\
+\text{s.t.}\;\;\text{成本}&=\text{角度数}\times\text{每角度成本}\;\le B
+\end{aligned}
 $$
 
 在预算固定时，二者是此消彼长的。工程含义是：**必须显式决定预算如何分配**，而不是让模型自由发挥。经验做法是先保证覆盖（列出应有的角度清单），再有选择地深挖关键角度。

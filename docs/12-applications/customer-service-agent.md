@@ -40,10 +40,13 @@ flowchart LR
 红线不能只写在 prompt 里。一种工程写法是给每个工具挂策略谓词：
 
 $$
-\text{allow}(tool, args)\iff
+\begin{aligned}
+\text{allow}(tool, args)\iff\;&
 \underbrace{amount\le\tau}_{\text{金额阈值}}
-\wedge\;\underbrace{policy\text{.covers}(args)}_{\text{政策覆盖}}
-\wedge\;\underbrace{\neg\text{blockedTopic}(t)}_{\text{敏感话题}}
+\;\wedge\;
+\underbrace{policy\text{.covers}(args)}_{\text{政策覆盖}}\\
+&\wedge\;\underbrace{\neg\text{blockedTopic}(t)}_{\text{敏感话题}}
+\end{aligned}
 $$
 
 不满足则**串行**阻塞并升级人工——这与 guardrail 的**并行**内容安检是两层，不能互相替代（对照 [OpenAI Agents SDK](../09-frameworks/openai-agents-sdk.md) 的 guardrail 设计）。

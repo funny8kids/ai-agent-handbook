@@ -39,10 +39,12 @@ flowchart LR
 LLM 抽取字段后按置信度分流，阈值 $$\tau$$ 由期望成本定，而不是拍脑袋：
 
 $$
-\text{accept}\iff \hat{c}\ge\tau,\qquad
-\tau^*=\arg\min_\tau\;
+\begin{aligned}
+\text{accept}&\iff \hat{c}\ge\tau\\
+\tau^*&=\arg\min_\tau\;
 \Big(\underbrace{P(\hat{c}\ge\tau)\cdot C_{\text{wrong}}}_{\text{错录代价}}
 +\underbrace{P(\hat{c}<\tau)\cdot C_{\text{human}}}_{\text{转人工代价}}\Big)
+\end{aligned}
 $$
 
 财务场景 $$C_{\text{wrong}}$$（错账、审计失败）通常远高于 $$C_{\text{human}}$$，因此阈值应更严。与 [权限控制](../10-evaluation-safety/permission-sandbox.md) 的关系：置信度只决定「走哪条路」，写权限仍由策略层强制。

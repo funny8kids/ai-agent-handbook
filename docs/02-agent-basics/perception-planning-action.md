@@ -43,11 +43,14 @@ $$
 一个健壮的循环必须有多个出口，缺一就会挂死：
 
 $$
-\text{stop}\iff
+\begin{aligned}
+\text{stop}\iff\;&
 \underbrace{\text{模型给出最终答案}}_{\text{正常终止}}\;\vee\;
-\underbrace{\text{step}>\text{MaxSteps}}_{\text{轮次熔断}}\;\vee\;
+\underbrace{\text{step}>\text{MaxSteps}}_{\text{轮次熔断}}\\
+&\vee\;
 \underbrace{\text{tokens}>\text{Budget}}_{\text{成本熔断}}\;\vee\;
 \underbrace{\text{time}>\text{Deadline}}_{\text{时间熔断}}
+\end{aligned}
 $$
 
 工程上还应有一条「无进展检测」：若连续 $$k$$ 轮的工具调用与观察高度重复，判定为陷入死循环并提前退出。

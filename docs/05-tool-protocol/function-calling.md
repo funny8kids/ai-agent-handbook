@@ -53,7 +53,10 @@ $$
 ### 3. 四种典型失效与对策
 
 $$
-\text{成功率}=1-P(\text{选错工具})-P(\text{参数非法})-P(\text{参数语义错})-P(\text{执行失败})
+\begin{aligned}
+\text{成功率}=\;1-&P(\text{选错工具})-P(\text{参数非法})\\
+-&P(\text{参数语义错})-P(\text{执行失败})
+\end{aligned}
 $$
 
 | 失效模式 | 表现 | 对策 |

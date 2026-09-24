@@ -77,9 +77,11 @@ flowchart TB
 Agent 任务耗时是秒到分钟级，而 HTTP 同步请求的超时通常在几十秒。同步等待会带来两个问题：连接被长期占用（连接数成为新瓶颈），以及**用户关页面 = 任务白跑**。正确形态是异步任务系统：
 
 $$
-\text{提交}\to\text{返回 task\_id}\;\;;\qquad
-\text{进度}\to\text{轮询 / SSE}\;\;;\qquad
-\text{完成}\to\text{webhook / 推送}
+\begin{aligned}
+\text{提交}&\to\text{返回 task\_id}\\
+\text{进度}&\to\text{轮询 / SSE}\\
+\text{完成}&\to\text{webhook / 推送}
+\end{aligned}
 $$
 
 这与 [工作流编排](workflow-orchestration.md) 的「持久化执行」是同一套基础设施。

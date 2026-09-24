@@ -45,8 +45,10 @@ $$
 $$
 \text{问题}\;\to\;
 \begin{cases}
-\text{局部搜索} & \text{从问题中的实体出发，取邻域子图 + 相关原文 chunk}\\
-\text{全局搜索} & \text{对所有社区摘要做 map-reduce，汇总出整体性回答}
+\text{局部搜索}:\;\text{从问题中的实体出发，}\\
+\quad\text{取邻域子图 + 相关原文 chunk}\\[4pt]
+\text{全局搜索}:\;\text{对所有社区摘要做 map-reduce，}\\
+\quad\text{汇总出整体性回答}
 \end{cases}
 $$
 

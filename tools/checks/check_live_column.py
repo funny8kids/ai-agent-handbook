@@ -25,10 +25,22 @@ Guards, each of which caught a real reading while this file was written:
     the column.
   * a page that never hydrates is a harness failure, not a verdict (round 56: Mermaid containers
     stay aria-busy in this sandbox, so nothing here waits for a diagram to paint).
+  * round 73 added the hydrated live leg (`hydrated_leg`), because the copy leg has a structural
+    blind spot: the site's client router has no route for a localhost file name, so a copy renders
+    the article with no chapter sidebar and no page TOC beside it, and <main> gets its full 768px
+    cap. On the live URL those two panels (288px + 256px) are open by default and the same window
+    leaves the article 608px. Both numbers are printed; the gap is an `AWAITING-DECISION` line, not
+    a problem this axis can fix by editing itself.
+  * round 73 also fixed a contamination bug of its own making: measurement order matters. A probe
+    that plants a 960px control box inside a figure's own wrapper stretches that shrink-to-fit
+    wrapper, and the figure measured afterwards then reads natural-size instead of column-size -
+    which is how "GitBook hands wide figures a horizontal scrollbar" got reported once before being
+    caught. `HYDRATED_PROBE` therefore reads the page first and plants its controls last.
 
 Usage:
     python tools/checks/check_live_column.py
     python tools/checks/check_live_column.py --pages 5 --assume 1120
+    python tools/checks/check_live_column.py --no-hydrated      # Edge/copy leg only
 """
 import argparse
 import io
@@ -55,6 +67,13 @@ SPREAD_TOL = 16                 # px of disagreement between pages before the se
 # for a 1440 or 1920 reader. Measured here, requests above ~1280 come back as innerWidth 1250,
 # so a "column at vw=1920" printed from this machine would be a fabricated viewport.
 WIDE_NEEDS = 1152 + 520         # a window this wide is needed before max-w-6xl could bind here
+# The breakpoints a reader actually arrives at. Read off the LIVE page rather than a copy, because a
+# copy is measured with the site's client router unable to resolve a localhost file name: round 73
+# found the copy renders the article with no navigation furniture beside it, so <main> gets its full
+# 768px cap there, while the live page at the same window puts a 288px chapter sidebar and a 256px
+# page TOC beside the article and leaves it 608px. `is_mobile` is the phone case the Edge leg cannot
+# ask for at all (this sandbox's Edge clamps innerWidth at ~504px minimum).
+HYDRATED_AT = [(1024, False), (1280, False), (1440, False), (1920, False), (390, True)]
 
 
 def probe_script(rid, port, modes, min_paragraphs=4):
@@ -202,6 +221,83 @@ def run(srv, name, vw, rid, timeout=70):
     return rep
 
 
+HYDRATED_PROBE = r"""
+() => {
+  const w = el => Math.round(el.getBoundingClientRect().width);
+  const main = document.querySelector('main');
+  if (!main) return null;
+  let para = 0;
+  for (const p of main.querySelectorAll('p')) para = Math.max(para, w(p));
+  const panels = [...document.querySelectorAll('aside,nav')].filter(e => w(e) > 40)
+      .map(e => e.tagName.toLowerCase() + '.' +
+                String(e.className).split(/\s+/)[0] + '=' + w(e) +
+                (e.getAttribute('aria-label') ? '(' + e.getAttribute('aria-label') + ')' : ''));
+  const phantom = !!document.getElementById('r73-no-such-element');
+  // The controls are planted AFTER the reading above, and that order is load-bearing: in round 73 a
+  // 960px control appended into a figure's own wrapper stretched that shrink-to-fit wrapper to 960,
+  // and the figure measured beside it then read natural-size instead of column-size. A ruler that
+  // contaminates what it measures is worse than one that is blind.
+  const ctl = {};
+  for (const px of [200, 960]) {
+    const d = document.createElement('div');
+    d.style.cssText = 'width:' + px + 'px;height:6px';
+    main.appendChild(d);
+    ctl['plant-' + px] = w(d);
+    d.remove();
+  }
+  return {vw: innerWidth, main: w(main), para: para, panels: panels, ctl: ctl, phantom: phantom};
+}
+"""
+
+
+def hydrated_leg(urls):
+    """Read the column off the LIVE page as the reader's browser lays it out, per breakpoint.
+
+    Returns (rows, note). `rows` is {vw: [reading per page]}; `note` is a harness limit that must be
+    printed rather than swallowed - a leg that quietly returns nothing reads as "no problem found".
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return {}, "playwright is not installed, so the hydrated live column could not be read"
+    rows = {}
+    with sync_playwright() as p:
+        br = p.chromium.launch(headless=True)
+        try:
+            for vw, mobile in HYDRATED_AT:
+                got = []
+                for rel, url in urls:
+                    ctx = br.new_context(viewport={"width": vw, "height": 900}, is_mobile=mobile,
+                                         device_scale_factor=3 if mobile else 1)
+                    pg = ctx.new_page()
+                    try:
+                        pg.goto(url, wait_until="networkidle", timeout=90000)
+                    except Exception as exc:
+                        print("  hydrated %s @%d: load failed (%s)" % (rel, vw, str(exc)[:60]))
+                        ctx.close()
+                        continue
+                    pg.wait_for_timeout(2500)      # GitBook lays the panels out after hydration
+                    rep = pg.evaluate(HYDRATED_PROBE)
+                    ctx.close()
+                    if not rep:
+                        print("  hydrated %s @%d: no <main> laid out" % (rel, vw))
+                        continue
+                    # Playwright sets the viewport exactly, so a reading from another window width is
+                    # a bug rather than a browser clamp: this leg must not inherit the Edge excuse.
+                    assert abs(rep["vw"] - vw) <= 3, "asked for vw=%d, page reported %d" % (vw, rep["vw"])
+                    assert abs(rep["ctl"]["plant-200"] - 200) <= 2 and \
+                        abs(rep["ctl"]["plant-960"] - 960) <= 2, \
+                        "the ruler clamps: planted 200/960 boxes read %s" % rep["ctl"]
+                    assert not rep["phantom"], "a phantom element id matched on the live page"
+                    rep["page"] = rel
+                    got.append(rep)
+                if got:
+                    rows[vw] = got
+        finally:
+            br.close()
+    return rows, None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3)
@@ -211,6 +307,9 @@ def main():
     ap.add_argument("--assume", type=int, default=COLUMN,
                     help="the column the Mermaid geometry axis assumes (check_mermaid_geometry.COLUMN)")
     ap.add_argument("--all-viewports", action="store_true")
+    ap.add_argument("--no-hydrated", action="store_true",
+                    help="skip the live-page leg (Playwright); the copy leg alone cannot see the "
+                         "navigation panels that squeeze a reader's column")
     args = ap.parse_args()
     viewports = VIEWPORTS + [1280, 2560] if args.all_viewports else VIEWPORTS
 
@@ -262,6 +361,18 @@ def main():
                 print("  %-46s vw=%-5d column=%-5s wide-layout=%-5s main=%s ps=%s"
                       % (rel, rep["viewport"][0], a, wd, m["asis"]["m"]["main"],
                          m["asis"]["m"]["paragraphs"]))
+
+        # ---- the same site, laid out by the reader's own browser ----------------------
+        hyd, hyd_note = {}, None
+        if not args.no_hydrated:
+            hyd, hyd_note = hydrated_leg(pages)
+            print("\nhydrated live leg: %d breakpoints read on the live URL (no copy involved)"
+                  % len(hyd))
+            for vw in sorted(hyd):
+                vals = [r["para"] for r in hyd[vw]]
+                r0 = hyd[vw][0]
+                print("  vw=%-5d column=%-5s (pages: %s)  panels beside the article: %s"
+                      % (vw, sorted(set(vals)), len(vals), "; ".join(r0["panels"][:3])))
     finally:
         srv.srv.shutdown()
 
@@ -279,6 +390,34 @@ def main():
         print("  no live reading at all -> refusing to report a pass")
         return 2
     print("  narrowest reader column measured: %dpx; geometry axis assumes %dpx" % (low, args.assume))
+
+    # ---- copy vs live, and the phone case -------------------------------------------
+    # Reported rather than counted as a problem: this axis now sees both numbers, and closing the gap
+    # is a content/product decision (redraw the figures for a narrower column, or switch the space to
+    # GitBook's wide layout) and not something the ruler can fix by editing itself. What it must not
+    # do is go quiet - a green with no mention of the narrower column would let every downstream axis
+    # keep certifying against the wider one.
+    advisories = []
+    if hyd_note:
+        print("  hydrated leg skipped: %s" % hyd_note)
+    desktop = [vw for vw, mobile in HYDRATED_AT if not mobile]
+    for vw in sorted(desktop):
+        if vw not in hyd:
+            continue
+        h = min(r["para"] for r in hyd[vw])
+        print("  live desktop vw=%-5d reader column=%d" % (vw, h))
+        if vw in asis:
+            c = min(v for _, v in asis[vw])
+            if c - h > SPREAD_TOL:
+                advisories.append(
+                    "COPY-OPTIMISTIC vw=%d: the copy lays the article out at %dpx while the live page"
+                    " gives its reader %dpx (%dpx eaten by the navigation panels) - an axis that reads"
+                    " the copy over-states the reader's room by that much" % (vw, c, h, c - h))
+    for vw, mobile in HYDRATED_AT:
+        if mobile and vw in hyd:
+            print("  phone vw=%-5d reader column=%s (pinch-zoom belongs to the reader, so this is"
+                  " context rather than a bar)" % (vw, sorted({r["para"] for r in hyd[vw]})))
+
     for vw, rows in sorted(wide.items()):
         vals = [v for _, v in rows if v]
         base = sorted({v for _, v in asis[vw]})
@@ -292,7 +431,9 @@ def main():
                         "re-run it with --column %d" % (low, args.assume, low))
     for p in problems:
         print("  -", p)
-    print("problems=%d" % len(problems))
+    for a in advisories:
+        print("  AWAITING-DECISION:", a)
+    print("problems=%d  awaiting-decision=%d" % (len(problems), len(advisories)))
     return 1 if problems else 0
 
 

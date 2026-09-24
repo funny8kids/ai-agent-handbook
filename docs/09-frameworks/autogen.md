@@ -23,9 +23,10 @@ updated: 2026-09-23
 AutoGen 把「协作」简化为一个统一模型：
 
 $$
-\text{Agent}=\big(\text{能发消息},\;\text{能接收消息},\;\text{可选：能执行代码}\big)
-\Longrightarrow
-\text{系统}=\text{消息流}+\text{发言调度}
+\begin{aligned}
+\text{Agent}&=\big(\text{能发消息},\;\text{能接收消息},\;\text{可选：能执行代码}\big)\\
+\Longrightarrow\;\text{系统}&=\text{消息流}+\text{发言调度}
+\end{aligned}
 $$
 
 这个模型的好处是**统一的接口**：人类代理、LLM 代理、工具代理都是「消息参与者」，因此可以自由组合。代价是控制流隐式（谁下一个说话由调度器决定），复杂拓扑不如显式图好调试。

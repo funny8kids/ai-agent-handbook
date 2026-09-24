@@ -34,6 +34,15 @@ Fix direction this axis implies: a formula cannot be widened by the site's layou
 variant), so the only in-repo fix is to author it to fit — split it, or move terms into an
 `aligned` block. That is why the threshold is the authored width, not the platform's CSS.
 
+Round 73 ran that fix at the column a laptop reader actually gets: `--column 608` (the live `<main>`
+at a 1280px window, with the chapter sidebar and page TOC open — see `check_svg_legibility.py`'s
+laptop leg, which re-measures it every run). 11 formulas dragged there while 768 was clean; all 11
+were re-stacked with `aligned`/`cases`, none shortened. `COLUMN_LIVE` stays 768 as the certified bar
+because the book's own README quotes that column; 608 is the stricter reading authors should target.
+Both columns are now swept in one pass by default (`--laptop-column 0` for the certified bar alone),
+because a per-column verdict was the only way the round-73 fixes stayed honest: a formula authored to
+squeeze past 768 could otherwise sit two glyphs over the laptop reader's column and read clean.
+
 Guards, each here because the failure mode is a silent pass:
   * the pinned KaTeX build must answer, or the axis exits rather than printing widths
     (same rule as check_katex_formulas.py, which owns parse failures).
@@ -46,9 +55,15 @@ Guards, each here because the failure mode is a silent pass:
       and the short plant must read clean in both.
   * the live wrapper assertion runs before any sweeping, so a platform change shows up as a red
     calibration, not as a book full of formulas that suddenly "fit".
+  * `stray_markup()` reads the painted text of every formula, because a construct KaTeX does not
+    implement can parse clean and still print its option verbatim: an amsmath `[t]` on a nested
+    `aligned` renders as the two characters a reader sees. `ruler()` plants one and asserts the
+    guard catches it, and asserts a clean formula does not trip it.
 
 Usage:
     python tools/checks/check_content_overflow.py
+    python tools/checks/check_content_overflow.py --laptop-column 0  # only the certified 768 bar
+    python tools/checks/check_content_overflow.py --column 608      # the laptop reader's column
     python tools/checks/check_content_overflow.py --column 1152     # wide-layout what-if
     python tools/checks/check_content_overflow.py --limit 40        # smoke run
 """
@@ -69,6 +84,10 @@ KATEX_DIST = os.path.join(HERE, "data", "katex", "node_modules", "katex", "dist"
 HTML_RENDERER = os.path.join(HERE, "katex_render_html.mjs")
 KATEX_VERSION = "0.18.7"        # same pin as check_katex_formulas.py
 COLUMN_LIVE = 768               # max-w-3xl, the column a reader gets (round 62 measurement)
+COLUMN_LAPTOP = 608             # round 73: the same `<main>` measured live at a 1280px window, i.e.
+                                # with the chapter sidebar and page TOC open. `check_svg_legibility`'s
+                                # laptop leg re-reads it every run; here it is the second bar, so a
+                                # formula authored to squeeze past 768 cannot silently miss it.
 sys.path.insert(0, HERE)
 
 import live_aria_manifest as L                # noqa: E402  one tokenizer for "authored"
@@ -87,6 +106,24 @@ except AttributeError:
 PLANT_NARROW = "L = \\sum_{i} w_i x_i"
 PLANT_MID = " ".join(["f_{%d} = \\mathrm{attn}(q_{%d}, K, V) \\cdot W_{o}" % (i, i) for i in range(5)])
 PLANT_HUGE = " ".join(["f_{t} = \\mathrm{attn}(q_{%d}, K, V) \\cdot W_{o}" % i for i in range(14)])
+
+# `[t]` on a nested block is an amsmath alignment option KaTeX does not implement: the formula
+# parses clean, so `render-errors=0` says nothing about it, and the reader is served the two
+# characters as text. Round 73 shipped one of these in graphrag.md and found it by looking at the
+# render, not at the verdict, so the guard below exists to make that check reproducible.
+PLANT_OPT = ("\\begin{cases}\\text{a}: \\begin{aligned}[t] &\\text{left}\\\\ "
+             "&\\text{right}\\end{aligned}\\end{cases}")
+
+TAG_RE = re.compile(r"<[^>]+>")
+STRAY_RE = re.compile(r"\[\s*[tbc]\s*\]|\\(?:begin|end)\{|\\hphantom|\\text\{")
+
+
+def stray_markup(html):
+    """The literal junk a reader sees when KaTeX paints an unsupported construct as text."""
+    i = html.find('class="katex-html"')
+    # Only the HTML branch counts: .katex-mathml carries the LaTeX source in an <annotation> for
+    # assistive tech, so scanning it would flag every formula in the book.
+    return STRAY_RE.search(TAG_RE.sub("", html[i:] if i >= 0 else html))
 
 
 def authored_display():
@@ -316,16 +353,62 @@ def ruler(srv, rid):
         "the mid plant must drag at 768 and fit at 1100: %s" % by[1]
     assert over(by[0][768]) == 0 and lost(by[0][768]) == 0, \
         "a short formula must read clean in both boxes: %s" % by[0]
+    # The stray-markup guard has to catch the failure it was written for, and only that failure.
+    opt, clean = render_html([PLANT_OPT, PLANT_NARROW])
+    hit = stray_markup(opt["html"])
+    assert hit, "the planted `[t]` option was not flagged — the stray-markup guard is dead: %s" % opt["html"][:160]
+    assert not stray_markup(clean["html"]), \
+        "a clean formula flags as stray markup: %s" % clean["html"][:160]
+    print("stray-markup control ok: a planted amsmath `[t]` option paints %r and the guard sees it; "
+          "a clean formula does not" % hit.group(0))
     print("ruler ok: KaTeX fonts loaded; ink box-independent (element box %dpx at 768 vs %dpx at "
           "1100); plants drag %d/%d/%d px and lose %d px — centred overflow stays reachable"
           % (big[768]["box"], big[1100]["box"], over(by[0][768]), over(by[1][768]),
              over(big[768]), lost(big[768])))
 
 
+def report_column(col, ms, min_over):
+    """One column's verdict, printed in full: the book is read at more than one width now."""
+    over = [m for m in ms if m["over"] > 0]
+    lost = [m for m in ms if m["lost"] > 0]
+    hits = [m for m in ms if m["over"] >= min_over]
+    print("\n-- verdict (column %dpx, KaTeX %s, measured=%d) --" % (col, KATEX_VERSION, len(ms)))
+    print("  over-column=%d  at-or-above bar(%d px drag)=%d  unreachable=%d"
+          % (len(over), min_over, len(hits), len(lost)))
+    # The negative result is the finding of round 63's calibration, so it prints every run: if it
+    # ever becomes non-zero, the centred-scroll model changed and the drag bar is the wrong metric.
+    print("  unreachable px across ALL formulas: %d (expected 0 — see `ruler`: Chromium reaches "
+          "centred overflow by scrolling, so the cost is drag, not lost content)"
+          % sum(m["lost"] for m in ms))
+    nats = sorted(int(m["nat"]) for m in ms)
+    print("  natural width (px): min=%d p50=%d p90=%d p99=%d max=%d"
+          % (nats[0], nats[len(nats) // 2], nats[int(len(nats) * .9)],
+             nats[int(len(nats) * .99)], nats[-1]))
+    # Reported alongside the bar because it is the number that ages: a book whose worst row sits 2px
+    # under the column has no room left for the next formula an author adds.
+    near = [m for m in ms if m["over"] == 0 and m["nat"] > 0.95 * col]
+    print("  headroom: %d formulas use more than 95%% of the column (%s)"
+          % (len(near), ["%s=%d" % (m["page"], m["nat"])
+                         for m in sorted(near, key=lambda x: -x["nat"])[:6]]))
+    print("  drag distribution: %s" % sorted(
+        [(b, sum(1 for m in over if b <= m["over"] < b + 200)) for b in range(0, 2201, 200)],
+        key=lambda x: (-x[1], x[0]))[:12])
+    print("  worst %d by drag:" % min(20, len(over)))
+    for m in sorted(over, key=lambda x: -x["over"])[:20]:
+        print("    %-44s nat=%-7s drag=%-6s %s"
+              % (m["page"], m["nat"], m["over"], m["src"].replace("\n", " ")[:56]))
+    print("  bar=%dpx drag -> %d formulas to fix" % (min_over, len(hits)))
+    return hits
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--column", type=int, default=COLUMN_LIVE,
-                    help="the scroller's content width; 768 is max-w-3xl as measured live (round 62)")
+                    help="the primary scroller width swept; 768 is max-w-3xl as measured live "
+                         "(round 62), and the column the README quotes")
+    ap.add_argument("--laptop-column", type=int, default=COLUMN_LAPTOP,
+                    help="a second column swept in the same pass (608 = the live <main> at a 1280 "
+                         "window, round 73); 0 measures only --column")
     ap.add_argument("--batch", type=int, default=40)
     ap.add_argument("--limit", type=int, default=0, help="sweep only the first N formulas")
     ap.add_argument("--min-over", type=int, default=16,
@@ -337,7 +420,10 @@ def main():
     items = authored_display()
     if args.limit:
         items = items[:args.limit]
-    print("authored display formulas=%d over %d pages" % (len(items), len({p for p, _ in items})))
+    cols = [args.column] + ([args.laptop_column]
+                            if args.laptop_column and args.laptop_column != args.column else [])
+    print("authored display formulas=%d over %d pages | columns swept=%s"
+          % (len(items), len({p for p, _ in items}), cols))
 
     dummy = os.path.join(tempfile.gettempdir(), "overflow-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads KaTeX, not Mermaid\n")
@@ -364,67 +450,53 @@ def main():
         ruler(srv, rid)
 
         htmls = render_html([s for _, s in items])
+        stray = [(page, src, stray_markup(h["html"]).group(0))
+                 for (page, src), h in zip(items, htmls)
+                 if not h.get("error") and stray_markup(h["html"])]
         rows = [{"i": i, "html": h.get("html"), "error": h.get("error")}
                 for i, h in enumerate(htmls)]
         allm, errors = [], []
         for s in range(0, len(rows), args.batch):
             batch = rows[s:s + args.batch]
             rid += 1
-            rep = sweep(srv, batch, [args.column], rid)
+            rep = sweep(srv, batch, cols, rid)
             assert rep and rep.get("rows"), "batch at %d reported nothing — not a clean sweep" % s
             check_fonts(rep)
-            got = {r["i"]: (r["cols"][0] if r.get("cols") else None) for r in rep["rows"]}
+            got = {r["i"]: {c["col"]: c for c in r.get("cols", [])} for r in rep["rows"]}
             assert len(got) == len(batch), "batch lost rows (%d of %d)" % (len(got), len(batch))
             for r in batch:
                 page, src = items[r["i"]]
                 if r.get("error"):
                     errors.append((page, src, r["error"]))
                     continue
-                c = got.get(r["i"])
-                if not c or c.get("err"):
-                    errors.append((page, src, (c or {}).get("err", "no measurement")))
-                    continue
-                over = max(0, int(round(c["nat"])) - c["cw"])
-                allm.append({"page": page, "src": src, "nat": c["nat"], "cw": c["cw"],
-                             "ms": c["ms"], "over": over,
-                             "lost": c["lostLeft"] + c["lostRight"]})
-            print("  swept %d/%d formulas (over-column so far %d)"
-                  % (min(s + args.batch, len(rows)), len(rows),
+                for col in cols:
+                    c = got.get(r["i"], {}).get(col)
+                    if not c or c.get("err"):
+                        errors.append((page, src,
+                                       (c or {}).get("err", "no measurement @%d" % col)))
+                        continue
+                    over = max(0, int(round(c["nat"])) - c["cw"])
+                    allm.append({"col": col, "page": page, "src": src, "nat": c["nat"],
+                                 "cw": c["cw"], "ms": c["ms"], "over": over,
+                                 "lost": c["lostLeft"] + c["lostRight"]})
+            print("  swept %d/%d formulas x %d columns (over-column cells so far %d)"
+                  % (min(s + args.batch, len(rows)), len(rows), len(cols),
                      sum(1 for m in allm if m["over"] > 0)))
     finally:
         srv.close()
 
     for p, s, e in errors:
         print("  RENDER-ERROR %s :: %s :: %s" % (p, s.replace("\n", " ")[:60], e))
-    over = [m for m in allm if m["over"] > 0]
-    lost = [m for m in allm if m["lost"] > 0]
-    hits = [m for m in allm if m["over"] >= args.min_over]
-    print("\n-- verdict (column %dpx, KaTeX %s, measured=%d) --"
-          % (args.column, KATEX_VERSION, len(allm)))
-    print("  over-column=%d  at-or-above bar(%d px drag)=%d  unreachable=%d  render-errors=%d"
-          % (len(over), args.min_over, len(hits), len(lost), len(errors)))
-    # The negative result is the finding of this round's calibration, so it prints every run: if it
-    # ever becomes non-zero, the centred-scroll model changed and the drag bar is the wrong metric.
-    print("  unreachable px across ALL formulas: %d (expected 0 — see `ruler`: Chromium reaches "
-          "centred overflow by scrolling, so the cost is drag, not lost content)"
-          % sum(m["lost"] for m in allm))
-    nats = sorted(int(m["nat"]) for m in allm)
-    print("  natural width (px): min=%d p50=%d p90=%d p99=%d max=%d"
-          % (nats[0], nats[len(nats) // 2], nats[int(len(nats) * .9)], nats[int(len(nats) * .99)], nats[-1]))
-    # Reported alongside the bar because it is the number that ages: a book whose worst row sits 2px
-    # under the column has no room left for the next formula an author adds.
-    near = [m for m in allm if m["over"] == 0 and m["nat"] > 0.95 * args.column]
-    print("  headroom: %d formulas use more than 95%% of the column (%s)"
-          % (len(near), ["%s=%d" % (m["page"], m["nat"]) for m in sorted(near, key=lambda x: -x["nat"])[:6]]))
-    print("  drag distribution: %s" % sorted(
-        [(b, sum(1 for m in over if b <= m["over"] < b + 200)) for b in range(0, 2201, 200)],
-        key=lambda x: (-x[1], x[0]))[:12])
-    print("  worst %d by drag:" % min(20, len(over)))
-    for m in sorted(over, key=lambda x: -x["over"])[:20]:
-        print("    %-44s nat=%-7s drag=%-6s %s"
-              % (m["page"], m["nat"], m["over"], m["src"].replace("\n", " ")[:56]))
-    print("  bar=%dpx drag -> %d formulas to fix" % (args.min_over, len(hits)))
-    return 1 if hits or errors else 0
+    hits = []
+    for col in cols:
+        hits += report_column(col, [m for m in allm if m["col"] == col], args.min_over)
+    # Print once, not per column: a stray option character is in the authored source, so it is
+    # wrong at every width and a second report of it would only double the noise.
+    print("\n  render-errors=%d  stray-markup=%d" % (len(errors), len(stray)))
+    for p, s, g in stray:
+        print("  STRAY-MARKUP %s :: paints %r as text :: %s"
+              % (p, g, s.replace("\n", " ")[:70]))
+    return 1 if hits or errors or stray else 0
 
 
 if __name__ == "__main__":

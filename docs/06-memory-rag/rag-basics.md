@@ -20,9 +20,10 @@ LLM 的知识冻结在训练数据里：企业内部文档、昨天的公告、�
 ### 1. 完整管线
 
 $$
-\underbrace{\text{Chunk}\to\text{Embed}\to\text{Index}}_{\text{索引侧（离线）}}
-\quad+\quad
-\underbrace{\text{Query}\to\text{Retrieve}\to\text{Rerank}\to\text{Generate}}_{\text{查询侧（在线）}}
+\begin{aligned}
+&\underbrace{\text{Chunk}\to\text{Embed}\to\text{Index}}_{\text{索引侧（离线）}}\\
+&+\;\underbrace{\text{Query}\to\text{Retrieve}\to\text{Rerank}\to\text{Generate}}_{\text{查询侧（在线）}}
+\end{aligned}
 $$
 
 索引侧把文档切成块、编码成向量、建成可检索的索引；查询侧把问题编码后检索候选、精排、组装进 prompt 交给 LLM 生成。

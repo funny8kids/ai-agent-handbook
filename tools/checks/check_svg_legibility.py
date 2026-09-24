@@ -51,12 +51,17 @@ Guards:
     everything" and "finds the defect" read the same.
   * the served `<img>` must still carry `max-width:100%` — if GitBook ever stops scaling, the
     premise (and every number in this file) changes, so the axis says so instead of reading clean.
-  * `<main>` must measure the column on the sampled live pages.
-  * the live leg samples the pages that carry the WORST figures (severity order, not path order), and
+  * `<main>` must measure the column on the sampled copies, and each sampled figure must paint at
+    min(canvas, column) on the LIVE page.
+  * the copy leg samples the pages that carry the WORST figures (severity order, not path order), and
     requires at least 2 of them to lay out in the browser. A copied page sometimes renders a shell
     because the site's client router has no route for a localhost file name; that page then falls
     back to the served-markup check and says so, but a leg that skips its way to an empty reading is
     not a leg, hence the floor.
+  * the laptop leg reads the live URL in a real 1280px viewport, because a copy cannot: round 73
+    found the copy lays the article out at the 768px cap while the live page mounts a 288px chapter
+    sidebar and a 256px page TOC beside it and leaves the reader 608px. An axis that printed a
+    "live" scale of 0.8 while the reader got 0.633 was printing the copy's number.
   * vacuity floor on the offline sweep: at least 25 authored figures.
 
 Usage:
@@ -89,6 +94,13 @@ from check_live_column import live_copy                        # noqa: E402
 from check_mermaid_geometry import Server                      # noqa: E402
 
 COLUMN_LIVE = 768           # round 62's <main>; re-asserted every run
+COLUMN_LAPTOP = 608         # round 73: the same <main> measured on the live page at a 1280 window
+# (288px chapter sidebar + 256px page TOC are open by default there, and they are absent from the
+# copy this axis's copy leg renders). 768 is what a >=1440 reader gets; 608 is what a laptop reader
+# gets. COLUMN_LIVE stays the bar because re-drawing 32 figures for 608 is a product decision - so
+# the narrower reading is printed next to the verdict every run rather than quietly certified away.
+# `laptop_leg` re-measures this on the live page each run and uses the fresh number; the constant is
+# the fallback when Playwright is missing, and a >16px drift prints as STALE-PREMISE.
 MIN_LABEL = 12.0            # px: the bar the Mermaid axis uses; body text is 16px
 ROOT_FONT = 13.0            # the house SVG template sets font-size on <svg>
 FIG_RE = re.compile(r'!\[[^\]]*\]\(([^)\s]+\.svg)')
@@ -291,14 +303,21 @@ SCALED = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="
           '<text x="10" y="120" font-size="13">untouched</text></svg>')
 
 
-def classifier_selftest(column):
+def classifier_selftest():
     """The other half of a control: this axis has never read a CLEAN figure, because none exists.
 
     Every in-body figure fails the bar, so a detector that flagged everything would look identical
-    to the true reading. Two synthetic canvases pin both directions: a 400px canvas that the column
-    never shrinks (and whose size must be inherited through <g> and <tspan>) passes, and a 960px
-    canvas with a 9.5px label fails on exactly the small label, not the 16px one.
+    to the two real readings. Two synthetic canvases pin both directions: a 400px canvas that the
+    column never shrinks (and whose size must be inherited through <g> and <tspan>) passes, and a
+    960px canvas with a 9.5px label fails on exactly the small label, not the 16px one.
+
+    The expectations below are anchored on COLUMN_LIVE, not on `--column`: they count how many
+    labels a phantom trips, and that count is defined by the ratio the phantom was authored against.
+    Round 73 found this out by running `--column 608`, which used to die here ("dirty.svg should flag
+    1 label(s) at a 608px column, flagged 2") before printing any report - the documented wide-layout
+    what-if could not be run at all.
     """
+    column = COLUMN_LIVE
     with tempfile.TemporaryDirectory() as d:
         for name, text in (("clean.svg", CLEAN), ("dirty.svg", DIRTY), ("css.svg", CSS)):
             io.open(os.path.join(d, name), "w", encoding="utf-8").write(text)
@@ -547,30 +566,47 @@ def served_figure_check(rel, html, rows, column):
     print("  served %s: %d figures, each an <img> with max-width:100%%" % (rel, found))
 
 
-def live_leg(srv, rows, column, count=4):
-    """Measure the platform's scaling on the reader's own page, on the worst figures' pages."""
-    entries = wl.llms_entries()
-    index, ambiguous = wl.page_index(entries)
+def live_url(rel, index):
+    text = io.open(os.path.join(DOCS, rel.replace("/", os.sep)), encoding="utf-8").read()
+    m = re.search(r"^# (.+)$", text, flags=re.M)
+    assert m, "%s has no H1 to look the published title up by" % rel
+    url = index.get(wl.norm(m.group(1).strip())) or ""
+    assert url, "no live URL for %s" % rel
+    return url[:-3] if url.endswith(".md") else url
+
+
+def worst_pages(rows, count):
+    """The pages that carry the worst figures, in severity order, with their live URLs.
+
+    Severity order, not path order: a sorted() over paths would let `00-index/...` crowd out the
+    homepage that carries the 5.2px label.
+    """
+    index, ambiguous = wl.page_index(wl.llms_entries())
     assert not ambiguous, "ambiguous published titles: %s" % sorted(ambiguous)
-    # Severity order, not path order: the sample is "the pages that carry the worst figures", and a
-    # sorted() over paths would let `00-index/...` crowd out the homepage that carries the 5.2px one.
-    pages, seen_pages = [], set()
+    out, seen_pages = [], set()
     for r in sorted(rows, key=lambda r: r["eff_min"]):
         for p in r["pages"]:
             if p not in seen_pages:
                 seen_pages.add(p)
-                pages.append(p)
-        if len(pages) >= count:
+                out.append((p, live_url(p, index)))
+        if len(out) >= count:
             break
-    pages = pages[:count]
+    return out[:count]
+
+
+def live_leg(srv, rows, column, count=4):
+    """Measure the platform's scaling on a copy of the reader's page, on the worst figures' pages.
+
+    Round 73 names this leg for what it is: the HTML is fetched from the live site, but it is laid
+    out as a local copy, and a copy has no navigation panels beside the article (the site's client
+    router cannot resolve a localhost file name, so the furniture never mounts). So the column this
+    leg sees is the copy's 768px cap, not the 608px a laptop reader is given - `laptop_leg` below is
+    the leg that reads the reader's own page.
+    """
+    pages = worst_pages(rows, count)
     seen = []
     measured = 0                       # pages the browser leg actually laid out
-    for i, rel in enumerate(pages):
-        text = io.open(os.path.join(DOCS, rel.replace("/", os.sep)), encoding="utf-8").read()
-        m = re.search(r"^# (.+)$", text, flags=re.M)
-        url = index.get(wl.norm(m.group(1).strip())) or ""
-        assert url, "no live URL for %s" % rel
-        url = url[:-3] if url.endswith(".md") else url
+    for i, (rel, url) in enumerate(pages):
         # The ruler reports under rid 1 and `wait` returns the first report that matches an id, so
         # reusing 1 here would read back the ruler's rows as a page with no figure on it.
         rid = 10 + i
@@ -594,15 +630,15 @@ def live_leg(srv, rows, column, count=4):
             # localhost file name, so hydration is a race this harness does not control. That is a
             # harness limit, not a page defect, so the same premise is read off the served markup —
             # and it is said out loud, not skipped.
-            print("  live leg: %s's copy does not hydrate (no <main>), reading the served markup" % rel)
+            print("  copy leg: %s's copy does not hydrate (no <main>), reading the served markup" % rel)
             served_figure_check(rel, html, rows, column)
             continue
         assert rep and rep.get("figs"), \
-            "live leg read no SVG figure on %s (imgs on page: %s; probe JS error: %r)" \
+            "copy leg read no SVG figure on %s (imgs on page: %s; probe JS error: %r)" \
             % (rel, rep and rep.get("imgs"), fatal_of(srv, rid))
         measured += 1
         assert rep["main"] == column, \
-            "<main> measures %s on %s, not %d — the column this axis is about changed" \
+            "<main> measures %s on the copy of %s, not %d — the column this axis is about changed" \
             % (rep["main"], rel, column)
         for f in rep["figs"]:
             assert "max-width:100%" in f["style"], \
@@ -613,7 +649,7 @@ def live_leg(srv, rows, column, count=4):
                 "figure painted %.3f x natural, arithmetic says %.3f (%s on %s)" \
                 % (scale, min(1.0, column / f["nat"]), f, rel)
             seen.append((f["nat"], scale))
-        print("  live %s: %d svg figures, scales %s"
+        print("  copy %s: %d svg figures, scales %s"
               % (rel.split("/")[0], len(rep["figs"]),
                  sorted({round(x[1], 3) for x in seen[-len(rep["figs"]):]})))
     scaled = [x for x in seen if x[1] < 0.99]
@@ -628,8 +664,97 @@ def live_leg(srv, rows, column, count=4):
         # No figure is wider than the column, so nothing can shrink here. Say it out loud rather
         # than letting a quiet `scaled=[]` read as a pass: at the wide layout this leg stops
         # discriminating, and only the offline label ratio still carries the finding.
-        print("  live leg: no figure exceeds the %dpx column, so no shrink to measure here" % column)
+        print("  copy leg: no figure exceeds the %dpx column, so no shrink to measure here" % column)
     return [s for _, s in seen]
+
+
+LAPTOP_VW = 1280          # the window whose reader gets the narrowest desktop column (round 73)
+
+# Read off the LIVE url, never a copy: a copy loses the 288px chapter sidebar and the 256px page TOC
+# that mount beside the article on the real page, and those are exactly what squeezes the column.
+# Controls are planted AFTER the reading, and figures are identified by the asset name inside the
+# served src (GitBook rewrites it into a `~gitbook/image?...&width=` URL, so an extension match would
+# see nothing) - see check_live_column's HYDRATED_PROBE for why the order is load-bearing.
+LAPTOP_PROBE = r"""
+() => {
+  const w = el => Math.round(el.getBoundingClientRect().width);
+  const main = document.querySelector('main');
+  if (!main) return null;
+  const figs = [...main.querySelectorAll('img')].map(i => ({
+      src: i.getAttribute('src') || '', nat: i.naturalWidth, painted: w(i)}))
+    .filter(f => f.painted > 0);
+  const phantom = !!document.getElementById('r73-no-such-element');
+  const ctl = {};
+  for (const px of [200, 960]) {
+    const d = document.createElement('div');
+    d.style.cssText = 'width:' + px + 'px;height:6px';
+    main.appendChild(d);
+    ctl['plant-' + px] = w(d);
+    d.remove();
+  }
+  return {vw: innerWidth, main: w(main), figs: figs, ctl: ctl, phantom: phantom};
+}
+"""
+
+
+def laptop_leg(rows, count=3):
+    """Measure the reader's actual column and figure scale on the live page, at a laptop window.
+
+    Returns (column, note). This is the leg that turns `COLUMN_LAPTOP` from a remembered number into
+    one this run produced: it reads `<main>` and each figure's painted width off the live URL, and
+    asserts the figures are column-bound there (painted == min(authored canvas, main)) so the laptop
+    reading below is arithmetic on a measured scale rather than an assumed one.
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return None, "playwright is not installed, so the live laptop column could not be measured"
+    pages = worst_pages(rows, count)
+    cols, scales = [], []
+    with sync_playwright() as p:
+        br = p.chromium.launch(headless=True)
+        try:
+            for rel, url in pages:
+                ctx = br.new_context(viewport={"width": LAPTOP_VW, "height": 900})
+                pg = ctx.new_page()
+                try:
+                    pg.goto(url, wait_until="networkidle", timeout=90000)
+                except Exception as exc:
+                    print("  laptop leg: %s failed to load (%s)" % (rel, str(exc)[:60]))
+                    ctx.close()
+                    continue
+                pg.wait_for_timeout(2500)      # the panels mount after hydration
+                rep = pg.evaluate(LAPTOP_PROBE)
+                ctx.close()
+                if not rep:
+                    print("  laptop leg: %s laid out no <main>" % rel)
+                    continue
+                assert abs(rep["vw"] - LAPTOP_VW) <= 3, \
+                    "asked for vw=%d, the live page reported %d" % (LAPTOP_VW, rep["vw"])
+                assert abs(rep["ctl"]["plant-200"] - 200) <= 2 and \
+                    abs(rep["ctl"]["plant-960"] - 960) <= 2, \
+                    "the ruler clamps on the live page: planted 200/960 boxes read %s" % rep["ctl"]
+                assert not rep["phantom"], "a phantom element id matched on the live page"
+                cols.append(rep["main"])
+                hit = 0
+                for r in rows:
+                    got = [f for f in rep["figs"] if r["asset"] in f["src"]]
+                    for f in got:
+                        want = min(float(r["vb"][0]), rep["main"])
+                        assert abs(f["painted"] - want) <= 2, \
+                            "%s paints %dpx on the live page, not min(canvas %d, column %d)=%d" \
+                            % (r["asset"], f["painted"], float(r["vb"][0]), rep["main"], want)
+                        scales.append(f["painted"] / float(r["vb"][0]))
+                        hit += 1
+                print("  laptop %s: <main>=%dpx, %d of this page's figures measured (%s)"
+                      % (rel.split("/")[0], rep["main"], hit,
+                         ", ".join("%.3f" % s for s in scales[-hit:]) if hit else "none sampled"))
+        finally:
+            br.close()
+    if not cols:
+        return None, "no live page laid out for the laptop leg"
+    return min(cols), None
+
 
 
 def main():
@@ -640,7 +765,7 @@ def main():
 
     rows = figures(args.column)
     worst = offline_report(rows, args.column)
-    classifier_selftest(args.column)
+    classifier_selftest()
 
     dummy = os.path.join(tempfile.gettempdir(), "svg-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads no bundle\n")
@@ -652,6 +777,34 @@ def main():
              args.column))
     if not args.no_live:
         live_leg(srv, rows, args.column)
+
+    # The laptop reading: the same authored figures at the column a 1280-window reader is given once
+    # the chapter sidebar and the page TOC mount beside the article. Reported, never counted - the
+    # bar this axis certifies against stays COLUMN_LIVE because closing the gap means re-drawing 32
+    # figures or switching the space to the wide layout, and neither is a ruler's call.
+    if args.column == COLUMN_LIVE:
+        col, note, measured_by = COLUMN_LAPTOP, (
+            None if not args.no_live else
+            "--no-live was passed, so the live laptop column was not re-measured"), "assumed"
+        if not args.no_live:
+            col_live, note = laptop_leg(rows)
+            if col_live:
+                col, measured_by = col_live, "measured on the live page this run"
+        laptop = figures(col)
+        n_fig = sum(1 for r in laptop if r["below"])
+        n_lab = sum(r["below"] for r in laptop)
+        print("laptop reading (the same figures at the %dpx column a 1280-window reader gets, %s):"
+              " %d figures / %d of %d labels below the %.0fpx bar"
+              % (col, measured_by, n_fig, n_lab, sum(r["labels"] for r in laptop), MIN_LABEL))
+        print("  not counted as findings: re-drawing the book's figures for %dpx is a content"
+              " decision, see round 73's log entry" % col)
+        if note:
+            print("  laptop leg skipped: %s (the %d above is the remembered reading)" % (note, col))
+        elif abs(col - COLUMN_LAPTOP) > 16:
+            print("  STALE-PREMISE: this file records the laptop column as %dpx but the live page now"
+                  " gives %dpx - the reading above used the live number, the constant did not"
+                  % (COLUMN_LAPTOP, col))
+
     print("\n-- verdict (column %dpx, label bar %.0fpx) --" % (args.column, MIN_LABEL))
     print("  figures with a sub-bar label=%d  labels=%d of %d"
           % (len(worst), sum(w[4] for w in worst), sum(r["labels"] for r in rows)))

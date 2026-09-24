@@ -9,6 +9,91 @@ updated: 2026-09-24
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-24（第 73 次）四条「读者列宽」轴一直在量**复制稿**：同一页在真浏览器里被侧栏和页内 TOC 吃掉 160px（768 → 608），11 条 display 公式在这一列里得横向拖动（最宽 767px、拖 159px）→ **0**；目检另抓到一条 `[t]` 被 KaTeX 当正文画给读者的静默缺陷，如今守卫和反例都落库
+
+本轮动正文 11 页（只重排公式，没删一个字、没短一条式子），动判据 4 个文件：`tools/checks/check_live_column.py`、`check_svg_legibility.py`、`check_mermaid_geometry.py`、`check_content_overflow.py`。README 统计不动（196 页 / 19 章 / 217 Mermaid / 32 SVG / 8 截图；display 公式 276 条——重排前后逐页对齐断言 `len(before)==len(after)` 钉着，一条也没多、没少）。
+
+### 一、缺陷本身：轴量的那个 768 不是读者拿到的 768
+
+第 62 轮立 `check_live_column.py` 时量到 `<main>` = 768，之后所有几何轴都拿 768 当读者列宽。本轮把同一条探针换成**真线上 URL + Playwright 水合**再读一遍，768 只在部分窗口成立：
+
+| 读者窗口 | 复制稿（Edge 腿，历轮唯一读数） | 线上真实列宽 | 被谁吃掉 |
+| --- | --- | --- | --- |
+| 390（手机） | 量不到（本机 Edge 把 `innerWidth` 夹在 ~504 起） | **358** | 面包屑导航 215px 占位 |
+| 1024 | 768 | **624** | 章节侧栏 288px |
+| 1280 | 768 | **608** | 章节侧栏 288 + 页内 TOC 256 |
+| 1440 / 1920 | 768 | **768** | 面板开着，但 `max-w-3xl` 先到顶 |
+
+复制稿为什么永远 768：站点的客户端路由认不出 localhost 的文件名，导航面板根本不挂载，`<main>` 于是拿到完整的 768 上限。**这是结构性盲区，不是噪声**——凡是自己渲染「抓下来的线上 HTML」的轴，都在把读者的余量往好处报 160px。SVG 轴的缩放读数同批分开：`00-index` 首页图在复制稿里缩到 0.8，在 1280 窗口线上实绘 **0.633**。
+
+判据改动：`check_live_column.py` 加 `hydrated_leg`（5 个断点、URL 从 `llms.txt` 读、不猜），两数并排打印，差值记 `AWAITING-DECISION: COPY-OPTIMISTIC` 而**不记 problem**（列宽是平台给的，改判据改不出来）；本轮复跑 `problems=0 awaiting-decision=2`、`exit=0`。
+
+> 新守卫先咬了自己一口：`HYDRATED_PROBE` 第一版把 960px 控制盒种进图片自己的 wrapper 里，shrink-to-fit 的 wrapper 被撑到 960，**随后量的图就读成了原始尺寸**——于是「GitBook 给宽图配横向滚动条」这条假结论被打印过一次。改法是探针先读页面、最后才种控制盒；这条顺序现在写在代码注释里当断言用。
+
+### 二、公式轴装第二条腿，并把 11 条重排到位
+
+`check_content_overflow.py` 从单列改成一趟扫两列（`--laptop-column`，默认 608，`0` 退回只量认证列）。逐条前后账用 `git show HEAD:` 取旧 LaTeX 重新量，不靠本轮笔记：
+
+| 页面 | 条 | 旧自然宽 / 608 里拖 | 新自然宽 / 拖 |
+| --- | --- | --- | --- |
+| `02-agent-basics/perception-planning-action.md` | #3 | 767 / **159px** | 431 / 0 |
+| `09-frameworks/autogen.md` | #1 | 718 / 110 | 482 / 0 |
+| `07-planning/workflow-orchestration.md` | #2 | 691 / 83 | 376 / 0 |
+| `12-applications/research-agent.md` | #1 | 673 / 65 | 341 / 0 |
+| `12-applications/customer-service-agent.md` | #1 | 662 / 54 | 496 / 0 |
+| `12-applications/rpa.md` | #1 | 657 / 49 | 489 / 0 |
+| `11-engineering/deployment-scaling.md` | #4 | 652 / 44 | 201 / 0 |
+| `06-memory-rag/graphrag.md` | #2 | 643 / 35 | 475 / 0 |
+| `05-tool-protocol/function-calling.md` | #2 | 638 / 30 | 372 / 0 |
+| `06-memory-rag/rag-basics.md` | #1 | 637 / 29 | 380 / 0 |
+| `11-engineering/tool-registry.md` | #2 | 627 / 19 | 483 / 0 |
+
+全站复测（276 条 / 106 页，`katex@0.18.7`，`render-errors=0`）：
+
+```
+-- verdict (column 768px …) --  over-column=0  at-or-above bar(16 px drag)=0  unreachable=0
+-- verdict (column 608px …) --  over-column=1  at-or-above bar(16 px drag)=0  unreachable=0
+   natural width (px): min=71 p50=341 p90=511 p99=597 max=620
+   headroom: 4 formulas use more than 95% of the column
+     (ai-ml-dl=598, benchmarks=597, tool-permission-sandbox=597, pretraining-finetuning=586)
+```
+
+修法一律是 `aligned` / `cases` 换行重排，**没有一条靠删项或缩写凑数**（脚本断言「重排后自然宽变大的条数 = 0」）。认证列仍是 768（README 引的就是它），608 是作者该对齐的更严读数——本轮之前，一条卡着 768 写出来的式子可以静静地在笔记本用户那儿多拖两个字。
+
+**留下的一条例外**（诚实记在这里）：`03-llm/rlhf-dpo-alignment.md` 的 DPO 损失在 608 列里自然宽 620.28px、拖 12px，未达 16px 门槛所以判绿。它是那条公式的唯一一次没被动过：为一行 12px 把业界通用式拆成两行，代价大于收益。
+
+### 三、目检抓到的静默缺陷：`[t]` 被当成正文画给读者
+
+`06-memory-rag/graphrag.md` 里那条 `\begin{aligned}[t]`（套在 `cases` 内）**解析零报错**、`render-errors=0` 照样绿，浏览器却把 `[t]` 两个字符老老实实画在每条分支前面。amsmath 的环境选项 KaTeX 根本不实现——这类缺陷只在「看一眼渲染」时露脸，276 条批量渲染图本轮逐张目检才逮到它（同一条上另一次尝试用 `hphantom` 只把 627 降到 616，仍超 608，也是第二条腿打印全部越线读数才看见的）。
+
+落库成守卫：`STRAY_RE` + `stray_markup()` 只读 `class="katex-html"` 之后的纯文本（`.katex-mathml` 里带 `<annotation>` 存 LaTeX 源码，扫它会让全书每条公式都中招——这条写在注释里）；`ruler()` 常驻反例 `PLANT_OPT` 种一条 `[t]` 环境选项，断言守卫必须捉住，同时断言一条干净公式**不能**被捉。读数：`stray-markup control ok: a planted amsmath '[t]' option paints '[t]' as text and the guard sees it; a clean formula does not`。守卫进退出码：`stray` 非空即 `exit 1`。
+
+### 四、另外两条轴同批改上「笔记本读数」，但都只报不判
+
+| 轴 | 768 列（判据） | 608 列（只打印） |
+| --- | --- | --- |
+| `check_svg_legibility.py` | `0 张图 / 1109 个标签` 越 12px 线 | **32 张图 / 1066 个标签**越线（缩放 0.633、0.475） |
+| `check_mermaid_geometry.py` | 24 张图最小标签 <12px | **91 / 217 张**；最宽 `12-applications/README.md#1` 1116px → 768 里 11.0px、608 里 **8.7px** |
+
+两条都明写 `not counted as findings`：为 608 重画全书 32 张手绘图、或收窄 102 张超宽 Mermaid，是版式取舍，按停一停条款等操作者定。Mermaid 那条 608 读数由本轮渲染推导，并已与真 608 渲染对平（实绘字号差 0.1%，越线计数只差 1 张卡在门槛 0.006px 上的图），所以它是账、不是逐图判词。
+
+### 五、结构回归与统计口径
+
+批量改 11 页公式后全部离线轴复跑：`check_structure` 198 页 `problems=0`、`check_katex_formulas` 927 条 `failures=0`（引擎对齐 0.18.7）、`check_char_sanity` 36 万正文汉字 `findings=0`、`check_nav_h1_sync` 196 页 `problems=0`、`check_changelog_headings` `HEAD=64 tree=64 lost=0`、`check_source_pointers` 191 页 `findings=0`、`check_prose_duplicates` `dup=0`（近重复带 3 条仍是模板对，旧账）、`check_table_overflow` 2368 格 `spill=0 bust=0 problems=0`、`check_readme_stats` 全部 `ok`。`check_mermaid_geometry` 仍 `exit=1 problems=102`——第 62 轮那笔等站点开关的旧账，本轮 217/217 真渲染、`local=11.14.0 live=11.14.0`、分布 `101 缩放 / 0 横向滚动 / 116 原样` 与旧账逐项一致，不是回归。
+
+### 六、留下的账与下一步
+
+1. **产品级取舍（要操作者定，三条路都量过）**：(a) 为 608/手机 358 列重画 32 张手绘 SVG（作者字号得 ≥18.9px）；(b) 开 GitBook 宽版布局（`--column 1152` what-if 读数 `over-wide=0`，但公式 wrapper 是硬 `max-w-3xl`，不跟着变宽）；(c) 接受笔记本上的缩小现状，只把 608 当作者目标列。
+2. 102 张超宽 Mermaid 仍在等同一个开关；静态相位腿只有 1 个相位；8 张 PNG 截图仍没有任何轴读它们。
+3. 未做：公式轴的 358px（手机列）没有装成第三条腿——手机读者本就可以捏合放大，先当背景不当判据；跨页重复正文剩 ~2250 个「」串需要引用/术语分类器。
+4. 复现命令：
+   ```
+   python tools/checks/check_content_overflow.py            # 两列一趟扫完，exit 0
+   python tools/checks/check_live_column.py                 # hydrated 腿：358/624/608/768/768
+   python tools/checks/check_svg_legibility.py              # 768 判绿 + 608 只报
+   python tools/checks/check_mermaid_geometry.py            # problems=102 = 第 62 轮旧账
+   ```
+
 ## 2026-09-24（第 72 次）两把尺子各自量不到的那一半：字号轴**看不见图内部的 `scale(k)`**（全站 1127 个标签里 1 个中招，读数 12.80px → 12.16px，浏览器逐像素认了），引用轴**把「动词必须贴着引号」当成了引用的定义**（被归因的引用 12 → 15）；引用轴另外装上「自证」和「否定式引用」两个新桶——`findings=0` 从今往后不再被读成「所有引用都核过」
 
 本轮动正文 0 页、0 张图，判据改动 2 个文件：`tools/checks/check_svg_legibility.py`、`tools/checks/check_quote_fidelity.py`。README 统计不动（196 页 / 19 章没变）。顺带把第 71 轮 §八 那段线上记录改对了：当时写「读者可见那条腿本轮没跟上」，第 24 次探测证明它跟上了（HEAD 之后约 40 分钟），日志不该留下一句比实测更悲观的话。

@@ -59,6 +59,12 @@ SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
 # (`<main class="max-w-3xl layout-wide:max-w-6xl">`, and `layout-wide` is off by default). Judging
 # against 1120 certified 102 scaled-down diagrams as clean.
 COLUMN = 768
+# Round 73: the same `<main>` on the LIVE page at a 1280px window, once the 288px chapter sidebar and
+# the 256px page TOC mount beside the article. 768 is a >=1440 reader's column. Re-measured every run
+# by `check_svg_legibility.py`'s laptop leg (Playwright on the live URL); this axis keeps the number
+# rather than importing it, because importing would make the two files a cycle.
+COLUMN_LAPTOP = 608
+LABEL_BAR = 12.0                    # px; the bar check_svg_legibility.py certifies SVG labels at
 WINDOW = 1280                       # fixture viewport: the cell has to fit inside it
 SHOT_BUDGET = 20000                # virtual ms the --eyeball screenshot is allowed to paint in
 EDGE_CANDIDATES = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -403,6 +409,45 @@ def judge(rows, cells, column=COLUMN, floor=0.0):
     return problems, widths, heights, controls, laid
 
 
+def laptop_reading(laid, column):
+    """What the same diagrams cost a laptop reader, derived from this run's measured paint.
+
+    Mermaid scales a too-wide diagram uniformly, so a label painted at F px inside a `column` box is
+    painted at F * min(1, 608/w) / min(1, column/w) inside a 608 box, where w is the natural width
+    this run measured in the browser. That is arithmetic on measured numbers, not a second render, so
+    round 73 checked it against one: rendering all 217 diagrams at 608 instead of deriving them
+    reproduces every painted font to within 0.1%, and the under-bar count to within the one diagram
+    sitting 0.006px from the bar (11.994 predicted, 12.0 measured). A count printed here is therefore
+    a bar-crossing tally, not a per-diagram judgement - the diagrams within a hair of 12px could land
+    either side. `--column 608` remains the way to re-render for real.
+    Report-only: redrawing the book's diagrams for 608px is a content decision, not a ruler's.
+    """
+    pairs = []
+    for x in laid:
+        if not x["font"] or not x["w"]:
+            continue
+        s_here = min(1.0, column / x["w"])
+        pairs.append((x, x["font"] * min(1.0, COLUMN_LAPTOP / x["w"]) / s_here))
+    if not pairs:
+        print("  laptop reading: no diagram reported a painted font, so nothing to derive")
+        return
+    below = [p for p in pairs if p[1] < LABEL_BAR]
+    here = [p for p in pairs if p[0]["font"] < LABEL_BAR]
+    print("laptop reading (the same diagrams in the %dpx column a 1280-window reader gets, derived"
+          " from this run's paint): %d of %d paint their smallest label below %.0fpx, vs %d at %dpx"
+          % (COLUMN_LAPTOP, len(below), len(pairs), LABEL_BAR, len(here), column))
+    worst = min(pairs, key=lambda q: q[1])
+    print("  worst: %s #%d natural %.0fpx -> smallest label %.1fpx at %dpx, %.1fpx at %dpx"
+          % (worst[0]["row"]["page"], worst[0]["row"]["i"], worst[0]["w"], worst[0]["font"], column,
+             worst[1], COLUMN_LAPTOP))
+    print("  not counted as findings: redrawing diagrams for %dpx is a content decision, see round"
+          " 73's log entry (the column axis re-measures %d on the live page every run)"
+          % (COLUMN_LAPTOP, COLUMN_LAPTOP))
+    print("  accuracy of the line above: derived from this run's paint, and checked against a real"
+          " 608px render in round 73 - painted fonts match to 0.1%, the under-bar count to within the"
+          " one diagram sitting 0.006px from the bar, so it is a tally and not a per-diagram judgement")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mermaid-js", help="directory holding node_modules/mermaid, or the bundle itself")
@@ -479,6 +524,8 @@ def main():
              min([x["font"] for x in laid if x["font"]] or [0]),
              sorted([x["font"] for x in laid if x["font"]] or [0])[len(
                  [x for x in laid if x["font"]]) // 2]))
+    if args.column == COLUMN:
+        laptop_reading(laid, args.column)
     # The two extremes by name, so a future round can judge them without re-running anything:
     # "max width 1116px" is only useful if you know which diagram is at 1116 and how close it is.
     ranked = sorted(((x["row"], x["w"], x["h"], x) for x in laid), key=lambda t: -t[1])

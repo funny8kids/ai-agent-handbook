@@ -25,7 +25,10 @@ updated: 2026-09-23
 工具注册不是「建个数组」，而是把工具当**可治理资产**。原因在 [工具选择与路由](../07-planning/tool-selection-routing.md) 已经说明：模型的选择准确率随可见工具数上升而下降，且每个 schema 都在每一轮占用上下文。注册中心是唯一能同时掌握「有哪些工具、谁在用、效果如何」的地方。
 
 $$
-\text{治理能力}=\text{目录完整性}\times\text{元数据质量}\times\text{用量可见性}
+\begin{aligned}
+\text{治理能力}=\;&\text{目录完整性}\times\text{元数据质量}\\
+&\times\;\text{用量可见性}
+\end{aligned}
 $$
 
 缺任何一项，工具面就会随团队扩张而腐烂：重复工具、无人维护工具、过时 schema 混在一起，模型选择准确率自然下滑。
@@ -47,11 +50,13 @@ $$
 工具 schema 就是对外契约，应遵守与 API 相同的版本纪律：
 
 $$
-\text{schema 变更}\;\Longrightarrow\;
-\begin{cases}
-\text{兼容变更（加可选字段）} & \text{升 minor，跑回归}\\
-\text{破坏变更（改必填/删字段）} & \text{升 major，通知订阅方}
+\begin{aligned}
+&\text{schema 变更}\;\Longrightarrow\\
+&\begin{cases}
+\text{兼容变更（加可选字段）} \to \text{升 minor，跑回归}\\
+\text{破坏变更（改必填/删字段）} \to \text{升 major，通知订阅方}
 \end{cases}
+\end{aligned}
 $$
 
 破坏性变更必须走回归，且回归集应包含「工具选择正确率」用例——因为**改一句 description 就可能让某条路径的选择率骤降**。
