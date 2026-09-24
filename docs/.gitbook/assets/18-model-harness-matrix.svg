@@ -9,12 +9,12 @@
   <rect x="40" y="120" width="200" height="84" rx="8" fill="#fff" stroke="#6366f1"/>
   <text x="140" y="148" text-anchor="middle" font-weight="700" fill="#1e1b4b">GPT-6 Astra</text>
   <text x="140" y="172" text-anchor="middle" fill="#4338ca">computer use · 科研</text>
-  <text x="140" y="194" text-anchor="middle" fill="#6366f1">2026-09-09</text>
+  <text x="140" y="194" text-anchor="middle" fill="#4f46e5">2026-09-09</text>
 
   <rect x="40" y="216" width="200" height="84" rx="8" fill="#fff" stroke="#8b5cf6"/>
   <text x="140" y="244" text-anchor="middle" font-weight="700" fill="#1e1b4b">Claude Fable 5.1</text>
   <text x="140" y="268" text-anchor="middle" fill="#6d28d9">编码 · 知识工作</text>
-  <text x="140" y="290" text-anchor="middle" fill="#8b5cf6">2026-09-01</text>
+  <text x="140" y="290" text-anchor="middle" fill="#7c3aed">2026-09-01</text>
 
   <rect x="40" y="312" width="200" height="76" rx="8" fill="#fff" stroke="#a78bfa"/>
   <text x="140" y="340" text-anchor="middle" font-weight="700" fill="#1e1b4b">Claude Opus 5</text>

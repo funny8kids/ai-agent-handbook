@@ -18,7 +18,7 @@
       <stop offset="0%" stop-color="#e0e7ff"/><stop offset="100%" stop-color="#a5b4fc"/>
     </linearGradient>
     <linearGradient id="gRag" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#0e7490"/>
+      <stop offset="0%" stop-color="#0e7490"/><stop offset="100%" stop-color="#155e75"/>
     </linearGradient>
     <linearGradient id="gObs" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>

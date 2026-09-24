@@ -13,13 +13,13 @@
 
   <rect width="960" height="540" rx="20" fill="url(#bg5)"/>
   <text x="48" y="58" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="28" font-weight="700" fill="#0F172A">Function Calling 完整链路</text>
-  <text x="48" y="86" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" fill="#64748B">模型只输出「调用意图」，执行永远在你的代码里；结果回填后再由模型收尾</text>
+  <text x="48" y="86" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" fill="#475569">模型只输出「调用意图」，执行永远在你的代码里；结果回填后再由模型收尾</text>
 
   <!-- 三条泳道头 -->
   <g filter="url(#sh5)">
     <rect x="48" y="112" width="230" height="52" rx="12" fill="#2563EB"/>
     <rect x="352" y="112" width="230" height="52" rx="12" fill="#7C3AED"/>
-    <rect x="656" y="112" width="230" height="52" rx="12" fill="#059669"/>
+    <rect x="656" y="112" width="230" height="52" rx="12" fill="#047857"/>
   </g>
   <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">
     <text x="163" y="144">你的 Agent 代码</text>

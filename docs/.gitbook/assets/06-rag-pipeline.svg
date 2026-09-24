@@ -4,13 +4,13 @@
       <stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#ECFEFF"/>
     </linearGradient>
     <linearGradient id="gIdx" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#38BDF8"/><stop offset="100%" stop-color="#0284C7"/>
+      <stop offset="0%" stop-color="#0369A1"/><stop offset="100%" stop-color="#075985"/>
     </linearGradient>
     <linearGradient id="gQry" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#065f46"/>
     </linearGradient>
     <linearGradient id="gGen" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#7C3AED"/>
+      <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#6D28D9"/>
     </linearGradient>
     <filter id="sh2" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.13"/>

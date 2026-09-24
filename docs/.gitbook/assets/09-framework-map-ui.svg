@@ -7,7 +7,7 @@
       <path d="M32 0H0V32" fill="none" stroke="#4f46e5" stroke-opacity="0.05" stroke-width="1"/>
     </pattern>
     <linearGradient id="gDec" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#4f46e5"/>
+      <stop offset="0%" stop-color="#4f46e5"/><stop offset="100%" stop-color="#4338ca"/>
     </linearGradient>
     <linearGradient id="gCardL" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef2ff"/>
@@ -53,7 +53,7 @@
   <line x1="480" y1="262" x2="480" y2="306" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
   <line x1="480" y1="350" x2="480" y2="394" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
   <line x1="480" y1="438" x2="480" y2="482" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arrSl)"/>
-  <g font-size="15" fill="#94a3b8">
+  <g font-size="15" fill="#475569">
     <text x="492" y="202">否</text>
     <text x="492" y="290">否</text>
     <text x="492" y="378">否</text>
@@ -83,7 +83,7 @@
     <line x1="352" y1="504" x2="336" y2="504" marker-end="url(#arrInd)"/>
     <line x1="608" y1="504" x2="624" y2="504" marker-end="url(#arrInd)"/>
   </g>
-  <g font-size="15" font-weight="700" fill="#059669" text-anchor="middle">
+  <g font-size="15" font-weight="700" fill="#047857" text-anchor="middle">
     <text x="341" y="144">是</text>
     <text x="619" y="232">是</text>
     <text x="341" y="320">是</text>
@@ -181,5 +181,5 @@
 
   <!-- ===== 底注 ===== -->
   <text x="40" y="580" font-size="16" fill="#475569">决策口诀：<tspan font-weight="700" fill="#4338ca">控制流越复杂越靠图，协作越像开会越靠角色，流量越大越靠事件，越不想运维越靠托管。</tspan></text>
-  <text x="40" y="606" font-size="15" fill="#94a3b8">范式比名字重要：换框架换不掉坏架构，先选对控制流形态，再看生态、可观测与锁定成本。</text>
+  <text x="40" y="606" font-size="15" fill="#475569">范式比名字重要：换框架换不掉坏架构，先选对控制流形态，再看生态、可观测与锁定成本。</text>
 </svg>

@@ -7,7 +7,7 @@
       <path d="M32 0H0V32" fill="none" stroke="#0d9488" stroke-opacity="0.06" stroke-width="1"/>
     </pattern>
     <linearGradient id="gBtn" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2dd4bf"/><stop offset="100%" stop-color="#0d9488"/>
+      <stop offset="0%" stop-color="#0f766e"/><stop offset="100%" stop-color="#115e59"/>
     </linearGradient>
     <filter id="shm" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.14"/>
@@ -53,26 +53,26 @@
   <!-- ===== 左栏：Server 列表 ===== -->
   <rect x="40" y="156" width="204" height="434" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
   <text x="52" y="178" font-size="13" font-weight="700" fill="#0f172a">已连接 Servers</text>
-  <text x="232" y="178" text-anchor="end" font-size="12.5" fill="#94a3b8">共 4 个</text>
+  <text x="232" y="178" text-anchor="end" font-size="12.5" fill="#475569">共 4 个</text>
   <rect x="52" y="188" width="180" height="26" rx="13" fill="#ffffff" stroke="#cbd5e1"/>
   <g fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round">
     <circle cx="66" cy="199" r="4.5"/>
     <path d="M69.5 202.5 L74 207"/>
   </g>
-  <text x="80" y="204" font-size="12.5" fill="#94a3b8">搜索 server</text>
+  <text x="80" y="204" font-size="12.5" fill="#64748b">搜索 server</text>
 
   <!-- 选中项 -->
   <rect x="48" y="226" width="188" height="52" rx="10" fill="#ccfbf1" stroke="#14b8a6"/>
   <circle cx="62" cy="245" r="4" fill="#059669"/>
   <text x="74" y="246" font-size="12.5" font-weight="700" fill="#0f766e">filesystem 本地</text>
-  <text x="74" y="266" font-size="12" fill="#0d9488">3 工具 · 2 资源 · stdio</text>
+  <text x="74" y="266" font-size="12" fill="#0f766e">3 工具 · 2 资源 · stdio</text>
   <!-- 其余项 -->
   <circle cx="62" cy="309" r="4" fill="#059669"/>
   <text x="74" y="314" font-size="12.5" fill="#334155">数据库查询</text>
-  <text x="74" y="332" font-size="12" fill="#94a3b8">5 工具 · 只读模式</text>
+  <text x="74" y="332" font-size="12" fill="#475569">5 工具 · 只读模式</text>
   <circle cx="62" cy="369" r="4" fill="#f59e0b"/>
   <text x="74" y="374" font-size="12.5" fill="#334155">网页抓取</text>
-  <text x="74" y="392" font-size="12" fill="#94a3b8">1 工具 · 响应偏慢</text>
+  <text x="74" y="392" font-size="12" fill="#475569">1 工具 · 响应偏慢</text>
   <circle cx="62" cy="429" r="4" fill="#ef4444"/>
   <text x="74" y="434" font-size="12.5" fill="#334155">地图检索</text>
   <text x="74" y="452" font-size="12" fill="#b91c1c">连接失败 · 已断开</text>
@@ -136,11 +136,11 @@
   <circle cx="46" cy="614" r="8" fill="none" stroke="#10b981" stroke-width="1.4" opacity="0.45"/>
   <circle cx="46" cy="614" r="4.5" fill="#10b981"/>
   <text x="62" y="618" font-size="12.5" font-weight="700" fill="#047857">connected — 协议版本 2025-06-18</text>
-  <text x="728" y="618" text-anchor="end" font-size="12.5" fill="#059669">握手 12 ms · 心跳正常</text>
-  <text x="62" y="640" font-size="12.5" fill="#059669">能力：tools / resources / prompts</text>
-  <text x="728" y="640" text-anchor="end" font-size="12.5" fill="#059669">最近调用 42 ms</text>
+  <text x="728" y="618" text-anchor="end" font-size="12.5" fill="#047857">握手 12 ms · 心跳正常</text>
+  <text x="62" y="640" font-size="12.5" fill="#047857">能力：tools / resources / prompts</text>
+  <text x="728" y="640" text-anchor="end" font-size="12.5" fill="#047857">最近调用 42 ms</text>
 
   <!-- ===== 底注 ===== -->
-  <text x="24" y="680" font-size="13" fill="#64748b">调试纪律：先看 description 有没有写清参数约束，再手改一轮入参试调用，</text>
-  <text x="24" y="702" font-size="13" fill="#64748b">确认返回结构与错误码之后才接进 Agent。Schema 是模型唯一的填参依据。</text>
+  <text x="24" y="680" font-size="13" fill="#475569">调试纪律：先看 description 有没有写清参数约束，再手改一轮入参试调用，</text>
+  <text x="24" y="702" font-size="13" fill="#475569">确认返回结构与错误码之后才接进 Agent。Schema 是模型唯一的填参依据。</text>
 </svg>

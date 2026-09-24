@@ -42,7 +42,7 @@
     <circle cx="358" cy="92" r="4.5"/>
     <path d="M361.5 95.5 L366 100"/>
   </g>
-  <text x="374" y="97" font-size="13" fill="#94a3b8">按 trace id / 会话 / 关键词搜索</text>
+  <text x="374" y="97" font-size="13" fill="#64748b">按 trace id / 会话 / 关键词搜索</text>
   <rect x="628" y="81" width="96" height="22" rx="11" fill="#e9d5ff"/>
   <text x="676" y="97" text-anchor="middle" font-size="13" fill="#6d28d9">采样 100%</text>
 
@@ -55,12 +55,12 @@
   <text x="300" y="141" text-anchor="middle" font-size="13" fill="#7c3aed">模型 · 全部</text>
   <rect x="356" y="120" width="100" height="32" rx="16" fill="#faf5ff" stroke="#ddd6fe"/>
   <text x="406" y="141" text-anchor="middle" font-size="13" fill="#7c3aed">时间 · 24 小时</text>
-  <text x="728" y="141" text-anchor="end" font-size="13" fill="#94a3b8">命中 1,284 条</text>
+  <text x="728" y="141" text-anchor="end" font-size="13" fill="#64748b">命中 1,284 条</text>
 
   <!-- ===== 左栏：trace 列表 ===== -->
   <rect x="40" y="168" width="230" height="346" rx="10" fill="#fdfcff" stroke="#e9d5ff"/>
   <text x="54" y="190" font-size="14" font-weight="700" fill="#0f172a">Trace 列表</text>
-  <text x="256" y="190" text-anchor="end" font-size="13" fill="#94a3b8">已筛出 5 条</text>
+  <text x="256" y="190" text-anchor="end" font-size="13" fill="#64748b">已筛出 5 条</text>
 
   <rect x="48" y="202" width="214" height="56" rx="8" fill="#ede9fe" stroke="#8b5cf6"/>
   <circle cx="62" cy="220" r="4.5" fill="#ef4444"/>
@@ -71,27 +71,27 @@
   <circle cx="62" cy="282" r="4.5" fill="#10b981"/>
   <text x="74" y="287" font-size="13" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">b21e…07fa</text>
   <text x="252" y="287" text-anchor="end" font-size="13" font-weight="700" fill="#334155">5.6 s</text>
-  <text x="74" y="307" font-size="13" fill="#94a3b8">11 spans · 正常结束</text>
+  <text x="74" y="307" font-size="13" fill="#64748b">11 spans · 正常结束</text>
 
   <circle cx="62" cy="344" r="4.5" fill="#f59e0b"/>
   <text x="74" y="349" font-size="13" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">0cc8…4e19</text>
   <text x="252" y="349" text-anchor="end" font-size="13" font-weight="700" fill="#334155">12.4 s</text>
-  <text x="74" y="369" font-size="13" fill="#94a3b8">22 spans · 步数触顶退出</text>
+  <text x="74" y="369" font-size="13" fill="#64748b">22 spans · 步数触顶退出</text>
 
   <circle cx="62" cy="406" r="4.5" fill="#10b981"/>
   <text x="74" y="411" font-size="13" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">e930…b3d7</text>
   <text x="252" y="411" text-anchor="end" font-size="13" font-weight="700" fill="#334155">3.1 s</text>
-  <text x="74" y="431" font-size="13" fill="#94a3b8">8 spans · 正常结束</text>
+  <text x="74" y="431" font-size="13" fill="#64748b">8 spans · 正常结束</text>
 
   <circle cx="62" cy="468" r="4.5" fill="#ef4444"/>
   <text x="74" y="473" font-size="13" fill="#334155" font-family="ui-monospace,SFMono-Regular,Consolas,Menlo,monospace">4d77…a6f2</text>
   <text x="252" y="473" text-anchor="end" font-size="13" font-weight="700" fill="#334155">6.9 s</text>
-  <text x="74" y="493" font-size="13" fill="#94a3b8">9 spans · 工具调用超时</text>
+  <text x="74" y="493" font-size="13" fill="#64748b">9 spans · 工具调用超时</text>
 
   <!-- ===== 中间：span 树 + 彩色时间条 ===== -->
   <rect x="282" y="168" width="442" height="346" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
   <text x="296" y="190" font-size="14" font-weight="700" fill="#0f172a">Trace 7f3a…c02d · 14 spans · 8.2 s</text>
-  <g font-size="13" fill="#94a3b8" text-anchor="middle">
+  <g font-size="13" fill="#64748b" text-anchor="middle">
     <text x="400" y="210">0s</text><text x="477" y="210">2s</text><text x="554" y="210">4s</text>
     <text x="631" y="210">6s</text><text x="708" y="210">8s</text>
   </g>
@@ -129,12 +129,12 @@
   <rect x="278" y="538" width="112" height="22" rx="11" fill="#fee2e2" stroke="#fca5a5"/>
   <text x="334" y="553" text-anchor="middle" font-size="13" font-weight="700" fill="#b91c1c">timeout · 5 s</text>
   <g font-size="13">
-    <text x="54" y="582" fill="#64748b">状态</text><text x="200" y="582" text-anchor="end" font-weight="700" fill="#b91c1c">error</text>
-    <text x="54" y="606" fill="#64748b">开始于</text><text x="200" y="606" text-anchor="end" fill="#0f172a">2.1 s</text>
-    <text x="54" y="630" fill="#64748b">耗时</text><text x="200" y="630" text-anchor="end" fill="#0f172a">5.0 s</text>
-    <text x="224" y="582" fill="#64748b">重试</text><text x="360" y="582" text-anchor="end" fill="#0f172a">1 次 · 换源</text>
-    <text x="224" y="606" fill="#64748b">tokens</text><text x="360" y="606" text-anchor="end" fill="#0f172a">1.2k + 340</text>
-    <text x="224" y="630" fill="#64748b">成本</text><text x="360" y="630" text-anchor="end" fill="#0f172a">¥0.021</text>
+    <text x="54" y="582" fill="#475569">状态</text><text x="200" y="582" text-anchor="end" font-weight="700" fill="#b91c1c">error</text>
+    <text x="54" y="606" fill="#475569">开始于</text><text x="200" y="606" text-anchor="end" fill="#0f172a">2.1 s</text>
+    <text x="54" y="630" fill="#475569">耗时</text><text x="200" y="630" text-anchor="end" fill="#0f172a">5.0 s</text>
+    <text x="224" y="582" fill="#475569">重试</text><text x="360" y="582" text-anchor="end" fill="#0f172a">1 次 · 换源</text>
+    <text x="224" y="606" fill="#475569">tokens</text><text x="360" y="606" text-anchor="end" fill="#0f172a">1.2k + 340</text>
+    <text x="224" y="630" fill="#475569">成本</text><text x="360" y="630" text-anchor="end" fill="#0f172a">¥0.021</text>
   </g>
   <line x1="392" y1="544" x2="392" y2="652" stroke="#e9d5ff"/>
   <text x="404" y="552" font-size="13" font-weight="700" fill="#4c1d95">输出预览</text>
@@ -150,5 +150,5 @@
   <text x="664" y="597" text-anchor="middle" font-size="13" fill="#6d28d9">加评测集</text>
 
   <!-- ===== 底注 ===== -->
-  <text x="28" y="700" font-size="13" fill="#64748b">三跳定位：搜索找回 trace → 筛选器缩到错误 → span 树里最长那根带红框的条；把失败样例一键沉淀为回归评测用例。</text>
+  <text x="28" y="700" font-size="13" fill="#475569">三跳定位：搜索找回 trace → 筛选器缩到错误 → span 树里最长那根带红框的条；把失败样例一键沉淀为回归评测用例。</text>
 </svg>

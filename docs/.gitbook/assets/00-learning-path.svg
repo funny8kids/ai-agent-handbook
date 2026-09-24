@@ -14,27 +14,27 @@
 
   <rect width="960" height="556" rx="20" fill="url(#bg7)"/>
   <text x="48" y="60" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="28" font-weight="700" fill="#0F172A">学习路线：四个阶段</text>
-  <text x="48" y="90" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" fill="#64748B">基础 → Agent 核心 → 工程与安全 → 应用与资源；按目标选路线，不必顺序精读</text>
+  <text x="48" y="90" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="16" fill="#475569">基础 → Agent 核心 → 工程与安全 → 应用与资源；按目标选路线，不必顺序精读</text>
 
   <!-- 阶段一 -->
   <g filter="url(#sh7)"><rect x="30" y="126" width="212" height="330" rx="16" fill="#FFFFFF"/></g>
   <rect x="30" y="126" width="212" height="8" rx="4" fill="url(#stage1)"/>
   <text x="136" y="170" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="700" fill="#065F46">① 基础</text>
-  <text x="136" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#94A3B8">2–4 周</text>
+  <text x="136" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#64748B">2–4 周</text>
   <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">
     <text x="46" y="236">01 AI 基础</text>
     <text x="46" y="270">02 Agent 基础</text>
     <text x="46" y="304">03 LLM 基础</text>
     <text x="46" y="338">04 Prompt 与推理</text>
   </g>
-  <text x="46" y="400" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#059669">检验：讲清 Agent 与</text>
-  <text x="46" y="424" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#059669">Chatbot 的区别</text>
+  <text x="46" y="400" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#047857">检验：讲清 Agent 与</text>
+  <text x="46" y="424" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#047857">Chatbot 的区别</text>
 
   <!-- 阶段二 -->
   <g filter="url(#sh7)"><rect x="260" y="126" width="212" height="330" rx="16" fill="#FFFFFF"/></g>
   <rect x="260" y="126" width="212" height="8" rx="4" fill="url(#stage2)"/>
   <text x="366" y="170" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="700" fill="#1D4ED8">② Agent 核心</text>
-  <text x="366" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#94A3B8">动手阶段</text>
+  <text x="366" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#64748B">动手阶段</text>
   <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">
     <text x="276" y="236">05 工具与协议</text>
     <text x="276" y="270">06 记忆与 RAG</text>
@@ -48,7 +48,7 @@
   <g filter="url(#sh7)"><rect x="490" y="126" width="212" height="330" rx="16" fill="#FFFFFF"/></g>
   <rect x="490" y="126" width="212" height="8" rx="4" fill="url(#stage3)"/>
   <text x="596" y="170" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="700" fill="#6D28D9">③ 工程与安全</text>
-  <text x="596" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#94A3B8">生产化阶段</text>
+  <text x="596" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#64748B">生产化阶段</text>
   <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">
     <text x="506" y="236">09 框架与生态</text>
     <text x="506" y="270">10 评估与安全</text>
@@ -61,15 +61,15 @@
   <g filter="url(#sh7)"><rect x="720" y="126" width="212" height="330" rx="16" fill="#FFFFFF"/></g>
   <rect x="720" y="126" width="212" height="8" rx="4" fill="url(#stage4)"/>
   <text x="826" y="170" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="17" font-weight="700" fill="#C2410C">④ 应用与资源</text>
-  <text x="826" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#94A3B8">持续查阅</text>
+  <text x="826" y="194" text-anchor="middle" font-family="system-ui, sans-serif" font-size="15" fill="#64748B">持续查阅</text>
   <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#334155">
     <text x="736" y="236">12 应用案例</text>
     <text x="736" y="270">13 资源库</text>
     <text x="736" y="304">14 模板</text>
     <text x="736" y="338">15 术语表</text>
   </g>
-  <text x="736" y="400" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#EA580C">按需查阅，配合论文</text>
-  <text x="736" y="424" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#EA580C">与源码深入</text>
+  <text x="736" y="400" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#C2410C">按需查阅，配合论文</text>
+  <text x="736" y="424" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#C2410C">与源码深入</text>
 
   <!-- 底部路线 -->
   <path d="M136 492 L 826 492" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="8 6"/>
@@ -77,5 +77,5 @@
   <circle cx="366" cy="492" r="7" fill="#2563EB"/>
   <circle cx="596" cy="492" r="7" fill="#7C3AED"/>
   <circle cx="826" cy="492" r="7" fill="#EA580C"/>
-  <text x="480" y="528" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#64748B">手册是用来「扫」的：先建地图，再按目标深入某一阶段</text>
+  <text x="480" y="528" text-anchor="middle" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="15" fill="#475569">手册是用来「扫」的：先建地图，再按目标深入某一阶段</text>
 </svg>

@@ -3,7 +3,7 @@
 
 Why this file exists (round 69). Every earlier SVG axis looks at one instant: the size axis reads
 authored px against the reader's column and never renders; the geometry axis measures label boxes in
-a frozen frame. 15 of the 32 in-body figures animate (100 `<animate>` nodes), and an animation has
+a frozen frame. 14 of the 32 in-body figures animate (100 `<animate>` nodes), and an animation has
 ways to be unreadable that a still frame cannot show:
 
   * a bar that grows (`<animate attributeName="width" values="0;300;300">`) underneath white text —
@@ -21,12 +21,22 @@ exactly one frame of a 25-phase sweep.
 The colour question is answered by compositing the stack the reader actually gets, bottom-up: the
 page's own white, then every painted surface under the label in paint order (each with its own alpha
 and its ancestors' `opacity` accumulated — a translucent panel is a real partial layer, so it is
-composited and not skipped), then the label's ink over that. Gradient- and pattern-filled surfaces are
-resolved to their own stops/tiles and priced against the candidate **farthest in luminance from the
-ink**, i.e. the most favourable reading the label could get: a DARK verdict under a server can never
-be the server's fault, and such rows are counted `approx`. The cost of that bias is documented in
-"Honest limits" below. A surface whose reference dangles (no such id) is UNPRICED and counted, because
-an unpriceable panel must never be read as a pass.
+composited and not skipped), then the label's ink over that. A surface filled by an axis-aligned OR
+diagonal `objectBoundingBox` linear gradient is resolved AT THE PROBE POINT: the sweep is projected
+onto the surface's own box, bracketed by its two surrounding stops, and stop colours and alphas are
+lerped and composited — so a label standing on the middle of a light-to-dark pill is priced against
+the middle, which is the colour the reader actually gets. Everything else the reader may sit on — a
+radial wash, a pattern tile, a `userSpaceOnUse` server — is resolved to its own stops/tiles and priced
+against the candidate **farthest in luminance from the ink**, i.e. the most favourable reading the
+label could get: a DARK verdict under such a server can never be the server's fault, and those points
+are counted `approx` and printed per figure and by kind. The cost of that bias is documented in
+"Honest limits" below, and the reason the fallback is a fallback rather than an invention is planted
+four ways (`PLANT_GRAD_MID` and `PLANT_GRAD_DIAG` are measured, `PLANT_GRAD_RADIAL` and
+`PLANT_GRAD_USERSPACE` refuse to be and say so).
+A surface whose reference dangles (no such id) is UNPRICED and counted, because
+an unpriceable panel must never be read as a pass. The same rule runs from the other side: a label
+painted BY a server (`fill="url(#titlec)"`, which is how the home banner's own title is drawn) is
+priced at its most favourable stop and counted `approx`, instead of being left unmeasured.
 
 Burial is a two-arm test, and both thresholds were measured on this tree rather than picked:
 `--buried` (share of a label's 6 probe points one phase hides at once) and `--steady` (share of the
@@ -37,7 +47,11 @@ A COVERED finding names the surface **over** the label, not the one under it.
 
 A label that is itself mid-fade is not a contrast call: while its own alpha is below `--presence`
 (default 0.60) the phase is exempted and counted, so "it fades in" and "it is invisible" stay
-distinguishable. Because every phase is sampled, a verdict says whether the defect is phase-specific
+distinguishable. Round 70 narrowed that exemption to what the sentence actually claims: it applies only
+when an `<animate>` on the label or one of its ancestors can move its alpha at all. A permanently
+translucent label is not arriving late — it is faint, and that is a verdict — and the 18 static
+figures have no phase to sweep, so the old reading let every faint label in them off by default.
+Because every phase is sampled, a verdict says whether the defect is phase-specific
 (`PHASE-ONLY`: the best frame clears the bar and the worst does not — invisible to the still-frame
 axes) or steady (`DARK`, reported as bycatch, since no earlier axis priced colour at all).
 
@@ -55,7 +69,7 @@ red-900 ink they shipped with; the honest fix was the ink (red-950 #450a0a), whi
 too, and was rejected: it would have silently exempted every future fade in the 0.60-0.75 band.
 
 Guards:
-  * `--selftest` grades sixteen planted SVGs through the same code path as a real figure: a white label
+  * `--selftest` grades twenty-five planted SVGs through the same code path as a real figure: a white label
     over a growing dark bar (must come back PHASE-ONLY), a dark label over a growing light bar
     (silent), a label under a cover rect (COVERED), a label that only fades in (exempted, and the
     selftest asserts the exemption branch actually ran), a label dark in every frame (DARK and
@@ -63,25 +77,53 @@ Guards:
     a timeline that cannot advance (`begin="indefinite"`, which must be RULER BLIND, never clean),
     the house hairline grid and an opaque pattern tile (both must price the server, not throw up),
     a glyph in a circle's bbox corner (must NOT read buried), one buried point forever (must), and
-    one crossed for a phase (must not), a dangling paint reference (must say "not measured"), and
+    one crossed for a phase (must not), a dangling paint reference (must say "not measured"),
+    a faint label with no animation anywhere near it (must be JUDGED, not exempted), a label painted
+    by a gradient in both directions (a sweep whose darkest stop clears a white plate must grade
+    clean *because it was priced*, and a sweep whose every stop fails its own plate must grade DARK —
+    the pair that pins ink-server pricing from both sides), and the same ink sweep landing ON a
+    gradient plate (the banner's title: `fill="url(#titlec)"` over the `url(#bgb)` page wash, where
+    the reference colour for the plate choice has no literal and a crash there reads as "no figure"
+    rather than as a defect — both directions of that stack are planted), and
     four tier plants that pin the size rule from both sides: 16px must answer to 4.5, 24px and
     20px-bold to 3.0, and a 30px label in a 800-unit canvas hosted at 400px must shrink to 15px and
     fall back to 4.5 — the plant that proves the scale factor is applied, not just printed.
+  * the plate interpolation is pinned by four plants built from the SAME two stops, the same rect and
+    the same white label, so only the paint server differs: `PLANT_GRAD_MID` and `PLANT_GRAD_DIAG`
+    (an axis-aligned and a diagonal linear sweep — the middle of the sweep must be measured, so both
+    grade DARK and must carry zero `approx` points), `PLANT_GRAD_RADIAL` and `PLANT_GRAD_USERSPACE`
+    (the two servers the ruler refuses to price point by point — both must fall back to the favourable
+    stop and say so by carrying `approx`). Without the zero-approx half of the pair, a ruler that
+    ignored every gradient would still print a clean selftest; without the approx half, a ruler that
+    guessed at everything would too.
   * per-figure liveness: the node under the figure's first `<animate>` must read differently at three
-    points of the cycle, else the figure is a COVERAGE failure.
-  * vacuity floor: at least 10 animated figures must be found.
+    points of the cycle, else the figure is a COVERAGE failure. Only applies where animations exist.
+  * vacuity floor: `--mode animated` needs 10 animated figures, `--mode static` needs 12 of the
+    never-animated ones, `--mode all` needs both. The static half is what round 69 left unmeasured
+    and round 70 found 115 defects in.
+  * a label the ruler could not price (its own paint, or a surface under it, is a dangling reference)
+    is reported as COVERAGE and fails the run — counting it silently was how a banner title with
+    `fill="url(#titlec)"` looked like a pass.
+  * every finding carries attribution: the label's document index, the authored attribute painting its
+    ink (which may sit on an ancestor `<g>`), and the topmost surface's index plus its own authored
+    `fill` / `fill-opacity` / `opacity`. Without it a recolour round has to guess which literal to
+    replace, and a global hex swap moves strokes and decorative plates too.
 
 Honest limits: the page background is taken as white (the light theme the live column measures);
 a pattern's tiles are composited over white and then scaled by the tile's own `opacity` — the house
 grid is a 0.7px hairline at 0.22-0.5, and pricing it at full strength charged every label in
 06-memory-tiers as sitting on an opaque slate plate (5 false DARKs, now planted against);
 hit-testing asks the geometry (`isPointInFill`) where the element can answer and falls back to the
-box for images and uses; a label whose best candidate stop is light is *not* catchable when it is
-white ink on the light end of a coloured gradient (that bias is deliberate — it can only hide a
-defect, never invent one, and it means a gradient plate passing here is not proof that its own top
-stop clears the bar); the `[on ...]` note names the surface examined last while sweeping, not
-necessarily the one under the worst phase; and `--shots` screenshots phase ~N by virtual-time
-arithmetic, which is approximate (it exists for the eyeball leg, not for verdicts).
+box for images and uses; a PLATE is priced exactly for any objectBoundingBox linear sweep — a radial
+wash, a pattern tile and a `userSpaceOnUse` server still fall back to the stop **farthest in luminance
+from the ink**, so a label that passes on one of those is not proof that its own corner of the pill
+clears the bar (every such row is counted `approx`, and the count is printed per figure and by kind so
+the leniency is measurable rather than folklore); a gradient INK is priced the same favourable way at
+every plate, so
+a label that passes on a dark stop can still be invisible on its light end; the `[on ...]` note names
+the surface examined last
+while sweeping, not necessarily the one under the worst phase; and `--shots` screenshots phase ~N by
+virtual-time arithmetic, which is approximate (it exists for the eyeball leg, not for verdicts).
 
 Usage:
     python tools/checks/check_svg_phase_legibility.py --selftest
@@ -127,6 +169,7 @@ STEADY = 0.5        # share of the cycle for which one slot stays hidden: the tr
 GRID = 24           # uniform samples per cycle, on top of every authored keyTime
 TICK = 30           # ms of virtual time per phase; see the driver note above
 MIN_FIGURES = 10    # vacuity floor
+MIN_STATIC = 12     # ... and for the never-animated half (18 figures today)
 
 PROBE = r"""
 (function () {
@@ -145,7 +188,14 @@ PROBE = r"""
     h.open('GET', 'http://127.0.0.1:' + PORT + '/hold?rid=' + RID, false);
     try { h.send(); } catch (e) {}
   }
-  window.onerror = function (m) { post({fatal: String(m).slice(0, 300)}, true); hold(); };
+  /* A fatal beacon must say WHERE it died: "reading 'map'" alone sent me fixing the wrong undefined
+     twice in one round, because the probe's own line numbers are invisible from the harness. */
+  window.onerror = function (m, src, line, col, err) {
+    var at = " @probe:" + line + ":" + col;
+    var frames = err && err.stack ? String(err.stack).split("\n").slice(1, 3).join(" < ") : "";
+    post({fatal: String(m).slice(0, 200) + at + (frames ? " |" + frames.slice(0, 180) : "")}, true);
+    hold();
+  };
   if (!svg) { post({fatal: 'no svg in #host'}, true); hold(); return; }
 
   function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
@@ -236,6 +286,11 @@ PROBE = r"""
     }
     return out.length ? out : null;
   }
+  function serverKind(fill) {
+    var m = /url\(["']?#([^"')]+)["']?\)/.exec(fill || '');
+    var g = m && svg.ownerDocument.getElementById(m[1]);
+    return !g ? "?" : (/gradient$/i.test(g.tagName) ? "gradient" : "pattern");
+  }
   function bestColor(cands, ink) {
     var best = null, bl = -1;
     for (var q = 0; q < cands.length; q++) {
@@ -243,6 +298,52 @@ PROBE = r"""
       if (d > bl) { bl = d; best = cands[q]; }
     }
     return best;
+  }
+
+  /* A gradient PLATE is not one colour, and "price it at the stop farthest from the ink" is a
+     leniency the reader never gets: a white label centred on a light-over-dark pill sits on the MID
+     of that pill, not on its darkest end, and the banner's violet node passed on 5.0:1 while the
+     glyphs themselves stood on 3.4:1. So for any objectBoundingBox linear gradient the colour under
+     each probe point is interpolated from the stops exactly as the renderer mixes them — including a
+     DIAGONAL sweep, which is the house page wash under all 32 figures, so refusing it would leave
+     every label in the book priced by a guess. What still falls back to the favourable stop is a
+     radial wash and a `userSpaceOnUse` server (whose axis lives in the SVG's own coordinate system,
+     not the element's box, and getting that wrong is a confident wrong number), and both stay marked
+     `approx`. */
+  function gradInfo(fill) {
+    var m = /url\(["']?#([^"')]+)["']?\)/.exec(fill || '');
+    if (!m) return null;
+    var g = svg.ownerDocument.getElementById(m[1]);
+    /* Only a LINEAR sweep has an axis to interpolate along. A radialGradient has no x1/y1/x2/y2 at
+       all, so reading the linear defaults off it would invent a horizontal sweep and hand back a
+       confident wrong number — the worse failure. Radial servers (the banner's and 04-react-loop's
+       `glow` washes) stay on the favourable-stop branch below, marked `approx`. */
+    if (!g || !/^linearGradient$/i.test(g.tagName)) return null;
+    if ((g.getAttribute('gradientUnits') || 'objectBoundingBox') !== 'objectBoundingBox') return null;
+    function frac(v, d) { return v === null ? d : (/%$/.test(v) ? num(v) / 100 : num(v)); }
+    var x1 = frac(g.getAttribute('x1'), 0), y1 = frac(g.getAttribute('y1'), 0),
+        x2 = frac(g.getAttribute('x2'), 1), y2 = frac(g.getAttribute('y2'), 0);
+    var stops = [].slice.call(g.querySelectorAll('stop')).map(function (st) {
+      var c = color(getComputedStyle(st).stopColor);
+      var so = parseFloat(getComputedStyle(st).stopOpacity);
+      return {o: frac(st.getAttribute('offset'), 0), rgb: c && c.rgb, a: isNaN(so) ? 1 : so};
+    }).filter(function (s) { return s.rgb; }).sort(function (p, q) { return p.o - q.o; });
+    /* objectBoundingBox units are fractions of the element's box, so the axis vector has to be
+       scaled by that box before it can be projected against screen coordinates. */
+    return stops.length > 1 && (x1 !== x2 || y1 !== y2)
+        ? {dx: x2 - x1, dy: y2 - y1, stops: stops} : null;
+  }
+  function gradAt(s, px, py) {
+    var st = s.ginfo.stops, k = 0;
+    var vx = s.ginfo.dx * (s.x1 - s.x0), vy = s.ginfo.dy * (s.y1 - s.y0);
+    var len2 = vx * vx + vy * vy;
+    var u = len2 > 0 ? ((px - s.x0) * vx + (py - s.y0) * vy) / len2 : 0;
+    u = Math.max(0, Math.min(1, u));
+    while (k < st.length - 2 && u > st[k + 1].o) k++;
+    var a = st[k], b = st[Math.min(k + 1, st.length - 1)];
+    var span = b.o - a.o, f = span > 0 ? Math.max(0, Math.min(1, (u - a.o) / span)) : 0;
+    var mix = [0, 1, 2].map(function (i) { return a.rgb[i] + (b.rgb[i] - a.rgb[i]) * f; });
+    return over(mix, a.a + (b.a - a.a) * f, [255, 255, 255]);
   }
 
   var PAINTED = {rect: 1, circle: 1, ellipse: 1, path: 1, polygon: 1, polyline: 1, image: 1, use: 1};
@@ -291,7 +392,8 @@ PROBE = r"""
       var s = {i: i, tag: el.tagName, el: el, x0: box.left, y0: box.top, x1: box.right,
                y1: box.bottom, grad: c.grad ? 1 : 0, rgb: c.rgb, a: 1};
       s.a = stacked(el) * (c.a || 1) * num(cs.fillOpacity === '' ? 1 : cs.fillOpacity);
-      if (c.grad) { s.colors = serverColors(cs.fill); s.ref = cs.fill;
+      if (c.grad) { s.colors = serverColors(cs.fill); s.ginfo = gradInfo(cs.fill); s.ref = cs.fill;
+                    s.kind = serverKind(cs.fill);
                     s.a = stacked(el) * num(cs.fillOpacity === '' ? 1 : cs.fillOpacity); }
       if (s.a < 0.004) continue;
       out.push(s);
@@ -348,11 +450,59 @@ PROBE = r"""
             px: o.px, bar: o.bar,
             ink: null,
             covFrac: 0, covPts: 0, covAll: 0, covPhases: 0, probed: 0, covBy: null,
-            onGrad: 0, ownGrad: 0, panelGrad: 0, judged: 0, approx: 0, amin: 1, amax: 0,
-            top: null, unpricedBy: null};
+            onGrad: 0, ownGrad: 0, panelGrad: 0, judged: 0, approx: 0,
+            approxPat: 0, approxGrad: 0, approxInk: 0, amin: 1, amax: 0,
+            top: null, unpricedBy: null, inkRgb: null, inkGrad: 0};
   });
 
   svg.pauseAnimations();
+  /* `--presence` exempts a label only while it is genuinely mid-fade. A label whose alpha cannot
+     move is not "arriving late" — it is permanently translucent, and that is a contrast call like
+     any other. Static figures (no <animate>) have no phase to sweep, so without this a faint label
+     there would hide behind the exemption forever.
+     Whether alpha CAN move is read off the markup, not measured by a pre-sweep: SMIL values only
+     reach getComputedStyle after the browser paints a frame, so a synchronous loop of
+     setCurrentTime() reports one constant alpha at every phase. (Measured: the pre-sweep version
+     exempted nothing and made PLANT_FADE, a label sweeping 0.00 -> 1.00, read DARK at t=0.)
+     Limit, honest: an <animate> that reaches this label's alpha from elsewhere by xlink:href is not
+     seen here — no authored figure in this tree does that. */
+  var ALPHA_ATTR = {opacity: 1, 'fill-opacity': 1, 'fill': 1, 'stroke-opacity': 1};
+
+  /* Attribution, so a FINDING can be turned into an edit without guessing: computed colour says the
+     label is unreadable, but the string to replace is an AUTHORED literal, and it is not always on
+     the <text> (a `<g fill="#94a3b8">` paints every child label). `inkSource` therefore walks up to
+     the nearest node carrying `fill`, and `top` carries the surface's own literal. Indexes are into
+     `all` (document order), which is how the fixing pass points at a node. */
+  function lit(el, name) {
+    var v = el.getAttribute ? el.getAttribute(name) : null;
+    return v === null ? null : name + '="' + v + '"';
+  }
+  function authored(el) {
+    return [lit(el, 'fill'), lit(el, 'fill-opacity'), lit(el, 'opacity')].filter(Boolean).join(" ");
+  }
+  function inkSource(el) {
+    for (var n = el; n && n.nodeType === 1; n = n.parentNode) {
+      var v = n.getAttribute ? n.getAttribute('fill') : null;
+      if (v !== null) return [n.tagName, all.indexOf(n), 'fill="' + v + '"', n === el ? 1 : 0];
+    }
+    return null;
+  }
+  function alphaAnimated(el) {
+    for (var n = el; n && n.nodeType === 1; n = n.parentNode) {
+      var kids = n.children || [];
+      for (var k = 0; k < kids.length; k++) {
+        var tg = String(kids[k].tagName || '').toLowerCase();
+        if (tg !== 'animate' && tg !== 'set') continue;
+        if (ALPHA_ATTR[(kids[k].getAttribute('attributeName') || '').toLowerCase()]) return 1;
+      }
+    }
+    return 0;
+  }
+  for (var q = 0; q < rows.length; q++) {
+    rows[q].varying = alphaAnimated(labels[q].el);
+    rows[q].idx = labels[q].idx;
+    rows[q].inkFrom = inkSource(labels[q].el);      /* which authored attribute paints this ink */
+  }
   function measure(t) {
     var snap = snapshot();
     if (liveAt[t] && live.length < 3) {
@@ -364,26 +514,47 @@ PROBE = r"""
       if (box.width < 0.5 || box.height < 0.5) continue;
       var fill = color(cs.fill);
       if (!fill) continue;
-      if (fill.grad) { r.onGrad++; r.ownGrad++; r.unpricedBy = ["text", cs.fill]; continue; }
-      var ta = stacked(o.el) * fill.a * num(cs.fillOpacity === '' ? 1 : cs.fillOpacity);
+      /* A label can be painted BY a server too (the home banner's title is `fill="url(#titlec)"`).
+         Refusing to price those left the book's own title unmeasured, so the same favourable-candidate
+         rule is applied from the ink side: price against the stop farthest from the plate, and count
+         the row `approx` so a pass is never read as proof that every stop clears. A reference that
+         resolves to nothing stays UNPRICED. */
+      var inkServer = fill.grad ? serverColors(cs.fill) : null;
+      if (fill.grad && !inkServer) {
+        r.onGrad++; r.ownGrad++; r.unpricedBy = ["text", o.idx, cs.fill, authored(o.el)]; continue;
+      }
+      /* Which colour to bias the PLATE's stop choice with when the ink itself is a sweep: `url()` has
+         no fill.rgb, and reading it undefined is what killed the banner probe (the ruler died rather
+         than failing, which is the one outcome it must never produce). The reference only picks which
+         stop of a gradient plate gets composited, and the ratio below re-picks the ink stop against
+         the composed plate, so taking the stop farthest from the white paper these figures author on
+         keeps the frame favourable without inventing a contrast. */
+      var inkRef = inkServer ? bestColor(inkServer, [255, 255, 255]) : fill.rgb;
+      var ta = stacked(o.el) * (inkServer ? 1 : fill.a) * num(cs.fillOpacity === '' ? 1 : cs.fillOpacity);
       r.amin = Math.min(r.amin, ta); r.amax = Math.max(r.amax, ta);
-      if (ta < PRESENCE) { r.fade++; continue; }      /* mid-fade: exempt, not judged */
+      if (ta < PRESENCE && r.varying) { r.fade++; continue; }   /* mid-fade: exempt, not judged */
       var xs = [box.left + 2, (box.left + box.right) / 2, box.right - 2];
       var ys = [box.top + box.height * 0.35, box.top + box.height * 0.65];
       var pts = 0, covPts = 0, cnt = {}, dims = {};
       for (var i = 0; i < ys.length; i++) {
         for (var j = 0; j < xs.length; j++) {
           var px = xs[j], py = ys[i], bg = [255, 255, 255], cover = 0, grad = 0, approx = 0;
+          var ap = 0, ag = 0;                       /* which kind of server made this point a guess */
           for (var k = 0; k < snap.length; k++) {
             var s = snap[k];
             if (s.i === o.idx) continue;
             var inside = covers(s, px, py);
             if (!inside) continue;
             if (s.i < o.idx) {
-              if (s.grad && !s.colors) { grad = 1; r.unpricedBy = [s.tag, s.ref]; break; }
-              if (s.colors) { approx = 1; bg = over(bestColor(s.colors, fill.rgb), s.a, bg); }
+              if (s.grad && !s.colors) { grad = 1; r.unpricedBy = [s.tag, s.i, s.ref, authored(s.el)]; break; }
+              /* The plate's own colour: interpolated at the probe point where the sweep is a simple
+                 axis-aligned gradient (what the reader actually sees under the glyph), else the stop
+                 farthest from the ink — a guess, so the row is marked `approx`. */
+              if (s.ginfo) { bg = over(gradAt(s, px, py), s.a, bg); }
+              else if (s.colors) { approx = 1; if (s.kind === "pattern") ap = 1; else ag = 1;
+                                   bg = over(bestColor(s.colors, inkRef), s.a, bg); }
               else bg = over(s.rgb, s.a, bg);
-              r.top = [s.tag, s.i, Math.round(s.a * 100) / 100, bg.map(Math.round)];
+              r.top = [s.tag, s.i, Math.round(s.a * 100) / 100, bg.map(Math.round), authored(s.el)];
             } else if (s.a >= 0.95) {
               if (!cover) {
                 var key = s.tag + '#' + s.i;
@@ -396,15 +567,16 @@ PROBE = r"""
           }
           if (grad) { r.onGrad++; r.panelGrad++; continue; }
           pts++;
-          if (approx) r.approx++;
+          if (approx) { r.approx++; r.approxPat += ap; r.approxGrad += ag; }
           if (cover) {                                   /* buried this phase: not a colour call */
             covPts++;
             r.cov |= 1 << (i * 3 + j);                   /* which of the 6 slots is ever hidden */
             continue;
           }
-          var ink = over(fill.rgb, ta, bg), c = cr(ink, bg);
+          if (inkServer) { r.inkGrad++; r.approx++; r.approxInk++; }
+          var ink = over(inkServer ? bestColor(inkServer, bg) : fill.rgb, ta, bg), c = cr(ink, bg);
           r.judged++;
-          if (c < r.worst) { r.worst = c; r.at = t; r.ink = cs.fill; }
+          if (c < r.worst) { r.worst = c; r.at = t; r.ink = cs.fill; r.inkRgb = ink.map(Math.round); }
           if (c > r.best) r.best = c;
         }
       }
@@ -435,10 +607,13 @@ PROBE = r"""
                     covAll: r.covAll, probed: r.probed, covDur: dur,
                     covFrac: Math.round(r.covFrac * 100) / 100,
                     covBy: r.covBy, covAt: r.covAt,
-                    fade: r.fade, onGrad: r.onGrad, ownGrad: r.ownGrad, panelGrad: r.panelGrad,
-                    approx: r.approx,
+                    fade: r.fade, varying: r.varying, onGrad: r.onGrad, ownGrad: r.ownGrad, panelGrad: r.panelGrad,
+                    approx: r.approx, approxPat: r.approxPat, approxGrad: r.approxGrad,
+                    approxInk: r.approxInk,
                     amin: Math.round(r.amin * 100) / 100,
                     amax: Math.round(r.amax * 100) / 100, top: r.top,
+                    idx: r.idx, inkFrom: r.inkFrom, unpricedBy: r.unpricedBy,
+                    inkGrad: r.inkGrad, inkRgb: r.inkRgb,
                     dark: r.judged > 0 && r.worst < r.bar,
                     phaseOnly: r.judged > 0 && r.worst < r.bar && r.best >= r.bar,
                     buried: r.covFrac >= BURIED || dur >= STEADY};
@@ -481,8 +656,13 @@ def host(src, args, rid, live_port):
 srv_port = [0]
 
 
-def animated_figures():
-    """Asset paths of in-body SVG figures that animate, detected by the XML parser."""
+def animated_figures(mode="animated"):
+    """Asset paths of in-body SVG figures, by whether they animate.
+
+    `static` is the half round 69 could not price: 18 of the 32 in-body figures carry no <animate>,
+    so no phase exists to sweep and their labels were never checked for contrast by ANY axis (the
+    size ruler prices px, the geometry ruler prices boxes -- neither has ever looked at a colour).
+    """
     used = set()
     for root, _dirs, files in os.walk(DOCS):
         for f in files:
@@ -499,12 +679,12 @@ def animated_figures():
         except ET.ParseError:
             continue
         n = len([e for e in root.iter() if e.tag == SVGNS + "animate"])
-        if n:
+        if (n and mode != "static") or (not n and mode != "animated"):
             out.append((name, n))
     return out
 
 
-def sweep(srv, name, src, args, rid):
+def sweep(srv, name, src, args, rid, na=1):
     io.open(os.path.join(srv.root, "phase-%s.html" % rid), "w", encoding="utf-8").write(
         host(src, args, rid, True))
     srv.hold(rid, 150)
@@ -539,19 +719,28 @@ def sweep(srv, name, src, args, rid):
     cols = range(1, min(len(l) for l in live)) if live else []
     moved = sum(1 for c in cols if len({l[c] for l in live}) > 1)
     rep["moved"] = moved
-    if len(live) < 3 or not moved:
+    if na and (len(live) < 3 or not moved):
         return {"coverage": "%s: RULER BLIND — none of the %d animated node(s) reads differently at "
                             "%d points of the cycle, so the timeline never advanced (signatures %s)"
                 % (name, rep.get("targets") or len(cols), len(live),
                    json.dumps([l[0] for l in live]))}
+    if not rep.get("phases"):
+        return {"coverage": "%s: no phase to measure (0 grid points) — the ruler never ran" % name}
     return rep
 
 
 def findings(rep, args):
     out = []
     for r in rep["rows"]:
-        w = "" if not r["top"] else "  [on %s#%d a=%.2f rgb(%s)]" % (
-            r["top"][0], r["top"][1], r["top"][2], ",".join(str(v) for v in r["top"][3]))
+        w = "" if not r["top"] else "  [on %s#%d a=%.2f rgb(%s) %s]" % (
+            r["top"][0], r["top"][1], r["top"][2], ",".join(str(v) for v in r["top"][3]),
+            (r["top"][4] if len(r["top"]) > 4 else "") or "inherited")
+        src = r.get("inkFrom") or []
+        if src:
+            w += "  [ink %s#%d %s%s]" % (src[0], src[1], src[2], "" if src[3] else " inherited")
+        if r.get("inkGrad"):
+            w += "  [gradient ink, priced at the stop most favourable to it: rgb(%s)]" % \
+                 ",".join(str(v) for v in (r.get("inkRgb") or []))
         if r["dark"]:
             out.append("%-9s %-26s %4.1fpx bar %.2f  worst %.2f @ t=%ss  best %.2f  "
                        "alpha %.2f..%.2f  ink %s%s"
@@ -597,6 +786,13 @@ PLANTS = [
      'a label that fades in'
      '<animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="4s" '
      'repeatCount="indefinite"/></text></svg>' % G, "clean-fading"),
+    # The other side of the same rule, and the one the 18 static figures live on: alpha 0.4 with
+    # nothing animating it is not a fade-in, it is a faint label. An exemption that read only
+    # `alpha < presence` let these hide; this plant must be priced.
+    ("PLANT_FADE_STATIC",
+     '<svg %s><rect x="10" y="40" width="300" height="40" fill="#dbeafe"></rect>'
+     '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16" opacity="0.4">'
+     'permanently translucent</text></svg>' % G, "dark"),
     ("PLANT_STEADY",
      '<svg %s><rect x="10" y="10" width="20" height="100" fill="#166534">'
      '<animate attributeName="width" values="20;120;20" dur="4s" repeatCount="indefinite"/></rect>'
@@ -627,8 +823,8 @@ PLANTS = [
      '<animate attributeName="opacity" values="0.85;1;0.85" dur="4s" repeatCount="indefinite"/></rect>'
      '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16" '
      '>white on an opaque tile</text></svg>' % G, "clean"),
-    # A dangling paint reference: what the reader sees is unknowable, so the axis must say
-    # "not measured" rather than default the surface to white and report clean.
+    # A dangling paint reference on a SURFACE: what the reader sees is unknowable, so the axis must
+    # say "not measured" rather than default the surface to white and report clean.
     # A glyph in the corner of a circle's bounding box is not under the circle. With a box-only test
     # this plant reads "covered"; the hub/badge pair in 04-react-loop is the real case.
     ("PLANT_ARC",
@@ -686,7 +882,103 @@ PLANTS = [
      '<animate attributeName="cx" values="20;760;20" dur="4s" repeatCount="indefinite"/></circle>'
      '<text x="200" y="72" text-anchor="middle" fill="#ffffff" font-size="30" '
      '>authored 30, rendered 15</text></svg>' % G800, "dark"),
+    # The label's OWN paint can be a server too (the home banner's title is `fill="url(#titlec)"`).
+    # Both directions get pinned: pricing it (a sweep whose darkest stop clears a white plate must
+    # grade clean, not "unpriced") and NOT letting it off the hook (a sweep whose every stop is
+    # low-contrast against its own plate must grade dark — exempting gradient ink would hide a real defect).
+    ("PLANT_INK_GRAD_CLEAN",
+     '<svg %s><defs><linearGradient id="igA" x1="0" y1="0" x2="1" y2="0">'
+     '<stop offset="0%%" stop-color="#ffffff"/>'
+     '<stop offset="100%%" stop-color="#0f172a"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="#ffffff"/>'
+     '<circle cx="20" cy="16" r="5" fill="#0f172a">'
+     '<animate attributeName="cx" values="20;360;20" dur="4s" repeatCount="indefinite"/></circle>'
+     '<text x="18" y="66" font-size="16" fill="url(#igA)">gradient ink, dark stop wins</text></svg>'
+     % G, "clean"),
+    ("PLANT_INK_GRAD_DARK",
+     '<svg %s><defs><linearGradient id="igB" x1="0" y1="0" x2="1" y2="0">'
+     '<stop offset="0%%" stop-color="#94a3b8"/>'
+     '<stop offset="100%%" stop-color="#cbd5e1"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="#ffffff"/>'
+     '<circle cx="20" cy="16" r="5" fill="#0f172a">'
+     '<animate attributeName="cx" values="20;360;20" dur="4s" repeatCount="indefinite"/></circle>'
+     '<text x="18" y="66" font-size="16" fill="url(#igB)">gradient ink, no stop clears</text></svg>'
+     % G, "dark"),
+    # Two servers STACKED: a gradient ink over a gradient PLATE — the banner's own title (a url(#titlec)
+    # heading on the url(#bgb) page wash). Reading `fill.rgb` of a url() ink as a colour crashed the
+    # probe here, and a dead ruler is the one verdict it must never hand out: these two plants run the
+    # composite path in both directions, so the crash and a wrongly-lenient pass are both caught.
+    ("PLANT_INK_GRAD_ON_GRAD",
+     '<svg %s><defs><linearGradient id="pgA" x1="0" y1="0" x2="0" y2="1">'
+     '<stop offset="0%%" stop-color="#f8fafc"/>'
+     '<stop offset="100%%" stop-color="#94a3b8"/></linearGradient>'
+     '<linearGradient id="igC" x1="0" y1="0" x2="1" y2="0">'
+     '<stop offset="0%%" stop-color="#cbd5e1"/>'
+     '<stop offset="100%%" stop-color="#0f172a"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pgA)"/>'
+     '<circle cx="20" cy="16" r="5" fill="#0f172a">'
+     '<animate attributeName="cx" values="20;360;20" dur="4s" repeatCount="indefinite"/></circle>'
+     '<text x="18" y="66" font-size="16" fill="url(#igC)">ink sweep over plate sweep</text></svg>'
+     % G, "clean"),
+    ("PLANT_INK_GRAD_ON_GRAD_DARK",
+     '<svg %s><defs><linearGradient id="pgB" x1="0" y1="0" x2="0" y2="1">'
+     '<stop offset="0%%" stop-color="#f1f5f9"/>'
+     '<stop offset="100%%" stop-color="#e2e8f0"/></linearGradient>'
+     '<linearGradient id="igD" x1="0" y1="0" x2="1" y2="0">'
+     '<stop offset="0%%" stop-color="#e2e8f0"/>'
+     '<stop offset="100%%" stop-color="#cbd5e1"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pgB)"/>'
+     '<circle cx="20" cy="16" r="5" fill="#0f172a">'
+     '<animate attributeName="cx" values="20;360;20" dur="4s" repeatCount="indefinite"/></circle>'
+     '<text x="18" y="66" font-size="16" fill="url(#igD)">both sweeps agree it is mud</text></svg>'
+     % G, "dark"),
+    # The pill case the favourable-stop rule used to wave through: a light-over-blue vertical sweep
+    # whose DARK end clears 4.5 (5.17:1) while its middle, where a centred label actually sits, does
+    # not (2.5:1). Under the old rule this graded clean; the banner's violet node is exactly this
+    # shape. The next two plants pin that the general case is measured too, and pin the honest limit:
+    # a diagonal sweep is now interpolated like any other (it is the house page wash under every
+    # figure), while a `userSpaceOnUse` server still falls back to the favourable stop, marked
+    # `approx`, because its axis is not in the element's box and guessing it is a wrong number.
+    ("PLANT_GRAD_MID",
+     '<svg %s><defs><linearGradient id="pmA" x1="0" y1="0" x2="0" y2="1">'
+     '<stop offset="0%%" stop-color="#e0f2fe"/>'
+     '<stop offset="100%%" stop-color="#2563eb"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pmA)"/>'
+     '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16">'
+     'dark end clears, middle does not</text></svg>' % G, "dark"),
+    ("PLANT_GRAD_DIAG",
+     '<svg %s><defs><linearGradient id="pmB" x1="0" y1="0" x2="1" y2="1">'
+     '<stop offset="0%%" stop-color="#e0f2fe"/>'
+     '<stop offset="100%%" stop-color="#2563eb"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pmB)"/>'
+     '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16">'
+     'diagonal: measured, not guessed</text></svg>' % G, "dark"),
+    # Same stops, same label, same rect as PLANT_GRAD_MID — only the SERVER differs. Interpolating a
+    # radial sweep along the linear axis defaults (which is what a naive reader of x1/y1/x2/y2 gets,
+    # since a radialGradient has no such attributes) would invent a wrong horizontal sweep and grade
+    # this `dark`. Refusing to interpolate marks it `approx` instead: an honest blind spot beats a
+    # confident wrong number, and this plant is the difference between the two.
+    ("PLANT_GRAD_RADIAL",
+     '<svg %s><defs><radialGradient id="pmC" cx="50%%" cy="50%%" r="50%%">'
+     '<stop offset="0%%" stop-color="#e0f2fe"/>'
+     '<stop offset="100%%" stop-color="#2563eb"/></radialGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pmC)"/>'
+     '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16">'
+     'radial: not interpolated, approx</text></svg>' % G, "clean"),
+    ("PLANT_GRAD_USERSPACE",
+     '<svg %s><defs><linearGradient id="pmD" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="400" y2="0">'
+     '<stop offset="0%%" stop-color="#e0f2fe"/>'
+     '<stop offset="100%%" stop-color="#2563eb"/></linearGradient></defs>'
+     '<rect x="10" y="40" width="340" height="40" fill="url(#pmD)"/>'
+     '<text x="160" y="66" text-anchor="middle" fill="#ffffff" font-size="16">'
+     'userSpace: not interpolated, approx</text></svg>' % G, "clean"),
 ]
+
+# The two fallbacks must be proven by the row carrying `approx`, not by a clean verdict that could
+# equally come from the ruler having ignored the server altogether; the measured ones must prove the
+# opposite — that no point of their verdict was guessed.
+GRAD_EXPECT = {"PLANT_GRAD_MID": 0, "PLANT_GRAD_DIAG": 0,
+               "PLANT_GRAD_RADIAL": 1, "PLANT_GRAD_USERSPACE": 1}
 
 # Each tier plant also asserts the size it rendered at and the bar that size selected, so a
 # host/viewBox regression cannot silently move a label across the size line. (scale, px, bar key)
@@ -718,7 +1010,9 @@ def selftest(srv, args):
     bad, rid = [], 900
     for name, src, want in PLANTS:
         rid += 1
-        rep = sweep(srv, name, src, args, rid)
+        # The liveness gate costs a static plant its whole reading, so each plant is swept with its
+        # own animate count -- the same predicate run() uses to pick the mode.
+        rep = sweep(srv, name, src, args, rid, src.count("<animate"))
         got = grade(rep)
         ok = got == want
         extra = ""
@@ -732,11 +1026,43 @@ def selftest(srv, args):
                   and abs(r0.get("bar", 0) - w_bar_v) < 0.01)
             extra = "  rendered %spx -> bar %s (want %s) at scale %s" % (
                 r0.get("px"), r0.get("bar"), w_bar_v, rep.get("scale"))
+        if name.startswith("PLANT_INK_GRAD") and "coverage" not in rep:
+            r = (rep.get("rows") or [{}])[0]
+            # The verdict has to come from PRICING the ink sweep, not from skipping it: a judged row
+            # with inkGrad>0 proves the branch ran, and the row names the stop the verdict rests on.
+            ok = (ok and r.get("judged", 0) > 0 and r.get("inkGrad", 0) > 0
+                  and r.get("ownGrad", 1) == 0 and r.get("inkRgb"))
+            extra = ("  priced %d point(s) as gradient ink (worst %.2f, best %.2f) at stop rgb(%s)"
+                     % (r.get("judged", 0), r.get("worst", 0), r.get("best", 0),
+                        ",".join(str(v) for v in (r.get("inkRgb") or []))))
+        if name in GRAD_EXPECT and "coverage" not in rep:
+            r = (rep.get("rows") or [{}])[0]
+            # The two plants differ ONLY in the sweep direction, so the verdicts alone cannot tell them
+            # apart from a ruler that ignored every gradient plate. `approx` is the discriminator: the
+            # axis-aligned sweep must be priced point by point (no guesses), the diagonal one must
+            # fall back to the favourable stop and say so.
+            want_guess = GRAD_EXPECT[name]
+            guessed = r.get("approx", 0)
+            judged = r.get("judged", 0)
+            ok = (ok and judged > 0 and r.get("inkGrad", 0) == 0
+                  and (1 if guessed > 0 else 0) == want_guess)
+            extra = ("  %d/%d point(s) priced at the favourable stop, worst %.2f"
+                     % (guessed, judged, r.get("worst", 0)))
         if name == "PLANT_FADE" and not ("coverage" in rep):
             r = (rep.get("rows") or [{}])[0]
-            ok = ok and r.get("fade", 0) > 0 and r.get("amin", 1) < args.presence
-            extra = ("  exempted %d phase(s), alpha %.2f..%.2f"
-                     % (r.get("fade", 0), r.get("amin", 0), r.get("amax", 0)))
+            # `varying` is what earns the exemption at all: a label whose alpha never moves is
+            # permanently translucent and must be judged, not exempted.
+            ok = ok and r.get("fade", 0) > 0 and r.get("varying", 0) == 1 \
+                and r.get("amin", 1) < args.presence
+            extra = ("  exempted %d phase(s), alpha %.2f..%.2f, varying=%s"
+                     % (r.get("fade", 0), r.get("amin", 0), r.get("amax", 0), r.get("varying")))
+        if name == "PLANT_FADE_STATIC" and "coverage" not in rep:
+            r = (rep.get("rows") or [{}])[0]
+            # It must be judged BECAUSE nothing animates its alpha; a plant that got its verdict from
+            # an exemption would prove the rule backwards.
+            ok = ok and r.get("varying", 1) == 0 and r.get("fade", 1) == 0 and r.get("judged", 0) > 0
+            extra = ("  alpha %.2f, varying=%s, exempted %d phase(s), judged %d"
+                     % (r.get("amin", 0), r.get("varying"), r.get("fade", 0), r.get("judged", 0)))
         if name == "PLANT_NIBBLE" and "coverage" not in rep:
             # It must trip the duration arm specifically; if it tripped the fraction arm the plant
             # would be testing the wrong half of the rule.
@@ -763,6 +1089,9 @@ def selftest(srv, args):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--assets", default="", help="comma-separated substring filter")
+    ap.add_argument("--mode", choices=("animated", "static", "all"), default="animated",
+                    help="which half of the in-body figures to price (default: the animated half "
+                         "round 69 measured; `static` is the 18 with no phase to sweep)")
     ap.add_argument("--bar", type=float, default=BAR,
                     help="contrast bar for WCAG small text (labelled individually per row)")
     ap.add_argument("--bar-large", type=float, default=BAR_LARGE,
@@ -801,27 +1130,30 @@ def main(argv=None):
 
 
 def run(srv, args):
-    figures = animated_figures()
+    figures = animated_figures(args.mode)
+    floor = {"animated": MIN_FIGURES, "static": MIN_STATIC, "all": MIN_FIGURES + MIN_STATIC}[args.mode]
     if args.assets:
         needles = [s.strip().lower() for s in args.assets.split(",") if s.strip()]
         figures = [f for f in figures if any(n in f[0].lower() for n in needles)]
     if not figures:
-        print("PHASE AXIS: no animated figure matched %r — a vacuous reading, not a pass"
-              % args.assets)
+        print("PHASE AXIS: no %s figure matched %r — a vacuous reading, not a pass"
+              % (args.mode, args.assets))
         return 1
-    if not args.shots and len(figures) < MIN_FIGURES:
-        print("PHASE AXIS: only %d animated figures found (floor %d) — detection broke, that is not "
-              "cleanliness" % (len(figures), MIN_FIGURES))
+    if not args.shots and len(figures) < floor:
+        print("PHASE AXIS: only %d %s figures found (floor %d) — detection broke, that is not "
+              "cleanliness" % (len(figures), args.mode, floor))
         return 1
-    print("phase axis: %d animated figures, bar %.2f small / %.2f large (WCAG 1.4.3), "
-          "presence %.2f, grid %d, column %dpx"
-          % (len(figures), args.bar, args.bar_large, args.presence, args.grid, args.column))
+    print("phase axis: %d %s figures, bar %.2f small / %.2f large (WCAG 1.4.3), "
+          "presence %.2f (only for labels whose own alpha varies), grid %d, column %dpx"
+          % (len(figures), args.mode, args.bar, args.bar_large, args.presence, args.grid, args.column))
     content, cover, nlabels, nphase, nunpriced = [], [], 0, 0, 0
+    njudged = nguessed = 0
+    kind = {"pat": 0, "grad": 0, "ink": 0}
     dump = {}
     tally = {"PHASE-ONLY": 0, "DARK": 0, "COVERED": 0}
     for i, (name, na) in enumerate(figures):
         src = io.open(os.path.join(ASSETS, name), encoding="utf-8").read()
-        rep = sweep(srv, name, src, args, i + 1)
+        rep = sweep(srv, name, src, args, i + 1, na)
         if args.shots:
             print("  %-34s shot t=%-6s -> %s %s" % (name, rep.get("shot_at"), rep["shot"],
                                                     "ok" if os.path.exists(rep["shot"]) else "MISSING"))
@@ -833,16 +1165,34 @@ def run(srv, args):
         fs = findings(rep, args)
         nlabels += rep["labels"]
         nphase += rep["phases"]
+        # How much of this figure's verdict rests on a favourable-stop guess. A pass with guesses is
+        # not the same claim as a pass measured point by point, so the number goes on the line.
+        judged = sum(r["judged"] for r in rep["rows"])
+        guessed = sum(r["approx"] for r in rep["rows"])
+        njudged += judged
+        nguessed += guessed
+        for k, v in (("pat", "approxPat"), ("grad", "approxGrad"), ("ink", "approxInk")):
+            kind[k] += sum(r.get(v, 0) for r in rep["rows"])
         unpriced = sum(1 for r in rep["rows"] if r["judged"] == 0 and r["onGrad"])
         nunpriced += unpriced
+        for r in rep["rows"]:                     # an unpriceable label must never read as a pass
+            if r["judged"] or not r["onGrad"]:
+                continue
+            by = r.get("unpricedBy") or ["?", -1, "", ""]
+            cover.append("%-34s UNPRICED    %-26s never priced (paint server %s resolves to nothing "
+                         "under it)  [label %s#%d %s]"
+                         % (name, esc(r["text"]), by[2] if len(by) > 2 else "?",
+                            by[0], by[1] if len(by) > 1 else -1,
+                            by[3] if len(by) > 3 else "no authored literal"))
         dump[name] = {"labels": rep["labels"], "phases": rep["phases"], "rows": rep["rows"]}
         for r in fs:
             tally[r.split()[0]] = tally.get(r.split()[0], 0) + 1
             content.append("%-34s %s" % (name, r))
-        print("  %-34s %2d animate  %2d labels x %2d phases | %d dark, %d covered, %d unpriced"
+        print("  %-34s %2d animate  %2d labels x %2d phases | %d dark, %d covered, %d unpriced "
+              "| %d judged pt, %d guessed"
               % (name, na, rep["labels"], rep["phases"],
                  sum(1 for r in rep["rows"] if r["dark"]),
-                 sum(1 for r in rep["rows"] if r["buried"]), unpriced))
+                 sum(1 for r in rep["rows"] if r["buried"]), unpriced, judged, guessed))
     if args.shots:
         return 0
     if args.json:
@@ -856,7 +1206,13 @@ def run(srv, args):
         print("  " + c)
     for c in cover:
         print("  COVERAGE  " + c)
-    print("swept %d labels over %d phases total (bar %.2f)" % (nlabels, nphase, args.bar))
+    print("swept %d labels over %d phases total (bar %.2f); %d judged probe point(s), of which "
+          "%d (%.1f%%) were priced at a favourable stop rather than measured"
+          % (nlabels, nphase, args.bar, njudged, nguessed,
+             nguessed * 100.0 / njudged if njudged else 0))
+    print("  guesses by kind (a point can carry more than one): pattern plate %d, "
+          "non-interpolable gradient plate %d, gradient ink %d"
+          % (kind["pat"], kind["grad"], kind["ink"]))
     return 1 if (content or cover) else 0
 
 

@@ -14,16 +14,16 @@
       <path d="M32 0H0V32" fill="none" stroke="#0284c7" stroke-opacity="0.06" stroke-width="1"/>
     </pattern>
     <linearGradient id="bTh" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/>
+      <stop offset="0%" stop-color="#0369a1"/><stop offset="100%" stop-color="#075985"/>
     </linearGradient>
     <linearGradient id="bAc" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/>
+      <stop offset="0%" stop-color="#b45309"/><stop offset="100%" stop-color="#92400e"/>
     </linearGradient>
     <linearGradient id="bOb" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#065f46"/>
     </linearGradient>
     <linearGradient id="bCh" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/>
+      <stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#6d28d9"/>
     </linearGradient>
     <linearGradient id="titlec" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1e3a8a"/>
@@ -50,13 +50,13 @@
     <rect x="64" y="44" width="266" height="40" rx="20" fill="#e0f2fe" stroke="#7dd3fc"/>
   </g>
   <text x="197" y="71" text-anchor="middle" font-size="22" font-weight="700" fill="#075985">开源 · MIT 许可证</text>
-  <text x="352" y="70" font-size="22" letter-spacing="2" fill="#64748b">AI AGENT HANDBOOK</text>
+  <text x="352" y="70" font-size="22" letter-spacing="2" fill="#475569">AI AGENT HANDBOOK</text>
 
   <text x="64" y="162" font-size="52" font-weight="800" fill="url(#titlec)">AI Agent 学习手册</text>
   <path d="M72 186 C 190 178, 350 194, 470 184" fill="none" stroke="#0284c7" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
 
   <text x="64" y="238" font-size="30" fill="#475569">从原理到生产 · 196 页 / 19 章</text>
-  <text x="64" y="278" font-size="26" fill="#64748b">原理给推导 · 结论给出处 · 案例给源码</text>
+  <text x="64" y="278" font-size="26" fill="#475569">原理给推导 · 结论给出处 · 案例给源码</text>
 
   <!-- 三个信息徽章 -->
   <g filter="url(#shbs)">
@@ -74,8 +74,8 @@
   </g>
 
   <!-- 角色路线与通关标准 -->
-  <text x="64" y="436" font-size="22" fill="#64748b">七条角色路线任选：入门 · 开发者 · 研究者 · 平台 · 具身 · 选型 · 实验</text>
-  <text x="64" y="472" font-size="22" fill="#94a3b8">读完的标准不是「看过」，而是「能复现、能上线」</text>
+  <text x="64" y="436" font-size="22" fill="#475569">七条角色路线任选：入门 · 开发者 · 研究者 · 平台 · 具身 · 选型 · 实验</text>
+  <text x="64" y="472" font-size="22" fill="#475569">读完的标准不是「看过」，而是「能复现、能上线」</text>
 
   <!-- ===== 右侧：抽象 Agent 环路（中心 1010,290 / 轨道半径 160）===== -->
   <circle cx="1010" cy="290" r="160" fill="none" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="3 8"/>

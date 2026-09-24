@@ -8,7 +8,7 @@
       <stop offset="0%" stop-color="#FBF7FF"/><stop offset="100%" stop-color="#F3E8FF"/>
     </linearGradient>
     <linearGradient id="gPur" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#9333EA"/>
+      <stop offset="0%" stop-color="#9333EA"/><stop offset="100%" stop-color="#7E22CE"/>
     </linearGradient>
     <pattern id="gridc" width="32" height="32" patternUnits="userSpaceOnUse">
       <path d="M32 0 H0 V32" fill="none" stroke="#E6DAF5" stroke-width="0.6" opacity="0.5"/>
@@ -97,8 +97,8 @@
 
   <!-- 否：修 bug 折线，回到改代码（走文件树卡与 ③ 之间的走廊） -->
   <path d="M268 372 H256 V232 H402" fill="none" stroke="#DC2626" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrR)"/>
-  <text x="268" y="258" font-size="15" font-weight="700" fill="#DC2626">否 ·</text>
-  <text x="268" y="280" font-size="15" font-weight="700" fill="#DC2626">最多 N 轮修复</text>
+  <text x="268" y="258" font-size="15" font-weight="700" fill="#B91C1C">否 ·</text>
+  <text x="268" y="280" font-size="15" font-weight="700" fill="#B91C1C">最多 N 轮修复</text>
 
   <!-- 是：出沙箱到 PR -->
   <path d="M330 416 V470 H734" fill="none" stroke="#16A34A" stroke-width="1.8" marker-end="url(#arrG)"/>
