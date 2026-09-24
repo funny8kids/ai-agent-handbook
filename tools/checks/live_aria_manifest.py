@@ -130,7 +130,7 @@ def outside_fences(text):
     return "\n".join(l for l, keep in zip(text.replace("\r\n", "\n").split("\n"), mask) if keep)
 
 
-def strip_code_spans(line):
+def strip_code_spans(line, hole=" "):
     """Drop CommonMark inline code spans: a backtick run opens, an equal-length run closes.
 
     A lazy regex can't express this. The changelog writes fence examples as inline ```text …,
@@ -154,7 +154,7 @@ def strip_code_spans(line):
             out.append(run)                # unclosed on this line: literal, not a code span
             i = j
         else:
-            out.append(" ")
+            out.append(hole)                 # `check_prose_survival` passes a marker so a unit never straddles a span
             i = k + len(run)
     return "".join(out)
 

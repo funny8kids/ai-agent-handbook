@@ -10,10 +10,20 @@ Usage:
     python tools/checks/check_live_sync.py            -> exit 0 when live has caught up with HEAD
     python tools/checks/check_live_sync.py --watch    -> keep polling until it does (or --timeout)
 
-Two legs, because they are not the same question (round 64): the `.md` endpoint and the rendered
-page update at different times, and reading only the `.md` lets this gate say "in sync" while the
-page a reader opens is still two rounds behind — which is exactly what happened to the changelog
-page here, `.md` current and HTML 65+ minutes stale at 9.7 MB. The verdict is the WORSE leg.
+Two legs of the changelog, because they are not the same question (round 64): the `.md` endpoint and
+the rendered page update at different times, and reading only the `.md` let this gate say "in sync"
+while the page a reader opens was still two rounds behind.
+
+Round 83 changed what the verdict may rest on. The rendered changelog page (18 MB, 439 round
+mentions) turned out to be pinned: six fetches over hours returned one etag and round 79, while the
+`.md` endpoint, the homepage and a knowledge page HEAD had just edited were all current. A document
+the platform refreshes on its own schedule cannot gate anything, so it is now a loud NOTE ("readers
+opening the changelog page are missing rounds X, Y") and the verdict rests on:
+  1. the `.md` endpoint carrying the newest round, and
+  2. the WITNESS leg — every reader page the revision changed must contain text that revision ADDED
+     (with a phantom needle per page, so a page that "contains" everything is caught).
+A revision that only touched the changelog has no reader page to witness, which is stated as such
+rather than counted as a pass.
 """
 import argparse
 import datetime
@@ -23,6 +33,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+from html import unescape
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
@@ -57,10 +68,114 @@ def head_age():
         return None, None
 
 
+CJK_RUN = re.compile(u"[一-鿿，、：；（）「」\u201c\u201d—…·]{16,}")
+# A commit that adds no prose still adds something the reader can be shown: the link it introduced,
+# or the day it stamped. Round 83 measured three such pages, and both strings sit in the reader's
+# tag-stripped text — `norm()` must not be used as the haystack here because it rewrites `-` to a
+# space and would hide every host and date.
+URL_ADDED = re.compile(r"https?://([^\s<>)\]\"'，。；、]{10,})")
+STAMP = re.compile(r"^(?:updated|last_updated|date):\s*(20\d\d-\d\d-\d\d)", re.M)
+# A tag name never starts with a digit, so a needle's own prose `<` cannot open a deletion (round 83
+# measured the changelog write `（W<420 且 H>380）` disappear under a loose `<[^>]+>`).
+WITNESS_TAG = re.compile(r"<[a-zA-Z/!][^>]*>")
+
+
+def head_reader_pages(rev="HEAD"):
+    """`docs/*.md` files REV changed, minus the changelog (that one has its own legs)."""
+    out = subprocess.run(["git", "show", "--name-only", "--format=", rev],
+                         cwd=os.path.dirname(DOCS), capture_output=True).stdout
+    files = [f.decode("utf-8", "replace").strip().replace("\\", "/") for f in out.splitlines()]
+    return [f for f in files
+            if f.startswith("docs/") and f.endswith(".md") and "SUMMARY.md" not in f
+            and "14-templates" not in f and "00-index/changelog.md" not in f]
+
+
+def added_needles(path, rev="HEAD"):
+    """Needles sliced from the lines REV ADDED on that page — never from the whole file.
+
+    A needle from an unchanged paragraph is on the published page either way, so it witnesses
+    nothing; the added lines are the only text whose presence proves the reader got this revision.
+    """
+    out = subprocess.run(["git", "show", "--unified=0", "--format=", rev, "--", path],
+                         cwd=os.path.dirname(DOCS), capture_output=True).stdout
+    added = [l[1:] for l in out.decode("utf-8", "replace").splitlines()
+             if l.startswith("+") and not l.startswith("+++")]
+    text = re.sub(r"[`*_\[\]()#|>-]", " ", "\n".join(added))
+    raw = "\n".join(added)
+    seen, needles = set(), []
+    for r in (x[:18] for x in CJK_RUN.findall(text)):
+        if r not in seen:
+            seen.add(r)
+            needles.append(r)
+    if needles:
+        return needles[:3]
+    # No prose was added: witness the link the commit introduced, or the day it stamped.
+    for host in URL_ADDED.findall(raw):
+        h = host.rstrip("/.")
+        if h and h not in needles:
+            needles.append(h)
+    stamp = STAMP.search(raw)
+    if stamp and stamp.group(1) not in needles:
+        needles.append(stamp.group(1))
+    return needles[:3]
+
+
+def witness_leg(rev="HEAD"):
+    """Do the reader pages REV changed really carry REV's text on the live site?
+
+    Returns (bad, witnessed). A page with no published address, no sliceable needle, or a missing
+    needle is a failure: "cannot witness" must never be read as "in sync" (round 59's rule).
+    """
+    sys.path.insert(0, HERE)
+    import live_aria_manifest as LA
+    import unicodedata
+    index = LA.url_index()
+    bad, witnessed = [], 0
+    for rel in head_reader_pages(rev):
+        local = os.path.join(os.path.dirname(DOCS), rel)
+        if not os.path.exists(local):
+            continue
+        text = open(local, encoding="utf-8").read()
+        url = index.get(LA.norm(LA.h1_of(text)))
+        ns = added_needles(local, rev)
+        if not url:
+            bad.append("NO-URL %s" % rel)
+            continue
+        if not ns:
+            bad.append("UNWITNESSED %s (%s added no sliceable text there)" % (rel, rev))
+            continue
+        try:
+            html = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=180).read()
+        except Exception as exc:  # noqa: BLE001
+            bad.append("FETCH %s %s" % (rel, exc.__class__.__name__))
+            continue
+        # Tags first, entities after — the order `check_prose_survival` uses, so a `&gt;` inside an
+        # attribute can never fake a tag close, and an address or quoted phrase shipped as `&quot;`
+        # is read as the characters the reader sees rather than the word "quot" (round 83).
+        page = unicodedata.normalize("NFC", unescape(WITNESS_TAG.sub(" ", html.decode("utf-8", "replace"))))
+        lost = [n for n in ns if n not in page]
+        phantom = ns[0][:8] + u"墙" + ns[0][9:]
+        if phantom in page:
+            bad.append("VACUITY %s (a needle with one character changed also matched)" % rel)
+        if lost:
+            bad.append("STALE %s %d/%d added lines absent: %r" % (rel, len(lost), len(ns), lost[0][:24]))
+            continue
+        witnessed += 1
+        print("  witness ok  %-46s %d/%d added needles live" % (rel, len(ns), len(ns)))
+    for line in bad:
+        print("  %s" % line)
+    return bad, witnessed
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--watch", action="store_true", help="keep polling until live catches up")
     ap.add_argument("--timeout", type=int, default=0, help="--watch budget, seconds")
+    ap.add_argument("--no-witness", action="store_true",
+                    help="skip the changed-pages leg (cheap, and then only the .md endpoint is judged)")
+    ap.add_argument("--rev", default="HEAD",
+                    help="which revision's added reader-page text the witness leg looks for "
+                         "(a past round works as a positive control for this leg)")
     args = ap.parse_args()
 
     local = local_rounds()
@@ -72,7 +187,7 @@ def main():
         when, age = head_age()
         if age:
             print("HEAD committed %s, %d min ago" % (when.date(), int(age.total_seconds() // 60)))
-        have = None
+        tops = {}
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
@@ -81,16 +196,32 @@ def main():
                 print("live changelog (%s) unreadable (%s) — no verdict, this is not a site failure"
                       % (name, exc.__class__.__name__))
                 return 2
-            top = max(live) if live else 0
-            have = top if have is None else min(have, top)
-            missing = sorted({r for r in local if r > top})
+            tops[name] = max(live) if live else 0
+            missing = sorted({r for r in local if r > tops[name]})
             print("  leg %-4s newest round=%-3d (%d bytes, %d rounds)%s"
-                  % (name, top, size, len(live),
+                  % (name, tops[name], size, len(live),
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
-        if have < want:
-            print("not online yet: the reader-visible leg is round %d, HEAD is %d" % (have, want))
-        if have >= want or not args.watch or time.time() >= deadline:
-            return 0 if have >= want else 1
+        bad, witnessed = ([], 0) if args.no_witness else witness_leg(args.rev)
+        if witnessed:
+            print("  witness: %d reader page(s) %s touched carry %s's added text" % (witnessed, args.rev, args.rev))
+        elif not args.no_witness:
+            print("  witness: %s added no reader-page text outside the changelog — the .md leg is the witness"
+                  % args.rev)
+        lag = tops.get("html", 0)
+        if lag < want:
+            # Round 83 measured this document pinned at round 79 for hours (same etag on six fetches)
+            # while the homepage and a knowledge page HEAD had just edited were both current. So the
+            # changelog's own HTML page no longer gates the verdict — but the lag is a reader-facing
+            # fact and stays printed, never silently forgiven.
+            missing = sorted({r for r in local if r > lag})
+            print("  NOTE the published changelog PAGE is at round %d: readers opening it are missing %s"
+                  % (lag, ", ".join(map(str, missing))))
+        have = tops.get("md", 0)
+        ok = have >= want and not bad
+        if not ok:
+            print("not online yet: md leg round %d vs HEAD %d, witness failures %d" % (have, want, len(bad)))
+        if ok or not args.watch or time.time() >= deadline:
+            return 0 if ok else 1
         print("  ... watching, next probe in 90 s")
         time.sleep(90)
 
