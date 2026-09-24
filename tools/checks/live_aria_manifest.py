@@ -49,15 +49,85 @@ def h1_of(text):
     return m.group(1).strip() if m else ""
 
 
-def outside_fences(text):
-    keep, open_ = [], False
-    for line in text.splitlines():
-        if line.strip().startswith("```"):
-            open_ = not open_
+def fence_prose_mask(text):
+    """Per-line True for reader-visible prose; False for fence lines and fenced content.
+
+    CommonMark's two closing rules are the whole point of this function, and both were missing
+    until round 79: a closing fence must carry **no info string**, and it must be **at least as long
+    as the opener**. Without them a 4-backtick example block — which is how this book shows authors
+    a template that itself contains ``` examples — closes at its first inner triple-backtick line,
+    so everything after it is misread: the example's content becomes prose and the real prose after
+    it becomes fenced. Measured on the tree, exactly one page differs (14-templates/knowledge-template.md,
+    13 lines), and the platform was checked before believing it: the served markup wraps those lines
+    in `highlight-line` spans, i.e. GitBook agrees with CommonMark, not with the old walker.
+    """
+    lines = text.replace("\r\n", "\n").split("\n")
+    mask, run, ch = [], 0, None
+    for line in lines:
+        m = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if m:
+            r, info = m.group(1), m.group(2).strip()
+            if run == 0:
+                run, ch = len(r), r[0]
+            elif r[0] == ch and len(r) >= run and not info:
+                run = 0
+            mask.append(False)
             continue
-        if not open_:
-            keep.append(line)
-    return "\n".join(keep)
+        mask.append(run == 0)
+    return mask, run == 0
+
+
+def fence_blocks(text):
+    """[(line_no, language_token, body, closed)] for every fence that opens.
+
+    Same walk as `fence_prose_mask`, exposed so a judge that needs the block's *content* (parsing a
+    json contract, checking a diagram's source) never has to re-derive the rules and disagree.
+    """
+    lines = text.replace("\r\n", "\n").split("\n")
+    out, i = [], 0
+    while i < len(lines):
+        m = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", lines[i])
+        if not m:
+            i += 1
+            continue
+        run, ch, info = len(m.group(1)), m.group(1)[0], m.group(2).strip()
+        body, j = [], i + 1
+        while j < len(lines):
+            n = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", lines[j])
+            if n and n.group(1)[0] == ch and len(n.group(1)) >= run and not n.group(2).strip():
+                break
+            body.append(lines[j])
+            j += 1
+        lang = info.split()[0].lower() if info else ""
+        out.append((i + 1, lang, "\n".join(body), j < len(lines)))
+        i = j + 1
+    return out
+
+
+def fence_openings(text):
+    """[(line_no, info_string)] for every fence that OPENS a block, same walk as fence_prose_mask.
+
+    Kept next to the mask so a page's "which fences exist" and "which lines are prose" can never
+    disagree -- the reason round 71's citation axis silently swallowed a paragraph was two fence
+    regexes with two ideas of what closes a block.
+    """
+    out, run, ch = [], 0, None
+    for n, line in enumerate(text.replace("\r\n", "\n").split("\n"), 1):
+        m = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if not m:
+            continue
+        r, info = m.group(1), m.group(2).strip()
+        if run == 0:
+            run, ch = len(r), r[0]
+            out.append((n, info))
+        elif r[0] == ch and len(r) >= run and not info:
+            run = 0
+    return out
+
+
+def outside_fences(text):
+    mask, _balanced = fence_prose_mask(text)
+    return "\n".join(l for l, keep in zip(text.replace("\r\n", "\n").split("\n"), mask) if keep)
 
 
 def strip_code_spans(line):
