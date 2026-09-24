@@ -20,7 +20,9 @@ random.seed(42)  # 固定随机种子：工具耗时可复现，输出才能和�
 
 def agent_solve(case):
     """返回 (答案, 步骤列表)。故意让'多跳'用例慢一些，制造可观测性素材。"""
-    spans, t0 = [], time.perf_counter()
+    # start 走**模拟时钟**（上一条的 start+dur），不是 perf_counter：sleep 返回得比 dur 晚几微秒，
+    # 那些余量会让瀑布图的缩进每次跑都不一样——读者按书里的图对不上自己的输出。
+    spans, clock = [], 0.0
     for step, name in enumerate(["plan", "tool:search", "tool:calc", "answer"]):
         if name == "tool:calc" and not case["needs_calc"]:
             continue
@@ -28,8 +30,8 @@ def agent_solve(case):
             else random.uniform(0.05, 0.15) if "search" in name \
             else random.uniform(0.02, 0.05)
         time.sleep(dur)
-        spans.append({"step": name, "start": time.perf_counter() - t0 - dur,
-                      "dur": dur})
+        spans.append({"step": name, "start": clock, "dur": dur})
+        clock += dur
     ans = case["gold"] if case["id"] != 3 else "4200 万元"  # 用例3故意答错（幻觉）
     return ans, spans
 
