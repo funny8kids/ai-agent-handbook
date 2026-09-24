@@ -395,7 +395,23 @@ def live_leg_controls():
     # asserted to fail, so nobody "simplifies" the normalisation back into a punctuation match.
     assert caption[:24] not in wl.visible(served), \
         "control: the pre-fix comparison now matches, so the crush rationale is stale"
-    return 3
+
+    # Second shape: an image disclosure, which the platform publishes inside a <figcaption> rather
+    # than an <i>. The offline image axis reads these from markdown; until this round the live leg
+    # never compared one, so the 44 reader-facing screenshot/SVG captions had no published-page
+    # judge at all. The round-75 spot-check did try, with a key that kept the authored 「」：、 — and
+    # reported 9/9 lost on text that verifiably reaches the reader.
+    img_caption = "读图提示：原图 1280px 排进 608px 正文列只剩 0.475 倍，想看清需要点开"
+    served_img = ('<html><body><h1>%s</h1><figure><img src="/a.png" alt="console">'
+                  '<figcaption class="font-italic"><span>%s</span></figcaption></figure>'
+                  '</body></html>' % (title, img_caption))
+    body_img = crush(wl.visible(served_img))
+    assert crush(img_caption) in body_img, "control: the live leg loses a figcaption-shaped caption"
+    assert crush(title) in body_img, "control: image page lost its own H1"
+    assert crush("本节不存在的一句对照文本 CTRL76") not in body_img, "control: phantom matched (image page)"
+    assert img_caption[:24] not in wl.visible(served_img), \
+        "control: the pre-fix image comparison now matches, so its crush rationale is stale"
+    return 7
 
 
 def controls():
@@ -467,17 +483,24 @@ def crush(s):
     return CRUSH_CHARS.sub("", (s or "").lower())
 
 
-def live_captions(sample=8):
+def live_captions(sample=12):
     """Do the authored captions actually reach the reader? Offline text is not the reader's page.
 
-    The captions here are italic prose, which the image axis (`check_live_images.py`, NOCAPTION)
-    never looks at — it only pairs `<img>` elements. So this leg joins each sampled page to its
-    published address through llms.txt, crushes the served HTML the way a reader's eye does, and
-    requires the caption text to be in it.
+    Two prose families are judged here, and only one of them used to be:
+    * diagram captions (`audit`, verdict `CAPTION`) — italic `<i>` paragraphs in the SSR;
+    * image disclosures (`audit_images`, verdict `IMAGE-CAPTION`) — `<figcaption>` text under a
+      screenshot or SVG.
 
-    The crushing has to be symmetric, and the first run of this leg proves what happens when it is
-    not: 8 pages sampled, 8/8 captions reported LOST, while the served HTML verifiably contains
-    `<i class="font-italic">《图：AI 的概念收窄到 ML 再到 DL…》</i>`. The ruler compared the
+    The second family is this round's addition. The offline image axis pairs `![alt](…)` with its
+    caption line, and `check_live_images.py` only pairs `<img>` elements for DROPPED/BROKEN — so
+    before now nothing compared an image's *explanation* against the published page, which is the
+    one place a `<figcaption>` could be swallowed by the platform. The round-75 spot-check tried
+    with a key that kept the authored 「」：、 and reported 9/9 lost on text that verifiably reaches
+    readers; the ruler, not the book, was wrong.
+
+    The crushing has to be symmetric, and the first run of the diagram leg proves what happens when
+    it is not: 8 pages sampled, 8/8 captions reported LOST, while the served HTML verifiably
+    contains `<i class="font-italic">《图：AI 的概念收窄到 ML 再到 DL…》</i>`. The ruler compared the
     authored text (punctuation and all) against `wl.visible()`, which replaces every non-CJK/alnum
     run — including 《 , ： and the tag boundaries — with a single space. No caption could ever
     have matched, so the finding was the probe's, not the book's. `crush()` normalises both sides
@@ -489,20 +512,33 @@ def live_captions(sample=8):
 
     index, ambiguous = wl.page_index(wl.llms_entries())
     assert not ambiguous, "ambiguous published titles make the join unsafe: %s" % sorted(ambiguous)
-    picked, problems, checked, absent = 0, [], 0, 0
-    for rel, _path, lines in walk_pages():
-        if picked >= sample:
-            break
+    candidates = []
+    for rel, path, lines in walk_pages():
         caps = [v for v in audit(lines) if v[0] == "CAPTION"]
-        if not caps:
-            continue
+        icaps = [v for v in audit_images(rel, path, lines) if v[0] == "IMAGE-CAPTION"]
+        if caps or icaps:
+            candidates.append((rel, path, lines, caps, icaps))
+    # The image half is exhaustive (36 pages / 44 captions — one `<img>` fetch each, cheap enough to
+    # never sample) because it is the only judge that ever compares an image disclosure against the
+    # published page; a sample of it would leave most of the family unjudged and look like coverage.
+    # The diagram half stays a sample: `check_live_ssr_parity` already walks every page's diagram
+    # containers, so an exhaustive caption sweep there would be duplicated IO, not added coverage.
+    image_pages = [c for c in candidates if c[4]]
+    taken = set(c[0] for c in image_pages)
+    picked_pages = list(image_pages)
+    picked_pages += [c for c in candidates if c[0] not in taken and c[3]][:max(0, sample)]
+
+    problems, checked, image_checked, absent, pages = [], 0, 0, 0, 0
+    for rel, path, lines, caps, icaps in picked_pages:
         h1 = wl.h1_of("\n".join(lines))
         url = index.get(wl.norm(h1))
         if not url:
+            pages += 1
             problems.append("NOURL %s (%r) has no published page to check" % (rel, h1))
             continue
         html = wl.fetch(url[:-3] if url.endswith(".md") else url)
         if len(html) < 200000:
+            pages += 1
             problems.append("SHAPE %s bytes=%d — not a real page" % (rel, len(html)))
             continue
         body = crush(wl.visible(html))
@@ -515,21 +551,39 @@ def live_captions(sample=8):
         if crush("本节不存在的一句对照文本 CTRL76") in body:
             problems.append("BLIND live probe on %s matches text that was never authored" % rel)
             continue
+        pages += 1
         for kind, no, detail in caps:
             checked += 1
             if crush(detail) not in body:
                 absent += 1
-                problems.append("LOST %s:%d caption never reaches the published page: %s"
+                problems.append("LOST %s:%d diagram caption never reaches the published page: %s"
                                 % (rel, no, detail[:50]))
-        picked += 1
-    print("live captions: pages=%d captions=%d still-absent=%d problems=%d"
-          % (picked, checked, absent, len(problems)))
+        for kind, no, detail in icaps:
+            image_checked += 1
+            if crush(detail) not in body:
+                absent += 1
+                problems.append("LOST %s:%d image caption never reaches the published page: %s"
+                                % (rel, no, detail[:50]))
+    print("live captions: pages=%d captions=%d diagram=%d image=%d/%d on %d image pages "
+          "still-absent=%d problems=%d"
+          % (pages, checked + image_checked, checked, image_checked,
+             sum(len(c[4]) for c in candidates), len(image_pages), absent, len(problems)))
     for p in problems:
         print("  " + p)
-    assert picked >= sample, "live leg sampled only %d pages" % picked
+    assert pages >= sample, "live leg sampled only %d pages" % pages
     # Green by silence is not green: the page count alone would still pass if the join found no
-    # caption to compare, so the comparison count is floored too.
-    assert checked >= sample, "live leg compared only %d captions over %d pages" % (checked, picked)
+    # caption to compare, so the comparison count is floored too — in total and per family. The
+    # per-family floors matter more than they look: the image side had no published-page judge at
+    # all before this round, and a leg that quietly reverted to diagrams-only would otherwise still
+    # print green. The floors (not equalities) are what wording can move; the exhaustiveness claim
+    # below is the invariant wording cannot move, so it is pinned as an equality.
+    total = checked + image_checked
+    assert total >= sample, "live leg compared only %d captions over %d pages" % (total, pages)
+    assert checked >= 4, ("live leg compared only %d diagram captions — the leg that shipped first "
+                          "read 13 over 12 pages, so this is the diagram half going quiet" % checked)
+    want_image = sum(len(c[4]) for c in candidates)
+    assert image_checked == want_image, ("image leg is not exhaustive: compared %d of %d captions"
+                                         % (image_checked, want_image))
     return problems
 
 

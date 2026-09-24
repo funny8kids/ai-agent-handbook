@@ -9,8 +9,17 @@ their body** -- every one of them a page this repo's own rounds edited without t
 10 left by round 73's formula re-stack (99f6fc3), 1 by round 74's homepage edit (b10e40f), 6 more by
 rounds 52/54/63. This class is not new: round 17 hand-backfilled 80 stale dates in the same field,
 and six rounds later 17 more had accumulated -- which is exactly why the rule lives in a script now.
-GitBook prints that field to the reader, so this is a reader-visible lie about the book, not a
-metadata lint.
+GitBook prints a "Last updated" line to the reader, but round 76 measured that it is NOT this field:
+on the live HTML of `05-tool-protocol/mcp` the corner reads `Last updated <time
+dateTime="2026-09-24T08:17:28.905Z">` and the visible text is relative ("1 hour ago"), while
+`02-agent-basics/what-is-agent` reads `dateTime="2026-09-22T15:47:19.595Z"` → "1 day ago". Those
+timestamps are the platform's own per-page revision times (mcp's is the round-76 deploy minute), and
+the authored ISO string appears in the visible body of neither page. So the field this judge guards
+reaches a reader through the `.md` endpoint -- the one the book itself advertises and points AI
+readers at -- not through the styled page. That is still a reader-facing rule, not a metadata lint,
+but the honest statement of it is: a wrong `updated:` is a wrong answer to anyone who asks the
+markdown who owns it, and round 17's note in the changelog (「仓库写什么都不影响右上角那个日期」) is the
+other half of the same measurement.
 
 The rule is equality, in both directions:
   BEHIND    the body changed after the date the page prints -> the reader is told the page is older
