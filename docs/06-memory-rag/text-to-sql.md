@@ -2,7 +2,7 @@
 tags: [rag, structured-data, application]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-25
 ---
 
 # Text-to-SQL：让 Agent 查结构化数据

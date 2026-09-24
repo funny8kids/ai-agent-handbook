@@ -36,7 +36,7 @@ updated: 2026-09-22
 ## 怎么治：一条「少塞、压好、摆对、外置」的漏斗
 
 ```mermaid
-%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#F5FBF9","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#F5FBF9","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#F5FBF9","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F5F0","primaryBorderColor":"#059669","primaryTextColor":"#1F2937","secondaryColor":"#C8E8DE","tertiaryColor":"#F5FBF9","lineColor":"#76C5AD","actorBkg":"#EBF7F3","actorBorder":"#059669","actorTextColor":"#1F2937","signalColor":"#50B696","noteBkgColor":"#D2ECE4","noteBorderColor":"#059669","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F5F0","labelBoxBorderColor":"#059669"}}}%%
 flowchart TD
     NOM["标称上下文：128K / 1M"] -.->|"标称不等于可用"| EFF["有效上下文：性能不掉的最大长度"]
     EFF --> SYM["退化：中段漏读 / 干扰带偏 / 位置越界"]
