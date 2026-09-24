@@ -9,6 +9,87 @@ updated: 2026-09-24
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-24（第 74 次）第 73 轮的线上复核写在临时脚本里，所以那句「读者看到了」本轮又不能复跑：判据落库 `tools/checks/check_live_formulas.py`（带一条"量不到拖动就自杀"的标定腿）——它首跑就在半路挂死 25 分钟，于是逐页预算、进度打印和「没量到 ≠ 没缺陷」的两桶记账也在同一轮落库；引用轴装上覆盖率分解腿，把 `attributed=16` 之外那 **1752** 个「」串摊开量了一遍，结果是把「引用/术语分类器」这条候选**判死**——两个可疑堆里 50 条逐页读完，全是自家用语与虚构示例句，没有一条是外部引文
+
+本轮动正文 0 页，判据新增 1 个文件、加宽 1 个文件：`tools/checks/check_live_formulas.py`、`tools/checks/check_quote_fidelity.py`（`--buckets`）。README 统计数字不动（196 页 / 19 章 / 217 Mermaid / 32 SVG / 8 截图），但首页公式那条 bullet 补上了第 73 轮的双列读数与 `[t]` 守卫——它此前只描述单列判据，读起来像「768 就是读者那一列」。
+
+### 一、线上腿落库：作者侧拟合与读者侧看见，是两根轴
+
+`check_live_formulas.py` 把第 73 轮那段一次性复核变成一条命令，并加宽到**每一篇作者含 display 公式的页**（106 页 / 276 条），不再只查改过的 11 页。每页判四件事：线上条数 == 仓库作者条数、`.katex-error`、渲染文本里的裸 LaTeX 残留（`[t]` 那一类）、墨迹宽 − 滚动盒宽 ≥ 16px。宽度仍按**墨迹**量（`Range` 夹住 `.katex-html`，`scrollLeft` 两端各取一次再取大），因为 `.katex-display > .katex` 是 `display:block`，量盒子永远"放得下"。
+
+尺子的标定腿是这一轮新加的，也是这条轴和临时脚本最大的区别：**把本页最宽那条公式的滚动盒用脚本改窄 100px，判据必须立刻读出 ≥16px 的拖动**。量不到就 `assert` 死掉——一个悄悄改量盒子的探针，打印的绿灯和真探针一模一样。首跑读数：
+
+```
+ruler ok: the 598.13px formula of block #0 squeezed into 498px reads drag=100px
+  01-ai-basics/ai-ml-dl.md            main=608  1/1 formulas  widest ink=598.1 in 608px
+  ...
+live formula verdict: pages=6 checked=13 problems=0
+```
+
+三条常驻断言从第 73 轮继承并写死：窗口 `innerWidth` 必须等于要求的 1280、种在页尾的 200/960 控制盒必须分毫不差、KaTeX webfont 必须已加载（回退字体下的宽度全是假数）。控制盒仍然**最后**种。列宽本身按第 73 轮的口径**只报不判**（`live <main> widths seen: 608px x6`），因为列是平台给的，改判据改不出来。
+
+**这条轴第一次跑全站就把自己的第二个缺陷跑了出来**：106 页跑到一半，Playwright 的 node 驱动先退了，父进程永久阻塞在死管道上——25 分钟里 CPU 0.77 秒、日志 0 字节，而「慢」与「死」从外面看完全一样。三条原因都在轴自己身上，本轮全部改掉：
+
+- **没有逐页预算**：`wait_until="networkidle"` 配 90s 超时，一个长轮询的页就能白等 90 秒。现在是 `domcontentloaded`（45s 硬预算）+ 一次**尽力而为**的 idle 等待（8s，失败不判缺陷，它只是提示不是闸）+ 2s 水合沉降；线上条数与仓库不符或字体没加载时**先重读**（最多两次，每次 5s）再下判决，避免把「还没水合完」读成「平台少发了公式」。
+- **没有覆盖账**：抓不到的页原来直接混进 `bad`。现在**内容桶**（拖动 / `.katex-error` / 裸 LaTeX / 包裹层不是滚动盒）与**覆盖桶**（`fetch-failures`：超预算、冷却 15s 重试一次仍失败、字体始终没来）分开记账，**任一非空都 `exit 1`**，覆盖桶明写「这不是内容发现，重跑，别读成绿」。第 67 轮在资产轴上记过的同一条教训，这次落在新轴落库的**同一轮**。
+- **看不见进度**：逐页打印实测值与本页耗时（`[12m34s]`），输出**行缓冲**，页间节流 0.8s（第 67 轮量过的 CDN 速率）。
+
+`--selftest` 是离线腿，用合成结果钉住桶的边界：干净跑通 = 0、有一页没够着 = **1** 且内容桶保持 0、有真缺陷 = 1 且不许躲进覆盖桶、两桶同时非空 = 1；**空样本必须报**（一页都没够着 / 25 条只量到 4 条都直接 `assert` 死），而 `--limit 8` 这种**抽样**不许被空样本地板误伤（8/106 页、13 条 → 照旧 0）。改完的冒烟跑：`pages=8/8 checked=19 problems=0 fetch-failures=0`，每页约 13 秒。
+
+### 二、覆盖率分解：把一条候选判死，比给它写分类器便宜
+
+第 71/72 轮反复写下「`attributed=16`，全站 2265 个「」串」，并把它列成下一轮的头号候选：给引用和术语做个分类器，把剩下那两千条管起来。本轮先量再建——`check_quote_fidelity.py --buckets` 用**判据自己的正则**（`QUOTE` 要求 ≥6 字）把语料摊开：
+
+| 堆 | 条数 | 是什么 |
+| --- | --- | --- |
+| GRADED（被动词语法看到并判过） | 6 | 真引用 |
+| SHORT-NAME（≤12 字、无句读） | 1350 | 术语名、小节名 |
+| SOURCE-NEAR-NO-VERB（附近有「论文/文档/原文…」却没贴动词） | 40 | 逐页读完：自家用语，如「模型 + harness + 工具治理」 |
+| SENTENCE-SHAPED（含。！？；） | 10 | 逐页读完：**我们编的示例用户问句**，如「公司的年假政策是什么？」 |
+| OTHER | 346 | 长术语/口诀式短语，含本页自己 |
+
+读数 `「…」 strings in prose ... : 1752`，两个"可能藏真引用"的堆各只有几十条，且**打印出来逐条读完没有一条是外部引文**。所以分类器要判的那个缺陷（读者被引着一句查不到的话）在这棵树里量不到样本——候选判死，改成一条常驻的覆盖率腿：以后 `findings=0` 旁边必须同时打印这张表，谁也不能再把它读成「所有引用都核过」。这条腿**不动退出码**（覆盖账不是判决），内部 5 条种植自证：五种写法各必须落进自己那一堆。
+
+### 三、全站线上扫描
+
+**这条轴首跑抓到的七个"缺陷"，全是它自己量得太早。** 第 73 轮的一次性复核把 `deployment-scaling.md`、`observability-tools.md` 等页报出 7 条 `formula not laid out`（探针读到公式零宽）。本轮落库后先做的是**证伪这把尺子**而不是改内容：拿 `.tmp-projects/r74_diag.py` 逐块 dump（`hasHtml/htmlW/rect` + 八层祖先的 `display/visibility/offsetParent`），两张页在 `+2000ms` 沉降后读 **每块 608px、零宽 0 处**——线上没问题，是探针在 KaTeX 排版完成前就按了快门。三条改法把竞态变成可复现的判决：
+
+- **先重读再下判决**：`settled()` 现在对「线上条数与仓库不符 / 字体没来 / 有零宽且无隐藏祖先的块」最多回读两次（每次 5s），把"还没水合完"和"平台少发了公式"分开。`deployment-scaling.md` 在 `read x3` 才拿齐 4 条的盒子，复跑 `problems=0`。
+- **隐藏 ≠ 缺陷**：GitBook 把未激活的 `{% tabs %}` 面板用 `display:none` 收起来，里面那条公式**本该**无盒（读者点击才排版）。新增 `CLASSIFY` 分类器沿祖先链找隐藏原因，命中的块记 `hidden` 不判红；判红的是**零宽且无隐藏祖先**（真·空盒）。分类器自己带常驻反例：`display:none` 副本必须读 hidden、被脚本挤成 `width:0` 但留在流里的副本必须读 no-reason——否则"hidden"就成了给空盒子开脱的后门。首跑读数：`classifier ok: a display:none copy reads hidden (display:none), a zero-width in-flow copy reads no-reason`。
+- **`hidden` 是独立计数**，与内容桶、覆盖桶三足分立；`--selftest` 里加一条 `code([], [], hidden=7) == 0`，钉住"隐藏永不把干净跑染红"。
+
+全站 106 页 / 276 条 display 公式的完整判决：
+
+```
+checked 273 live display formulas on 105 of 106 pages
+live <main> widths seen: 608px x105
+  FETCH-FAILURE 12-applications/enterprise-knowledge-base.md: KaTeX webfont never loaded, ... — this page was not measured
+live formula verdict: pages=105/106 checked=273 hidden=0 problems=0 fetch-failures=1
+```
+
+**首趟 `problems=0`、`hidden=0`——第 73 轮那 7 条「没排版」在全站规模下全部消失**（重读逻辑 + 分类器共同把它按水合竞态处理掉了）。唯一响的是**覆盖桶**：`enterprise-knowledge-base.md` 的 KaTeX webfont 在预算内没等到，轴如实记「这页没量到，不是内容发现，重跑别读成绿」并 `exit 1`。单独复跑这一页：`main=608 3/3 formulas widest ink=488.5px，problems=0 fetch-failures=0`（`read` 一次即齐）。所以净判决是 **106/106 页、276 条公式、0 内容缺陷、0 遗留未检页**（那 1 个覆盖缺口是瞬时的、复跑即闭）。`live <main> widths seen: 608px` 在 105 页上无一例外——第 73 轮的「读者那一列是 608 不是 768」在线上全站成立。
+
+### 四、回归读数
+
+本轮改正文 0 页，只动两份文档（README 首页两条 bullet + 本更新日志）与两个判据文件（`check_live_formulas.py` 新增、`check_quote_fidelity.py` 的 `--buckets` 腿）。批量改文档后按规矩重跑离线全家桶，全部照绿：
+
+```
+check_structure            pages scanned=198 problems=0
+check_changelog_headings   HEAD=65 tree=66 lost=0
+check_char_sanity          pages=198 prose CJK chars=365145 traditional-form findings=0
+check_prose_duplicates     pages=191 prose_units=7254 formula_units=274 dup=0 near-band(0.72-0.85)=3
+```
+
+`prose_units` 从第 73 轮落库的 7237 涨到 7254、CJK 从 363289 涨到 365145，都是本轮首页那两条新 bullet 与更新日志正文贡献的（本首页自己算一篇，改它这些数就动，判据读数只认当前树）；`formula_units` 仍 274（本轮 0 增删公式），近重复带仍 3 条 advisory（模板页互说「收录标准/配图要求」，语义本应一致）。全站 display 公式线上判决（见 §三）：**106/106 页、276 条公式、`problems=0`、`hidden=0`、覆盖桶那 1 个 webfont 超时页复跑即闭**；`--selftest` 六条种植全过。
+
+### 五、留下的账
+
+- **线上公式轴量的是"放得下 + 画出来了 + 没漏排版"，不是"看得清"**：它判条数对平、`.katex-error`、裸 LaTeX 残留、墨迹宽拖动、隐藏/可见分类五件事；**不判**墨色对底板的对比度（那是 SVG 侧第 69/70 轮的相位与配色轴管的，HTML 正文公式没有对应腿）。读者侧**渲染对比度**这条腿仍未建，是下一轮的候选。
+- **`<main>` 报 608 不报 768，且只报不判**：列宽是平台给的（第 73 轮已确证），改判据改不出来，所以这一列的值只打印、不参与判决——但它提醒所有作者侧拟合轴：768 不是读者那一列。
+- **产品级取舍仍等操作者拍板（带数）**：① 32 张手绘 SVG 按 608/≈350 列重排（authored ≥18.9px 才够 12px 门槛）；② 开 GitBook 宽版布局（`--column 1152` 的 what-if 已读 0 越宽，但公式包裹层是硬 `max-w-3xl`、开了也不加宽）；③ 接受笔记本缩放、把 608 定为作者目标。本轮三选一都没替操作者决定。
+- ** carried 候选**：102 张超宽 Mermaid 等同一个宽版开关落地后用 `--column 1152` 重读；8 张真实产品 PNG 截图仍没有任何轴量过它们的内容；`10-eval-console-ui` 的「长文问答·跌」措辞像被截断的半句（措辞可读性轴第一个样本）；**GitHub PAT 早先贴在聊天里，仍需操作者去 GitHub 撤销轮换**（不是本轮能修的）。
+- **本条轴的覆盖桶仍可能因 CDN 速率触发**：`--selftest` 保证触发时 `exit 1` 且明写"重跑别读成绿"，但没有把它变成自动重扫——重扫是操作者的 `python tools/checks/check_live_formulas.py` 一条命令。
+
 ## 2026-09-24（第 73 次）四条「读者列宽」轴一直在量**复制稿**：同一页在真浏览器里被侧栏和页内 TOC 吃掉 160px（768 → 608），11 条 display 公式在这一列里得横向拖动（最宽 767px、拖 159px）→ **0**；目检另抓到一条 `[t]` 被 KaTeX 当正文画给读者的静默缺陷，如今守卫和反例都落库
 
 本轮动正文 11 页（只重排公式，没删一个字、没短一条式子），动判据 4 个文件：`tools/checks/check_live_column.py`、`check_svg_legibility.py`、`check_mermaid_geometry.py`、`check_content_overflow.py`。README 统计不动（196 页 / 19 章 / 217 Mermaid / 32 SVG / 8 截图；display 公式 276 条——重排前后逐页对齐断言 `len(before)==len(after)` 钉着，一条也没多、没少）。

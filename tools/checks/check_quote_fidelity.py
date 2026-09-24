@@ -52,6 +52,14 @@ still display the deleted sentence, which fits a billboard but not a figure labe
 Usage:
     python tools/checks/check_quote_fidelity.py              # grade the tree
     python tools/checks/check_quote_fidelity.py --selftest   # planted sources through the same code
+    python tools/checks/check_quote_fidelity.py --buckets    # what the grammar does NOT grade
+
+`--buckets` exists because `attributed=16` sitting next to "thousands of bracketed strings" invited
+one reading ("every quote is true") that the axis never earned. Round 74 measured the gap instead of
+guessing at it: the ungraded piles are term names and invented example utterances, and the two
+piles where a real citation could hide are printed page by page so the next round can re-check that
+without inventing a classifier for a defect class that is not there. Report-only by design — it
+never moves the exit code, because a coverage table is not a verdict.
 """
 import argparse
 import io
@@ -413,13 +421,105 @@ def selftest():
     return 0
 
 
+BUCKET_SKIP = ("00-index", "14-templates")
+SENT_PUNCT = re.compile(u"[。！？；;…]")
+SOURCE_NOUN = re.compile(u"论文|文档|博客|报告|指南|手册|文章|笔记|条目|列表|原文|图注|标题|页里|结语|引自|"
+                         u"README|书名|作者|译者|官网")
+
+
+def bucket_of(line, quote, window):
+    """Which pile a bracketed string falls in, for the coverage question -- not a defect verdict."""
+    inner = quote.strip(u"「”“」")
+    if ATTR.search(line):
+        return "GRADED"
+    if not SENT_PUNCT.search(inner) and len(norm(inner)) <= 12:
+        return "SHORT-NAME"
+    if SOURCE_NOUN.search(window):
+        return "SOURCE-NEAR-NO-VERB"
+    if SENT_PUNCT.search(inner):
+        return "SENTENCE-SHAPED"
+    return "OTHER"
+
+
+def bucket_lines(text):
+    """Prose lines only: a bracket inside a fence is sample data, and frontmatter is metadata."""
+    return split_fences(text)[0].splitlines()
+
+
+def walk_buckets():
+    counts, examples = {}, {}
+    for r, _d, fs in os.walk(DOCS):
+        rel_dir = os.path.relpath(r, DOCS).replace("\\", "/")
+        if any(rel_dir.startswith(x) for x in BUCKET_SKIP):
+            continue
+        for f in sorted(fs):
+            if not f.endswith(".md") or f == "SUMMARY.md":
+                continue
+            rel = (rel_dir + "/" + f).lstrip("./")
+            text = read(os.path.join(r, f))
+            for line in bucket_lines(text):
+                for m in ONE.finditer(line):
+                    i = line.find(m.group(0))
+                    window = line[max(0, i - 40): i + len(m.group(0)) + 40]
+                    b = bucket_of(line, m.group(0), window)
+                    counts[b] = counts.get(b, 0) + 1
+                    if b in ("SOURCE-NEAR-NO-VERB", "SENTENCE-SHAPED"):
+                        examples.setdefault(b, []).append((rel, m.group(0)[:56]))
+    return counts, examples
+
+
+def bucket_selftest():
+    """Each pile must be reachable by design and unreachable by the pile next to it."""
+    plant = [
+        (u"图注写着「这是一句被引用的原文」", "GRADED"),
+        (u"这里所谓「检索增强生成」并不新", "SHORT-NAME"),
+        (u"文档里提到「模型 + harness + 工具治理」", "SOURCE-NEAR-NO-VERB"),
+        (u"用户问「公司的年假政策是什么？」", "SENTENCE-SHAPED"),
+        (u"这一页只讲一件事：「检索质量决定上限，生成质量决定下限」", "OTHER"),
+    ]
+    for line, want in plant:
+        m = ONE.search(line)
+        assert m, "planted line has no bracket the axis' own regex sees: %r" % line[:24]
+        got = bucket_of(line, m.group(0), line)
+        assert got == want, "planted %r bucketed as %s, not %s" % (line[:24], got, want)
+    return "buckets selftest ok: %d planted lines each land in their own pile" % len(plant)
+
+
+def buckets_report():
+    """Report-only: what the closed verb list leaves ungraded, and whether any of it is a citation.
+
+    Rounds 62-72 quoted `attributed=16` next to "2265 bracketed strings" and left every reader to
+    decide what the gap meant. This decomposes it: the two piles that could hide an unverifiable
+    citation are printed with their pages, so the axis' green can be read as "the grammar saw these
+    and they check out" plus "the grammar never saw these, and here is what they are".
+    """
+    print(bucket_selftest())
+    counts, examples = walk_buckets()
+    total = sum(counts.values())
+    assert total > 1000, "vacuity floor: only %d bracketed strings seen" % total
+    print("「…」 strings in prose (fences, SUMMARY, %s excluded): %d" % ("/".join(BUCKET_SKIP), total))
+    for k in ("GRADED", "SHORT-NAME", "SOURCE-NEAR-NO-VERB", "SENTENCE-SHAPED", "OTHER"):
+        print("  %-22s %5d" % (k, counts.get(k, 0)))
+    for k in ("SOURCE-NEAR-NO-VERB", "SENTENCE-SHAPED"):
+        print("\n== %s (%d), first 10 — the only piles a real citation could be hiding in"
+              % (k, counts.get(k, 0)))
+        for rel, q in examples.get(k, [])[:10]:
+            print("   %-46s %s" % (rel, q))
+    print("\nbuckets are coverage accounting, not findings: this leg never changes the exit code")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true", help="grade planted sources and exit")
+    ap.add_argument("--buckets", action="store_true",
+                    help="decompose every 「…」 the grammar does NOT grade, and exit")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     if args.selftest:
         return selftest()
+    if args.buckets:
+        return buckets_report()
 
     srcs, prose, mer, kinds = sources()
     controls(srcs, prose, mer, kinds)
