@@ -105,6 +105,12 @@ RETRACTIONS = [
      "new": "从原理到生产 · 196 页 / 19 章",
      "source": "docs/.gitbook/assets/banner-home.svg", "billboard": False, "round": 64,
      "why": "横幅是图片，统计轴只读 Markdown，页数失真九轮"},
+    # Round 83 deleted this self-exemption from README and quoted it in the log to record why; the
+    # wording reaches round 84's close-out because nothing graded it while it was still live.
+    {"old": "判据读数只认当前树",
+     "new": "它不许当等号用",
+     "source": "docs/README.md", "billboard": False, "round": 83,
+     "why": "这句自我豁免没有判据盯着：读数被后来的正文推了 246 个单元，首页仍印 20 轮前的 7116"},
 ]
 
 # strings this judge MUST keep finding, each in the source family named by its list
