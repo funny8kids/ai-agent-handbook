@@ -2,7 +2,7 @@
 tags: [lab, hands-on]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # 19 动手实验 · 本章导读
@@ -83,7 +83,7 @@ flowchart LR
 | Trajectory | 轨迹 | prompt 里累积的 Thought/Action/Observation 全过程，Agent 的「行车记录仪底片」 |
 | BM25 | BM25 打分 | 关键词检索的经典公式：词频算到饱和、长文吃惩罚、稀有词涨权重 |
 | Context Budget | 上下文预算 | 拼 prompt 前先算字数，塞不下就丢——丢弃策略本身就是工程设计 |
-| JSON-RPC 2.0 | JSON-RPC | 一行一条 JSON 的远程喊话规矩：带 id 的要回话，不带 id 的（通知）免回 |
+| JSON-RPC 2.0 | JSON 远程过程调用（通用译名） | 一行一条 JSON 的远程喊话规矩：带 id 的要回话，不带 id 的（通知）免回 |
 | Handshake / Capability Discovery | 握手与能力发现 | MCP 的 `initialize` 对暗号 + `tools/list` 报菜名，client 才知道能点什么 |
 | Message Bus | 消息总线 | 多 Agent 共享的发言流水账，「协作」落到实处就是这一份所有人可读的记录 |
 | pass@1 | 单次通过率 | 每个用例跑一遍，判对几个算几分——比「感觉变好了」硬一万倍 |
