@@ -102,7 +102,7 @@ RETRACTIONS = [
      "source": "docs/.gitbook/assets/07-plan-vs-react.svg", "billboard": False, "round": 65,
      "why": "15px 标签在 90px 格子里撑框，两步压短重排"},
     {"old": "从原理到生产：**187 页** / 19 章",
-     "new": "从原理到生产 · 196 页 / 19 章",
+     "new": "从原理到生产 · 205 页 / 20 章",
      "source": "docs/.gitbook/assets/banner-home.svg", "billboard": False, "round": 64,
      "why": "横幅是图片，统计轴只读 Markdown，页数失真九轮"},
     # Round 83 deleted this self-exemption from README and quoted it in the log to record why; the

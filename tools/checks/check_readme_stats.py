@@ -243,8 +243,11 @@ def run_controls(stats):
         assert stats[key] >= floor, "vacuity: %s measured %d below floor %d" % (key, stats[key], floor)
     assert stats["ghosts"] >= 1, \
         "ghost-asset control lost: no nonexistent image reference is being excluded"
-    bad = read(README).replace("pages-196", "pages-999", 1)
-    bad = bad.replace("196 页 / 19 章", "1 页 / 1 章", 1)
+    # The planted values must come from the file as it stands: hardcoding "pages-196" made this
+    # control a silent no-op the first time the honest number moved off 196 (round 96).
+    bad = re.sub(r"pages-[0-9]+", "pages-999", read(README), count=1)
+    bad = re.sub(r"[0-9]+ 页 / [0-9]+ 章", "1 页 / 1 章", bad, count=1)
+    assert bad != read(README), "phantom control is vacuous: the page-count patterns matched nothing"
     problems = check(stats, bad, quiet=True)
     assert any("pages badge=999" in p for p in problems), \
         "phantom control failed: a bogus page badge was not flagged (%s)" % problems
@@ -252,12 +255,16 @@ def run_controls(stats):
         "phantom control failed: a bogus prose page count was not flagged (%s)" % problems
     assert len(readme_claims(read(README))[0]) >= 5, \
         "badge parser is broken on the real README — controls would be meaningless"
-    home_bad = read(HOMEPAGE).replace("**257 张页内配图**", "**999 张页内配图**", 1)
+    home = read(HOMEPAGE)
+    home_bad = re.sub(r"\*\*[0-9]+ 张页内配图\*\*", "**999 张页内配图**", home, count=1)
+    assert home_bad != home, "phantom control is vacuous: the figure-count claim matched nothing"
     hp = check_homepage(stats, home_bad, quiet=True)
     assert any("homepage figures=999" in p for p in hp), \
         "phantom control failed: a bogus homepage figure count slipped through (%s)" % hp
     # The control replays this round's actual defect: the banner said 187 while the tree said 196.
-    ban_bad = read(BANNER).replace("196 页", "187 页")
+    banner = read(BANNER)
+    ban_bad = re.sub("[0-9]+ 页", "187 页", banner)
+    assert ban_bad != banner, "phantom control is vacuous: the banner page count matched nothing"
     bp = check_banner(stats, ban_bad, quiet=True)
     assert sum(1 for p in bp if p.startswith("banner pages")) == 2, \
         "phantom control failed: a stale banner page count was not flagged in both places (%s)" % bp

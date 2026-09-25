@@ -41,6 +41,9 @@ updated: 2026-09-20
 | `resource` | 资源收录 | [资源库说明](../13-resources/README.md) |
 | `beginner` | 入门难度 | [AI、ML、DL 的关系](../01-ai-basics/ai-ml-dl.md) |
 | `advanced` | 进阶难度 | [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md) |
+| `interview` | 大厂面试真题（LLM/AI 岗） | [面试真题章导读](../20-interview/README.md) |
+| `system-design` | 面试系统设计题 | [系统设计真题](../20-interview/system-design.md) |
+| `career` | 求职方法与面试策略 | [项目深挖与行为面真题](../20-interview/behavioral-project.md) |
 
 ## 使用规范
 

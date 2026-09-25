@@ -184,9 +184,6 @@
 * [知识点模板](14-templates/knowledge-template.md)
 * [资源模板](14-templates/resource-template.md)
 
-## 📖 15 术语表
-* [术语表](15-glossary/README.md)
-
 ## 🏗️ 16 AI 基础设施
 * [16 AI 基础设施 · 本章导读](16-ai-infrastructure/README.md)
 * [推理服务化：引擎、批处理与延迟指标](16-ai-infrastructure/inference-serving.md)
@@ -234,6 +231,20 @@
 * [Lab 4：三角色协作（Planner / Executor / Reviewer）](19-labs/lab4-multi-agent.md)
 * [Lab 5：评测与可观测（pass@1 + trace 瀑布）](19-labs/lab5-eval-trace.md)
 * [Lab 6 护栏与真模型切换](19-labs/lab6-guardrails.md)
+
+## 🎯 20 面试真题
+* [20 面试真题 · 本章导读](20-interview/README.md)
+* [大模型基础真题](20-interview/llm-foundations.md)
+* [训练与对齐真题](20-interview/training-alignment.md)
+* [RAG 与检索真题](20-interview/rag-retrieval.md)
+* [Agent 工程真题](20-interview/agent-engineering.md)
+* [推理与服务化真题](20-interview/inference-serving.md)
+* [系统设计真题](20-interview/system-design.md)
+* [手撕代码与算法真题](20-interview/live-coding.md)
+* [项目深挖与行为面真题](20-interview/behavioral-project.md)
+
+## 📖 21 术语表
+* [术语表](21-glossary/README.md)
 
 ## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)

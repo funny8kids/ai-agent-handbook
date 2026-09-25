@@ -51,11 +51,11 @@ def cells_of(row):
 # Chapters that legitimately do not carry the triplet. The exemption is not a name on a list -- it is
 # funded by a sentence the page itself carries, so it cannot be quietly widened to whatever chapter
 # fails next: drop that sentence and the chapter goes red instead of exempt.
-# 15-glossary says in its own body 「本章是纯查表页，不出自测题」 (round 78 found it while grading the
+# 21-glossary says in its own body 「本章是纯查表页，不出自测题」 (round 78 found it while grading the
 # quiz leg), and it IS the book-wide 术语速查, so a per-chapter table there would be the duplicated
 # prose round 60 landed an axis against.
-EXEMPT_QUIZ = {"15-glossary": "本章是纯查表页，不出自测题"}
-EXEMPT_GLOSSARY = {"15-glossary": "the chapter *is* the global glossary; a per-chapter duplicate "
+EXEMPT_QUIZ = {"21-glossary": "本章是纯查表页，不出自测题"}
+EXEMPT_GLOSSARY = {"21-glossary": "the chapter *is* the global glossary; a per-chapter duplicate "
                                   "would re-add prose round 60 judges as duplication"}
 
 
@@ -255,11 +255,11 @@ def controls():
         noquiz = GOOD[:GOOD.index("## 章末自测")] + GOOD[GOOD.index("## 本章术语速查"):]
         with_claim = noquiz + "\n> 本章是纯查表页，不出自测题——取而代之，记住用它的三条路。\n"
         d1 = _write(os.path.join(tmp, "y1"), "96-exempt", with_claim)
-        got, t3 = judge_chapter("15-glossary", d1)
+        got, t3 = judge_chapter("21-glossary", d1)
         assert not got and t3.get("quiz_exempt") == 1 and t3["questions"] == 0, \
             "control: a chapter carrying the exemption sentence was not exempted: %s %s" % (got, t3)
         d2 = _write(os.path.join(tmp, "y2"), "95-silent", noquiz)
-        got2, _ = judge_chapter("15-glossary", d2)
+        got2, _ = judge_chapter("21-glossary", d2)
         assert any("EXEMPT-UNSUPPORTED" in g for g in got2), \
             "control blind: exemption survived after its supporting sentence was deleted: %s" % got2
         n += 3

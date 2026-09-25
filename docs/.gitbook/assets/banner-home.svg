@@ -55,7 +55,7 @@
   <text x="64" y="162" font-size="52" font-weight="800" fill="url(#titlec)">AI Agent 学习手册</text>
   <path d="M72 186 C 190 178, 350 194, 470 184" fill="none" stroke="#0284c7" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
 
-  <text x="64" y="238" font-size="30" fill="#475569">从原理到生产 · 196 页 / 19 章</text>
+  <text x="64" y="238" font-size="30" fill="#475569">从原理到生产 · 205 页 / 20 章</text>
   <text x="64" y="278" font-size="26" fill="#475569">原理给推导 · 结论给出处 · 案例给源码</text>
 
   <!-- 三个信息徽章 -->
@@ -66,7 +66,7 @@
   </g>
   <g font-size="22" fill="#334155">
     <circle cx="88" cy="372" r="5" fill="#0284c7"/>
-    <text x="104" y="379">19 章 · 196 页全景</text>
+    <text x="104" y="379">20 章 · 205 页全景</text>
     <circle cx="351" cy="372" r="5" fill="#d97706"/>
     <text x="367" y="379">323 个开源项目索引</text>
     <circle cx="613" cy="372" r="5" fill="#7c3aed"/>
@@ -74,7 +74,7 @@
   </g>
 
   <!-- 角色路线与通关标准 -->
-  <text x="64" y="436" font-size="22" fill="#475569">七条角色路线任选：入门 · 开发者 · 研究者 · 平台 · 具身 · 选型 · 实验</text>
+  <text x="64" y="436" font-size="22" fill="#475569">八条角色路线任选：入门 · 开发者 · 研究者 · 平台 · 具身 · 选型 · 实验 · 面试</text>
   <text x="64" y="472" font-size="22" fill="#475569">读完的标准不是「看过」，而是「能复现、能上线」</text>
 
   <!-- ===== 右侧：抽象 Agent 环路（中心 1010,290 / 轨道半径 160）===== -->

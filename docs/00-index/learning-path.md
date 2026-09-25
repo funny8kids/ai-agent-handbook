@@ -18,6 +18,7 @@ updated: 2026-09-22
 - 目标是做产品：09 → 11 → 12 优先，案例驱动
 - 目标是搭平台：03 → 11 → 16，重点在推理服务、缓存与成本
 - **要对齐 2026 选型：02 → 18 → 10 → 12**（前沿模型、托管 harness、评估代际）
+- **要去面试：01–12 走完再进 [20 面试真题](../20-interview/README.md)**，按岗位挑页，不要八页全刷
 - **每读完一个阶段，用「自检」确认真的会了，再往下走**
 
 ## 路线图
@@ -42,7 +43,7 @@ flowchart TD
 *《图：主干按 01→12 逐级解锁不能跳，末尾 18 前沿的选型结论用虚线回灌进 10 的评估基线——学习闭环靠这条反向边收口》*
 
 {% hint style="tip" %}
-**提示**：13–15 是资料/模板/术语篇（随时查），16 是「把 Agent 跑起来并跑稳」的平台层，17 是把同一套循环搬进物理世界，**18 是对齐 2026-09 模型/harness/评估代际的快车道**。
+**提示**：13、14、21 是资料/模板/术语篇（随时查，术语表在第 21 章即最后一章），16 是「把 Agent 跑起来并跑稳」的平台层，17 是把同一套循环搬进物理世界，18 是对齐 2026-09 模型/harness/评估代际的快车道，19 是动手实验，**20 是面试真题（冲刺用，不是学习主线）**。
 {% endhint %}
 
 ## 分阶段目标与自检
@@ -109,7 +110,16 @@ flowchart TD
 | 顺序 | 阶段二结束时做 Lab 1–4，阶段三结束时补 Lab 5–6 |
 | 自检 | 六个脚本都能零依赖跑通，且能回答各页「动手改」第 2 题 |
 
-## 七条路线
+### 分支：面试冲刺（20，面试前 1–2 周）
+
+| 项 | 内容 |
+|---|---|
+| 目标 | 把已学知识换成面试语言：答得出机制、给得出取舍、讲得清自己的项目 |
+| 前置 | 阶段一至三（缺哪页回补哪页），并有一个能深挖的真实项目 |
+| 顺序 | 20 导读 → 按岗位挑 2–3 页 → 手撕/行为面各留一晚模拟 → 回原章节补漏 |
+| 自检 | 随机抽一题能在 3 分钟内说出要点与一个反例；手撕题能先写形状再写算子 |
+
+## 八条路线
 
 | 路线 | 适合谁 | 顺序 | 检验标准 |
 |---|---|---|---|
@@ -120,11 +130,12 @@ flowchart TD
 | 具身方向 | 做机器人或想转具身 | 02 → 04 → 17 → 16 | 能在仿真里跑通「感知→技能→执行」闭环并说清 sim-to-real 差距来自哪 |
 | 追前沿与选型 | 要跟 2026 产品面、做 harness 采购决策 | 02 → 18 → 10 → 12 | 能读懂 Astra / Agents API / Fable 5.1 对比，并对一个真实场景给出托管 vs 自建选型 |
 | 动手派 | 书读太厚坐不住、想边做边学 | 02 → 19(Lab1) → 06 → 19(Lab2) → 05 → 19(Lab3) → 19(Lab4–6) | 六个实验全部跑通并各自完成一道「动手改」 |
+| 求职冲刺 | 一两周内要面 LLM/AI 岗 | 20 导读 → 按岗位两页 → 20(手撕) → 19 任一 Lab | 每页随机抽一题能在 3 分钟内答出要点与一个反例 |
 
 ## 怎么用这本手册学
 
 1. 每篇先看「先看结论」，有需要再细读
-2. 遇到术语卡住，查 [术语表](../15-glossary/README.md)
+2. 遇到术语卡住，查 [术语表](../21-glossary/README.md)
 3. 每读完一章，做章内「小练习」——不做练习等于没读
 4. 读核心章节时对照真实源码：[Pi Agent](https://github.com/earendil-works/pi)、[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)、[Claude Code 案例拆解](../12-applications/coding-agent.md)
 5. 学完一章就往 [开源项目索引](../13-resources/projects/README.md) 里挑一个项目读源码，理论要靠代码落地
@@ -143,6 +154,8 @@ flowchart TD
 - [12-Factor Agents（逐条对照的 Agent 工程原则）](https://github.com/humanlayer/12-factor-agents)
 - [MCP 规范官网（工具与上下文协议的权威入口）](https://modelcontextprotocol.io)
 - [LangGraph 文档（阶段二读控制流时的对照实现）](https://langchain-ai.github.io/langgraph/)
+- [AI Engineering 面试题库（按公司标注的候选人转述）](https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise)
+- [AIGC-Interview-Book 大厂高频面试题](https://github.com/WeThinkIn/AIGC-Interview-Book)
 
 ## 相关知识点
 
@@ -150,4 +163,6 @@ flowchart TD
 - [资源总表](resources-index.md)
 - [开源项目索引](../13-resources/projects/README.md)
 - [18 2026 前沿](../18-frontier-2026/README.md)
+- [19 动手实验](../19-labs/README.md)
+- [20 面试真题](../20-interview/README.md)
 

@@ -43,7 +43,16 @@ updated: 2026-09-23
 | 决策模型 | Decision Model / System One Model | 不生成文字、只并行输出带置信度的类型化判断（是否/选档/打分） |
 | 期望校准误差 | ECE（Expected Calibration Error） | 模型自称的置信度与真实准确率差多远，判定器能否上线的主指标 |
 | 置信度—覆盖率 | Confidence–Coverage Trade-off | 只采信高置信判定会掉覆盖率：准确率与「能用多少比例」必须一起报 |
-| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判，转交更强模型或人审的那条出口 |
+| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判，转交更强模型或人审的那条出口 || 分组查询注意力 | GQA / MQA（Grouped/Multi-Query Attention） | 多个 Q 头共享一份 K/V，直接按倍率压低 KV Cache 与解码带宽 |
+| 多头潜注意力 | MLA（Multi-head Latent Attention） | 把 K/V 压到低秩潜空间再解压，用计算换显存的另一条路 |
+| 旋转位置编码 | RoPE（Rotary Position Embedding） | 用旋转把相对位置写进 Q/K，是外推与长上下文改造的落点 |
+| 分块注意力 | FlashAttention | 不减少计算量、靠减少 HBM 读写把注意力搬进片上显存的 IO 优化 |
+| 分组相对策略优化 | GRPO（Group Relative Policy Optimization） | 用组内相对得分代替价值网络的优势估计，省掉 critic |
+| 量化低秩微调 | QLoRA | NF4 量化底座 + LoRA 适配器 + 分页优化器，把微调压进单卡 |
+| 缩放定律 | Scaling Law（Chinchilla） | 损失由参数量与数据量共同决定，二者要按比例一起加 |
+| 灾难性遗忘 | Catastrophic Forgetting | 微调后通用能力下降，靠数据配比与回放约束 |
+| 知识蒸馏 | Knowledge Distillation | 用大模型的输出（或 logits）教小模型 |
+
 
 ## 工具与协议
 
@@ -73,7 +82,11 @@ updated: 2026-09-23
 | 执行准确率 | Execution Accuracy（EX） | 比 SQL 执行后的结果集是否一致，而非比 SQL 文本 |
 | 难负例 | Hard Negatives | 语义接近却答错的样本，是 embedding 对比微调的涨点主力 |
 | Embedding 微调 | Embedding Fine-tuning | 用领域 (query, 正例, 难负例) 对重训向量，让检索跟上黑话 |
-| 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 |
+| 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 || 稀疏检索 | BM25 | 基于词频与逆文档频率的关键词打分，稠密向量的互补项 |
+| 倒数排名融合 | RRF（Reciprocal Rank Fusion） | 只按名次合并多路检索结果的排序融合法 |
+| 假设文档嵌入 | HyDE（Hypothetical Document Embeddings） | 先让模型写一篇假答案再拿它去检索 |
+| 忠实度 | Faithfulness | 回答里的每条论断是否被检索到的上下文支撑，RAG 评测主指标 |
+
 
 ## 多智能体与工程
 
@@ -86,7 +99,9 @@ updated: 2026-09-23
 | 越狱 | Jailbreak | 绕过模型安全对齐的攻击 |
 | 可观测性 | Observability | 日志、追踪、监控构成的系统透明度 |
 | 规范博弈 | Reward Hacking | 钻奖励定义空子达成字面目标 |
-| 基准测试 | Benchmark | 标准化的能力评估任务集 |
+| 基准测试 | Benchmark | 标准化的能力评估任务集 || 令牌桶 | Token Bucket | 按时间补充配额的限流算法，允许突发又能控均值 |
+| 幂等键 | Idempotency Key | 让重复请求只产生一次副作用的标识，Agent 执行动作的保命符 |
+
 
 ## 基础设施与部署
 
@@ -94,7 +109,10 @@ updated: 2026-09-23
 |---|---|---|
 | 预填充 / 解码 | Prefill / Decode | 推理的两个阶段：算 prompt（算力瓶颈）与逐 token 生成（带宽瓶颈） |
 | 连续批处理 | Continuous Batching | 请求完成即退出、新请求随时补位，把 decode 阶段的 GPU 填满 |
-| 分页注意力 | PagedAttention | 像虚拟内存分页那样管理 KV 缓存，减少显存碎片 |
+| 分页注意力 | PagedAttention | 像虚拟内存分页那样管理 KV 缓存，减少显存碎片 || 基数树缓存 | Radix Tree / Prefix Cache | 用前缀树跨请求复用公共前缀的 KV，命中即跳过重算 |
+| PD 分离 | Prefill/Decode Disaggregation | 把两阶段放到不同资源池各自扩容，代价是 KV 搬运 |
+| 专家并行 | Expert Parallelism | 把 MoE 的专家分散到多卡，靠 All-to-All 路由 token |
+
 | 前缀缓存 | Prefix / Prompt Caching | 复用逐 token 相同前缀的 KV 计算，省钱又降 TTFT |
 | 首 token 延迟 | TTFT（Time To First Token） | 从发出请求到看到第一个字的等待时间 |
 | 每 token 间隔 | TPOT / ITL | 流式输出时相邻 token 的时间差，决定「卡不卡」 |

@@ -18,7 +18,7 @@
    "verdict": "OK"
   },
   "https://academic.oup.com/mind/article/LIX/236/433/986238": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://academic.oup.com/mind/article/LIX/236/433/986238",
    "host": "academic.oup.com",
    "status": 403,
@@ -1113,11 +1113,12 @@
    "verdict": "OK"
   },
   "https://code.claude.com/docs": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://code.claude.com/docs",
    "host": "code.claude.com",
-   "status": "[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.",
-   "verdict": "NET"
+   "status": 200,
+   "title": "Overview - Claude Code Docs",
+   "verdict": "OK"
   },
   "https://code.claude.com/docs/en/agent-sdk/overview": {
    "checked": "2026-09-24",
@@ -1240,7 +1241,7 @@
    "verdict": "OK"
   },
   "https://dl.acm.org/doi/10.1145/1571941.1572114": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://dl.acm.org/doi/10.1145/1571941.1572114",
    "host": "dl.acm.org",
    "status": 403,
@@ -2126,6 +2127,14 @@
    "title": "",
    "verdict": "OK"
   },
+  "https://github.com/WeThinkIn/AIGC-Interview-Book": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/WeThinkIn/AIGC-Interview-Book",
+   "host": "github.com",
+   "status": 200,
+   "title": "",
+   "verdict": "OK"
+  },
   "https://github.com/WenyuChiou/awesome-agentic-ai-zh": {
    "checked": "2026-09-24",
    "final": "https://github.com/WenyuChiou/awesome-agentic-ai-zh",
@@ -2222,6 +2231,21 @@
    "title": "GitHub - adongwanai/AgentGuide: https://adongwanai.github.io/AgentGuide | AI Agent开发指南 | LangGraph实战",
    "verdict": "OK"
   },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/12-company-interview-cases.md at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md",
+   "host": "github.com",
+   "status": 429,
+   "verdict": "BLOCKED"
+  },
   "https://github.com/affaan-m/ECC": {
    "checked": "2026-09-24",
    "final": "https://github.com/affaan-m/ECC",
@@ -2268,6 +2292,22 @@
    "host": "github.com",
    "status": 200,
    "title": "",
+   "verdict": "OK"
+  },
+  "https://github.com/alexeygrigorev/ai-engineering-field-guide": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/alexeygrigorev/ai-engineering-field-guide",
+   "host": "github.com",
+   "status": 200,
+   "title": "",
+   "verdict": "OK"
+  },
+  "https://github.com/alexeygrigorev/ai-engineering-field-guide/blob/main/interview/04-after-the-interview.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/alexeygrigorev/ai-engineering-field-guide/blob/main/interview/04-after-the-interview.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "ai-engineering-field-guide/interview/04-after-the-interview.md at main · alexeygrigorev/ai-engineeri",
    "verdict": "OK"
   },
   "https://github.com/alibaba/rtp-llm": {
@@ -3950,6 +3990,14 @@
    "title": "GitHub - oxwhirl/smac: SMAC: The StarCraft Multi-Agent Challenge · GitHub",
    "verdict": "OK"
   },
+  "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise",
+   "host": "github.com",
+   "status": 200,
+   "title": "",
+   "verdict": "OK"
+  },
   "https://github.com/panaversity/learn-agentic-ai": {
    "checked": "2026-09-24",
    "final": "https://github.com/panaversity/learn-agentic-ai",
@@ -4807,7 +4855,7 @@
    "verdict": "OK"
   },
   "https://huggingface.co/datasets/cerebras/SlimPajama-627B": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://huggingface.co/datasets/cerebras/SlimPajama-627B",
    "host": "huggingface.co",
    "status": 401,
@@ -4909,6 +4957,22 @@
    "title": "JSON Schema",
    "verdict": "OK"
   },
+  "https://juejin.cn/post/7595232643464134690": {
+   "checked": "2026-09-25",
+   "final": "https://juejin.cn/post/7595232643464134690",
+   "host": "juejin.cn",
+   "status": 200,
+   "title": "面字节豆包大模型岗，三轮技术面都问了啥？算法面经｜字节豆包大模型方向，三轮技术面复盘 一共三轮技术面，整体从 模型与推理 - 掘金",
+   "verdict": "OK"
+  },
+  "https://juejin.cn/post/7648887289629179958": {
+   "checked": "2026-09-25",
+   "final": "https://juejin.cn/post/7648887289629179958",
+   "host": "juejin.cn",
+   "status": 200,
+   "title": "大模型训练岗面经：从预训练到RLHF，面试官到底在问什么？（含多模态/RAG/Agent高频题）半年面了7家大模型相关岗 - 掘金",
+   "verdict": "OK"
+  },
   "https://keda.sh/": {
    "checked": "2026-09-24",
    "final": "https://keda.sh/",
@@ -5006,7 +5070,7 @@
    "verdict": "OK"
   },
   "https://linux.do/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://linux.do/",
    "host": "linux.do",
    "status": 403,
@@ -5165,35 +5229,35 @@
    "verdict": "OK"
   },
   "https://openai.com/index/gpt-6-astra-next-generation-work/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://openai.com/index/gpt-6-astra-next-generation-work/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/gpt-6-astra/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://openai.com/index/gpt-6-astra/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-gpt-live-1-in-the-api/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://openai.com/index/introducing-gpt-live-1-in-the-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-the-agents-api/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://openai.com/index/introducing-the-agents-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/news/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://openai.com/news/",
    "host": "openai.com",
    "status": 403,
@@ -5440,7 +5504,7 @@
    "verdict": "OK"
   },
   "https://wiki.linuxfoundation.org/realtime/start": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://wiki.linuxfoundation.org/realtime/start",
    "host": "wiki.linuxfoundation.org",
    "status": 403,
@@ -5591,14 +5655,14 @@
    "verdict": "OK"
   },
   "https://www.iso.org/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://www.iso.org/",
    "host": "www.iso.org",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.iso.org/standard/65457.html": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://www.iso.org/standard/65457.html",
    "host": "www.iso.org",
    "status": 403,
@@ -5676,6 +5740,30 @@
    "title": "Client Challenge",
    "verdict": "OK"
   },
+  "https://www.nowcoder.com/discuss/658749923600396288": {
+   "checked": "2026-09-25",
+   "final": "https://www.nowcoder.com/discuss/658749923600396288",
+   "host": "www.nowcoder.com",
+   "status": 200,
+   "title": "智谱AI - 大模型算法工程师 - 1234面_牛客网",
+   "verdict": "OK"
+  },
+  "https://www.nowcoder.com/discuss/810272844167872512": {
+   "checked": "2026-09-25",
+   "final": "https://www.nowcoder.com/discuss/810272844167872512",
+   "host": "www.nowcoder.com",
+   "status": 200,
+   "title": "阿里通义实验室大模型算法一面面经_牛客网",
+   "verdict": "OK"
+  },
+  "https://www.nowcoder.com/discuss/927018114900922368": {
+   "checked": "2026-09-25",
+   "final": "https://www.nowcoder.com/discuss/927018114900922368",
+   "host": "www.nowcoder.com",
+   "status": 200,
+   "title": "百度面经-百度大模型算法岗面经-03_牛客网",
+   "verdict": "OK"
+  },
   "https://www.openhands.dev/": {
    "checked": "2026-09-24",
    "final": "https://www.openhands.dev/",
@@ -5685,14 +5773,14 @@
    "verdict": "OK"
   },
   "https://www.reddit.com/r/LocalLLaMA/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://www.reddit.com/r/LocalLLaMA/",
    "host": "www.reddit.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.ruanyifeng.com/blog/": {
-   "checked": "2026-09-24",
+   "checked": "2026-09-25",
    "final": "https://www.ruanyifeng.com/blog/",
    "host": "www.ruanyifeng.com",
    "status": 403,
@@ -5752,6 +5840,14 @@
    "host": "www.usenix.org",
    "status": 200,
    "title": "Orca: A Distributed Serving System for Transformer-Based Generative Models | USENIX",
+   "verdict": "OK"
+  },
+  "https://xiaolinnote.com/ai/": {
+   "checked": "2026-09-25",
+   "final": "https://xiaolinnote.com/ai/",
+   "host": "xiaolinnote.com",
+   "status": 200,
+   "title": "大模型面试题 | 小林面试笔记",
    "verdict": "OK"
   }
  }
