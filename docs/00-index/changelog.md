@@ -121,6 +121,62 @@ exit 0，`witness ok` 与 cannot-witness 并存——桶没有把可作的证吞
 
 这两条徽章（链接图 / 跨页重复）按第 86 轮的账**在同一把尺子上随写文档自己挪数**，所以它们的本轮读数记在这里而不是别处；判定挂工作树，而提交后工作树即 `HEAD`，两者同值。
 
+### 七、收尾（提交并推送、线上同步之后）：新桶第一次在真修订上落地，两条网络事实如实记
+
+`dd018c9` 推送后 `check_live_sync.py --watch` 到收敛（最后一次探测，逐字）：
+
+```text
+HEAD committed 2026-09-25, 2 min ago
+local newest round=90
+  leg md   newest round=90  (330545 bytes, 149 rounds)
+  leg html newest round=89  (24308344 bytes, 525 rounds)  missing 90
+  witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness
+  NOTE the published changelog PAGE is at round 89: readers opening it are missing 90
+```
+
+`exit=0`，两条探测之间没有任何 UNWITNESSED 行——第 90 轮提交只动更新日志一页，这正是新桶语义下「witness 腿无事可判」应有的形状（旧语义同形：无读者页可碰就不产桶行；变的是有读者页但无新增字的那 77/113）。全站散文判据（重试后的那一趟，逐字）：
+
+```text
+lost sentences: MISS=0 REVISION-BEHIND=0 STALE-COPY=47 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+   00-index/changelog.md MISS=0 behind=0 unpublished=47 of 3896 units (published copy proves nothing below line 228)
+```
+
+`MISS=0 REVISION-BEHIND=0`——收尾断言按第 89 轮定的口径只钉这两条。`STALE-COPY=47` 全部在本页：新写的第 90 次一节坐在渲染页尚未到达的位置上（切点行 228＝第 88 次的标题），也就是 NOTE 那一行的同一件事，不是丢字。**这一趟之前还有一次盲跑**：196 页里 53 页被 `ConnectionResetError(10054)` 打断（`fetch-failures=53`），它一个字判据都没给出——判据没看过的页不是干净的页，冷却 3 分钟后复跑才有上面这组数。同步后对本页重跑活体控制（`--mutate 00-index/changelog`，`exit=0`，逐字）：
+
+```text
+mutation control: hid a plain (probe '注入收益从夺取行动转向', 164 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+mutation control: hid a heading (probe '先写的估字宽探针被自己的控制判死', 108 chars, 1 reader copies, 3 off-reader copies) and the judge named it a MISS, not a lag
+mutation control: hid a quote (probe '与工作树的条目标题', 29 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+```
+
+三条探针都落在**已发布**的字上（第 53 轮正文、第 66 轮标题、第 66 轮引用行），账目形状与第 89 轮一致：读者在场恰好 1 份、不在场 2–3 份。强调腿 `--live` 读 `live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`——新写的一节没往读者眼前留裸星号。**这句是旧视野下的读数**：当时那条腿只看正文一栏，本页 §八 量出它漏掉了页面目录那一栏，口径已改，同步之后重取的读数记在 §八 末。
+
+**网络返工的两条事实**（都影响下一轮怎么读这条门的红）：其一，本轮 `ConnectionResetError(10054)` 打中过 6 次旧代码运行与 1 次新代码全站跑——**全部在两份 changelog 大文档上**（24 MB 的渲染页最重），同一时刻单发请求与小页面抓取都能过；因此 §四 的旧代码 before 读数经过一层只包 fetch 的 shim（md 缓存重试、html 用本轮已录读数），桶逻辑逐字未跑偏。其二，`.md` 腿 2 分钟追上、渲染页 15 分钟后仍在第 89 次——第 83 轮的「NOTE 不卡门」设计在本轮第一次成为**收尾目检要等的对象**：截图一帧等渲染页发出第 90 次一节再拍，等的过程本身不改判据。
+
+### 八、等截图的这一趟，先等到一条「读者看得见、两条腿都看不见」的裸星号
+
+**目检探针自己也先错了一次。** 第一版探针用 `createTreeWalker(document.body, SHOW_TEXT)` 数页面上字面出现的 `**`，读 `inProse=886`——它把 Next.js 的 `<script>` 载荷也算成了「读者眼前的散文」（抽出来的样本全是 `self.__next_f.push([1,…`）。修法是给 walker 加 `acceptNode`，拒绝 SCRIPT/STYLE/NOSCRIPT/TEMPLATE 子树；同一页改完读 `inCode=97 inProse=1`。**886 → 1 是尺子的错**，而且错在假红那一侧：照这份读数开一张「886 处缺陷」的清单，本轮就会去改一堆根本不存在的东西。
+
+**那 1 处是真的**，位置在页面右侧「On this page」目录里：第 87 轮 §三 那条标题把一对星号写在行内代码里当作被讨论的记号（就是本节上面引号里那个写法，正文栏渲染成代码框），目录栏却把它**重印成纯文本**——反引号被平台去掉了，星号留下。两条独立证据：浏览器 DOM 里那一处的祖先链是 `span < a < li < ul < div < div < div`、`closest('main')` 为空；抓 HTML 数「配成了」四次，一次带 `<code>` 标签（正文）、一次是 `<a href="#…">` 里的裸文本（目录）、两次躺在转义过的 RSC 载荷里。**这是「同一处作者失误、两处视野」**——第 58 轮 `live_aria_manifest.leak_sites` 的注释里为公式写过这句话，强调轴第 84 轮建的时候没有复用那条拆分：作者腿把行内代码空白成一个原子（对正文是对的），live 腿走 `body_visible()`，而那个函数专门丢掉 `<a href="#…">` 锚点。于是两条腿一起对着一处读者每天都路过的字符报绿。
+
+**修法只加视野，不松口径。** 作者腿新增 `heading_paras()`：按平台的方式把标题展平（行内代码取其内容、链接取其标签），再丢进**同一条** flanking 规则——配对逻辑没有第二份（`unpaired(text, paras=...)` 共用原函数）。live 腿改用含目录的那份可见文本。首跑全站：
+
+```text
+emphasis flanking: pages=1 leaked_strong_markers=1 (body=0 outline=1) lone_star_runs=1 (context only)
+```
+
+`exit=1`。页面级校准（同一份已发布页面，逐字）：作者腿预测「正文 0 + 目录 1」＝1，含目录的 served 字面 `**` ＝1，而旧的只看正文的 served ＝0。**盲区被量成恰好那一个字符**，不是靠估计。
+
+**控制从 12 条扩到 17 条**（`CONTROL_PAGES` 改成「正文期望 / 目录期望」双列）。新增 5 条钉住这条视野的两端：目录确实会印出行内代码里的星号（期望 1）；标题里合法成对的粗体不许误报（0）；`get_weather`、`tool_result` 这类**单下划线标识符**不许被新视野顺手抓进来（0）；围栏里演示用的假标题不进目录视野（0）；标题里的链接展平成标签之后合法对仍然合法（0）。另加一条反向断言：同一句标题若目录规则**不响**，`--selftest` 就是红的—— widened 的规则必须先证明自己抓得住，否则「绿」只是「没在看」。改完标题后全站重读 `pages=0 leaked_strong_markers=0 (body=0 outline=0)`，`controls: OK, every bucket able to fire`。
+
+**为什么全站 44 条标题只有这 1 条红**：展平后带 markdown 意义字符的标题行内代码共 44 条，其余是 `_` 出现在标识符里（不成对，压根不构成强调分隔符）、`[t]`、`<style>`、`##` 这些在 flanking 表里没有配对的形状。这条轴按 flanking 判而不是按字符黑名单判，所以那 43 条既不需要点名豁免，也不会某天莫名变红。
+
+**内容侧改的是标题里的记号，不是那一节的字**：§三 的标题改成「平台把『成对星号』配成了『第一个配最后一个』」，正文里用来举例的 `` `**` `` 一律保留（它们渲染为代码，读者看到的是代码框）。
+
+**留下的账三条**：① 改的是一条**已发布**页面上的字，所以同步之前散文腿会把它读成 `REVISION-BEHIND`（第 88 轮建那个桶正是为了这种形状），追平后归零；② 同理强调腿 `--live` 在同步前会读 `prediction-mismatch=1`（线上那 1 个字符还在、预测已经 0），它是「本轮还没发出去」而不是站点缺陷；③ §七 里那句强调腿读数是旧视野下的，本轮之后按新口径重取，记在下面。
+
+**同步之后重取的两条（新口径，逐字）**：待补。截图两帧（目录里那一个字符、第 90 次一节）等渲染页追上后各拍一张。
+
 ## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
 
 本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（控制条数与字母表、`--mutate` 那条的描述、第 88 轮写错的等号）。**没有为过线删掉或加厚任何一页正文**；改动全部在尺子上（`tools/checks/check_prose_survival.py`）。
@@ -800,7 +856,7 @@ live sync: local newest round=84
 4. **裸 `<https://…>` 自动链接会把自己的 URL 印进正文**——第三趟那 9 条里有 3 条是它，且三条所在页其余文本**全在**。改判 HOLE。
 5. **`<(?!br…)[^>]+>` 吃掉了散文里的尖括号**：更新日志自己那句 `（W<420 且 H>380，宽高比 <0.55）` 在**作者侧**被删成 `w 380 宽高比 0 55`。规则改成标签名必须以 `[a-zA-Z/!]` 开头；served 侧同规则安全，因为那边尖括号早已转义成 `&lt;`。
 
-### 三、唯一一条真的读者侧缺陷：平台把 `**` 配成了「第一个配最后一个」
+### 三、唯一一条真的读者侧缺陷：平台把「成对星号」配成了「第一个配最后一个」
 
 `hallucination.md` 原句一句话里有两个加粗对、中间还夹一个链接：
 

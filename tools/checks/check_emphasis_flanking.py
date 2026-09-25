@@ -33,6 +33,20 @@ Out of scope, deliberately: `_`/`__` (the book authors no underscore emphasis an
 measured `__ = 0`), and single `*`, where a legitimate visible asterisk (`2 * 3`, a footnote mark)
 is indistinguishable from a leaked one without intent. Both are named in the printout so a future
 round can widen the rule rather than rediscover the gap.
+
+Round 90 added the second sight. `live_aria_manifest.leak_sites` had known the mechanism since
+round 58 for formulas -- GitBook reprints every heading in the page outline with inline-code
+formatting removed -- but emphasis judging had only the body rule, which blanks code spans, and a
+live leg reading `body_visible()`, which drops exactly those outline anchors. So the author leg and
+the live leg agreed on `leaked_strong_markers=0` for a changelog page whose sidebar printed:
+
+    三、唯一一条真的读者侧缺陷：平台把 ** 配成了「第一个配最后一个」
+
+The heading documents `**` inside a code span, which the body renders as code and the outline
+renders as navigation copy. The outline is now a judged scope: heading text is flattened the way
+GitBook flattens it (code spans unwrapped, link labels kept) and run through the SAME flanking
+rule, and the live leg counts the nav-inclusive text. One heading site-wide was red -- the book's
+own round-87 account of the round-87 bug.
 """
 import argparse
 import html
@@ -57,6 +71,10 @@ INLINE_MATH = PS.INLINE_MATH
 LINK = PS.LINK
 TAG = PS.TAG
 BLOCK_START = re.compile(r"^(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\[!\[|!\[)")
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+# GitBook's outline prints a heading with the code span's BACKTICKS gone and a link's LABEL kept,
+# so flattening has to unwrap both rather than blank them the way the body rule does.
+HEADING_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
 # A code span, a formula and a link label are WORDS to the renderer, not gaps: the reader's DOM
 # holds an atom there (`<code>`, `<span class="katex">`, `<a>`), so `**` next to one is flanked by
 # a letter. Blanking them with a space — what the survival axis does, correctly for its purpose —
@@ -107,6 +125,28 @@ def paragraphs(text):
     return paras
 
 
+def heading_paras(text):
+    """[(line_no, heading_text)] as the page OUTLINE prints it: code unwrapped, links to labels.
+
+    The body rule blanks a code span to one atom, which is right for `<main>` and wrong for the
+    sidebar: there GitBook has already dropped the backticks, so the span's own characters are
+    reading text. Feeding the flattened string through the same flanking rule is the whole fix.
+    """
+    lines = text.replace("\r\n", "\n").split("\n")
+    mask, _ = LA.fence_prose_mask(text)
+    fe = frontmatter_end(lines)
+    out = []
+    for n, line in enumerate(lines):
+        if not (n >= fe and n < len(mask) and mask[n]):
+            continue
+        m = HEADING.match(line.strip())
+        if not m:
+            continue
+        flat = INLINE_CODE.sub(lambda g: g.group(0).strip("`").strip(), m.group(2))
+        out.append((n + 1, HEADING_LINK.sub(lambda g: g.group(1), flat).strip()))
+    return out
+
+
 def kind(c):
     if c is None:
         return "edge"
@@ -125,10 +165,14 @@ def classify(para, m):
     return left, right
 
 
-def unpaired(text):
-    """[(line, context, why)] for every `*`/`**` run the platform cannot pair."""
+def unpaired(text, paras=None):
+    """[(line, context, why)] for every `*`/`**` run the platform cannot pair.
+
+    `paras` lets the outline scope (heading_paras) reuse this exact pairing rule instead of a
+    second, drift-prone copy of it.
+    """
     out = []
-    for ln, para in paragraphs(text):
+    for ln, para in (paras if paras is not None else paragraphs(text)):
         runs, stack = [], []
         for m in RUN.finditer(para):
             if m.start() and para[m.start() - 1] == "\\":
@@ -173,60 +217,87 @@ def rel(path):
 
 
 def visible_markers(served):
-    """Literal `**` a reader can see on the served page: code/pre/script/annotation nodes out."""
-    text = html.unescape(LA.body_visible(served))
+    """Literal `**` a reader can see on the served page: code/pre/script/annotation nodes out.
+
+    Nav-INCLUSIVE on purpose (round 90): `body_visible` would drop the outline anchors, which is
+    precisely where a heading's code span reaches the reader as plain characters.
+    """
+    text = html.unescape(LA.visible(served))
     return [m.start() for m in re.finditer(r"\*\*", text)]
 
 
 CONTROL_PAGES = [
-    # (name, markdown, expected unpaired count) -- every entry is a real shape from this book.
-    ("closer-after-fullwidth-paren", "这与 RAG 评估里的**忠实度（Faithfulness）**是同一思想。\n", 2),
-    ("opener-before-corner-quote", "因为它们都是**「有副作用、结果不可完全预测」的工具**：\n", 2),
-    ("closer-before-cjk-after-corner-quote", "任务开始前定义**「完成」的可验证定义**与最大预算；\n", 2),
-    ("legal-cjk-pair", "它是一个**目标**，不是一种方法。\n", 0),
-    ("legal-closer-before-punctuation", "审批必须**少而准**，否则会退化。\n", 0),
-    ("fence-copy-is-not-prose", "````text\n**示例（x）**文字\n````\n", 0),
-    ("inline-code-copy", "读者会看到 `**粗体**` 四个星号原样留着。\n", 0),
-    ("bolded-inline-code", "脏数据：**`timestamp_gap`** 卡多相机时间戳断层。\n", 0),
-    ("bolded-link-label", "见 [**RAG 基础（入门）**](../06-memory-rag/rag-basics.md) 一节。\n", 0),
-    ("math-multiplication-star", "系数 $$a * b$$ 与 $$c * d$$ 都是标量。\n", 0),
-    ("list-bullet-asterisk", "* 一条列表项\n* 另一条带 **合法粗体** 的项\n", 0),
-    ("pair-must-not-straddle-list-items", "- 第一项**加粗结尾\n- 第二项加粗**结尾\n", 2),
+    # (name, markdown, expected body leaks, expected outline leaks) -- every entry is a real shape.
+    ("closer-after-fullwidth-paren", "这与 RAG 评估里的**忠实度（Faithfulness）**是同一思想。\n", 2, 0),
+    ("opener-before-corner-quote", "因为它们都是**「有副作用、结果不可完全预测」的工具**：\n", 2, 0),
+    ("closer-before-cjk-after-corner-quote", "任务开始前定义**「完成」的可验证定义**与最大预算；\n", 2, 0),
+    ("legal-cjk-pair", "它是一个**目标**，不是一种方法。\n", 0, 0),
+    ("legal-closer-before-punctuation", "审批必须**少而准**，否则会退化。\n", 0, 0),
+    ("fence-copy-is-not-prose", "````text\n**示例（x）**文字\n````\n", 0, 0),
+    ("inline-code-copy", "读者会看到 `**粗体**` 四个星号原样留着。\n", 0, 0),
+    ("bolded-inline-code", "脏数据：**`timestamp_gap`** 卡多相机时间戳断层。\n", 0, 0),
+    ("bolded-link-label", "见 [**RAG 基础（入门）**](../06-memory-rag/rag-basics.md) 一节。\n", 0, 0),
+    ("math-multiplication-star", "系数 $$a * b$$ 与 $$c * d$$ 都是标量。\n", 0, 0),
+    ("list-bullet-asterisk", "* 一条列表项\n* 另一条带 **合法粗体** 的项\n", 0, 0),
+    ("pair-must-not-straddle-list-items", "- 第一项**加粗结尾\n- 第二项加粗**结尾\n", 2, 0),
+    # round 90: the outline prints a heading's code span with the backticks already gone
+    ("outline-prints-code-marker",
+     "### 三、唯一一条真的读者侧缺陷：平台把 `**` 配成了「第一个配最后一个」\n", 0, 1),
+    ("outline-legal-bold-untouched", "## 这是**合法**粗体，不是漏出来的\n", 0, 0),
+    ("outline-lone-underscore-identifier", "## 字段 `get_weather` 与 `tool_result` 的差别\n", 0, 0),
+    ("outline-code-inside-fence-stays-hidden", "````text\n### 演示 `**`\n````\n", 0, 0),
+    ("outline-link-label-unwrapped", "## 见 [**RAG 基础**](../06-memory-rag/rag-basics.md) 一节\n", 0, 0),
 ]
 
 
 def selftest():
     ok = True
-    for name, src, want in CONTROL_PAGES:
+    for name, src, want, want_nav in CONTROL_PAGES:
         got = len(unpaired(src))
-        if got != want:
+        got_nav = len(unpaired(src, heading_paras(src)))
+        if got != want or got_nav != want_nav:
             ok = False
-            print("CONTROL FAIL %-30s expected=%d got=%d" % (name, want, got))
+            print("CONTROL FAIL %-38s expected=%d/%d got=%d/%d"
+                  % (name, want, want_nav, got, got_nav))
             for ln, ctx, why in unpaired(src):
-                print("        ", why, repr(ctx))
+                print("        body", why, repr(ctx))
+            for ln, ctx, why in unpaired(src, heading_paras(src)):
+                print("        nav ", why, repr(ctx))
     # the negative controls must be able to fire: same text, marker moved one char
     fired = len(unpaired("它是一个**目标**，不是。\n"))
     if fired:
         ok = False
         print("CONTROL FAIL legal pair fired (%d)" % fired)
+    # ...and the outline rule must be able to miss: unwrap one marker and it has to speak
+    silent = len(unpaired("## 平台把 `**` 配成了\n", heading_paras("## 平台把 `**` 配成了\n")))
+    if silent != 1:
+        ok = False
+        print("CONTROL FAIL outline rule unable to fire (%d)" % silent)
     print("controls: %s" % ("OK, every bucket able to fire" if ok else "BROKEN"))
     return ok
+
+
+def leaks_of(src):
+    """(strong_runs, em_runs) over BOTH sights a reader has: body prose and the page outline."""
+    items = unpaired(src) + [(ln, ctx, why + " [nav]")
+                             for ln, ctx, why in unpaired(src, heading_paras(src))]
+    return ([x for x in items if "STRONG" in x[2]], [x for x in items if "EM" in x[2]])
 
 
 def run(workers=6, live=False):
     rows = []
     for path in walk():
-        items = unpaired(open(path, encoding="utf-8").read())
-        strong = [x for x in items if "STRONG" in x[2]]
-        em = [x for x in items if "EM" in x[2]]
+        strong, em = leaks_of(open(path, encoding="utf-8").read())
         if strong or em:
             rows.append((path, strong, em))
     # Only a leaked `**` is a reader-visible defect. A lone `*` (globs such as
     # `huggingface.co/*`, `src/*.py`) has no emphasis to fail and renders literally by
     # design, so it is printed as context but never gates the verdict.
     leaks = [r for r in rows if r[1]]
-    print("emphasis flanking: pages=%d leaked_strong_markers=%d lone_star_runs=%d (context only)"
+    nav_total = sum(1 for _p, s, _e in leaks for x in s if "[nav]" in x[2])
+    print("emphasis flanking: pages=%d leaked_strong_markers=%d (body=%d outline=%d) lone_star_runs=%d (context only)"
           % (len(leaks), sum(len(s) for _p, s, _e in leaks),
+             sum(len(s) for _p, s, _e in leaks) - nav_total, nav_total,
              sum(len(e) for _p, _s, e in rows)))
     for path, strong, em in sorted(leaks, key=lambda r: -len(r[1])):
         print("  %-56s strong=%d em=%d" % (rel(path), len(strong), len(em)))
@@ -250,11 +321,9 @@ def run(workers=6, live=False):
         if k in index:
             pages.append((path, index[k]))
     listed = {rel(p) for p, _u in pages}
-    pred = {rel(p): sum(1 for x in unpaired(open(p, encoding="utf-8").read()) if "STRONG" in x[2])
-            for p, _u in pages}
+    pred = {rel(p): len(leaks_of(open(p, encoding="utf-8").read())[0]) for p, _u in pages}
     unlisted = {r: n for r, n in
-                ((rel(p), sum(1 for x in unpaired(open(p, encoding="utf-8").read()) if "STRONG" in x[2]))
-                 for p in walk())
+                ((rel(p), len(leaks_of(open(p, encoding="utf-8").read())[0])) for p in walk())
                 if n and r not in listed}
 
     def probe(item):
