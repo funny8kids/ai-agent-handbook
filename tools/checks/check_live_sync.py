@@ -66,11 +66,24 @@ def tail_needle():
     the oldest round. Taking the last line rather than the oldest heading also catches a read that
     stops inside that section, and CJK words survive both endpoints verbatim (`2026-09-10` would
     too, but it is only 1 of the 5 tail dates, so it says less).
+
+    Round 93 caught the one way that reasoning fails: the needle has to be a phrase that occurs
+    ONLY at the tail. The 第 91 次 entry quotes the needle it chose, so that phrase appears twice in
+    the document — once at 6.7 % — and a copy truncated just past the top of the file would then
+    "prove" it arrived whole. So candidates are ranked by strength (the whole markup-free line
+    first, then the last CJK run) and the first one that occurs exactly once wins; if none is
+    unique, control S still goes red rather than letting the guard pass a short read.
     """
-    lines = [l.strip() for l in open(LOCAL_CHANGELOG, encoding="utf-8").read().splitlines()
-             if l.strip()]
-    runs = re.findall(r"[\u4e00-\u9fff]+(?:[，、：（）][\u4e00-\u9fff]+)*", lines[-1])
-    return runs[-1] if runs else lines[-1][-16:]
+    text = open(LOCAL_CHANGELOG, encoding="utf-8").read()
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    # Backticked runs print inside a code box that the HTML leg rewrites, and a link's target never
+    # prints at all — a needle crossing that boundary matches one endpoint and not the other.
+    bare = re.sub(r"\s+", " ", CODE_SPAN.sub(" ", LINK_TARGET.sub(r"\1", lines[-1]))).strip(" -•*")
+    runs = re.findall(r"[\u4e00-\u9fff]+(?:[，、：（）][\u4e00-\u9fff]+)*", bare)
+    for cand in sorted({bare} | set(runs), key=len, reverse=True):
+        if text.count(cand) == 1:
+            return cand
+    return bare
 
 
 def short_read(text, needle, is_html):
@@ -322,6 +335,22 @@ def witness_leg(rev="HEAD"):
     return bad, unwitnessable, witnessed
 
 
+def sync_verdict(want, have, blind, bad):
+    """One number for the whole run: 0 in sync, 1 the site is behind, 2 this run judged nothing.
+
+    Round 93 found the third state missing. `--watch` did `return 2` the moment a leg could not be
+    read, so one truncated copy of the 25 MB changelog page (measured twice in one minute:
+    18,900,551 chars with no `</html>`, then 25,108,708 with it) aborted a watch that had minutes of
+    budget left — and the run it aborted printed the same `not online yet` sentence a real lag does.
+    A leg that did not arrive is not evidence about readers, so it gets its own code and never a
+    green: only the `.md` leg can blind the verdict (round 83 demoted the HTML page to a NOTE), and
+    the HTML leg can never rescue or reject one.
+    """
+    if "md" in blind:
+        return 2
+    return 0 if (have >= want and not bad) else 1
+
+
 def controls():
     """The witness needles must be text a reader can be shown — and must survive when they are."""
     import tempfile
@@ -501,6 +530,63 @@ def controls():
             errs.append("control S: tail needle %r first appears at %.0f%% of the changelog — a "
                         "needle quoted near the top cannot expose a short read"
                         % (tail, 100.0 * max(0, local.find(tail)) / len(local)))
+        if local.count(tail) != 1:
+            errs.append("control S: tail needle %r occurs %d times in the changelog — only a phrase "
+                        "that exists at the tail can certify the tail arrived" % (tail, local.count(tail)))
+        # The exact way round 93 broke this guard: 第 91 次 quoted the needle it had chosen, so the
+        # phrase moved from 99.99 % to 6.7 % and every truncated copy over ~7 % read "complete".
+        with open(os.path.join(tmp, "quoted.md"), "w", encoding="utf-8") as fh:
+            fh.write("# 记录\n\n第 9 次：门闩的针是 `配置，内容根目录设为`，这句写在最上面。\n\n"
+                     "第 7 次：读者可见的中文句子。\n第 6 次：另一句中文。\n"
+                     "- 迁移 GitBook 配置，内容根目录设为 `docs/`\n")
+        saved_path = globals()["LOCAL_CHANGELOG"]
+        try:
+            globals()["LOCAL_CHANGELOG"] = os.path.join(tmp, "quoted.md")
+            picked = tail_needle()
+        finally:
+            globals()["LOCAL_CHANGELOG"] = saved_path
+        if picked == "配置，内容根目录设为":
+            errs.append("control S: the slicer still returns the run a newer entry quoted — the "
+                        "guard would certify a copy truncated at the quote")
+        if open(os.path.join(tmp, "quoted.md"), encoding="utf-8").read().count(picked) != 1:
+            errs.append("control S: on the quoted-tail document the slicer picked %r, which is not "
+                        "unique there either — falling back to a weak needle must be visible" % picked)
+    # X: the three-state verdict this file's own watch loop needed (round 93). The cases are chosen
+    # so that the pre-fix behavior — abort the whole watch on ANY unreadable leg — cannot pass:
+    # a blind HTML leg must be forgiven (round 83 demoted it to a NOTE), a blind `.md` leg must
+    # report "no verdict" rather than "the site is behind", and neither may ever read as 0.
+    for what, want, have, blind, bad, expect in (
+            ("md current, html short-read: keep watching, this is sync", 93, 93, ["html"], [], 0),
+            ("md current, html blind, witness red: the witness still gates", 93, 93, ["html"],
+             ["STALE x 1/1"], 1),
+            ("md behind, both legs readable: the site is late", 93, 92, [], [], 1),
+            ("md itself unreadable: no verdict, never a green and never a lag", 93, 0,
+             ["md"], [], 2),
+            ("md unreadable AND behind-looking: the blindness wins, no verdict", 93, 0,
+             ["md", "html"], [], 2),
+            ("nothing to witness and md current is the shipped reading", 93, 93, [], [], 0)):
+        got = sync_verdict(want, have, blind, bad)
+        if got != expect:
+            errs.append("control X: %s must verdict %d, got %d" % (what, expect, got))
+    if sync_verdict(93, 93, [], []) == sync_verdict(93, 92, [], []):
+        errs.append("control X: a one-round lag must not be indistinguishable from sync")
+    with open(os.path.abspath(__file__), encoding="utf-8") as fh:
+        src = fh.read()
+    # Anchor on the definition line, not the name: a plain search for the text of this very anchor
+    # would land inside this control.
+    anchor = re.search(r"^def ma" + r"in\(\):", src, re.M)
+    tail_src = src[anchor.start():] if anchor else ""
+    if not anchor:
+        errs.append("control X: cannot find main() in this file — the source scan is blind")
+    if ("return " + "2") in tail_src:
+        errs.append("control X: main() must not exit the run on one unreadable leg — only "
+                    "sync_verdict may hand out code 2, or a watch aborts on a transient short read")
+    if "blind.append(name)" not in tail_src:
+        errs.append("control X: an unreadable leg must be recorded in `blind` and skipped, not "
+                    "returned from — otherwise one short read aborts the whole watch")
+    if '"html" not in blind' not in tail_src:
+        errs.append("control X: the lag NOTE must be gated on the html leg being readable; a leg "
+                    "that never arrived cannot state what readers are missing")
     return errs
 
 
@@ -534,6 +620,7 @@ def main():
         if age:
             print("HEAD committed %s, %d min ago" % (when.date(), int(age.total_seconds() // 60)))
         tops = {}
+        blind = []
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
@@ -541,9 +628,10 @@ def main():
             except Exception as exc:  # noqa: BLE001
                 # The reason is the finding: "ValueError" alone cannot distinguish this round's
                 # short-read guard from a DNS failure, and the two want opposite follow-ups.
-                print("live changelog (%s) unreadable (%s: %s) — no verdict, this is not a site "
-                      "failure" % (name, exc.__class__.__name__, exc))
-                return 2
+                print("live changelog (%s) unreadable (%s: %s) — no verdict from this leg, this is "
+                      "not a site failure" % (name, exc.__class__.__name__, exc))
+                blind.append(name)
+                continue
             tops[name] = max(live) if live else 0
             missing = sorted({r for r in local if r > tops[name]})
             print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d rounds)%s"
@@ -559,20 +647,23 @@ def main():
             print("  witness: %d page(s) CANNOT WITNESS %s (round 90's bucket: loud, never green — "
                   "this revision is only evidenced by the .md leg)" % (len(unwit), args.rev))
         lag = tops.get("html", 0)
-        if lag < want:
+        if "html" not in blind and lag < want:
             # Round 83 measured this document pinned at round 79 for hours (same etag on six fetches)
             # while the homepage and a knowledge page HEAD had just edited were both current. So the
             # changelog's own HTML page no longer gates the verdict — but the lag is a reader-facing
-            # fact and stays printed, never silently forgiven.
+            # fact and stays printed, never silently forgiven. A leg that could not be read says
+            # nothing about what readers are missing, so it must not print a lag either.
             missing = sorted({r for r in local if r > lag})
             print("  NOTE the published changelog PAGE is at round %d: readers opening it are missing %s"
                   % (lag, ", ".join(map(str, missing))))
         have = tops.get("md", 0)
-        ok = have >= want and not bad
+        ok = sync_verdict(want, have, blind, bad) == 0
         if not ok:
-            print("not online yet: md leg round %d vs HEAD %d, witness failures %d" % (have, want, len(bad)))
+            print("not online yet: md leg round %d vs HEAD %d, witness failures %d%s"
+                  % (have, want, len(bad),
+                     "" if not blind else ", unreadable legs: " + "/".join(blind)))
         if ok or not args.watch or time.time() >= deadline:
-            return 0 if ok else 1
+            return sync_verdict(want, have, blind, bad)
         print("  ... watching, next probe in 90 s")
         time.sleep(90)
 

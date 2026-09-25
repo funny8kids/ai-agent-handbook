@@ -69,6 +69,56 @@ homepage: 「22 条种植控制（A–V）」 is not the 23 controls asserted he
 - 其余活体轴的取电状态本轮逐条 grep 过：`live_aria_manifest`、`check_live_formulas`、`check_live_images`、`check_widget_visibility_live` 都是「fetch 抛 → 自己的 `except` 收进桶」，桶是活的；只有 `check_prose_survival` 会把异常咽成返回值，所以下游 `try/except` 失效——这也说明**共享取页函数的返回值约定应当只有一种**，但把 11 个文件一次性改成抛是超出本轮需要的大改，没做。
 - `.md` 端点本轮显式豁免完整性检查，因为它根本没有 `</html>`；如果哪天有人拿它判正文，还需要一条自己的完整性证据（长度或末行），这条账与第 91 轮 `tail_needle()` 的思路同源。
 
+### 六、收尾复验又量出两处尺子缺陷：`--watch` 会被一条短读的腿整体中止；而它用来证明「尾部到齐」的那根针，早在第 91 轮就被本页自己引用过一次
+
+§五 第二条写的「HTML 腿落后两轮（90 vs 92）」在收尾复验时被推翻：更新日志页面已经翻到第 93 次，反而是 `.md` 端点停在 92。同一趟探测（逐字）：
+
+```text
+HEAD committed 2026-09-25, 12 min ago
+local newest round=93
+  leg md   newest round=92  (361883 chars / 660031 bytes, 157 rounds)  missing 93
+  leg html newest round=93  (27355417 chars / 28299527 bytes, 563 rounds)
+  STALE docs/README.md 3/3 added lines absent: '——完整副本必须照判且读绿，缺了尾巴'
+  witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness
+not online yet: md leg round 92 vs HEAD 93, witness failures 1
+```
+
+两条腿谁先谁后没有保证，这条读数把第 84 轮那句「HTML 先、`.md` 落后」的方向也翻了个个儿：同一天里同一份文档可以走相反的方向。首页那 3 条针仍未到货，是第 93 轮 §二 写进 `docs/README.md` 的字，等的是首页的翻页而不是更新日志。
+
+#### 缺陷 1：一条腿读不懂就把整场 `--watch` 判死
+
+第 92 次推送后的收尾跑法（`--watch --timeout 1800`）在第三次探测时停在这里：
+
+```text
+live changelog (html) unreadable (ValueError: short read (no closing </html>), so no round count is trustworthy) — no verdict, this is not a site failure
+```
+
+前一次探测同一个 URL 才读过 `leg html newest round=93`。也就是说门闩在活体上开火是**对的**（它拦下的正是 §一 那一族半页副本），但它开火的方式是把整场观察一起带走：退出码 2，剩余预算几十分钟全部作废，而印出来的那句「not online yet」与一次真的落后长得一样。观察期里的一条腿到货不完整，只说明**这一趟这一条腿无法给出判决**，既不该中止观察，也不该被读成网站落后。
+
+修法是把判决收进一个纯函数 `sync_verdict(want, have, blind, bad)`：只有 `.md` 腿看不见才给码 2（第 83 轮把 HTML 页降成 NOTE，所以它盲不盲都不参与判决），其余按「`have >= want` 且 witness 无红」给 0 或 1。循环侧把不可读的腿记进 `blind` 后 `continue`，落后 NOTE 加一道 `if "html" not in blind`，未同步那行把盲腿点名印出。
+
+控制 **X**（本文件里具名的第 6 组，接 W / W2 / N / U / S）六种植入判决加两条源码自检：`md 已到 + html 短读`必须读 0（这条就是修复前会中止的那一趟）；同一形态再叠一条 witness 红必须读 1；`md 落后`读 1；`md 自己读不懂`读 2；`md + html 都读不懂`读 2（失明优先于「看起来落后」）；两腿齐且无 witness 事项读 0。两条源码自检防止反向退化：`main()` 里不许再出现「直接返回码 2」的写法，不可读腿必须走 `blind.append(name)`，NOTE 必须以 html 可读为前提。**「落后一轮」与「同步」这两个判决被单独钉了一条相等反例**——若哪天有人把默认值 0 当安全值，两者会读成同一个数，控制立刻红。首跑 `controls: OK, every needle rule able to fire`，`exit=0`。
+
+#### 缺陷 2：门闩的针被第 91 轮自己的字引用，短读证据从 99.99 % 掉到 6.7 %
+
+`--selftest` 装完控制 X 之后第一次全量跑，报出来的不是 X 而是 S：
+
+```text
+control S: tail needle '配置，内容根目录设为' first appears at 7% of the changelog
+```
+
+根因就在本页：第 91 次那一节把当时选中的针**连字面抄进了行内代码**（第 278 行），于是这句原本只在文档末尾出现的话在全树里出现了两次——一次在 99.99 %，一次在 6.7 %。门闩的证据就是这根针出现在抓到的副本里，而一份只到全文 8 % 的截断副本照样带着 6.7 % 那一处，于是**它会把一份丢掉九成内容的副本判成整份到达**。这条洞不是本轮挖出来的新理论：控制 S 一直要求针的首次出现落在全文 90 % 之后，这个断言从头到尾都在，只是这条轴只有 `--selftest` 会调用它，而第 91、92 两轮都没跑过它——两轮都跑了线上腿，线上腿当时也确实是绿的。
+
+修法落在切片器自己：候选按强度排序（最后一行剥掉行内代码与链接目标之后的整段前缀优先，其次是其中各段中文串），取**在全文里恰好出现一次**的那一个；都不唯一就退回整段，让控制 S 红着出声而不是悄悄放行。**本轮不把新针的字面抄回本节**——抄回来它就出现两次，控制 S 立刻把这一节判红；这条门闩现在用自己的输出禁止日志引用它，这正是它该有的样子。差分证明：在同一棵树上把 `tail_needle` 还原成第 91 轮的写法再跑 `controls()`，四条控制 S 全红（首次出现 7 %、出现 2 次、仍返回被引用那段、植入样本上取的针也不唯一），恢复后 `exit=0`。
+
+#### 本轮电池：跑到 13/35 行为收尾的线上腿让道
+
+常驻电池（`run_battery.py`，目录自动发现 35 条）在本轮 13:28 起跑，14:02 完成 13 行。为为上面两条腿腾出 CDN 车道（浏览器与一切线上量测必须串行，重叠跑会互相制造 FETCH 红），本轮由我停掉自己起的这两个进程（电池 PID 与其当时的子进程，非全站扫描），剩下 22 行未跑。已完成行里值得登记的三条：
+
+- `check_live_images`：`live: pages=36 unique served images=40 census={'image/png': 8, 'image/svg+xml': 32} problems=0`，图片腿的活体变异控制三态全响。
+- `check_live_formulas`：`pages=105/106 checked=274 hidden=0 problems=0 fetch-failures=1`——那一页（`09-frameworks/openai-agents-sdk.md`）KaTeX 网络字体没加载完，判据自己把这一步交给重跑：`1 page(s) were never measured: that is a coverage gap, not a content finding. Re-run — do not read it as green.` 本轮没有重跑它（全站一趟 24 分钟），留作第 94 轮第一件事。
+- `check_live_column`：唯一那条红照旧是 `COLUMN-MISMATCH: readers get 608px … but the Mermaid axis assumes 768px`，等的是操作者的 wide-layout 决定（§五 第二条同一件事），不是新缺陷。
+
 ## 2026-09-25（第 92 次）一条判据静默停摆四轮，而 README 首页仍在引用它认证过的数字：本轮把 `check_figure_explanations` 里那句 assert 改成上报，压在它下面的两条守卫（引用式路径能否解析、`placements == 45`）重新开跑；根因——「每轮手抄一份判据清单」——换成目录自动发现，本轮目录里实到 **35** 条而手抄清单只有 **18** 条
 
 本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——本轮的缺陷全在尺子上：`tools/checks/check_figure_explanations.py`（assert → 上报，控制 9 → 13 条）、`tools/checks/check_emphasis_flanking.py`（加第三条腿：作者写的 `**…**` 在读者页面上是否真的变成粗体），新增 `tools/checks/run_battery.py`（判据清单由目录扫描得出，并自证覆盖面）。
