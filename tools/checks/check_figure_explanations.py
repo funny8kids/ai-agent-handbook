@@ -25,6 +25,7 @@ definition *inside the diagram* as if it were prose. That false-red is now a sta
 directions earns a counterexample in each direction: 171 of 217 blocks really do carry a caption,
 and a block with nothing around it really must read BARE.
 """
+import ast
 import io
 import os
 import re
@@ -150,6 +151,33 @@ IMAGE_REF = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
 # its way out of the rule by looking like this one.
 DECORATIVE = {"README.md::.gitbook/assets/banner-home.svg"}
 EXAMPLE_ALTS = ("", "alt")  # markup illustrations in the changelog and the style guide
+# A sentence that explains the syntax can stand in for *both* halves with an ellipsis: `![…](…)`.
+# Round 88 wrote one into the changelog and this assert went red for four rounds, which is worse
+# than a wrong number — it stopped the two asserts below it (UNRESOLVED == 0, placements == 45)
+# from ever running. No words, only punctuation: that is a placeholder, never a caption.
+PLACEHOLDER_ONLY = re.compile(r"[\s…⋯.。·、,，:：;；*\-~_()（）\[\]]*\Z")
+ALT_FIELD = re.compile(r"^(?P<target>\S+) alt=(?P<alt>.*)\Z")
+
+
+def alt_record(target, alt):
+    """Verdict detail for an image reference: where it points, then the alt as authored.
+
+    The QUOTED exemption is judged on that alt, so the side that writes this string and the side
+    that reads it back live next to each other and a control pins them together — a format drift
+    would otherwise silently turn "no real caption hidden in code" into "unparseable, so skipped".
+    """
+    return "%s alt=%r" % (target, alt)
+
+
+def alt_of(detail):
+    m = ALT_FIELD.match(detail)
+    return ast.literal_eval(m.group("alt")) if m else None
+
+
+def example_alt(alt):
+    """True when an alt could not be a reader's caption: empty, the literal `alt` placeholder,
+    or nothing but the punctuation a syntax example ellipses with."""
+    return alt in EXAMPLE_ALTS or bool(PLACEHOLDER_ONLY.match(alt))
 
 
 def audit_images(rel, path, lines):
@@ -180,7 +208,7 @@ def audit_images(rel, path, lines):
         # rather than becoming a way to make a figure disappear.
         for q in IMAGE_REF.finditer(raw):
             if q.group(0) not in stripped:
-                out.append(("QUOTED", i + 1, "%s alt=%r" % (q.group(2), q.group(1)[:20])))
+                out.append(("QUOTED", i + 1, alt_record(q.group(2), q.group(1)[:20])))
         for m in IMAGE_REF.finditer(stripped):
             alt, target = m.group(1), m.group(2)
             if target.startswith(("http://", "https://")):
@@ -193,7 +221,7 @@ def audit_images(rel, path, lines):
                 # examples"; measured again after quoting was handled properly, all 6 (plus the 1
                 # this round's own changelog entry added) sit inside inline code, and the count of
                 # unquoted ones is 0 — which is the number worth asserting.
-                out.append(("UNRESOLVED", i + 1, "%s alt=%r" % (target, alt[:20])))
+                out.append(("UNRESOLVED", i + 1, alt_record(target, alt[:20])))
                 continue
             a = i + 1
             while a < len(lines) and not lines[a].strip():
@@ -208,7 +236,7 @@ def audit_images(rel, path, lines):
                 if "%s::%s" % (rel, target) in DECORATIVE:
                     out.append(("DECORATIVE", i + 1, target))
                 else:
-                    out.append(("NO-EXPLANATION", i + 1, "%s alt=%r" % (target, alt[:30])))
+                    out.append(("NO-EXPLANATION", i + 1, alt_record(target, alt[:30])))
             elif VAPID.match(cap.group(1).strip()):
                 out.append(("VAPID-IMAGE-CAPTION", i + 1, "%s: %s" % (target, cap.group(1)[:50])))
             else:
@@ -216,10 +244,30 @@ def audit_images(rel, path, lines):
     return out
 
 
+def quoted_findings(quoted_alts):
+    """Judge the alt text of every quoted markup example, without aborting the rest of the axis.
+
+    Quoting is exempt only while the alt stays a placeholder. A real caption inside backticks is a
+    reader figure hiding from this ruler, and an alt this code cannot read back is the same event
+    one level down: both are reported, neither raises. That choice is this round's lesson — the
+    previous version raised AssertionError from an allow-list of two literals, the ellipsis example
+    `![…](…)` in a sentence about the syntax tripped it, and because an assert aborts `run()` the
+    two guards underneath it (dead paths, `placements == 45`) silently stopped executing for four
+    rounds. A red that takes the rest of the ruler with it is worse than a wrong number.
+    """
+    out = []
+    for loc, alt in quoted_alts:
+        if alt is None:
+            out.append("UNREADABLE-ALT %s the verdict detail no longer carries a readable alt" % loc)
+        elif not example_alt(alt):
+            out.append("HIDDEN-CAPTION %s real alt text inside backticks: %r" % (loc, alt))
+    return out
+
+
 def run(quiet=False):
     tally, findings = {}, []
     pages = quoted = 0
-    quoted_detail = []
+    quoted_detail, quoted_alts = [], []
     for rel, path, lines in walk_pages():
         pages += 1
         for kind, no, detail in audit(lines) + audit_images(rel, path, lines):
@@ -227,6 +275,7 @@ def run(quiet=False):
             if kind == "QUOTED":
                 quoted += 1
                 quoted_detail.append("%s L%d %s" % (rel, no, detail))
+                quoted_alts.append(("%s L%d" % (rel, no), alt_of(detail)))
             elif kind in FINDING:
                 findings.append("%s %s:%d %s" % (kind, rel, no, detail))
     blocks = sum(v for k, v in tally.items() if k in
@@ -254,9 +303,8 @@ def run(quiet=False):
     assert quoted >= 7, ("only %d quoted image examples: %s — the count falling means a page stopped "
                          "quoting its own markup, i.e. one of these is now a reader-visible figure "
                          "the axis used to exempt" % (quoted, quoted_detail))
-    assert all(e.split(" alt=")[-1].strip() in ("''", "'alt'") for e in quoted_detail), \
-        "a quoted image carries real alt text, so it is probably a figure mis-wrapped in code: %s" \
-        % quoted_detail
+    hidden = quoted_findings(quoted_alts)
+    findings += hidden
     assert tally.get("UNRESOLVED", 0) == 0, "unquoted image path resolves to no file"
     assert placements == 45, "image placements moved to %d; the homepage figure count needs updating" % placements
     if not quiet:
@@ -366,7 +414,31 @@ def image_leg_controls():
     # ...and the exemption must not be buyable: the same reference outside backticks still gets judged
     got = verdicts(["# T", "", "读者见得 ![agent loop](%s)" % asset, "", "## 下一节"])
     assert got == ["NO-EXPLANATION"], "control: quoting markup silenced a real figure: %s" % got
-    return 9
+    # What the alt-text judgement is for, in both directions. Round 88 added `![…](…)` to a
+    # sentence explaining the syntax, and the test — which only knew `''` and `'alt'` — aborted
+    # this axis for four rounds, taking the guards underneath it down with it.
+    ypath = os.path.join(DOCS, "00-index", "y.md")
+
+    def quoted_alts_of(line):
+        return [("00-index/y.md L%d" % no, alt_of(detail))
+                for k, no, detail in audit_images("00-index/y.md", ypath, ["# T", "", line])
+                if k == "QUOTED"]
+
+    ell = quoted_alts_of("图片行 `![…](…)` 仍然跳过：alt 文本不是正文")
+    assert len(ell) == 1 and quoted_findings(ell) == [], \
+        "control: an ellipsis syntax example was judged a hidden figure: %s" % ell
+    hid = quoted_alts_of("躲起来的一张真图 `![离线切块与在线检索唯一的接口](%s)`" % asset)
+    got = quoted_findings(hid)
+    assert len(hid) == 1 and len(got) == 1 and got[0].startswith("HIDDEN-CAPTION"), \
+        "control: a real caption hidden in backticks slipped the test: %s -> %s" % (hid, got)
+    assert len(quoted_findings([("x L1", None)])) == 1, \
+        "control: an alt the reader code cannot parse went unnoticed"
+    # The judgement reads the alt out of the verdict detail, so writer and reader must agree
+    # exactly — including an alt that itself contains ` alt=` or a quote.
+    for nasty in ("alt", "…", "他说 alt='x' 之后", ""):
+        assert alt_of(alt_record(asset, nasty[:20])) == nasty[:20], \
+            "control: alt record round-trip lost %r" % nasty
+    return 13
 
 
 def live_leg_controls():

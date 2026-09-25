@@ -42,11 +42,24 @@ the live leg agreed on `leaked_strong_markers=0` for a changelog page whose side
 
     三、唯一一条真的读者侧缺陷：平台把 ** 配成了「第一个配最后一个」
 
-The heading documents `**` inside a code span, which the body renders as code and the outline
-renders as navigation copy. The outline is now a judged scope: heading text is flattened the way
-GitBook flattens it (code spans unwrapped, link labels kept) and run through the SAME flanking
-rule, and the live leg counts the nav-inclusive text. One heading site-wide was red -- the book's
-own round-87 account of the round-87 bug.
+The heading documents `**` inside a code span, which the body renders as a `<code>` box and the
+outline renders as navigation copy. The outline is now a judged scope: heading text is flattened
+the way GitBook flattens it (code spans unwrapped, link labels kept) and run through the SAME
+flanking rule, and the live leg counts the nav-inclusive text. One heading site-wide was red --
+the book's own round-87 account of the round-87 bug.
+
+Round 92 added the third leg, because the first two only prove a negative. A page with
+`leaked_strong_markers=0` and `prediction-mismatch=0` can still have lost its emphasis: if the
+platform consumes the `**` and emits plain text, no marker reaches the reader AND no bold does.
+So each authored PAIR now makes a positive claim the served page has to honour -- a `<strong>`
+whose text carries that span (see `bold_survived`). The obvious wider form of this judge, byte
+extents of authored `**…**` vs `<strong>…</strong>`, was measured and rejected first: on the 12
+boldest pages it reported `only-author=207 / only-served=575` while the hazard it was meant to
+catch (a served span strictly wider than the author's, i.e. round 83's "first `**` pairs with the
+last") measured **0**. The differences were ruler noise: GitBook's own error-banner `<strong>`
+lives inside a `<script>` string (`Error in site configuration:`, 2 copies in raw HTML, 0 in
+reader-visible text), the outline reprints heading bold, and KaTeX spans flatten differently on
+the two sides. Matching by text rather than by extent is immune to all three.
 """
 import argparse
 import html
@@ -79,7 +92,13 @@ HEADING_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
 # holds an atom there (`<code>`, `<span class="katex">`, `<a>`), so `**` next to one is flanked by
 # a letter. Blanking them with a space — what the survival axis does, correctly for its purpose —
 # made `**`foo`**` read as `** **` and reported 277 false leaks on 2026-09-25.
-ATOM = "文"
+# The bold leg splits authored text on this sentinel to find the parts it can actually match, so
+# the sentinel has to be (a) kept by LA.norm, whose range is [0-9A-Za-z] + U+4E00-U+9FFF, and
+# (b) a character no author would type. "文" passed (a) and failed (b) hard: it is inside the word
+# 上下文, so `**有效上下文窗口**` split into fragments that matched other text on the page and the
+# leg reported a wrong sentence as a correct bold. "丨" (a CJK stroke, U+4E28) is kept by norm and
+# appears nowhere in this book -- `selftest` counts it across the corpus and goes red if that dies.
+ATOM = "丨"
 
 
 def frontmatter_end(lines):
@@ -249,6 +268,112 @@ def visible_markers(served):
     return [m.start() for m in re.finditer(r"\*\*", text)]
 
 
+STRONG_TAG = re.compile(r"<strong[^>]*>(.*?)</strong>", re.S | re.I)
+ANY_TAG = re.compile(r"<[^>]+>")
+SQUEEZE = re.compile(r"\s+")
+# Widget chrome that `visible` still reads as text. Measured on `18-frontier-2026/README` (2026-09-25):
+# every heading/cell affordance ships an inline `<svg><title>GitBook Assistant</title></svg>`, 124
+# copies on one page, and the reader sees an ICON while the text says "GitBook Assistant". Left in,
+# it wedged itself between table cells and broke any comparison spanning a cell -- 279 authored bolds
+# were reported as words the page never carried. It is not prose and never was authored.
+CHROME = re.compile(r"<(script|style|svg|title|noscript)\b.*?</\1>", re.S | re.I)
+
+
+def reader_html(served):
+    return CHROME.sub(" ", served)
+
+
+def prose_of(served):
+    """The reader's visible sentence text, in the same space-free form `arrival_key` uses.
+
+    `html.unescape` is not optional: the DOM text node says `&quot;`, the browser shows `"`, and
+    without the unescape the entity NAME survives normalization as the letters `quot`. That read
+    156 authored bolds as "never published" until a `"` was found in the sentence -- the same trap
+    the marker leg documents above.
+    """
+    return SQUEEZE.sub("", LA.norm(html.unescape(LA.visible(reader_html(served)))))
+
+
+def authored_bold(text):
+    """[(line_no, inner, tail)] per PARSED-AS-BOLD pair -- runs the marker leg pairs successfully.
+
+    The first two legs ask "does a `**` reach the reader". A page can answer that with 0 while the
+    platform eats the markers and emits plain text -- the reader loses the bold and the literal
+    count stays clean. This returns the author's positive claim instead. `tail` is the ~40
+    characters that follow the closer: arrival has to be judged on the bold AND its context,
+    because a two-character bold word like `放行` exists somewhere on a 25 MB changelog page even
+    when the sentence carrying it has not been published yet.
+    """
+    out = []
+    for ln, para in paragraphs(text):
+        stack = []
+        for m in RUN.finditer(para):
+            if m.start() and para[m.start() - 1] == "\\":
+                continue
+            if len(m.group(1)) != 2:
+                continue
+            left, right = classify(para, m)
+            if right and stack:
+                start = stack.pop()
+                out.append((ln, para[start:m.start()], para[m.end():m.end() + 40]))
+            elif left:
+                stack.append(m.end())
+    return [(ln, t, tail) for ln, t, tail in out if t.strip()]
+
+
+def served_strongs(served):
+    """Reader-side bold, as normalized space-free text, in document order.
+
+    `reader_html` first: a `<strong>` inside the app-state JSON in a `<script>` payload is a
+    developer-tool string, not something the reader sees bold.
+    """
+    return [SQUEEZE.sub("", LA.norm(html.unescape(ANY_TAG.sub("", m.group(1))))).strip()
+            for m in STRONG_TAG.finditer(reader_html(served))]
+
+
+def arrival_key(inner, tail):
+    """The longest atom-free run of `bold + what follows it`, normalized and space-free.
+
+    The words alone cannot prove arrival: `放行`, `的判决` and `16/16` are short, generic, and
+    already appear somewhere else on a 25 MB changelog page, so the first site-wide run judged
+    three unpublished sentences as if the reader had them and called the missing bold a defect.
+    Anchoring on the text that follows the closer is what a reader actually sees, and splitting on
+    ATOM keeps a code span in the tail from breaking an otherwise contiguous run.
+
+    Whitespace is squeezed because the two sides cannot agree on it: the authored pair has no gap
+    where the `<strong>` tag sits, while the served page's visible-text extractor puts one there,
+    so a spaced comparison read a perfectly bold, perfectly delivered sentence as absent.
+    """
+    parts = [p.strip() for p in LA.norm(inner + tail).split(ATOM) if p.strip()]
+    return max((SQUEEZE.sub("", p) for p in parts), key=len) if parts else ""
+
+
+def bold_state(inner, tail, strongs, prose):
+    """'ok' | 'lost' | 'absent' | 'atom' for one authored bold span.
+
+    Only `lost` is this axis's defect, and the distinction is what the third state buys: the first
+    site-wide run put 34 spans in the red and ALL of them sat on `00-index/changelog.md`, whose
+    published HTML copy was one revision behind (round 91's own text). Those words had not reached
+    the reader at all -- that is the survival axis's `MISS`, and it is not evidence about bold.
+    `lost` therefore requires the sentence to have arrived (see `arrival_key`): the platform
+    consumed the markers and printed plain text.
+
+    Blanked atoms (a code span, a link label, a `$…$` run the author rule treats as math) are gaps
+    in what we know, not characters to find: `**$0.0077 vs $0.1985**` is blanked to `丨0.1985` here
+    but served as `<strong>$0.0077 vs $0.1985</strong>`. And a fragment must be findable in SOME
+    served strong, not one and the same: measured on `09-frameworks/dspy`, a bold that wraps a code
+    span arrives SPLIT at the code boundary (`<code><strong>docstring</strong></code><strong>
+    不是注释</strong>`), which is the reader's bold and was a 311-span false red before that.
+    """
+    frags = [f for f in (SQUEEZE.sub("", x) for x in LA.norm(inner).split(ATOM)) if f]
+    if not frags:
+        return "atom"
+    key = arrival_key(inner, tail)
+    if not key or key not in prose:
+        return "absent"
+    return "ok" if all(any(f in s for s in strongs) for f in frags) else "lost"
+
+
 CONTROL_PAGES = [
     # (name, markdown, expected body leaks, expected outline leaks) -- every entry is a real shape.
     ("closer-after-fullwidth-paren", "这与 RAG 评估里的**忠实度（Faithfulness）**是同一思想。\n", 2, 0),
@@ -296,7 +421,129 @@ def selftest():
     if silent != 1:
         ok = False
         print("CONTROL FAIL outline rule unable to fire (%d)" % silent)
+    ok = bold_selftest() and ok
     print("controls: %s" % ("OK, every bucket able to fire" if ok else "BROKEN"))
+    return ok
+
+
+BOLD_SRC = "这与检索的**有效上下文窗口**是同一思想。\n"
+CODE_SRC = "脏数据：**`timestamp_gap` 字段** 断层。\n"
+LAG_SRC = "本轮新增的一句话里有**没送到的粗体**。\n"
+# The exact shape the first site-wide run mis-judged: a generic short bold whose word lives on the
+# page in other sentences.
+GENERIC_SRC = "本轮新加的句子里有**放行**两字。\n"
+GENERIC_OLD_SRC = "<p>别的历史段落里写到：放行规则见前文。放行一词早就有。</p>"
+GENERIC_PLAIN_SRC = "<p>本轮新加的句子里有放行两字。</p>"
+# Real shape: 18-frontier-2026/README's timeline table, where the served page puts an icon widget
+# (accessible name "GitBook Assistant") at the end of every cell.
+CHROME_SRC = "| **GPT-6** 发布 | computer use 落地 |\n"
+CHROME_WIDGET = '<svg width="16" height="16"><title>GitBook Assistant</title><path d="M1 1"/></svg>'
+CHROME_OK_SRC = ("<table><tr><td><strong>GPT-6</strong> 发布%s</td><td>computer use 落地</td></tr></table>"
+                 % CHROME_WIDGET)
+CHROME_EATEN_SRC = ("<table><tr><td>GPT-6 发布%s</td><td>computer use 落地</td></tr></table>"
+                    % CHROME_WIDGET)
+# Measured on `02-agent-basics/perception-planning-action`: the DOM text node reads
+# `回填一句 &quot;error&quot;`, the browser shows plain quotes, and the authored line has no letters
+# there at all -- so the two sides only agree once the entity is unescaped.
+QUOTE_SRC = '他把**具体错误信息**原样留着，写 "error" 一次。\n'
+QUOTE_TAIL = '写 &quot;error&quot; 一次。</p>'
+QUOTE_OK_SRC = "<p>他把<strong>具体错误信息</strong>原样留着，" + QUOTE_TAIL
+QUOTE_EATEN_SRC = "<p>他把具体错误信息原样留着，" + QUOTE_TAIL
+
+
+def undelivered(bolds, strongs, prose):
+    """[(line, inner)] whose sentence reached the reader but whose bold did not."""
+    return [(ln, b) for ln, b, tail in bolds if bold_state(b, tail, strongs, prose) == "lost"]
+
+
+def lost_bold(src, served):
+    """Spans the author bolded and the served page did not deliver."""
+    return undelivered(authored_bold(src), served_strongs(served), prose_of(served))
+
+
+def bold_selftest():
+    """The third leg must fire on the one failure the first two legs cannot see.
+
+    `served-eaten` is a page whose markers were consumed and whose bold was NEVER produced: the
+    literal-marker count reads 0 and the author prediction reads 0, so legs one and two are green
+    while the reader has lost the emphasis. If the new leg cannot fire here it is a decoration.
+    The other rows are the counterexamples that keep the leg honest -- shapes the platform serves
+    correctly and a naive matcher calls lost (measured: demanding one code-span-free `<strong>`
+    node flagged 311 real reader-side bolds before the split serving was found).
+    """
+    ok = True
+    cases = [
+        ("served-bold", BOLD_SRC,
+         '<p>这与检索的<strong class="font-bold">有效上下文窗口</strong>是同一思想。</p>', "ok"),
+        ("served-eaten", BOLD_SRC, "<p>这与检索的有效上下文窗口是同一思想。</p>", "lost"),
+        ("served-bold-in-the-wrong-place", BOLD_SRC,
+         "<p><strong>这与检索的</strong>有效上下文窗口是同一思想。</p>", "lost"),
+        # different WORDS at the bold is a page that never carried this sentence: absent, not lost
+        ("served-other-words-bold", BOLD_SRC,
+         "<p>这与检索的<strong>失效时间窗口</strong>是同一思想。</p>", "absent"),
+        # A two-character bold word is not an arrival proof: `放行` / `的判决` / `16/16` all exist
+        # somewhere else on a 25 MB changelog page. These two rows pin the context rule from both
+        # sides -- the word alone must NOT count, the whole sentence must still fire.
+        ("served-generic-word-but-not-the-sentence", GENERIC_SRC, GENERIC_OLD_SRC, "absent"),
+        ("served-generic-sentence-bold-eaten", GENERIC_SRC, GENERIC_PLAIN_SRC, "lost"),
+        # A table cell: the platform stamps an icon widget with an accessible NAME between the cell
+        # and its neighbour, so "what the reader's text says" and "what the reader sees" diverge.
+        ("served-widget-name-after-a-cell", CHROME_SRC, CHROME_OK_SRC, "ok"),
+        ("served-widget-name-after-a-cell-eaten", CHROME_SRC, CHROME_EATEN_SRC, "lost"),
+        # The DOM says `&quot;`, the browser shows `"`. Reader text must be unescaped before it is
+        # compared, or the entity's NAME lands inside the sentence.
+        ("served-entity-quotes-around-the-bold", QUOTE_SRC, QUOTE_OK_SRC, "ok"),
+        ("served-entity-quotes-bold-eaten", QUOTE_SRC, QUOTE_EATEN_SRC, "lost"),
+        ("served-code-then-text-split", CODE_SRC,
+         "<p>脏数据：<code><strong>timestamp_gap</strong></code><strong> 字段</strong> 断层。</p>", "ok"),
+        ("served-code-inside-strong", CODE_SRC,
+         "<p>脏数据：<strong><code>timestamp_gap</code> 字段</strong> 断层。</p>", "ok"),
+        ("served-code-eaten-too", CODE_SRC, "<p>脏数据：timestamp_gap 字段 断层。</p>", "lost"),
+        # the page simply has not caught up: the words are nowhere, and that is MISS's red not ours
+        ("served-page-lags-author", LAG_SRC, "<p>这一页还是上一版，没有这句话。</p>", "absent"),
+        ("served-atom-only", "前缀 **`x`** 后缀。\n", "<p>前缀 x 后缀。</p>", "atom"),
+    ]
+    for name, src, served, want in cases:
+        bolds = authored_bold(src)
+        if len(bolds) != 1:
+            ok = False
+            print("CONTROL FAIL bold leg %-26s authored pairs=%d, expected 1" % (name, len(bolds)))
+            continue
+        got = bold_state(bolds[0][1], bolds[0][2], served_strongs(served), prose_of(served))
+        if got != want:
+            ok = False
+            print("CONTROL FAIL bold leg %-26s expected=%s got=%s" % (name, want, got))
+    # the marker leg must be blind to the eaten case, or this new leg proves nothing new
+    if visible_markers(cases[1][2]):
+        ok = False
+        print("CONTROL FAIL bold phantom is already visible to the marker leg")
+    # ...and the lost state must be reachable ONLY when the words arrived
+    if len(lost_bold(LAG_SRC, "<p>这一页还是上一版，没有这句话。</p>")):
+        ok = False
+        print("CONTROL FAIL a page behind the author counted as lost bold")
+    # the chrome rule has to be load-bearing: judge the same page WITHOUT dropping the widget's
+    # accessible name and the sentence stops existing -- if that still reads `ok`, `reader_html`
+    # is not being used and the 279-span false `absent` it fixes is back.
+    _n, csrc, cserved, _w = [c for c in cases if c[0] == "served-widget-name-after-a-cell"][0]
+    _ln, cinner, ctail = authored_bold(csrc)[0]
+    raw_prose = SQUEEZE.sub("", LA.norm(LA.visible(cserved)))
+    if bold_state(cinner, ctail, served_strongs(cserved), raw_prose) == "ok":
+        ok = False
+        print("CONTROL FAIL widget-name chrome is not actually being dropped from reader text")
+    # ...and the same for the unescape: judge the quote page WITHOUT unescaping and it must stop
+    # being able to see its own sentence
+    _n, qsrc, qserved, _w = [c for c in cases if c[0] == "served-entity-quotes-around-the-bold"][0]
+    _ln, qinner, qtail = authored_bold(qsrc)[0]
+    escaped_prose = SQUEEZE.sub("", LA.norm(LA.visible(reader_html(qserved))))
+    if bold_state(qinner, qtail, served_strongs(qserved), escaped_prose) == "ok":
+        ok = False
+        print("CONTROL FAIL HTML entities are not actually being unescaped into reader text")
+    # the sentinel has to stay a sentinel: if an author ever types it, fragments split on real text
+    typed = sum(open(p, encoding="utf-8").read().count(ATOM) for p in walk())
+    if typed:
+        ok = False
+        print("CONTROL FAIL ATOM sentinel %r is typed by an author (%d times in the corpus)"
+              % (ATOM, typed))
     return ok
 
 
@@ -346,6 +593,7 @@ def run(workers=6, live=False):
             pages.append((path, index[k]))
     listed = {rel(p) for p, _u in pages}
     pred = {rel(p): len(leaks_of(open(p, encoding="utf-8").read())[0]) for p, _u in pages}
+    bolded = {rel(p): authored_bold(open(p, encoding="utf-8").read()) for p, _u in pages}
     unlisted = {r: n for r, n in
                 ((rel(p), len(leaks_of(open(p, encoding="utf-8").read())[0])) for p in walk())
                 if n and r not in listed}
@@ -355,26 +603,44 @@ def run(workers=6, live=False):
         try:
             served = PS.fetch_page(url)[1]
         except Exception as exc:
-            return (rel(path), None, str(exc))
-        return (rel(path), len(visible_markers(served)), None)
+            return (rel(path), None, None, None, str(exc))
+        strongs = served_strongs(served)
+        prose = prose_of(served)
+        states = [bold_state(b, tail, strongs, prose) for _ln, b, tail in bolded[rel(path)]]
+        lost = [(ln, b) for (ln, b, _t), s in zip(bolded[rel(path)], states) if s == "lost"]
+        return (rel(path), len(visible_markers(served)), lost,
+                (states.count("absent"), states.count("atom")), None)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         got = list(pool.map(probe, pages))
-    bad, err = [], []
-    for r, n, e in got:
+    bad, err, lost, absent, atoms = [], [], [], 0, 0
+    for r, n, l, u, e in got:
         if e:
             err.append((r, e))
-        elif n != pred.get(r, 0):
-            bad.append((r, pred.get(r, 0), n))
-    print("live leg: pages=%d fetch-failures=%d prediction-mismatch=%d served_markers=%d"
-          % (len(got), len(err), len(bad), sum(n for _r, n, _e in got if n is not None)))
+        else:
+            absent += u[0]
+            atoms += u[1]
+            if n != pred.get(r, 0):
+                bad.append((r, pred.get(r, 0), n))
+            if l:
+                lost.append((r, l))
+    print("live leg: pages=%d fetch-failures=%d prediction-mismatch=%d served_markers=%d "
+          "bold_pages_lost=%d bold_spans_lost=%d (of %d authored pairs) "
+          "words_not_in_served_page=%d bold_spans_atom_only=%d"
+          % (len(got), len(err), len(bad), sum(n for _r, n, _l, _u, _e in got if n is not None),
+             len(lost), sum(len(l) for _r, l in lost),
+             sum(len(v) for v in bolded.values()), absent, atoms))
+    for r, l in sorted(lost, key=lambda x: -len(x[1]))[:12]:
+        print("   BOLD-LOST %-52s markers eaten, bold never produced (%d spans)" % (r, len(l)))
+        for ln, b in l[:3]:
+            print("      L%-5d %s" % (ln, repr(b)[:70]))
     for r, p, n in sorted(bad)[:12]:
         print("   MISMATCH %-52s author=%d served=%d" % (r, p, n))
     for r, n in sorted(unlisted.items()):
         print("   NOT-LISTED %-50s author=%d served=? (page is not in the site index)" % (r, n))
     for r, e in err[:5]:
         print("   FETCH %s %s" % (r, e[:80]))
-    return 1 if (bad or err or unlisted or leaks) else 0
+    return 1 if (bad or err or unlisted or leaks or lost) else 0
 
 
 def main():

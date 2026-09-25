@@ -9,6 +9,123 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 92 次）一条判据静默停摆四轮，而 README 首页仍在引用它认证过的数字：本轮把 `check_figure_explanations` 里那句 assert 改成上报，压在它下面的两条守卫（引用式路径能否解析、`placements == 45`）重新开跑；根因——「每轮手抄一份判据清单」——换成目录自动发现，本轮目录里实到 **35** 条而手抄清单只有 **18** 条
+
+本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——本轮的缺陷全在尺子上：`tools/checks/check_figure_explanations.py`（assert → 上报，控制 9 → 13 条）、`tools/checks/check_emphasis_flanking.py`（加第三条腿：作者写的 `**…**` 在读者页面上是否真的变成粗体），新增 `tools/checks/run_battery.py`（判据清单由目录扫描得出，并自证覆盖面）。
+
+### 一、崩溃现场：一句解释语法的正文，把整条轴弄死了四轮
+
+本轮首跑（日志原文，行号即崩溃点）：
+
+```text
+  File "F:\GitHub_Like\ai-agent-handbook\tools\checks\check_figure_explanations.py", line 257, in run
+    assert all(e.split(" alt=")[-1].strip() in ("''", "'alt'") for e in quoted_detail), \
+AssertionError: a quoted image carries real alt text, so it is probably a figure mis-wrapped in code:
+  ["00-index/changelog.md L445 … alt='…'", "00-index/changelog.md L1473 ../.gitbook/assets/xxx.svg alt='alt'",
+   ... 共 9 条]
+```
+
+- 9 条引用式图片里只有 1 条落在名单外：`00-index/changelog.md` 第 445 行的 `![…](…)`——那是一句**讲图片语法的正文**，不是图。豁免名单原本只认两个字面量（`''` 与 `'alt'`），由第 76 轮 `031c09b` 写下；触发它的那句正文由第 88 轮 `ad37cfe` 写进本页（`git log -S'![…](…)'` 与 `git blame -L 445,445` 各自只指向那一次提交）。
+- 真正的代价不是这一次红。`run()` 里在这条 assert **下面**还压着两条守卫：`UNRESOLVED == 0`（引用式路径能不能解析到真文件）与 `placements == 45`（图片落点数）。红一抛，`run()` 整个退出，所以从第 88 轮到本轮，这两条**一次都没有执行过**——而 README 首页那句「217 张 Mermaid，171 张带图注、46 张靠引导语」正是这条轴背书的。判据死掉且不吭声，比它读到一个错数字更坏：错数字还会引起怀疑，绿不会。
+- 修法是一条分界，不是把红压下去：**内容判断改成上报**（exit 1，一条一行），**尺子健康仍然 assert**。新桶两条——`HIDDEN-CAPTION`（反引号里藏着真图注：那是读者看得见的图，只是躲开了这条尺子）与 `UNREADABLE-ALT`（判决详情里的 alt 读不回来：同一种遮蔽低一层）。占位符语义从「等于两个字面量」改成「一个词都没有，只剩标点」，覆盖 `… ⋯ . 。 · 、 ， : ； * - ~ _ ( ) （ ） [ ]` 与空白。
+- 控制 9 → **13** 条，两个方向都钉：省略号例子必须仍然豁免（否则就是把真遮蔽放行）；本轮植一条带真 alt 的反引号图片，必须落 `HIDDEN-CAPTION`；`(x L1, None)` 必须落 `UNREADABLE-ALT`；写/读往返（alt 文本自己含 `alt=` 与引号时，判决还得读得回来）。全部 27 条控制 `image leg: 13 cases` / `all controls: 27 cases`。
+- 修复后读数（`run_battery.py --only check_figure_explanations`，exit=0）：
+
+```text
+figure explanations: pages=197 diagrams=217 placements=45 captions=215 caption=171 guided=46
+                     image-caption=44 decorative=1 quoted=9 findings=0
+```
+
+README 引用的 217 / 171 / 46 与被压住的 `placements=45`，第一次同时由它们自己的判据背书。**读者可见内容一字未改**——被量的东西没有为过线挪动。
+
+### 二、根因不止那条 assert：判据清单一直是每轮手抄的
+
+- 本轮把 `tools/checks` 盘了一遍：可当判据跑的文件 **35** 条（`check_*` 34 条，加命名规则之前就有、且是真轴的 `live_aria_manifest`）；本轮手抄的那份清单只有 **18** 条。仓库里从来没有 `tools/*.sh`，也没有常驻 runner——「哪条轴存在」这件事一直记在每轮的手感里。而漏跑与跑绿在读数上长得一模一样。
+- 新增 `tools/checks/run_battery.py`：工作表 = 目录扫描（含 `__main__` 才可选，共享模块自动落到 libs 里并印出来）。`--selftest` 把覆盖面变成可判的事：轴数下限 30、点名四条轴必须在册、`unregistered()`（可跑但在工作表之外）必须为空、`check_wide_layout_ab` 必须在 libs、幽灵过滤器匹配不到任何轴时不许判绿、`found + unregistered + libs + excused` 必须等于目录里的全部 `.py`。首跑 `battery controls: OK (axes=35 libs=1 unregistered=0)`。
+- 两条口径值得单写：每条轴超时是**它自己的结果**（`BATTERY_TIMEOUT`，默认 3000 s），绝不折进「passed」；`--only`/`--skip` 过滤到空集时 `assert work` 直接红——一条都不跑的电池不算绿，这正是本轮想修的「看起来绿了」的那类事故。
+
+### 三、第三条腿：作者写的 `**…**` 到读者页面上到底有没有变粗
+
+这条轴原先只有两条腿：正文里外翻的 `**`（读者能看见的字面星号）与大纲/标题展平。本轮加第三条——**每一对作者写的强调标记，在 served 页面上是否真的产出一个 `<strong>`**。四态判决：`ok`（文字出现在 served 的某个 `<strong>` 里）/ `lost`（标记被吃掉、粗体没产出）/ `absent`（这一页的这份副本里根本没有这段文字，翻页自愈）/ `atom`（文字被行内代码切开，无法证明是同一个粗体范围）。
+
+判据选「文字匹配」而不是「字节范围对齐」，是量出来的结论而不是偏好。本轮在 12 页样本上把两种口径同时跑：
+
+```text
+sample=12 not-in-index=0 | authored spans=3234 served strongs=3610 | only-author=207 only-served=575
+containment pairs (served extent wider than authored)=0
+```
+
+作者侧 3234 对、读者侧 3610 个 `<strong>`，两侧字节范围**互不包含**（可配对 0 条），而只有读者侧有的那些样本是 `Errorinsiteconfiguration:` 一类的页面外壳文案——它压根不是我们写的字。所以「范围对齐」这条判据一出生就是死的；文字匹配才能把「标记没了」与「平台自己往页面里塞了粗体」分开。
+
+三轮假红依次归因，每条都用读数钉住：
+
+1. `bold_spans_lost=34`、`bold_pages_lost=1`：GitBook 在每个表格里注入 `<svg><title>GitBook Assistant</title>`，而 `visible()` 不剥 `<svg>`，于是外壳文案被当成正文；侧栏对页内标题的重印又让同一条标题被数两遍。剥 `<svg>` + 去锚链接副本 → 这一路从 34 → 3 → 0。
+2. `words_not_in_served_page=279 → 156`：上一步之后剩下的多是编码字符——SSR 页里的 `&gt;` `&amp;` 之类没有解码就拿去比对，作者侧写的 `>` 当然找不到。补 `html.unescape` → **38**。
+3. 剩下的 38 条不追求归零：它们是跨行内代码边界的强调（`**A` + 行内代码 + `B**`），平台把它切成两段，判决落进 `absent`/`atom` 两个桶，而不是 `lost`。
+
+最终读数（`--live`，exit=0）：
+
+```text
+live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
+          bold_pages_lost=0 bold_spans_lost=0 (of 5910 authored pairs)
+          words_not_in_served_page=38 bold_spans_atom_only=13
+```
+
+全站 5910 对作者强调标记，读者拿不到的 **0** 对；`served_markers=0` 说明页面里也没有该消失却没消失的字面 `**`。目检：`r92_shots/bold_0.png` / `bold_1.png` / `bold_2.png` 三帧真实渲染页，被断言的粗体文字在浏览器里计算样式 `font-weight` 为 700（同段非强调文字 400）——这条腿不是自证式的字符串比对，它最后落在像素上。
+
+### 四、本轮量到的读数
+
+**线上腿（强调轴，本轮新增的第三条腿第一次跑全站 196 页）**
+
+```text
+live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
+          bold_pages_lost=0 bold_spans_lost=0 (of 5910 authored pairs)
+          words_not_in_served_page=38 bold_spans_atom_only=13
+```
+
+**离线判据（全部由 `run_battery.py` 目录发现后逐条跑；工作树即本轮将要提交的内容）**
+
+| 判据 | 读数 |
+| --- | --- |
+| `check_figure_explanations.py` | `pages=197 diagrams=217 placements=45 captions=215 caption=171 guided=46 image-caption=44 decorative=1 quoted=9 findings=0`——被压住的四轮里，`UNRESOLVED==0` 与 `placements==45` 第一次重新执行 |
+| `check_structure.py` | `pages scanned=198 problems=0`；围栏 `mermaid=217 text=88 json=80 markdown=11 yaml=10 (no tag)=9`；`executable-tagged=0 json contracts parsed=80 unclosed=0` |
+| `check_content_overflow.py` | 276 条 display 公式 × {768, 608} 两列真渲染：768 列 `over-column=0 unreachable=0`；608 列 1 条超出但拖动仅 12px（门槛 16px）→ `0 formulas to fix`；`render-errors=0 stray-markup=0` |
+| `check_live_formulas.py`（线上腿，全站） | `checked 276 live display formulas on 106 of 106 pages`、`pages=106/106 checked=276 hidden=0 problems=0 fetch-failures=0`；线上 `<main>` 宽度全部读到 608px（106 页一致，报告而非判决，认证门槛是 768） |
+| `check_emphasis_flanking.py`（作者腿） | `pages=0 leaked_strong_markers=0 (body=0 outline=0) lone_star_runs=1 (context only)`；`headings=2851 carrying_inline_code=108 whose_flattening_is_markdown_significant=73`——本节自己长出来的 5 条标题里有 2 条带行内代码，判决位仍是 `leaked=0` |
+| `check_changelog_headings.py` | `HEAD=83 tree=84 lost=0`（多出的 1 条就是本节标题） |
+| `check_readme_stats.py` | 逐条 ok，README / 首页 / 封面横幅与目录树全轴一致——本轮不需要改统计 |
+| `check_chapter_extras.py` | `chapters=18 goals=18 quizzes=17 quiz_exempt=1 questions=51 with_source=51 glossaries=18 terms=198 findings=0`（14 条植入控制全响） |
+| `check_quote_fidelity.py` | `content sources=230 attributed quotes=25 findings=0 verified=23`（`PROSE 14 / FIGURE 1 / RETRACTED-OK 8 / NEGATED 1 / SELF-EVIDENCED 1`） |
+| `check_link_graph.py` | `distinct-external=717 ok=702 blocked=14 net=1 unchecked=0 FAILED: 0`；`relative=1582 pages=196 nav-links=196` |
+| `check_katex_formulas.py` | `pages=108 formulas=927 failures=0 version=0.18.7`（植入反例被抓回：1） |
+| `check_lab_runnability.py` | `labs=6 exit0=6 deterministic=6 stdout_lines=141 worst=0.66s pages_naming_script=6 records_current=6/6 findings=0` |
+| `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0 unreadable=0` |
+| `check_mermaid_palette.py` | `blocks=217 chapters=21 contrast-pairs=868`，八个桶（`MISS UNPARSE THEME NOCHAPTER WRONGBASE FORMULA TEXTCOLOR CONTRAST`）全 0 |
+| `check_genre_floors.py` | `pages=196 published=196 graded=159 免检(不限)=37 不可判(同键高档)=40 problems=0` |
+| `check_nav_h1_sync.py` | `SUMMARY labels audited against page H1: 196 pages problems=0` |
+| `check_source_pointers.py` | `pages=191 pointer_lines=3 findings=0`；`live mutation ok (0 -> 1 -> 0 findings on 6 shipped pages)` |
+| `check_svg_legibility.py` | `column 768px, label bar 12px`：`figures with a sub-bar label=0 labels=0 of 1109 pages touched=32` |
+| `check_svg_sanitizer.py` | `clean: no authored figure depends on markup the reader does not get` |
+| `check_widget_pairing.py` | `pages=198 problems=0` |
+| `check_prose_duplicates.py` | 全等重复 0，近重复带 3 条（模板与章首页的「收录标准 / 加 trace」一类，第 60 轮起登记为可接受） |
+| `check_char_sanity.py` | `problems=0` |
+| `check_table_overflow.py` | `spilling cells=0 tables wider than column=0`，唯一 1 条问题是 `NOHYDRATE 00-index/changelog.md`——抓取/CDN 侧不水合，不是内容判决 |
+| `check_screenshot_legibility.py`（离线腿） | `figures=8 told-and-verified=0 problems=8`：八条全是 `UNVERIFIED`——这条尺子拒绝在没有 `--live --zoom` 复跑时白送绿灯，是尺子设计而不是缺陷 |
+| `run_battery.py --selftest` | `battery controls: OK (axes=35 libs=1 unregistered=0)` |
+
+本轮 **没有**复跑的腿也照实登记（它们是常驻判据，不是新缺陷）：`check_live_column`、`check_live_images`、`check_live_sync`、`check_mermaid_geometry`、`check_prose_survival`、`check_svg_phase_legibility`、`check_svg_served_colours`、`check_widget_visibility_live` 的线上腿，以及 `check_figure_explanations --live`、`check_screenshot_legibility --live --zoom`。理由见 §五。
+
+### 五、留下的账与本轮的取舍
+
+- **读者侧本轮没有量到缺陷**：0 页知识页改动，README 统计一字未动，§四 表里的离线判据除两条外全部 `exit=0`——那两条是 `check_screenshot_legibility` 的 8 条 `UNVERIFIED`（没跑 `--live --zoom` 就不给绿）与 `check_table_overflow` 的 1 条 `NOHYDRATE`（抓取侧不水合），都不是内容判决。本轮的产出全在「尺子是否还在跑」这一层。这个结论本身就是要报的事：一条判据可以在四轮里既红着又没人看见，因为它的红被下一次的红覆盖了，而它下面的守卫安静地不执行。
+- **图注轴的线上腿本轮没跑**（`--live`）。它的离线腿加 13 条控制已经通过，而它的活体变异控制（`live mutation ok`，删掉一条真图注后 6/7 页暴露为无解释）本轮也复跑过；剩下的风险是平台外壳文案造成假 `LOST`——那正是强调轴这轮踩过的坑（每格注入 `<svg><title>`、侧栏重印标题、未解码实体）。所以这条腿要跑就必须串行、并且按 §三 修好的 `visible()` 口径读，下一轮补。
+- **浏览器/抓取类腿本轮受串行限制**：`check_content_overflow`、`check_live_formulas`、`check_emphasis_flanking --live` 三条都在跑全站真渲染，同一段时间里叠加第二条会互相挤 CDN，于是把剩下的线上腿推到下一轮，而不是并发跑出一份好看的读数。
+- **13 条 `atom`**：跨行内代码边界的强调（`**A` + 代码 + `B**`）平台切成两段，判据无法证明它是同一个粗体范围，落 `bold_spans_atom_only` 而不是 `lost`。这 13 条继续留作已知不可判，不当缺陷也不为它改正文。
+- **`absent` 会随翻页自愈**：这一态说的是「这份页面副本里没有这段文字」，GitBook 的 SSR 分片翻页后可能换一份，因此它的读数天生不稳定；本轮 196 页里 `bold_pages_lost=0`，没有页落进这一态。
+- **`words_not_in_served_page=38` 不追求归零**：这些是强调文字在 served 侧被行内代码/复制按钮/分片切断造成的词面不匹配，判决已经把它们排除在 `lost` 之外；把它们清零需要改正文，而那是「挪动被量的东西去过线」。
+- **部分范围加粗仍不在轴上**：判据问的是「这对标记有没有产出一个粗体」，不问「粗体范围是否恰好等于作者意图的范围」——§三 那组 `containment=0` 说明后者目前无法在 served DOM 上稳定测量。
+- 操作者级账目照旧（不在本轮动手范围）：标题跳级 48/271/53、25 MB 更新日志页是否拆分、14 字符针的门槛、`published_cut` 的分辨率、608px 列宽 AB 与宽版式开关、Mermaid 文本变量、emoji 口径、知识体裁子键、聊天里贴过的 GitHub PAT 需要吊销、空间 logo 那个坏 `<img>` 要在 dashboard 重传。
+
 ## 2026-09-25（第 91 次）第 90 轮 §八 记下的「两个读数差得远」在本轮被量倒：不是平台发了两版，是判据把 UTF-8 解码后的字符数标成了 bytes——同一次抓取实测 337,508 字符 / 623,168 字节，比率 1.846；上一轮预告的那句断言也因此第一次真正可判（`--list-behind` 把 25 条落后单元的页与行号全部印出来）
 
 本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节，并在第 90 轮 §八 末尾回补一段）。**没有为过线删掉或加厚任何一页正文**——改动全部在尺子上：`tools/checks/check_live_sync.py`（单位口径 + 控制 U）与 `tools/checks/check_prose_survival.py`（新增 `--list-behind`）。
