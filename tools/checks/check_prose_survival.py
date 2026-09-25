@@ -407,7 +407,7 @@ def fetch_page(url):
     return url, "", err
 
 
-def run(sample=None, workers=6, only=None):
+def run(sample=None, workers=6, only=None, list_behind=False):
     index = LA.url_index()
     rows, unlabeled = [], []
     for path in walk():
@@ -429,6 +429,7 @@ def run(sample=None, workers=6, only=None):
     if sample and only is None:                           # a sample cannot judge the whole site's coverage
         _label, _unl = "sample:%d/%d" % (len(picked), len(rows)), 0
     problems, fetch_fail, pages_lost = [], [], []
+    listed_behind = 0
     total = sum(len(r["units"]) for r in picked)
     plain = sum(1 for r in picked for k, _u, _l in r["units"] if k == "plain")
     heading = sum(1 for r in picked for k, _u, _l in r["units"] if k == "heading")
@@ -456,6 +457,13 @@ def run(sample=None, workers=6, only=None):
             rest = [t for t in rows if not (cut and t[1] < cut)]
             behind = [t for t in rest if t[3] == "REVISION-BEHIND"]
             miss = [t for t in rest if t[3] == "MISS"]
+            if list_behind:
+                # A section-scoped account ("the lagging units all sit in round N's own block")
+                # needs every line number, and the default report prints one example per page.
+                # Listing is non-gating, so it proves its own coverage instead of trusting a cap.
+                for kind, ln, u, _v, _exc in sorted(behind, key=lambda t: t[1]):
+                    print("   BEHIND %s:%d %s %s" % (r["page"], ln, kind.upper(), u[:64]))
+                    listed_behind += 1
             pages_lost.append((r["page"], len(miss), len(unreleased), len(r["units"]), cut,
                                miss[:3], len(behind), behind[:1]))
             for tag, items in (("MISS", miss), ("REVISION-BEHIND", behind), ("STALE-COPY", unreleased)):
@@ -464,6 +472,10 @@ def run(sample=None, workers=6, only=None):
     n_miss = sum(p[1] for p in pages_lost)
     n_stale = sum(p[2] for p in pages_lost)
     n_behind = sum(p[6] for p in pages_lost)
+    if list_behind:
+        print("behind detail: listed=%d of REVISION-BEHIND=%d %s"
+              % (listed_behind, n_behind,
+                 "(full listing)" if listed_behind == n_behind else "(LIST INCOMPLETE - do not grade a section from it)"))
     print("prose survival: pages=%d units=%d plain=%d heading=%d quote=%d widget=%d | %s" %
           (len(picked), total, plain, heading, quote, total - plain - heading - quote, _label))
     print("lost sentences: MISS=%d REVISION-BEHIND=%d STALE-COPY=%d | pages-with-MISS=%d "
@@ -957,6 +969,8 @@ def main():
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--mutate", metavar="PAGE", help="hide a real sentence on one published page and require a finding")
+    ap.add_argument("--list-behind", action="store_true",
+                    help="print every REVISION-BEHIND unit with its line number (non-gating)")
     args = ap.parse_args()
     if args.selftest:
         errs = controls() + homepage_parity()
@@ -969,7 +983,7 @@ def main():
         for e in errs:
             print("   ", e)
         return 1 if errs else 0
-    miss, stale, other, behind = run(args.sample, args.workers, args.page)
+    miss, stale, other, behind = run(args.sample, args.workers, args.page, args.list_behind)
     if stale or behind:
         # Loud but not this axis's verdict: both mean the published copy is a *different revision*
         # of the text, proven against the page itself rather than guessed from a round number.

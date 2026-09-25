@@ -57,8 +57,13 @@ ROUND = re.compile(r"第 (\d+) 次")
 
 def live_rounds(url):
     req = urllib.request.Request(url, headers=UA)
-    html = urllib.request.urlopen(req, timeout=180).read().decode("utf-8", "replace")
-    return [int(r) for r in ROUND.findall(html)], len(html)
+    raw = urllib.request.urlopen(req, timeout=180).read()
+    html = raw.decode("utf-8", "replace")
+    # Round 91: the size used to be reported as `len(html)` under a "bytes" label. The changelog is
+    # mostly CJK, so one UTF-8 character costs ~1.85 bytes and that mislabel manufactured a
+    # discrepancy round 90's log recorded as unexplained (621,559 B fetched directly vs 336,586
+    # "B" here — the same document, two units). Report both, and the ambiguity is gone.
+    return [int(r) for r in ROUND.findall(html)], len(html), len(raw)
 
 
 def local_rounds():
@@ -393,6 +398,26 @@ def controls():
         errs.append("control N: no rev in history touched %s — the coverage probe is blind" % guide)
     elif guide not in head_reader_pages(rev):
         errs.append("control N: head_reader_pages(%s) must include %s, got %r" % (rev[:7], guide, head_reader_pages(rev)))
+    # U: units. The leg line used to print `len(decoded)` under the word "bytes", and on a CJK-heavy
+    # document that is ~1.85x below the real byte count — round 90 read the two numbers as a
+    # platform mystery. Fetching a local file proves live_rounds returns (chars, bytes) in that
+    # order and proves the printout labels them, so a relabel or a swap cannot re-pass silently.
+    with tempfile.TemporaryDirectory(prefix="units", ignore_cleanup_errors=True) as tmp:
+        doc = os.path.join(tmp, "u.md")
+        with open(doc, "w", encoding="utf-8") as fh:
+            fh.write("# 记录\n\n第 7 次：读者可见的中文句子。\n第 6 次：另一句中文。\n")
+        rounds, chars, size = live_rounds("file:///" + doc.replace("\\", "/"))
+        if rounds != [7, 6]:
+            errs.append("control U: the round parser itself must see 7 and 6, got %r" % rounds)
+        if not chars < size:
+            errs.append("control U: CJK text must read as chars(%d) < utf-8 bytes(%d) — a run where "
+                        "they are equal proves the two numbers are not what their labels say"
+                        % (chars, size))
+        with open(os.path.abspath(__file__), encoding="utf-8") as fh:
+            src = fh.read()
+        if "(%d chars / %d bytes" not in src or "chars, size" not in src:
+            errs.append("control U: the leg line must label both numbers and pass the character "
+                        "count first, or the printout is free to lie about its unit again")
     return errs
 
 
@@ -429,15 +454,15 @@ def main():
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
-                live, size = live_rounds(url)
+                live, chars, size = live_rounds(url)
             except Exception as exc:  # noqa: BLE001
                 print("live changelog (%s) unreadable (%s) — no verdict, this is not a site failure"
                       % (name, exc.__class__.__name__))
                 return 2
             tops[name] = max(live) if live else 0
             missing = sorted({r for r in local if r > tops[name]})
-            print("  leg %-4s newest round=%-3d (%d bytes, %d rounds)%s"
-                  % (name, tops[name], size, len(live),
+            print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d rounds)%s"
+                  % (name, tops[name], chars, size, len(live),
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
         bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)
         if witnessed:

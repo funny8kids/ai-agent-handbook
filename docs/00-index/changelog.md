@@ -9,6 +9,78 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 91 次）第 90 轮 §八 记下的「两个读数差得远」在本轮被量倒：不是平台发了两版，是判据把 UTF-8 解码后的字符数标成了 bytes——同一次抓取实测 337,508 字符 / 623,168 字节，比率 1.846；上一轮预告的那句断言也因此第一次真正可判（`--list-behind` 把 25 条落后单元的页与行号全部印出来）
+
+本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节，并在第 90 轮 §八 末尾回补一段）。**没有为过线删掉或加厚任何一页正文**——改动全部在尺子上：`tools/checks/check_live_sync.py`（单位口径 + 控制 U）与 `tools/checks/check_prose_survival.py`（新增 `--list-behind`）。
+
+### 一、上一轮那句断言先要能被判定，才谈得上通过
+
+第 90 轮把收尾账写成「`behind` 里不再出现本节之外的页」。本轮首跑读数：
+
+```text
+prose survival: pages=1 units=3966 plain=3671 heading=287 quote=8 widget=0 | all
+lost sentences: MISS=0 REVISION-BEHIND=25 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+behind detail: listed=25 of REVISION-BEHIND=25 (full listing)
+```
+
+- 这条断言在旧判据下**无法判定**：`run()` 只把每页第 1 条落后单元连同它的豁免证据印出来（`behind[:1]`），其余 24 条只在总数里。所以本轮先补口径，不动判决：`--list-behind` 逐条印 `页:行 种类 单元`，并且自证覆盖面（`listed` 与 `REVISION-BEHIND` 不等时印 `LIST INCOMPLETE`，宁可不给读数也不给半份名单）。
+- 判定结果：25 条全部在 `00-index/changelog.md` 这一页上，行号分布 172×1、178×5、192×2、194×4、201×2、203×3、205×1、207×7，而 §八 占第 156–208 行——**「本节之外的页」为 0 条**，断言按它自己的口径通过。
+- 17 变 25 不是页面又旧了一截，而是账本自己长厚：`git blame -L 168,208` 把这一段归给第 90 轮的四次提交（`d514095` 10 行、`a5e3e62` 7 行、`0805a59` 20 行、`0115cc6` 4 行），后两次正是当初预告「补写本段自己新增的字也在同一本账里」的那两次收尾提交。
+
+### 二、缺陷：腿线把字符数标成 bytes，于是「同一分钟的两个读数」成了假疑点
+
+第 90 轮记下的「`.md` 直抓 621,559 B，而 md 腿读 336,586 B，两个读数差得远」，本轮在同一条 URL 上一次抓取、两种口径同时打印：
+
+```text
+independent md fetch: raw_bytes=623168 decoded_chars=337508
+leg md   newest round=90  (337508 chars / 623168 bytes, 154 rounds)
+leg html newest round=90  (25108708 chars / 25994905 bytes, 544 rounds)
+```
+
+`live_rounds()` 原本 `return [...], len(html)`，而 `html` 是 `.decode("utf-8")` 之后的字符串——打印时却写着 `%d bytes`。更新日志几乎全是汉字，UTF-8 下每个汉字 3 字节，所以字符数天然比字节数小（实测比率 1.846），一个标签错误就凭空造出「1.85 倍的差额」。这不是平台的谜，是判据对自己的读数撒了谎——和第 90 轮那组口径与实测量不一致的缺陷同族，只是这一次落在工具自己的输出上。修法是把两个都印出来（`chars / bytes`），而不是挑一个：字节数用来对上一轮的直抓读数，字符数用来解释为什么 HTML 腿那个 25 MB 量级的说法仍然成立（25,994,905 字节）。
+
+### 三、控制 U：单位口径要能响，而且是离线控制
+
+`check_live_sync.py --selftest` 新增控制 U，它不调网络，而是让 `live_rounds()` 去抓一个 `file:///` 的本地中文样本页，然后要求：轮次解析看到 `[7, 6]`、`chars < bytes`（相等就说明这两个数不是它们各自标签说的东西），并且本文件源码里必须留着 `(%d chars / %d bytes` 这个格式与 `chars, size` 这个实参次序。三条里任何一条被改动——换标签、换次序、把字节数悄悄塞回字符位——控制都会红着报出来，而不是安静地读绿。首跑：`controls: OK, every needle rule able to fire`，`exit=0`。
+
+### 四、`.md` 水位与渲染水位是两条线，本轮把它们分开钉
+
+- `.md`：抓取内容里同时带着三次提交各自的唯一针——`目检三帧`（`0805a59`）、`一条一条串行跑`（`0115cc6`）、`为什么全站只有那 1 条红`（`a5e3e62`）。三条针先用 `git log -S` 证明各自只属于那一次提交，再拿它们判水位，所以读数是：**HEAD 提交 11 分钟后，`.md` 端已经同步到最后一次提交**。
+- 渲染页：散文腿的豁免证据同时说明，发布页在同一处仍印着 `a5e3e62` 之前的旧句——即 **HTML 渲染腿落后于 `.md`，且已跨四次提交**。这坐实了第 90 轮 §八 的机制判断（平台发了旧版），也把它从「一次观测」升成「两条水位可以分开测量、并且会分开」。
+- 本轮没有为这条差异再建判据：`check_live_sync` 已经各报两条腿，而「25 MB 页按平台自己的节奏翻页」是运营事实不是缺陷。留下的账照旧：切点分辨率（`published_cut`）与 `MISS` 的边界。
+
+### 五、离线电池（提交前，逐条；工作树即本轮将要提交的内容）
+
+| 判据 | 读数 |
+| --- | --- |
+| `check_structure.py` | `pages scanned=198 problems=0`；围栏 `mermaid=217 text=87 json=80 markdown=11 yaml=10 (no tag)=9`；`executable-tagged=0 json contracts parsed=80 unclosed=0` |
+| `check_widget_pairing.py` | `pages=198 problems=0`；`inventory: hint=257 stepper=54 step=279 tabs=52 tab=195` |
+| `check_quote_fidelity.py` | `attributed quotes=25 findings=0 verified=23`（`PROSE 14 / FIGURE 1 / RETRACTED-OK 8 / NEGATED 1 / SELF-EVIDENCED 1`） |
+| `check_changelog_headings.py` | `HEAD=82 tree=83 lost=0`——多出的 1 条就是本节标题，`lost=0` 说明没有第 90 轮的标题被吃掉 |
+| `check_emphasis_flanking.py` | `pages=0 leaked_strong_markers=0 (body=0 outline=0)`；`outline scope: headings=2846 carrying_inline_code=106 whose_flattening_is_markdown_significant=71` |
+| `check_char_sanity.py` | `pages=198 prose CJK chars=422629 traditional-form findings=0` |
+| `check_katex_formulas.py` | `pages=108 formulas=927 failures=0 version=0.18.7` |
+| `check_genre_floors.py` | `pages=196 published=196 graded=159 免检(不限)=37 不可判(同键高档)=40 problems=0` |
+| `check_mermaid_palette.py` | `blocks=217 chapters=21 contrast-pairs=868`，八个桶全 0 |
+| `check_readme_stats.py` | `banner chapters=19 measured=19`、`banner pages=196 measured=196`，逐条 ok |
+| `check_link_graph.py` | `distinct=717 ok=702 blocked=14 net=1 unchecked=0 FAILED: 0` |
+| `check_chapter_extras.py` | `chapters=18 goals=18 quizzes=17 quiz_exempt=1 questions=51 with_source=51 findings=0` |
+| `check_source_pointers.py` | `pages=191 pointer_lines=3 findings=0`；`live mutation ok (0 -> 1 -> 0 findings on 6 shipped pages)` |
+| `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0 unreadable=0` |
+| `check_prose_duplicates.py` | `pages=191 prose_units=7427 formula_units=274 dup=0 near-band=3` |
+| 两套控制 | `controls: OK, every bucket able to fire`（散文腿）／`controls: OK, every needle rule able to fire`（同步腿，含本轮新增的控制 U） |
+
+16 条全部 `exit=0`。两点口径值得写下来，免得下一轮误读：
+
+- **强调轴的标题计数会跟着本节长高**：`headings` 从第 90 轮的 2839 变成 2846（本节 7 条标题），`carrying_inline_code` 从 104 变成 106（新标题里有 2 条带行内代码）。而 `whose_flattening_is_markdown_significant` 保持 **71 不变**——这正是第 90 轮那条读者侧缺陷的口径：新写的标题里没有任何一条在展平后会露出 markdown 意义字符。也就是说这两个上涨的分母是「本节自己长出来的字」，不是「缺陷变多」，判据红绿看的是第三个数。
+- **散文重复轴本轮不动它就不该动**：`prose_units=7427` 与第 90 轮收尾读数一模一样，因为该轴把 `00-index/` 排除在语料之外（更新日志按设计要引用别的页的句子）。所以本轮没有像第 90 轮那样出现「写文档把自己的分母挪了」——这条等号只在改动落在被排除的页上时成立，不能推广。
+
+真实渲染目检（本地复制稿，768px 读者列宽）：把本节整段单独渲染成 HTML 后用 Edge headless 截图，`rendered html: 6 h3, 2 pre, 4155 chars`，出图 304,125 字节。图里两条 `text` 围栏各自成块、行内代码带底、粗体成粗体，**没有出现任何裸星号**。（这一帧拍在写 §五 之前，所以表格里有没有横向溢出还没被看过——留到 §六 收尾那一帧一起判。）
+
+### 六、收尾（提交并推送、线上同步之后）
+
+待补。
+
 ## 2026-09-25（第 90 次）`UNWITNESSED` 那本账挂了五轮，本轮先量它的价再动它：最近 40 次文档修订里 **113 次读者页触碰有 77 次**落进永久红的桶——「只改日期」的修订从此读绿，而「真没同步的页绝不落进这个桶」由控制 W 钉在真实切片跑上，另配一条让切片器失明的变异体 W2
 
 本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——这轮改的是 `tools/checks/check_live_sync.py` 的判决归属，而它不改任何一行被判决的内容。
@@ -205,6 +277,8 @@ live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
 **尾腿（推送 `0805a59` 之后，一条一条串行跑，逐字）**：`check_live_sync` `exit=0`，`leg md newest round=90 (336586 bytes, 154 rounds)`、`leg html newest round=90 (25108708 bytes, 544 rounds)`、`witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness`；强调腿 `--live` 在新口径下复读 `pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`；活体控制 `--mutate 00-index/changelog` `exit=0`，三条探针各藏住一句真实字并被 judge 判成 MISS 而非 lag（plain 159 字／1 份读者副本、heading 118 字／1 份、quote 29 字／1 份，不在场副本 2–3 份）。
 
 **唯一没有归零的是散文腿的 `REVISION-BEHIND=17`**（`MISS=0`、`exit=0`）。判据给出的豁免证据本身就是结论：发布页在同一处缺口里印着「为什么全站 44 条标题只有这 1 条红…」——那是 `a5e3e62` 之前的写法，树里已经没有了，所以这是**平台发了旧版**，不是它吞了句子。同一分钟里 `.md` 端的一次直接抓取已经带着本节补写的字（621,559 B），而 `check_live_sync` 的 md 腿读 336,586 B——两个读数差得远，本轮没有把这件事判成任何结论，只记下来。渲染页停在 25,108,708 B 不动，正是 §七 记过的「25 MB 文档按平台自己的节奏翻页」第二次落地。**下一轮开头要确认的一件事**：这 17 条随页面翻页归零，且补写本段自己新增的字也在同一本账里——断言写成「`behind` 里不再出现本节之外的页」，而不是「`behind=0`」。
+
+**第 91 轮回补本段（不改上面这句写下时的判断）**：那 17 条没有归零，而是长成 25 条；逐条列出后全部落在本节第 172–207 行之内的同一页上，「本节之外的页」为 0 条，所以本段预告的断言按它自己的口径判定通过（旧判据每页只印 1 条例句，这句断言当时根本无法判定，第 91 轮给它补了 `--list-behind`）。而本段那个「两个读数差得远」的疑点，答案是**本段自己把单位读错了**：`check_live_sync` 的腿线一直把 UTF-8 解码后的字符数标成 bytes——同一份 `.md` 在第 91 轮实测 337,508 字符 / 623,168 字节，比率 1.846，两个读数本来就是同一个文档、同一次抓取。上面「没有把这件事判成任何结论」是对的，但把差异记成「差得远」是错的：差的是 1.846 倍单位，不是两版内容。同段的 25,108,708 同样是字符数（HTML 实测 25,994,905 字节），所以「25 MB 文档」的说法没有被推翻。
 
 ## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
 
