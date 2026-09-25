@@ -18,7 +18,8 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from live_aria_manifest import fence_blocks, fence_openings, fence_prose_mask  # noqa: E402  one fence ruler
+from live_aria_manifest import (display_math_blocks, fence_blocks, fence_openings,  # noqa: E402
+                                fence_prose_mask)  # one fence ruler, one math ruler
 
 DOCS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs"))
 KEYS = ("tags", "type", "status", "updated")
@@ -47,6 +48,108 @@ BACKTICK_ESC = re.compile(r"\\`")
 NOT_A_PAGE = ("SUMMARY.md", "MANIFEST.md")
 
 
+# A GFM table row carries exactly the header's number of cells. More than that and the renderer
+# drops the extras — the reader silently loses a whole row's content — and the loss is invisible
+# offline: the authored file still contains the text, so every offline grep-style guard reads it as
+# present. Round 97 measured this on the live 术语速查 page: four rows had been glued two-and-two
+# (`… || …`), each hiding its back term — 分组查询注意力/GQA, 稀疏检索/BM25, 令牌桶/Token Bucket and
+# 基数树缓存/Radix Tree appeared 0 times in the served body and 1 time in the page's own `.md`, while
+# the front terms appeared once. `check_prose_survival.py` caught it only because that page happened
+# to be re-fetched; the class is authorable in one keystroke, so it is graded here, on the authored
+# side, before push. Cells separated by an ESCAPED pipe (`prompt \| llm`, round 95) are one cell.
+# Round 98's screenshot of the same page turned up the sibling class two lines below: rows with no
+# header at all, which ship as a paragraph of literal pipes. Both legs live here, both read the same
+# table map, and `table_orphans` is why that map had to know about display math too.
+PIPE_CELL = re.compile(r"(?<!\\)\|")
+TABLE_DELIM = re.compile(r"^\s{0,3}\|[\s:|-]*-[\s:|-]*\|?\s*$")
+# A line that LOOKS like a table row: a pipe-flanked run with at least one cell between the pipes.
+# Requiring the closing pipe is what keeps display math (`|C| \;\ge\; \theta` on its own line) out.
+ROWISH = re.compile(r"^\s{0,3}\|.*\|\s*$")
+
+
+def row_cells(line):
+    """The cells GFM sees in a table row: split on unescaped pipes, leading/trailing pipe dropped."""
+    parts = PIPE_CELL.split(line.strip())
+    if parts and not parts[0].strip():
+        parts = parts[1:]
+    if parts and not parts[-1].strip():
+        parts = parts[:-1]
+    return [c.strip() for c in parts]
+
+
+def find_tables(lines):
+    """Locate every GFM table: (header index, cell count, first body row, one past last body row).
+
+    GFM needs the header + delimiter pair; a pipe-flanked run without it is not a table to any
+    renderer, so this is the one place that decides which lines are table lines.
+    """
+    tables, i = [], 0
+    while i + 1 < len(lines):
+        head, sep = lines[i].strip(), lines[i + 1].strip()
+        if (head.startswith("|") and TABLE_DELIM.match(sep)
+                and len(row_cells(sep)) == len(row_cells(head))):
+            j = i + 2
+            while (j < len(lines) and lines[j].strip().startswith("|")
+                   and not TABLE_DELIM.match(lines[j].strip())):
+                j += 1
+            tables.append((i, len(row_cells(head)), i + 2, j))
+            i = j
+        else:
+            i += 1
+    return tables
+
+
+def table_arity(rel, lines, problems):
+    """Flag every row whose cell count differs from its own header's. Returns (tables, rows) graded."""
+    tables = graded = 0
+    for head, ncol, start, end in find_tables(lines):
+        tables += 1
+        for j in range(start, end):
+            row = lines[j].strip()
+            graded += 1
+            if len(row_cells(row)) != ncol:
+                problems.append(
+                    "TBLARITY %s:body-line %d is a table row with %d cells under a %d-cell header — the "
+                    "renderer drops the extras (the reader never sees that half of the row) or pads the "
+                    "missing ones: %r" % (rel, j + 1, len(row_cells(row)), ncol, row[:70]))
+    return tables, graded
+
+
+def table_orphans(rel, lines, problems):
+    """Flag pipe-shaped runs no header ever adopted: the reader gets literal `|` text, not a table.
+
+    Round 98 found this by screenshotting the page rather than by grepping it. Two runs of glossary
+    rows (5 and 9 lines) sat under a blank seam with no header of their own, so the whole block
+    arrived as one paragraph of raw pipes — and the arity leg above could not see it, because it
+    only walks rows *inside* a detected table. The block is in the file, the text is searchable, and
+    every offline "is this term present" grep reads it as fine; only the render says otherwise.
+    """
+    owned = set()
+    for head, ncol, start, end in find_tables(lines):
+        owned.update(range(head, end))
+    # A display formula is not a table no matter how many norm bars flank its lines: KaTeX takes
+    # `$$ |a| \;\ll\; |b| $$` and the reader never sees a pipe. Same pairing rule as the formula
+    # judge, imported rather than re-derived, so the two can never disagree about what is math.
+    for a, b in display_math_blocks(lines)[1]:
+        owned.update(range(a, b + 1))
+    runs, k = [], 0
+    while k < len(lines):
+        if ROWISH.match(lines[k]) and k not in owned:
+            m = k
+            while m + 1 < len(lines) and ROWISH.match(lines[m + 1]) and (m + 1) not in owned:
+                m += 1
+            runs.append((k, m))
+            k = m + 1
+        else:
+            k += 1
+    for a, b in runs:
+        problems.append(
+            "TBLORPHAN %s:body-line %d starts %d pipe row(s) with no header + delimiter above them — "
+            "no renderer treats this as a table, so the reader sees the pipes themselves: %r"
+            % (rel, a + 1, b - a + 1, lines[a].strip()[:70]))
+    return len(runs)
+
+
 def outside_fences(text):
     """Blank fenced regions (and the fence lines), and report whether the tail left a fence open.
 
@@ -61,8 +164,12 @@ def outside_fences(text):
     return "\n".join(l if keep else "" for l, keep in zip(lines, mask)), balanced
 
 
-def scan(rel, text):
-    """Problems for one page. `rel` is docs-relative, forward slashes."""
+def scan(rel, text, counts=None):
+    """Problems for one page. `rel` is docs-relative, forward slashes.
+
+    `counts` (optional) collects (rel, tables, rows) so the caller can prove what this page was
+    actually graded on — a coverage claim has to come off the same walk that produced the verdict.
+    """
     text = text.replace("\r\n", "\n")  # core.autocrlf=true: the working tree is CRLF by design
     problems = []
     m = FM.match(text)
@@ -106,6 +213,10 @@ def scan(rel, text):
                             "backslash cannot escape the delimiter, so the span closes early and "
                             "the delimiters it strands become an empty formula that swallows the "
                             "text between them: %r" % (rel, i, line.strip()[:60]))
+    tables, rows = table_arity(rel, body.split("\n"), problems)
+    orphans = table_orphans(rel, body.split("\n"), problems)
+    if counts is not None:
+        counts.append((rel, tables, rows, orphans))
     return problems
 
 
@@ -216,6 +327,107 @@ echo hi
     assert any("frontmatter" in p for p in scan("a.md", "# 无 frontmatter\n")), \
         "control: a page without frontmatter passed"
     assert scan("SUMMARY.md", "# Summary\n") == [], "control: SUMMARY.md held to the page rules"
+    # --- table arity: an off-arity row is content the reader never gets, and no offline grep sees it
+    tbl = good + """
+| 术语 | 英文 | 一句话解释 |
+|---|---|---|
+| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判 |
+"""
+    assert not any(p.startswith("TBLARITY") for p in scan("t.md", tbl)), \
+        "control: a well-formed 3-cell table was flagged: %s" % scan("t.md", tbl)
+    glued = tbl.replace("不硬判 |\n", "不硬判 || 分组查询注意力 | GQA / MQA | 多个 Q 头共享一份 K/V |\n")
+    assert sum(1 for p in scan("t.md", glued) if p.startswith("TBLARITY")) == 1, \
+        "control: two rows glued into one 6-cell row passed as a table: %s" % scan("t.md", glued)
+    short = tbl.replace("不硬判 |\n", "不硬判 |\n| 只写两格 | Two cells\n")
+    assert sum(1 for p in scan("t.md", short) if p.startswith("TBLARITY")) == 1, \
+        "control: a 2-cell row under a 3-cell header passed as a table: %s" % scan("t.md", short)
+    # an escaped pipe is ONE cell (round 95), so a row that naive splitting reads as 4 cells is clean
+    escaped = good + """
+| 记法 | 含义 | 例子 |
+|---|---|---|
+| $$\\|C\\|$$ | 范数 | prompt \\| llm |
+"""
+    assert not any(p.startswith("TBLARITY") for p in scan("t.md", escaped)), \
+        "control: an escaped pipe was counted as a cell boundary: %s" % scan("t.md", escaped)
+    # and a line that merely STARTS with a pipe is not a row unless a delimiter row follows it —
+    # the display formula `|C| \\ge \\theta T_max` in memory-compression-forgetting.md is math
+    mathish = good + "\n$$\n|C| \\;\\ge\\; \\theta\\,T_{\\max}\n$$\n"
+    assert not any(p.startswith("TBLARITY") for p in scan("t.md", mathish)), \
+        "control: a display-math line was graded as a table row: %s" % scan("t.md", mathish)
+    assert not any(p.startswith("TBLORPHAN") for p in scan("t.md", mathish)), \
+        "control: display math was flagged as an orphan table run: %s" % scan("t.md", mathish)
+    # The sibling class round 98 found by screenshotting instead of grepping: pipe rows with no
+    # header of their own. Same authored text, same searchable terms, and the reader gets raw pipes.
+    orphan = good + """
+| 无头行 A | Headless A | 读者看到的是竖线本身 |
+| 无头行 B | Headless B | 因为这段没有表头与分隔行 |
+"""
+    hits = [p for p in scan("t.md", orphan) if p.startswith("TBLORPHAN")]
+    assert len(hits) == 1, "control: a 2-row headerless run gave %d findings, expected 1 (one per run)" \
+                           % len(hits)
+    headed = orphan.replace("| 无头行 A |", "| 术语 | 英文 | 一句话解释 |\n|---|---|---|\n| 无头行 A |")
+    assert not any(p.startswith("TBLORPHAN") for p in scan("t.md", headed)), \
+        "control: the same run with a header was still orphan-flagged: %s" % scan("t.md", headed)
+    # The judge's own false positive, found on its first full-corpus run: a display formula whose
+    # line both opens and closes on a norm bar (`|ctx| ≪ |task|`, supervisor-pattern.md) is pipe-
+    # shaped but is math, and the reader gets KaTeX. It must not be convicted.
+    normbar = good + "\n$$\n|\\text{a}|\\;\\ll\\;|\\text{b}|\n$$\n"
+    assert not any(p.startswith("TBLORPHAN") for p in scan("t.md", normbar)), \
+        "control: a display formula flanked by norm bars was flagged as an orphan table: %s" \
+        % scan("t.md", normbar)
+    sp = os.path.join(DOCS, "08-multi-agent", "supervisor-pattern.md")
+    if os.path.isfile(sp):
+        with open(sp, "rb") as fh:
+            sptext = fh.read().decode("utf-8")
+        assert not any(p.startswith("TBLORPHAN") for p in scan("08-multi-agent/supervisor-pattern.md",
+                                                               sptext)), \
+            "supervisor-pattern's display formulas are being graded as orphan tables: %s" % [
+                p for p in scan("08-multi-agent/supervisor-pattern.md", sptext)
+                if p.startswith("TBLORPHAN")]
+    # The exemption must not be a blanket: on the same page that carries the exempt formula, a real
+    # headerless run further down still has to be convicted.
+    both = normbar + "\n| 无头行 A | Headless A | 豁免不是免罪符 |\n" \
+                     "| 无头行 B | Headless B | 同页的真空段仍要判 |\n"
+    assert sum(1 for p in scan("t.md", both) if p.startswith("TBLORPHAN")) == 1, \
+        "control: exempting display math also exempted the orphan run on the same page"
+    # the shipped page that had the defect: clean now, and the grader demonstrably reads its rows
+    gl = os.path.join(DOCS, "21-glossary", "README.md")
+    if os.path.isfile(gl):
+        with open(gl, "rb") as fh:
+            gltext = fh.read().decode("utf-8")
+        counts = []
+        assert not any(p.startswith("TBLARITY") for p in scan("21-glossary/README.md", gltext, counts)), \
+            "the shipped glossary table still has an off-arity row: %s" % [p for p in
+                                                                           scan("21-glossary/README.md", gltext)
+                                                                           if p.startswith("TBLARITY")]
+        assert not any(p.startswith("TBLORPHAN") for p in scan("21-glossary/README.md", gltext)), \
+            "the shipped glossary still carries a headerless pipe run the reader sees as text"
+        assert counts and counts[0][1] >= 8 and counts[0][2] >= 100, \
+            "vacuity: the glossary page graded %s tables/rows, so 'clean' is not coverage" % (counts,)
+        # Glue two adjacent shipped rows back together and require the finding. Which two rows is
+        # derived from the file (the first two equal-arity data rows it holds), not typed: a
+        # hand-copied literal is a second record of the same fact and it drifts.
+        gl_lines = gltext.replace("\r\n", "\n").split("\n")
+        k = next(i for i in range(len(gl_lines) - 1)
+                 if gl_lines[i].startswith("| ") and gl_lines[i + 1].startswith("| ")
+                 and not TABLE_DELIM.match(gl_lines[i]) and not TABLE_DELIM.match(gl_lines[i + 1])
+                 and len(row_cells(gl_lines[i])) == len(row_cells(gl_lines[i + 1])))
+        reglued = "\n".join(gl_lines[:k] + [gl_lines[k] + " || " + gl_lines[k + 1][1:]]
+                            + gl_lines[k + 2:])
+        hits = [p for p in scan("21-glossary/README.md", reglued) if p.startswith("TBLARITY")]
+        assert len(hits) == 1, \
+            "control: re-gluing the shipped row gave %d findings, expected exactly 1" % len(hits)
+        # And the orphan class on the shipped artifact: strip one table's header + delimiter and
+        # require the finding, on the same rows the reader now gets as a table.
+        h = next(i for i in range(len(gl_lines) - 1)
+                 if gl_lines[i].strip() == "| 术语 | 英文 | 一句话解释 |"
+                 and TABLE_DELIM.match(gl_lines[i + 1].strip())
+                 and gl_lines[i + 2].startswith("| ") and gl_lines[i + 3].startswith("| "))
+        beheaded = "\n".join(gl_lines[:h] + gl_lines[h + 2:])
+        hits = [p for p in scan("21-glossary/README.md", beheaded) if p.startswith("TBLORPHAN")]
+        assert len(hits) == 1, \
+            "control: deleting a shipped table header gave %d orphan findings, expected exactly 1" \
+            % len(hits)
     print("controls: in-fence heading ignored / real second H1, missing key, unclosed fence caught"
           " / TOC-reprinted marker and escaped backtick flagged, in-fence copies of both accepted"
           " / executable fences flagged in 5 languages and 6 data tags accepted"
@@ -228,6 +440,7 @@ def main():
         return 0
     run_controls()
     problems, n = [], 0
+    counts = []
     for dirpath, _, filenames in os.walk(DOCS):
         for fn in sorted(filenames):
             if not fn.endswith(".md"):
@@ -235,9 +448,15 @@ def main():
             path = os.path.join(dirpath, fn)
             rel = os.path.relpath(path, DOCS).replace("\\", "/")
             with open(path, "rb") as fh:
-                problems += scan(rel, fh.read().decode("utf-8"))
+                problems += scan(rel, fh.read().decode("utf-8"), counts)
             n += 1
     assert n >= 190, "vacuity: only %d markdown pages were scanned" % n
+    # The arity verdict only means something if tables were actually walked: a parser that matches no
+    # header/delimiter pair reports "0 off-arity rows" and looks identical to a clean book.
+    graded_tables = sum(c[1] for c in counts)
+    graded_rows = sum(c[2] for c in counts)
+    assert graded_tables >= 200 and graded_rows >= 1500, \
+        "vacuity: table arity graded %d tables / %d rows" % (graded_tables, graded_rows)
     # The fence inventory is printed because the homepage quotes it: 「正文零可执行代码」 plus the
     # per-language counts. A number README quotes must be reproducible by the same run that greens.
     langs, contracts, unclosed = {}, 0, 0
@@ -256,7 +475,8 @@ def main():
           % (" ".join("%s=%d" % kv for kv in sorted(langs.items(), key=lambda kv: -kv[1])),
              sum(v for k, v in langs.items() if k not in DATA_FENCE_LANGS and k != "(no tag)"),
              contracts, unclosed))
-    print("pages scanned=%d problems=%d" % (n, len(problems)))
+    print("pages scanned=%d tables graded=%d rows graded=%d orphan runs=%d problems=%d"
+          % (n, graded_tables, graded_rows, sum(c[3] for c in counts), len(problems)))
     for p in problems[:40]:
         print("  -", p)
     return 1 if problems else 0

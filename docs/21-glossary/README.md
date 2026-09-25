@@ -43,7 +43,8 @@ updated: 2026-09-25
 | 决策模型 | Decision Model / System One Model | 不生成文字、只并行输出带置信度的类型化判断（是否/选档/打分） |
 | 期望校准误差 | ECE（Expected Calibration Error） | 模型自称的置信度与真实准确率差多远，判定器能否上线的主指标 |
 | 置信度—覆盖率 | Confidence–Coverage Trade-off | 只采信高置信判定会掉覆盖率：准确率与「能用多少比例」必须一起报 |
-| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判，转交更强模型或人审的那条出口 || 分组查询注意力 | GQA / MQA（Grouped/Multi-Query Attention） | 多个 Q 头共享一份 K/V，直接按倍率压低 KV Cache 与解码带宽 |
+| 弃权与升级 | Abstain / Escalate | 置信度不足时不硬判，转交更强模型或人审的那条出口 |
+| 分组查询注意力 | GQA / MQA（Grouped/Multi-Query Attention） | 多个 Q 头共享一份 K/V，直接按倍率压低 KV Cache 与解码带宽 |
 | 多头潜注意力 | MLA（Multi-head Latent Attention） | 把 K/V 压到低秩潜空间再解压，用计算换显存的另一条路 |
 | 旋转位置编码 | RoPE（Rotary Position Embedding） | 用旋转把相对位置写进 Q/K，是外推与长上下文改造的落点 |
 | 分块注意力 | FlashAttention | 不减少计算量、靠减少 HBM 读写把注意力搬进片上显存的 IO 优化 |
@@ -52,13 +53,10 @@ updated: 2026-09-25
 | 缩放定律 | Scaling Law（Chinchilla） | 损失由参数量与数据量共同决定，二者要按比例一起加 |
 | 灾难性遗忘 | Catastrophic Forgetting | 微调后通用能力下降，靠数据配比与回放约束 |
 | 知识蒸馏 | Knowledge Distillation | 用大模型的输出（或 logits）教小模型 |
-
-
 | 对称对比损失 | InfoNCE | 把配对样本当正例、当场其余样本当负例的 softmax 分类损失 |
 | 视觉投影器 | Vision Projector / Q-Former | 把视觉特征压成语言模型可读的若干个「伪 token」 |
 | 多维旋转位置编码 | M-RoPE | 把位置编码拆成分量，分别编码时间、行、列 |
 | 可验证奖励强化学习 | RLVR | 用程序能判对错的任务提供奖励信号的训练范式 |
-| 动作分块 | Action Chunking | 一次预测连续多步动作，摊薄单步推理延迟 |
 
 ## 工具与协议
 
@@ -88,7 +86,8 @@ updated: 2026-09-25
 | 执行准确率 | Execution Accuracy（EX） | 比 SQL 执行后的结果集是否一致，而非比 SQL 文本 |
 | 难负例 | Hard Negatives | 语义接近却答错的样本，是 embedding 对比微调的涨点主力 |
 | Embedding 微调 | Embedding Fine-tuning | 用领域 (query, 正例, 难负例) 对重训向量，让检索跟上黑话 |
-| 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 || 稀疏检索 | BM25 | 基于词频与逆文档频率的关键词打分，稠密向量的互补项 |
+| 事件溯源 | Event Sourcing | 以不可变事件序列存储状态的架构 |
+| 稀疏检索 | BM25 | 基于词频与逆文档频率的关键词打分，稠密向量的互补项 |
 | 倒数排名融合 | RRF（Reciprocal Rank Fusion） | 只按名次合并多路检索结果的排序融合法 |
 | 假设文档嵌入 | HyDE（Hypothetical Document Embeddings） | 先让模型写一篇假答案再拿它去检索 |
 | 忠实度 | Faithfulness | 回答里的每条论断是否被检索到的上下文支撑，RAG 评测主指标 |
@@ -105,8 +104,8 @@ updated: 2026-09-25
 | 越狱 | Jailbreak | 绕过模型安全对齐的攻击 |
 | 可观测性 | Observability | 日志、追踪、监控构成的系统透明度 |
 | 规范博弈 | Reward Hacking | 钻奖励定义空子达成字面目标 |
-| 基准测试 | Benchmark | 标准化的能力评估任务集 || 令牌桶 | Token Bucket | 按时间补充配额的限流算法，允许突发又能控均值 |
-| 幂等键 | Idempotency Key | 让重复请求只产生一次副作用的标识，Agent 执行动作的保命符 |
+| 基准测试 | Benchmark | 标准化的能力评估任务集 |
+| 令牌桶 | Token Bucket | 按时间补充配额的限流算法，允许突发又能控均值 |
 
 
 ## 评测、数据与安全
@@ -136,10 +135,10 @@ updated: 2026-09-25
 |---|---|---|
 | 预填充 / 解码 | Prefill / Decode | 推理的两个阶段：算 prompt（算力瓶颈）与逐 token 生成（带宽瓶颈） |
 | 连续批处理 | Continuous Batching | 请求完成即退出、新请求随时补位，把 decode 阶段的 GPU 填满 |
-| 分页注意力 | PagedAttention | 像虚拟内存分页那样管理 KV 缓存，减少显存碎片 || 基数树缓存 | Radix Tree / Prefix Cache | 用前缀树跨请求复用公共前缀的 KV，命中即跳过重算 |
+| 分页注意力 | PagedAttention | 像虚拟内存分页那样管理 KV 缓存，减少显存碎片 |
+| 基数树缓存 | Radix Tree / Prefix Cache | 用前缀树跨请求复用公共前缀的 KV，命中即跳过重算 |
 | PD 分离 | Prefill/Decode Disaggregation | 把两阶段放到不同资源池各自扩容，代价是 KV 搬运 |
 | 专家并行 | Expert Parallelism | 把 MoE 的专家分散到多卡，靠 All-to-All 路由 token |
-
 | 前缀缓存 | Prefix / Prompt Caching | 复用逐 token 相同前缀的 KV 计算，省钱又降 TTFT |
 | 首 token 延迟 | TTFT（Time To First Token） | 从发出请求到看到第一个字的等待时间 |
 | 每 token 间隔 | TPOT / ITL | 流式输出时相邻 token 的时间差，决定「卡不卡」 |
@@ -147,7 +146,7 @@ updated: 2026-09-25
 | 分离式服务 | Disaggregated Serving | 把 prefill 与 decode 放到不同 GPU 池各自扩缩 |
 | 投机解码 | Speculative Decoding | 小模型草稿 + 大模型批量验证，加速解码 |
 | 持久化执行 | Durable Execution | 每步状态自动落盘，进程重启后从断点继续 |
-| 幂等键 | Idempotency Key | 保证重试不会重复执行副作用的唯一标识 |
+| 幂等键 | Idempotency Key | 保证重试不会重复执行副作用的唯一标识，Agent 执行动作的保命符 |
 | microVM | Micro VM | 极简设备模型的轻量虚拟机，兼顾隔离与启动速度 |
 
 ## 具身智能
@@ -158,7 +157,7 @@ updated: 2026-09-25
 | 视觉-语言-动作模型 | VLA（Vision-Language-Action） | 输入图像与指令、直接输出机器人动作序列的模型 |
 | 视觉-语言模型 | VLM（Vision-Language Model） | 看图说话的多模态模型，常作 VLA 的骨干 |
 | 机器人基础模型 | Robot Foundation Model | 跨任务、跨机型预训练后可微调适配的通用策略模型 |
-| 动作分块 | Action Chunking | 一次推理输出一段未来动作，用低频率模型驱动高频率控制 |
+| 动作分块 | Action Chunking | 一次推理输出一段未来动作，用低频率模型驱动高频率控制，同时把单步推理的延迟摊薄到整段动作上 |
 | 时间集成 | Temporal Ensembling | 相邻动作块重叠段加权平均，消除块边界跳变 |
 | 扩散策略 | Diffusion Policy | 用去噪生成模型表达多峰动作分布 |
 | 流匹配 | Flow Matching | 学习从噪声到动作的速度场，训练稳定、少步可采样 |

@@ -170,6 +170,18 @@ def prose(text):
     return "\n".join(strip_code_spans(ln) for ln in outside_fences(text).split("\n"))
 
 
+def display_math_blocks(lines):
+    """(indices of lone-line `$$` delimiters, [(open, close)] pairs) for one page's line list.
+
+    This is the platform's display-formula pairing rule and it lives here because more than one
+    ruler needs it: the formula judge reads the sources between the pairs, and round 98's table
+    judge has to know that a line like `|\\text{ctx}|\\;\\ll\\;|\\text{task}|` sits INSIDE a formula.
+    Norm bars flank such a line, so a pipe-shaped line test alone convicts a working formula.
+    """
+    lone = [i for i, ln in enumerate(lines) if ln.strip() == "$$"]
+    return lone, list(zip(lone[0::2], lone[1::2]))
+
+
 def formula_sources(text):
     """[(kind, source)] for every formula the page asks for, plus the defects found.
 
@@ -179,12 +191,12 @@ def formula_sources(text):
     """
     body = prose(text)
     lines = body.split("\n")
-    lone = [i for i, ln in enumerate(lines) if ln.strip() == "$$"]
+    lone, blocks = display_math_blocks(lines)
     defects = []
     if len(lone) % 2:
         defects.append("asymmetric display delimiters: %d lone-line $$" % len(lone))
     in_block, out = set(), []
-    for a, b in zip(lone[0::2], lone[1::2]):
+    for a, b in blocks:
         src = "\n".join(lines[a + 1:b])
         out.append(("display", src))
         in_block.update(range(a, b + 1))
