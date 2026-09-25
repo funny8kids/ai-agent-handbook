@@ -320,9 +320,17 @@ def selftest():
     got5 = [b for b, _m in grade(body(tv), palette, form, ink, "06-x/y.md")]
     check("H 白底白字必须同时报 TEXTCOLOR 与 CONTRAST",
           "CONTRAST" in got5 and "TEXTCOLOR" in got5, "got=%s" % got5)
+    # 章号必须由色表自己推，不能写死。第 96 轮真的加了 20 章，写死的「不存在的章 20」就地变成一本
+    # 正常的书，这条断言从那天起就是假的；而控制项只在 `--selftest` 里跑、默认电池从不跑它，
+    # 所以第 96–98 三轮的绿色里根本没有这一条——第 99 轮新增的 `--selftests` 一拉就红。
+    # 只在两位数里找空位，因为 `chapter_of()` 就取路径前两位；找三位数会种出一个读不回来的章号
+    # （第一次草稿正好踩中：色表里有个 99，`max+1` 种出 `100-`，被前两位读成 10）。
+    free = next(i for i in range(10, 100) if i not in palette)
+    unknown = "%02d-newpage/x.md" % free
     check("I 不在色表里的章要报 NOCHAPTER",
-          grade(body(directive_of(real[0])), palette, form, ink, "20-newpage/x.md")[0][0]
-          == "NOCHAPTER")
+          chapter_of(unknown) == free and grade(body(directive_of(real[0])), palette, form, ink,
+                                                unknown)[0][0] == "NOCHAPTER",
+          "planted=%s reads_back=%s" % (unknown, chapter_of(unknown)))
     check("J 读不出的指令行要报 UNPARSE",
           grade('%%{init: {"theme":"base",}%%\nflowchart TD', palette, form, ink,
                 "06-x/y.md")[0][0] == "UNPARSE")

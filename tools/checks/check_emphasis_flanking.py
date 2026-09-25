@@ -343,12 +343,16 @@ def reader_html(served):
 def serve_copy(url, fetch=PS.fetch_page):
     """A served copy whole enough to grade, or a raise — never an empty string.
 
-    `PS.fetch_page` reports both a failed fetch and round 93's short-read refusal as `("", reason)`
-    instead of raising. `probe()` catches exceptions, not tuples, so reading the second slot
-    directly handed `""` to the marker count: every page the author leg predicts clean stayed clean
-    on a copy that carried nothing, and the run looked like a full-site pass.
+    `PS.fetch_page` reports both a failed fetch and round 93's short-read refusal as
+    `("", reason, attempts)` instead of raising. `probe()` catches exceptions, not tuples, so reading
+    the second slot directly handed `""` to the marker count: every page the author leg predicts
+    clean stayed clean on a copy that carried nothing, and the run looked like a full-site pass.
+
+    The tuple is unpacked positionally because its shape is the seam's contract, and round 99
+    widened it one slot upstream (the retry count) — which is why `fetch_seam_control` below feeds
+    the producer itself rather than a hand-typed tuple.
     """
-    _url, text, err = fetch(url)
+    _url, text, err, _tries = fetch(url)
     if err:
         raise ValueError(err)
     return text
@@ -513,23 +517,33 @@ def homepage_parity(bullet=None):
 
 
 def fetch_seam_control():
-    """The live leg must be unable to grade a copy that did not arrive whole. Both directions."""
+    """The live leg must be unable to grade a copy that did not arrive whole. Both directions.
+
+    Round 99 rewrote this to drive the real producer. It used to hand-type the tuple the seam
+    returns, so when `PS.fetch_page` grew a fourth slot (how many attempts a page took) the control
+    kept passing a three-tuple and reading green while the axis's own unpacking broke on every
+    page. A control that invents its producer's shape checks the control, not the producer.
+    """
     ok = True
     whole = "<html><body><p>这一句读者应当看到</p></body></html>"
-    for kept, reason in ((whole, None),
-                         ("", "short read: no closing </html> (18900551 chars)")):
-        def fake(url, kept=kept, reason=reason):
-            return (url, kept, reason)
-        try:
-            got, raised = serve_copy("https://example.invalid/page", fetch=fake), None
-        except ValueError as exc:
-            got, raised = None, str(exc)
-        if reason is None and (raised or got != whole):
-            ok = False
-            print("CONTROL FAIL complete copy refused or mangled: %r" % (raised,))
-        if reason and raised is None:
-            ok = False
-            print("CONTROL FAIL short copy graded as %r instead of refusing" % (got,))
+    torn = whole[: -len("</html>")]          # the measured refusal shape: no closing tag at the end
+    real_fetch, real_attempts, real_backoff = LA.fetch, PS.FETCH_ATTEMPTS, PS.FETCH_BACKOFF
+    try:
+        PS.FETCH_ATTEMPTS, PS.FETCH_BACKOFF = 1, 0.0     # one attempt: a refusal must not be retried away
+        for kept, must_refuse in ((whole, False), (torn, True)):
+            LA.fetch = lambda url, kept=kept: kept
+            try:
+                got, raised = serve_copy("https://example.invalid/page"), None
+            except ValueError as exc:
+                got, raised = None, str(exc)
+            if must_refuse and raised is None:
+                ok = False
+                print("CONTROL FAIL torn copy graded as %r instead of refusing" % (got,))
+            if not must_refuse and (raised or got != whole):
+                ok = False
+                print("CONTROL FAIL complete copy refused or mangled: %r" % (raised,))
+    finally:
+        LA.fetch, PS.FETCH_ATTEMPTS, PS.FETCH_BACKOFF = real_fetch, real_attempts, real_backoff
     return ok
 
 

@@ -231,6 +231,76 @@ def controls():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+HOME_LINE = "check_prose_duplicates.py"
+
+
+def homepage_parity(counts, text=None):
+    """The homepage sentence that cites this axis must cite this axis's own reading (round 99).
+
+    It had drifted: the page still read 「把 191 篇正文」 and `pages=191 prose_units=7414` while this
+    judge measured 206 pages / 8572 units -- fifteen pages shipped in rounds 96-98 and not one
+    assertion compared that sentence to a run, in the very sentence that documents how the number
+    under it went stale before. Page counts do not move when prose is rewritten, so they get
+    equality. Unit counts do -- this homepage is inside its own corpus -- so they get a floor: a
+    quoted reading may only be left behind by growth, never overstate the current run.
+    """
+    corpus = text if text is not None else io.open(os.path.join(DOCS, "README.md"),
+                                                   encoding="utf-8").read()
+    line = next((l for l in corpus.split("\n") if HOME_LINE in l), None)
+    if line is None:
+        return ["homepage: no sentence cites %s, so its 跨页不重复 claim has no judge" % HOME_LINE]
+    errs = []
+    cited = ([int(v) for v in re.findall(r"把 (\d+) 篇正文", line)]
+             + [int(v) for v in re.findall(r"pages=(\d+)", line)])
+    if not cited:
+        errs.append("homepage: the page count must be cited as 「把 N 篇正文」 and 「pages=N」 so this "
+                    "assertion can check it")
+    elif set(cited) != {counts["pages"]}:
+        errs.append("homepage: 「%s」 is not this judge's view of %d pages"
+                    % (" / ".join(str(c) for c in sorted(set(cited))), counts["pages"]))
+    for tag, key in (("prose_units", "prose"), ("formula_units", "formula")):
+        got = [int(v) for v in re.findall(tag + r"=(\d+)", line)]
+        if not got:
+            errs.append("homepage: %s must be cited as 「%s=N」 so this assertion can check it"
+                        % (tag, tag))
+        elif max(got) > counts[key]:
+            errs.append("homepage: 「%s=%d」 overstates this run's %d -- a dated reading may only be "
+                        "left behind by growth; re-run after the last word change"
+                        % (tag, max(got), counts[key]))
+    return errs
+
+
+def home_control(counts):
+    """Every direction of the parity check above must be able to fire, and the bar must be reachable.
+
+    Round 92's lesson, applied one level down: an alarm nobody has seen ring is a comment. The clean
+    line is measured against the judge's own reading, so it cannot be an unreachable bar.
+    """
+    ok = ("%s 把 %d 篇正文；全站读数 pages=%d prose_units=%d formula_units=%d"
+          % (HOME_LINE, counts["pages"], counts["pages"], counts["prose"], counts["formula"]))
+    assert homepage_parity(counts, ok) == [], \
+        ("control P0: a sentence that cites this run's readings must read clean, read %r"
+         % homepage_parity(counts, ok))
+    stale = ok.replace("把 %d 篇正文" % counts["pages"], "把 191 篇正文")
+    assert any("191" in e for e in homepage_parity(counts, stale)), \
+        "control P1: a page count left behind by fifteen shipped pages must be named, not waved through"
+    over = ok.replace("prose_units=%d" % counts["prose"], "prose_units=%d" % (counts["prose"] + 1))
+    assert any("prose_units" in e for e in homepage_parity(counts, over)), \
+        "control P2: a quoted unit reading above this run's must be rejected (it claims more than it measured)"
+    under = ok.replace("prose_units=%d" % counts["prose"], "prose_units=%d" % (counts["prose"] - 1))
+    assert homepage_parity(counts, under) == [], \
+        ("control P3: a quoted unit reading below this run's is a dated record, not a defect -- it is "
+         "the pages= figure that must stay exact, got %r" % homepage_parity(counts, under))
+    blind = ok.replace("pages=%d" % counts["pages"], "pages 若干").replace(
+        "把 %d 篇正文" % counts["pages"], "把许多篇正文")
+    assert any("must be cited" in e for e in homepage_parity(counts, blind)), \
+        "control P4: a sentence that drops the numbers must be rejected, not read as silence"
+    assert homepage_parity(counts, "这一句不提任何判据脚本") != [], \
+        "control P5: no citation at all is the loudest failure, not a pass"
+    print("homepage parity controls ok (P0 satisfiable / P1 stale pages / P2 overstated / "
+          "P3 dated floor / P4 dropped numbers / P5 uncited)")
+
+
 def real_page_mutation_control():
     """Prove the judge still fires at real page density, not just on the synthetic corpus.
 
@@ -287,14 +357,19 @@ def main():
         ("vacuity floor: the corpus should carry thousands of prose units and hundreds of formulas, "
          "read prose=%d formula=%d — a judge that reads almost nothing proves nothing"
          % (counts["prose"], counts["formula"]))
+    counts["pages"] = len(pages())
+    home = homepage_parity(counts)
+    home_control(counts)
     for f in findings[:top]:
         print("  " + f)
     print("prose duplicates: pages=%d prose_units=%d formula_units=%d dup=%d near-band(%.2f-%.2f)=%d"
-          % (len(pages()), counts["prose"], counts["formula"], len(findings),
+          % (counts["pages"], counts["prose"], counts["formula"], len(findings),
              ADVISORY_T, NEAR_T, len(advisory)))
     for sim, kind, pa, pb, ua, ub in advisory[:top]:
         print("  [%.3f %s] %s || %s | %s | %s" % (sim, kind, pa, pb, ua[:60], ub[:60]))
-    return 1 if findings else 0
+    for e in home:
+        print("  " + e)
+    return 1 if (findings or home) else 0
 
 
 if __name__ == "__main__":

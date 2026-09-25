@@ -10,12 +10,27 @@ its exception (dead image paths, `placements == 45`) stopped executing with it.
 So the bug was the per-round list. This runner takes its work list from the directory: a new axis
 is covered the moment it lands, and a stale one cannot quietly drop out.
 
+Round 99 found the same shape one level down. Many axes carry a planted-control mode of their own
+(`--selftest`), and the battery never ran any of them: it invokes each axis in its *default* mode
+only, so the number of control modes is computed at run time and printed as `ran=N of M declared`
+rather than written down here where it could go stale. The cost was measured by running each
+committed tree: `check_prose_survival.py --selftest` and `check_mermaid_palette.py --selftest` both
+exited 1 from round 96's first commit (a4c3778) through round 98's close (dc6715d) -- six commits,
+three rounds of green battery summaries -- because nobody ran a control mode between a human typing
+the flag and this sweep. What had gone stale: the completeness judge's own alarm line still said
+「196 篇正文」 while its view was 205 then 211 (round 96's badge commit synced four other homepage
+sentences and missed that one), and chapter 20 became a real coloured chapter, so the palette
+judge's hard-coded 「不存在的章 20」 stopped checking anything. `--selftests` runs that whole set
+from the directory too, for the same reason the work list does: which axes have controls is read off
+their own flag parsers, not off a hand-typed list.
+
 Usage:
     python tools/checks/run_battery.py --selftest   # prove the work-list discovery still covers the dir
     python tools/checks/run_battery.py                 # everything, default mode per axis
     python tools/checks/run_battery.py --list           # just the discovered work list
     python tools/checks/run_battery.py --only structure --only widget   # substring filter
     python tools/checks/run_battery.py --skip live      # skip the browser legs (fast offline pass)
+    python tools/checks/run_battery.py --selftests      # every axis's planted-control mode, offline
     python tools/checks/run_battery.py --args --live    # extra args handed to every axis
     python tools/checks/run_battery.py --help           # this usage
 Exit code is 0 only when every axis that ran exited 0; a timeout is reported as its own result,
@@ -24,6 +39,7 @@ never folded into "passed". A flag this runner does not know is a red exit 2, ne
 """
 import io
 import os
+import re
 import subprocess
 import sys
 import time
@@ -67,6 +83,22 @@ def unregistered():
 
 def libs():
     return [n for n in pyfiles() if not runnable(n)]
+
+
+# A control mode is detected on the axis's own flag parser, not anywhere in its file: several axes
+# document `--selftest` in their usage block, and handing that flag to one that does not parse it
+# would run its live leg -- the exact round-95 failure this runner was tightened for.
+SELFTEST_DECL = re.compile(r'add_argument\(\s*"--selftest"|"--selftest"\s+in\s+\w+')
+# A file's control block, by name, whether or not a flag gates it. Deliberately narrower than
+# "contains asserts": `check_readme_stats` grades with inline asserts and no named block, and this
+# line reports what it can see rather than what it would like to believe.
+CONTROL_BLOCK = re.compile(r"def \w*(?:control|selftest)\w*\(")
+
+
+def selftest_axes():
+    """Axes that implement a planted-control mode, read off the directory rather than a list."""
+    return [n for n in axes() if SELFTEST_DECL.search(io.open(
+        os.path.join(HERE, n + ".py"), encoding="utf-8").read())]
 
 
 def child_env():
@@ -118,6 +150,51 @@ def run_one(name, extra, logdir):
     return code, elapsed, log, reading
 
 
+def selftests(logdir):
+    """Run every axis's planted-control mode. Returns the process exit code.
+
+    The number that has to be read is `ran=N of M declared`: a control mode is only an alarm if
+    something pulls it, and before round 99 nothing did. Each leg is isolated so a crash cannot
+    take the axes queued behind it down with it (round 97 killed 20 axes exactly that way) -- a
+    leg that fails to start is its own RED and lowers `ran`, which is what makes the pair unequal.
+    """
+    work = selftest_axes()
+    assert work, ("vacuity: no axis's parser advertises --selftest, so this mode reports green over "
+                  "an empty set (the regex or the flag name has moved)")
+    if not os.path.isdir(logdir):
+        os.makedirs(logdir)
+    bad, ran = [], 0
+    for name in work:
+        try:
+            code, elapsed, log, reading = run_one(name, ["--selftest"], logdir)
+        except Exception as exc:                              # noqa: BLE001
+            code, elapsed, log = "LAUNCH-FAIL", 0, ""
+            reading = "%s: %s" % (type(exc).__name__, str(exc)[:90])
+        else:
+            ran += 1
+        emit(sys.stdout, name, code, elapsed, reading)
+        if code != 0:
+            bad.append((name, log))
+    untested = [n for n in axes() if n not in work]
+    has_controls = [n for n in untested if CONTROL_BLOCK.search(io.open(
+        os.path.join(HERE, n + ".py"), encoding="utf-8").read())]
+    print("selftests: ran=%d of %d declared, non-zero=%d logdir=%s"
+          % (ran, len(work), len(bad), logdir))
+    # Which axes this sweep did not pull is coverage reporting, not a verdict: it prints every round
+    # so a thinning set is visible, and it does not colour the exit code (only a red control does).
+    # Split by whether the file has a control block at all, because half of what looks like a gap is
+    # not one -- `check_structure` and four others assert their plants inside `main()` with no flag,
+    # so the default battery pass already pulls them.
+    print("not pulled by this sweep: %d -- %d assert on every default pass (%s), %d have no control "
+          "block at all (%s)"
+          % (len(untested), len(has_controls), ", ".join(has_controls) or "none",
+             len(untested) - len(has_controls),
+             ", ".join(n for n in untested if n not in has_controls) or "none"))
+    for n, log in bad:
+        print("  RED %s -> %s" % (n, log or "did not start"))
+    return 1 if (bad or ran != len(work)) else 0
+
+
 def selftest():
     """The runner's own guard: work-list discovery must not be able to shrink in silence.
 
@@ -157,6 +234,17 @@ def selftest():
     assert parse_flags(["--only", "structure,widget"])[2] == ["structure", "widget"], \
         "a comma list is how a filter gets written by hand"
     assert parse_flags(["--skip", "live", "--logdir", "/tmp/b"])[3:] == (["live"], "/tmp/b")
+    assert parse_flags(["--selftests"])[0] == "selftests", \
+        "the control sweep must be its own mode, never a filter on the full battery"
+    # The `--selftests` work list must not be able to go blind in either direction: an axis that
+    # parses the flag has to be found, and one that merely mentions it in prose must not be handed
+    # the flag and run its live leg.
+    decl = selftest_axes()
+    assert "check_prose_survival" in decl and "check_structure" not in decl, \
+        "the control-mode detector stopped reading parsers"
+    assert len(decl) >= 8, ("vacuity: only %d axes are seen to have controls" % len(decl))
+    assert set(decl) <= set(axes()), "a control mode was found on a file the battery does not run"
+
     # And the loop itself must not be killable by what an axis printed (round 97 killed 20 axes
     # this way). Both directions: the raw reading must raise on a strict console — proving that
     # console really cannot encode it — while `emit` must clear that same console untouched.
@@ -184,7 +272,7 @@ def selftest():
 
 
 def parse_flags(argv):
-    """(mode, extra, only, skip, logdir). `mode` is None (run), "selftest", "list" or "help".
+    """(mode, extra, only, skip, logdir). `mode` is None (run), "selftest", "selftests", "list" or "help".
 
     An unrecognised flag raises instead of falling through to a full battery: round 95 typed
     `--help` here, got no such option message from nobody, and started every axis in the
@@ -218,6 +306,9 @@ def parse_flags(argv):
         elif a == "--selftest":
             mode = "selftest"
             break
+        elif a == "--selftests":
+            mode = "selftests"
+            break
         elif a == "--list":
             mode = "list"
             break
@@ -243,6 +334,8 @@ def main():
     if mode == "selftest":
         selftest()
         return 0
+    if mode == "selftests":
+        return selftests(logdir or os.path.join(os.environ.get("TEMP", "/tmp"), "battery-selftests"))
     if mode == "list":
         for n in axes():
             print(n)

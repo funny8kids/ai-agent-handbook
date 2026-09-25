@@ -77,6 +77,8 @@ import io
 import os
 import re
 import sys
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -85,6 +87,9 @@ import live_aria_manifest as LA   # the shared tokenizer: this judge and the par
 
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 DOCS = os.path.join(REPO, "docs")
+
+FETCH_ATTEMPTS = 6      # a page is refused only after this many complete-copy attempts
+FETCH_BACKOFF = 3.0     # seconds, multiplied by the attempt number (the CDN throttles harder under load)
 
 MIN_CHUNK = 14          # normalized characters, spaces excluded
 SENT_END = re.compile(r"[。；;！!？?]")
@@ -419,23 +424,58 @@ def short_read(url, text):
 
 
 def fetch_page(url):
-    # A reset connection is noise, not a swallowed sentence, so one retry; a page that survives two
-    # attempts is still a bucket of its own and still exits non-zero (round 83 saw two SSL resets).
-    # A truncated copy is retried for the same reason and, if it persists, lands in the same bucket —
-    # it is never graded, because half a page proves nothing about the other half.
+    # A reset connection is noise, not a swallowed sentence, so a page gets several attempts; one that
+    # survives them all is still a bucket of its own and still exits non-zero (round 83 saw two SSL
+    # resets). A truncated copy is retried for the same reason and, if it persists, lands in the same
+    # bucket — it is never graded, because half a page proves nothing about the other half.
+    #
+    # Round 99 raised 2 attempts to 6, on a measurement rather than a hunch: the same HEAD, minutes
+    # apart, read `fetch-failures=1` inside the battery and `fetch-failures=0 STALE-COPY=16` run solo.
+    # The single page that flips is the 29 MB changelog, and it truncates on about half of all fetches
+    # (8 sequential GETs: 5 without a closing </html>, 3 complete and all three exactly 29,075,552 B).
+    # Two attempts therefore refused that page often enough to be a coin flip about the wire rather
+    # than a verdict about readers: at the measured 5-of-8 truncation rate a 2-attempt leg fails ~39%
+    # and a 6-attempt leg ~6% (the attempts are treated as independent, which 8 samples cannot prove).
+    # The count is not chosen to make a red disappear: a page that must be refused still is, with the
+    # same message, and `attempts=` is printed so a rising truncation rate cannot go quiet.
     err = None
-    for _ in range(2):
+    for attempt in range(1, FETCH_ATTEMPTS + 1):
         try:
             text = LA.fetch(url)
         except Exception as exc:                              # noqa: BLE001 - a flaked fetch is a bucket, not a trace
             err = "%s: %s" % (type(exc).__name__, str(exc)[:90])
+            time.sleep(FETCH_BACKOFF * attempt)
             continue
         reason = short_read(url, text)
         if reason:
             err = "short read: " + reason
+            time.sleep(FETCH_BACKOFF * attempt)
             continue
-        return url, text, None
-    return url, "", err
+        return url, text, None, attempt
+    return url, "", err, FETCH_ATTEMPTS
+
+
+def fetch_all(urls, workers):
+    """Fetch every page once concurrently, then re-attempt each refusal on its own.
+
+    Returns `(results, refused)` with `results` in input order as `(url, served, err, tries)`, and
+    `refused` as `[(index, err_from_the_concurrent_pass)]` for the pages the re-pass had to cover.
+    A page that the re-pass also refused keeps its refusal in `results`, so the caller's bucket is
+    unchanged -- see the round-99 measurement in `run()` and control X.
+    """
+    urls = list(urls)
+    results = [None] * len(urls)
+    refused = []
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        # pool.map keeps the input order, so a row is graded against its own page and one HTML
+        # document is held in memory at a time (the changelog alone is 18 MB).
+        for i, res in enumerate(pool.map(fetch_page, urls)):
+            results[i] = res
+            if res[2] or not res[1]:
+                refused.append((i, res[2]))
+    for i, _first in refused:
+        results[i] = fetch_page(urls[i])
+    return results, refused
 
 
 def run(sample=None, workers=6, only=None, list_behind=False):
@@ -460,46 +500,67 @@ def run(sample=None, workers=6, only=None, list_behind=False):
     if sample and only is None:                           # a sample cannot judge the whole site's coverage
         _label, _unl = "sample:%d/%d" % (len(picked), len(rows)), 0
     problems, fetch_fail, pages_lost = [], [], []
+    attempts_by_page = {}
     listed_behind = 0
     total = sum(len(r["units"]) for r in picked)
     plain = sum(1 for r in picked for k, _u, _l in r["units"] if k == "plain")
     heading = sum(1 for r in picked for k, _u, _l in r["units"] if k == "heading")
     quote = sum(1 for r in picked for k, _u, _l in r["units"] if k == "quote")
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        # pool.map keeps the input order, so a row is graded against its own page and one HTML
-        # document is held in memory at a time (the changelog alone is 18 MB).
-        for r, (_url, served, err) in zip(picked, pool.map(lambda x: fetch_page(x["url"]), picked)):
-            if err or not served:
-                fetch_fail.append("%s %s" % (r["page"], err or "empty body"))
-                continue
-            flat = re.sub(r"\s+", " ", served_chunks(served))
-            lost = grade(r["units"], flat)
-            if not lost:
-                continue
-            # Two failures look identical, so they are separated by evidence rather than by a guess:
-            # `published_cut()` asks the page itself which round it has published. Text above that
-            # line is an unreleased revision (round 83: the changelog page pinned at 79 in an 18 MB
-            # document, whose round-79 section had since been amended by its own close-out commit);
-            # text below it, or on a page with no round history, the renderer swallowed.
-            cut = published_cut(r["text"], served)
-            rows, _evidence = classify(r["units"], flat, served,
-                                        re.sub(r"\s+", " ", LA.norm(r["text"])))
-            unreleased = [t for t in rows if cut and t[1] < cut]
-            rest = [t for t in rows if not (cut and t[1] < cut)]
-            behind = [t for t in rest if t[3] == "REVISION-BEHIND"]
-            miss = [t for t in rest if t[3] == "MISS"]
-            if list_behind:
-                # A section-scoped account ("the lagging units all sit in round N's own block")
-                # needs every line number, and the default report prints one example per page.
-                # Listing is non-gating, so it proves its own coverage instead of trusting a cap.
-                for kind, ln, u, _v, _exc in sorted(behind, key=lambda t: t[1]):
-                    print("   BEHIND %s:%d %s %s" % (r["page"], ln, kind.upper(), u[:64]))
-                    listed_behind += 1
-            pages_lost.append((r["page"], len(miss), len(unreleased), len(r["units"]), cut,
-                               miss[:3], len(behind), behind[:1]))
-            for tag, items in (("MISS", miss), ("REVISION-BEHIND", behind), ("STALE-COPY", unreleased)):
-                for kind, ln, u, _v, _exc in items:
-                    problems.append("%s %s %s:%d %s" % (tag, kind.upper(), r["page"], ln, u))
+
+    def take(r, served, err, tries):
+        """Grade one page's own copy; False means no verdict was possible."""
+        nonlocal listed_behind
+        attempts_by_page[r["page"]] = max(tries, attempts_by_page.get(r["page"], 0))
+        if err or not served:
+            return False
+        flat = re.sub(r"\s+", " ", served_chunks(served))
+        lost = grade(r["units"], flat)
+        if not lost:
+            return True
+        # Two failures look identical, so they are separated by evidence rather than by a guess:
+        # `published_cut()` asks the page itself which round it has published. Text above that
+        # line is an unreleased revision (round 83: the changelog page pinned at 79 in an 18 MB
+        # document, whose round-79 section had since been amended by its own close-out commit);
+        # text below it, or on a page with no round history, the renderer swallowed.
+        cut = published_cut(r["text"], served)
+        _rows, _evidence = classify(r["units"], flat, served,
+                                    re.sub(r"\s+", " ", LA.norm(r["text"])))
+        unreleased = [t for t in _rows if cut and t[1] < cut]
+        rest = [t for t in _rows if not (cut and t[1] < cut)]
+        behind = [t for t in rest if t[3] == "REVISION-BEHIND"]
+        miss = [t for t in rest if t[3] == "MISS"]
+        if list_behind:
+            # A section-scoped account ("the lagging units all sit in round N's own block")
+            # needs every line number, and the default report prints one example per page.
+            # Listing is non-gating, so it proves its own coverage instead of trusting a cap.
+            for kind, ln, u, _v, _exc in sorted(behind, key=lambda t: t[1]):
+                print("   BEHIND %s:%d %s %s" % (r["page"], ln, kind.upper(), u[:64]))
+                listed_behind += 1
+        pages_lost.append((r["page"], len(miss), len(unreleased), len(r["units"]), cut,
+                           miss[:3], len(behind), behind[:1]))
+        for tag, items in (("MISS", miss), ("REVISION-BEHIND", behind), ("STALE-COPY", unreleased)):
+            for kind, ln, u, _v, _exc in items:
+                problems.append("%s %s %s:%d %s" % (tag, kind.upper(), r["page"], ln, u))
+        return True
+
+    results, refused = fetch_all([r["url"] for r in picked], workers)
+    first_errs, second_chances = dict(refused), {i for i, _e in refused}
+    recovered = 0
+    for i, (r, (_url, served, err, tries)) in enumerate(zip(picked, results)):
+        # Round 99 measured the other half of the coin the retry policy was struck on: a page can
+        # refuse every attempt made *inside the concurrent pass* and still arrive on its first solo
+        # try. The site's own witness -- `06-memory-rag/memory-types.md`, a 6 KB authored page served
+        # as 1.3 MB -- timed out 6 times at 60 s each while 6 workers were fetching, then returned
+        # complete four times running (2.2s / 2.4s / 6.3s / 6.6s, tries=1 on every one) minutes later
+        # with nothing else in flight. So a refusal gets one serial re-attempt (see `fetch_all`), and
+        # only a page that fails *alone* reaches the bucket that gates the exit code. This is not how
+        # a fetch failure goes quiet: control X plants both directions, the page the re-pass must
+        # recover and the page it must still refuse.
+        if take(r, served, err, tries):
+            recovered += 1 if i in second_chances else 0
+        else:
+            fetch_fail.append("%s %s (refused alone too; the concurrent pass said: %s)"
+                              % (r["page"], err or "empty body", first_errs.get(i) or "empty body"))
     n_miss = sum(p[1] for p in pages_lost)
     n_stale = sum(p[2] for p in pages_lost)
     n_behind = sum(p[6] for p in pages_lost)
@@ -512,6 +573,15 @@ def run(sample=None, workers=6, only=None, list_behind=False):
     print("lost sentences: MISS=%d REVISION-BEHIND=%d STALE-COPY=%d | pages-with-MISS=%d "
           "fetch-failures=%d not-listed=%d"
           % (n_miss, n_behind, n_stale, sum(1 for p in pages_lost if p[1]), len(fetch_fail), _unl))
+    # Retry pressure is its own reading: a green that spent every attempt on one page is one network
+    # hiccup away from refusing it, so the worst page is named rather than averaged away.
+    worst = max(attempts_by_page.items(), key=lambda kv: kv[1]) if attempts_by_page else (None, 0)
+    print("fetch attempts: pages=%d worst=%s at %d of %d allowed"
+          % (len(attempts_by_page), worst[0], worst[1], FETCH_ATTEMPTS))
+    # Printed even when nothing was refused: the line is the proof that the 100% coverage claim
+    # went through the re-pass, not that the re-pass had nothing to do.
+    print("serial re-pass: refused=%d recovered=%d still-unfetched=%d"
+          % (len(refused), recovered, len(fetch_fail)))
     for pg, nm, ns, nu, cut, sample, nb, bsample in sorted(pages_lost, key=lambda p: (-p[1], -p[6], -p[2]))[:12]:
         print("   %-44s MISS=%-4d behind=%-4d unpublished=%-4d of %d units%s"
               % (pg, nm, nb, ns, nu, "" if not cut else "  (published copy proves nothing below line %d)" % cut))
@@ -870,6 +940,77 @@ def controls():
     if short_read("https://example.invalid/page.md", cut) is not None:
         errs.append("control W: the markdown endpoint has no closing tag and must not be refused "
                     "for it")
+    # W2 judges the retry policy itself (round 99), and is planted on both sides like W. A copy that
+    # truncates twice and then arrives whole must be GRADED — that is the entire reason 2 attempts
+    # became 6 — while a copy that never arrives whole must still land in the failure bucket with the
+    # same message, or the raise quietly moved the bar instead of the coverage. `LA.fetch` is stubbed,
+    # so this costs no requests, and the backoff is zeroed so it costs no wall-clock either.
+    saved_fetch, saved_backoff = LA.fetch, FETCH_BACKOFF
+    try:
+        globals()["FETCH_BACKOFF"] = 0
+
+        def stubbed(script):
+            state = []
+
+            def fake(_url):
+                state.append(1)
+                return script[min(len(state) - 1, len(script) - 1)]
+            return fake
+
+        LA.fetch = stubbed([cut, cut, whole])
+        _u, served, err, tries = fetch_page("https://example.invalid/page")
+        if err or served != whole or tries != 3:
+            errs.append("control W2: a page that truncates twice and then arrives whole must be "
+                        "graded on attempt 3, got err=%r served_is_whole=%s tries=%r"
+                        % (err, served == whole, tries))
+        LA.fetch = stubbed([cut] * 12)
+        _u, served, err, tries = fetch_page("https://example.invalid/page")
+        if served or tries != FETCH_ATTEMPTS or not (err or "").startswith("short read:"):
+            errs.append("control W2: a page that never arrives whole must still be refused as a short "
+                        "read after all %d attempts, got err=%r tries=%r"
+                        % (FETCH_ATTEMPTS, err, tries))
+        LA.fetch = stubbed([whole])
+        _u, served, err, tries = fetch_page("https://example.invalid/page")
+        if err or tries != 1:
+            errs.append("control W2: a page that arrives on the first attempt must report 1 attempt, "
+                        "not %r (an inflated count would hide the pages that really need them)" % (tries,))
+
+        # X judges the serial re-pass, planted on both sides for the same reason as W2: a page that
+        # refused every attempt of the *concurrent* pass must come back graded, and a page that
+        # refuses the solo re-attempt too must still be reported as unfetched. Drop the first half
+        # and the re-pass becomes a way to lose a real failure; drop the second and it becomes a way
+        # to hide one. The per-URL scripts make the outcome independent of thread interleaving.
+        gate = threading.Lock()
+        seen = {"dead": 0, "alive": 0}
+
+        def per_page(url):
+            key = "dead" if "dead" in url else "alive"
+            with gate:
+                seen[key] += 1
+                n = seen[key]
+            if key == "dead":
+                raise TimeoutError("read operation timed out")
+            # refused for exactly one concurrent pass's worth of attempts, then it arrives whole
+            return cut if n <= FETCH_ATTEMPTS else whole
+
+        LA.fetch = per_page
+        results, refused = fetch_all(["https://example.invalid/dead",
+                                      "https://example.invalid/alive"], workers=4)
+        if sorted(i for i, _e in refused) != [0, 1]:
+            errs.append("control X: both pages must be refused by the concurrent pass, got %r"
+                        % (refused,))
+        _u, served, err, tries = results[1]
+        if err or served != whole or tries != 1:
+            errs.append("control X: a page the concurrent pass refused must be graded after its solo "
+                        "re-attempt, got err=%r served_is_whole=%s tries=%r"
+                        % (err, served == whole, tries))
+        _u, served, err, tries = results[0]
+        if served or tries != FETCH_ATTEMPTS or "TimeoutError" not in (err or ""):
+            errs.append("control X: a page that fails alone as well must stay in the failure bucket, "
+                        "got served=%r err=%r tries=%r" % (bool(served), err, tries))
+    finally:
+        LA.fetch = saved_fetch
+        globals()["FETCH_BACKOFF"] = saved_backoff
     return errs
 
 
@@ -896,7 +1037,7 @@ def mutation_control(page):
     url = index.get(LA.norm(LA.h1_of(text)))
     if not url:
         return ["mutation control: %s has no published address" % rel]
-    _u, served, err = fetch_page(url)
+    _u, served, err, _tries = fetch_page(url)
     if err or not served:
         return ["mutation control could not fetch %s (%s)" % (url, err)]
     units = chunks(text)
