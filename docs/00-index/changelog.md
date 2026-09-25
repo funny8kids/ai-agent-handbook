@@ -202,6 +202,10 @@ live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
 
 **补写这一段之后，离线电池整条复跑**（逐字关键读数）：`pages scanned=198 problems=0`、`executable-tagged=0`、`json contracts parsed=80 unclosed=0`——§六 那行记的是 79，差的 1 正是本节末尾这个 json 围栏（本节末尾新贴了目录那一处的 DOM 证据）；`changelog headings: HEAD=82 tree=82 lost=0`；`prose duplicates: pages=191 prose_units=7427 ... dup=0 near-band=3`（§六 的 7424 同样只差本节新写的字）；`traditional-form findings=0`；`controls: OK, every bucket able to fire` 与 `controls: OK, every needle rule able to fire`；链接图 `ok=702 blocked=14 FAILED: 0`。全绿，`exit=0`。
 
+**尾腿（推送 `0805a59` 之后，一条一条串行跑，逐字）**：`check_live_sync` `exit=0`，`leg md newest round=90 (336586 bytes, 154 rounds)`、`leg html newest round=90 (25108708 bytes, 544 rounds)`、`witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness`；强调腿 `--live` 在新口径下复读 `pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`；活体控制 `--mutate 00-index/changelog` `exit=0`，三条探针各藏住一句真实字并被 judge 判成 MISS 而非 lag（plain 159 字／1 份读者副本、heading 118 字／1 份、quote 29 字／1 份，不在场副本 2–3 份）。
+
+**唯一没有归零的是散文腿的 `REVISION-BEHIND=17`**（`MISS=0`、`exit=0`）。判据给出的豁免证据本身就是结论：发布页在同一处缺口里印着「为什么全站 44 条标题只有这 1 条红…」——那是 `a5e3e62` 之前的写法，树里已经没有了，所以这是**平台发了旧版**，不是它吞了句子。同一分钟里 `.md` 端的一次直接抓取已经带着本节补写的字（621,559 B），而 `check_live_sync` 的 md 腿读 336,586 B——两个读数差得远，本轮没有把这件事判成任何结论，只记下来。渲染页停在 25,108,708 B 不动，正是 §七 记过的「25 MB 文档按平台自己的节奏翻页」第二次落地。**下一轮开头要确认的一件事**：这 17 条随页面翻页归零，且补写本段自己新增的字也在同一本账里——断言写成「`behind` 里不再出现本节之外的页」，而不是「`behind=0`」。
+
 ## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
 
 本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（控制条数与字母表、`--mutate` 那条的描述、第 88 轮写错的等号）。**没有为过线删掉或加厚任何一页正文**；改动全部在尺子上（`tools/checks/check_prose_survival.py`）。
