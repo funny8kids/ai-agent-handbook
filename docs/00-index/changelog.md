@@ -181,7 +181,26 @@ outline scope: headings=2839 carrying_inline_code=104 whose_flattening_is_markdo
 
 **留下的账三条**：① 改的是一条**已发布**页面上的字，所以同步之前散文腿会把它读成 `REVISION-BEHIND`（第 88 轮建那个桶正是为了这种形状），追平后归零；② 同理强调腿 `--live` 在同步前会读 `prediction-mismatch=1`（线上那 1 个字符还在、预测已经 0），它是「本轮还没发出去」而不是站点缺陷；③ §七 里那句强调腿读数是旧视野下的，本轮之后按新口径重取，记在下面。
 
-**同步之后重取的两条（新口径，逐字）**：待补。截图两帧（目录里那一个字符、第 90 次一节）等渲染页追上后各拍一张。
+**同步之后重取的两条（新口径，逐字）**：
+
+```text
+emphasis flanking: pages=0 leaked_strong_markers=0 (body=0 outline=0) lone_star_runs=1 (context only)
+outline scope: headings=2839 carrying_inline_code=104 whose_flattening_is_markdown_significant=71
+live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
+```
+
+`prediction-mismatch` 从同步前的 1 落到 0，`served_markers=0`——含目录的那份可见文本里，全站 196 页读者眼前一个裸 `**` 都没有。分母与修复前同一行（2839/104/71）：本轮只改了那一条标题里的记号，没动其他标题的形状。
+
+**目检三帧**（真实渲染页，非本地副本）：① 目录栏里那条标题的整块截图，逐字是「三、唯一一条真的读者侧缺陷：平台把『成对星号』配成了『第一个配最后一个』」，星号不在；② 同一页正文栏滚到该标题处，页面顶部与目录同框；③ 更新日志页首屏，第 90 次的条目标题完整印出。目录那一处的 DOM 证据与像素各取一次（逐字）：
+
+```json
+{"text": "三、唯一一条真的读者侧缺陷：平台把「成对星号」配成了「第一个配最后一个」", "has_marker": false,
+ "html": "<span class=\"\">三、唯一一条真的读者侧缺陷：平台把「成对星号」配成了「第一个配最后一个」<!-- --></span>"}
+```
+
+`html` 里那个 `<span>` 就是旧缺陷的位置：修复前它装的是去掉反引号的裸星号，现在装的是「成对星号」四个汉字。这条轴的判据与眼睛在这一处对上了。
+
+**补写这一段之后，离线电池整条复跑**（逐字关键读数）：`pages scanned=198 problems=0`、`executable-tagged=0`、`json contracts parsed=80 unclosed=0`——§六 那行记的是 79，差的 1 正是本节末尾这个 json 围栏（本节末尾新贴了目录那一处的 DOM 证据）；`changelog headings: HEAD=82 tree=82 lost=0`；`prose duplicates: pages=191 prose_units=7427 ... dup=0 near-band=3`（§六 的 7424 同样只差本节新写的字）；`traditional-form findings=0`；`controls: OK, every bucket able to fire` 与 `controls: OK, every needle rule able to fire`；链接图 `ok=702 blocked=14 FAILED: 0`。全绿，`exit=0`。
 
 ## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
 
