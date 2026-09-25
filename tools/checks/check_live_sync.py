@@ -366,6 +366,12 @@ def sync_verdict(want, have, blind, bad, page=0, reader_visible=False):
     """
     if "md" in blind:
         return 2
+    if "witness" in blind:
+        # Round 98: the witness leg fetches llms.txt and every changed page. One reset connection
+        # there used to raise out of main() and kill the watch with a traceback — the same lie in
+        # the other direction as a green: here the run judged *nothing* about readers, so it gets
+        # its own code and never a green, whichever question was asked.
+        return 2
     if reader_visible:
         if "html" in blind:
             return 2
@@ -629,6 +635,25 @@ def controls():
     if "args.reader_visible" not in tail_src:
         errs.append("control X2: main() must pass --reader-visible into sync_verdict; a flag no "
                     "caller reads leaves round 94's lying green exactly as it shipped")
+    # X3 (round 98): the witness leg died with a traceback on a reset connection, which aborted the
+    # watch AND made "never ran" indistinguishable from "ran and found nothing". Both directions.
+    for what, blind_x3, expect in (
+            ("every leg current but the witness leg never arrived", ["witness"], 2),
+            ("every leg current and the witness leg ran clean", [], 0)):
+        for rv in (False, True):
+            got = sync_verdict(98, 98, blind_x3, [], 98, rv)
+            if got != expect:
+                errs.append("control X3: %s must verdict %d (reader_visible=%s), got %d"
+                            % (what, expect, rv, got))
+    if "blind.append(\"witness\")" not in tail_src:
+        errs.append("control X3: main() must catch the witness leg and record it in `blind` — an "
+                    "unguarded fetch kills the whole watch on one transient reset")
+    if '"witness" not in blind' not in tail_src:
+        errs.append("control X3: the sentence 「这一轮没有读者页可作证」 must be gated on the witness "
+                    "leg having RUN; a leg that never arrived must not be reported as nothing-to-witness")
+    if '"no verdict from this run" if code == 2' not in tail_src:
+        errs.append("control X3: a run that judged nothing must not print the sentence a real lag "
+                    "prints (round 93's reasoning, applied to the witness leg)")
     return errs
 
 
@@ -683,10 +708,19 @@ def main():
             print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d rounds)%s"
                   % (name, tops[name], chars, size, len(live),
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
-        bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)
+        try:
+            bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)
+        except Exception as exc:  # noqa: BLE001
+            # The leg that fetches llms.txt plus every changed page has no verdict to give when the
+            # connection dies; recording that beats the traceback that aborted round 98's watch,
+            # and beats the green it would have become if the failure went unrecorded.
+            print("witness leg unreadable (%s: %s) — no verdict from this leg, this is not a site "
+                  "failure" % (exc.__class__.__name__, exc))
+            blind.append("witness")
+            bad, unwit, witnessed = [], [], 0
         if witnessed:
             print("  witness: %d reader page(s) %s touched carry %s's added text" % (witnessed, args.rev, args.rev))
-        elif not args.no_witness:
+        elif not args.no_witness and "witness" not in blind:
             print("  witness: %s added no reader-page text outside the changelog — the .md leg is the witness"
                   % args.rev)
         if unwit:
@@ -713,8 +747,11 @@ def main():
                 behind.append("the reader's changelog PAGE at round %d" % lag)
             if args.reader_visible and "html" in blind:
                 behind.append("the reader's PAGE leg unreadable, so its round is unknown")
-            print("not online yet (%s): HEAD round %d, witness failures %d%s"
-                  % ("; ".join(behind) or "witness leg red", want, len(bad),
+            if "witness" in blind:
+                behind.append("the witness leg never arrived, so this probe judged nothing")
+            print("%s (%s): HEAD round %d, witness failures %d%s"
+                  % ("no verdict from this run" if code == 2 else "not online yet",
+                     "; ".join(behind) or "witness leg red", want, len(bad),
                      "" if not blind else ", unreadable legs: " + "/".join(blind)))
         elif args.reader_visible:
             print("reader-visible check: the PAGE a reader opens carries round %d, md leg %d, HEAD %d"
