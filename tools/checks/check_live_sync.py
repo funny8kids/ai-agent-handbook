@@ -55,10 +55,40 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 ROUND = re.compile(r"第 (\d+) 次")
 
 
-def live_rounds(url):
+def tail_needle():
+    """Markup-free words from the LAST authored line of the changelog — the document's true tail.
+
+    Round 91 measured why this question is asked: while GitBook rebuilt the changelog, three fetches
+    of the same URL read 25,108,708 / 22,643,743 / 12,016,119 characters, and the response carries NO
+    Content-Length, so a connection that ends early is indistinguishable from a shorter page — the
+    12 M copy "lost" 51 of the 82 round headings, which reads exactly like the platform dropping
+    history. A short read always loses the TAIL, and this document is newest-first, so its tail is
+    the oldest round. Taking the last line rather than the oldest heading also catches a read that
+    stops inside that section, and CJK words survive both endpoints verbatim (`2026-09-10` would
+    too, but it is only 1 of the 5 tail dates, so it says less).
+    """
+    lines = [l.strip() for l in open(LOCAL_CHANGELOG, encoding="utf-8").read().splitlines()
+             if l.strip()]
+    runs = re.findall(r"[\u4e00-\u9fff]+(?:[，、：（）][\u4e00-\u9fff]+)*", lines[-1])
+    return runs[-1] if runs else lines[-1][-16:]
+
+
+def short_read(text, needle, is_html):
+    """Did the whole document arrive? None means yes; a string names why not."""
+    if is_html and not text.rstrip().endswith("</html>"):
+        return "no closing </html>"
+    if needle and needle not in text:
+        return "the document's last authored line (%s) is absent" % needle
+    return None
+
+
+def live_rounds(url, tail=None):
     req = urllib.request.Request(url, headers=UA)
     raw = urllib.request.urlopen(req, timeout=180).read()
     html = raw.decode("utf-8", "replace")
+    reason = short_read(html, tail, not url.endswith(".md"))
+    if reason:
+        raise ValueError("short read (%s), so no round count is trustworthy" % reason)
     # Round 91: the size used to be reported as `len(html)` under a "bytes" label. The changelog is
     # mostly CJK, so one UTF-8 character costs ~1.85 bytes and that mislabel manufactured a
     # discrepancy round 90's log recorded as unexplained (621,559 B fetched directly vs 336,586
@@ -418,6 +448,59 @@ def controls():
         if "(%d chars / %d bytes" not in src or "chars, size" not in src:
             errs.append("control U: the leg line must label both numbers and pass the character "
                         "count first, or the printout is free to lie about its unit again")
+    # S: short reads. Round 91 nearly recorded "the platform dropped 51 rounds" as a site failure;
+    # it was a connection that ended early in a 25 MB page that ships no Content-Length. Three
+    # ways to be short, one control each, plus the assertion that the chosen needle is really at
+    # the tail (a needle quoted near the top would let every truncated read pass).
+    with tempfile.TemporaryDirectory(prefix="shortread", ignore_cleanup_errors=True) as tmp:
+        tail = tail_needle()
+        doc = os.path.join(tmp, "s.md")
+        text = ("# 记录\n\n第 7 次：读者可见的中文句子。\n第 6 次：另一句中文。\n"
+                "- 迁移 GitBook 配置，内容目录设为 `docs/`\n")
+        with open(doc, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        url = "file:///" + doc.replace("\\", "/")
+        cut = text[:text.index("- 迁移")]
+        with open(os.path.join(tmp, "cut.md"), "w", encoding="utf-8") as fh:
+            fh.write(cut)
+        try:
+            whole = live_rounds(url, tail="内容目录设为")
+        except Exception as exc:  # noqa: BLE001
+            errs.append("control S: a complete document must not read short (%s)" % exc)
+            whole = None
+        if whole and whole[0] != [7, 6]:
+            errs.append("control S: the complete document must still parse rounds 7 and 6, got %r"
+                        % (whole[0],))
+        try:
+            live_rounds("file:///" + os.path.join(tmp, "cut.md").replace("\\", "/"),
+                        tail="内容目录设为")
+            errs.append("control S: a read that stops before the last authored line must raise, "
+                        "but it returned a round count — round 91's 12 M fetch would pass as truth")
+        except ValueError:
+            pass
+        for what, page, needle, is_html, want in (
+                ("a clean full HTML page", "<html><body>内容目录设为 x</body></html>", "内容目录设为",
+                 True, None),
+                ("HTML truncated mid-document", "<html><body>第 7 次", "内容目录设为", True,
+                 "no closing </html>"),
+                # The case `</html>` alone cannot catch: a well-formed page that simply publishes
+                # fewer rounds than the tree has.
+                ("HTML that closes cleanly but omits the oldest section",
+                 "<html><body>第 7 次：读者可见的中文句子。</body></html>", "内容目录设为", True,
+                 "the document's last authored line (内容目录设为) is absent"),
+                ("a .md leg that stops early (no </html> to look for)",
+                 "<html><body>第 7 次", "内容目录设为", False, "the document's last authored line")):
+            got = short_read(page, needle, is_html)
+            if want is None:
+                if got is not None:
+                    errs.append("control S: %s must read as complete, got %r" % (what, got))
+            elif got is None or not got.startswith(want):
+                errs.append("control S: %s must read short as %r, got %r" % (what, want, got))
+        local = open(LOCAL_CHANGELOG, encoding="utf-8").read()
+        if not tail or local.find(tail) < 0.9 * len(local):
+            errs.append("control S: tail needle %r first appears at %.0f%% of the changelog — a "
+                        "needle quoted near the top cannot expose a short read"
+                        % (tail, 100.0 * max(0, local.find(tail)) / len(local)))
     return errs
 
 
@@ -454,10 +537,12 @@ def main():
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
-                live, chars, size = live_rounds(url)
+                live, chars, size = live_rounds(url, tail_needle())
             except Exception as exc:  # noqa: BLE001
-                print("live changelog (%s) unreadable (%s) — no verdict, this is not a site failure"
-                      % (name, exc.__class__.__name__))
+                # The reason is the finding: "ValueError" alone cannot distinguish this round's
+                # short-read guard from a DNS failure, and the two want opposite follow-ups.
+                print("live changelog (%s) unreadable (%s: %s) — no verdict, this is not a site "
+                      "failure" % (name, exc.__class__.__name__, exc))
                 return 2
             tops[name] = max(live) if live else 0
             missing = sorted({r for r in local if r > tops[name]})

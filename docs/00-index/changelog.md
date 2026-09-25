@@ -75,11 +75,45 @@ leg html newest round=90  (25108708 chars / 25994905 bytes, 544 rounds)
 - **强调轴的标题计数会跟着本节长高**：`headings` 从第 90 轮的 2839 变成 2846（本节 7 条标题），`carrying_inline_code` 从 104 变成 106（新标题里有 2 条带行内代码）。而 `whose_flattening_is_markdown_significant` 保持 **71 不变**——这正是第 90 轮那条读者侧缺陷的口径：新写的标题里没有任何一条在展平后会露出 markdown 意义字符。也就是说这两个上涨的分母是「本节自己长出来的字」，不是「缺陷变多」，判据红绿看的是第三个数。
 - **散文重复轴本轮不动它就不该动**：`prose_units=7427` 与第 90 轮收尾读数一模一样，因为该轴把 `00-index/` 排除在语料之外（更新日志按设计要引用别的页的句子）。所以本轮没有像第 90 轮那样出现「写文档把自己的分母挪了」——这条等号只在改动落在被排除的页上时成立，不能推广。
 
-真实渲染目检（本地复制稿，768px 读者列宽）：把本节整段单独渲染成 HTML 后用 Edge headless 截图，`rendered html: 6 h3, 2 pre, 4155 chars`，出图 304,125 字节。图里两条 `text` 围栏各自成块、行内代码带底、粗体成粗体，**没有出现任何裸星号**。（这一帧拍在写 §五 之前，所以表格里有没有横向溢出还没被看过——留到 §六 收尾那一帧一起判。）
+真实渲染目检（本地复制稿，768px 读者列宽）：把本节整段单独渲染成 HTML 后用 Edge headless 截图，`rendered html: 6 h3, 2 pre, 4155 chars`，出图 304,125 字节。图里两条 `text` 围栏各自成块、行内代码带底、粗体成粗体，**没有出现任何裸星号**。（这一帧拍在写 §五 之前，所以表格里有没有横向溢出当时还没被看过——§六 收尾那一帧补判。）
 
 ### 六、收尾（提交并推送、线上同步之后）
 
-待补。
+第 1 次提交 `61f4e95` 落地后，三条线上尾腿按串行各跑一次（不并发，避免自己造 FETCH 红）：
+
+```text
+HEAD committed 2026-09-25, 21 min ago
+local newest round=91
+  leg md   newest round=91  (344841 chars / 634527 bytes, 155 rounds)
+  leg html newest round=90  (25108708 chars / 25994905 bytes, 544 rounds)  missing 91
+  witness: HEAD added no reader-page text outside the changelog — the .md leg is the witness
+  NOTE the published changelog PAGE is at round 90: readers opening it are missing 91
+```
+
+- **`--list-behind` 的判决**：`behind detail: listed=0 of REVISION-BEHIND=0 (full listing)`，同一跑另有 `MISS=0`、`STALE-COPY=72`、`units=4015 plain=3712 heading=295 quote=8`。第 90 轮 §八 那 17 条（长成 25 条的那批）**归零**，所以 §一 那句「本节之外的页不落进落后桶」不只是本轮可判，而且判过了。
+- **72 条 `STALE-COPY` 不是缺陷**：同跑印出的水位线是 `published copy proves nothing below line 283`，也就是渲染页目前只翻到第 89 轮的标题（与 html 腿的 90 一致，差的那一节正是本轮与上一轮）。这些单元高于水位线＝未发布的修订，按第 89 轮的口径大声 NOTE 而不进门闩。
+- **强调轴线上腿**：`pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`，`whose_flattening_is_markdown_significant=71` 不变。
+
+`check_live_sync --watch` 收尾复跑时（HEAD 后 13 分钟）md 腿已经到 91，而 html 腿**没有返回轮次**，印的是 `live changelog (html) unreadable (ValueError) — no verdict, this is not a site failure` 加 `exit=2`——这就是新装的短读门闩在活体上开火。它拦下的是哪种读法，当时看不出来，因为长度是在门闩之后才印的；收尾时把原因一起印出来（`(ValueError: short read (...))`）。
+
+同一条 html 腿在更早一次 `--watch` 的两轮轮询里被**放行**过两次，而两次长度不同：`25108708 chars / 25994905 bytes, 544 rounds` 与 `22643743 chars / 23351607 bytes, 362 rounds`，响应头里都没有 `Content-Length`。两条都干净闭合、都带着最后一行作者写的中文，所以按本轮的口径它们是「整份到达」，只是 CDN 给的副本本身有大小差；被拦住的那一次则无法这样归档。这条区别值得留在页面上：门闩判的是**尾部有没有到齐**，不是字节数等不等于上一次——后者会把上面这种正常波动读成站点故障。
+
+门闩本身（`short_read()` / `tail_needle()`）在 `live_rounds()` 里判两条：HTML 腿要求文档以 `</html>` 结尾，两条腿都要求**本地更新日志最后一行的中文串**出现在抓取结果里。针的实测：`tail_needle()='配置，内容根目录设为'`，在本地 312,097 字符里首次出现在第 312,078 字符（**99.99 %**，全文唯一 1 次）；在线渲染页里出现 3 次（正文 1 次 + 载荷副本 2 次）。拿日期 `2026-09-10` 当针的话，全文有 5 处，且它是最后 5 节共用的日期，所以针落在最后一行而不是最后的标题。
+
+控制 S 是功能控制而不是文本比对：把完整的本地 `.md` 喂给真的 `live_rounds()` 必须不抛，把同一份文档砍掉最后一行必须抛 `ValueError`；再把 `short_read()` 单条判据的三种短读各自验一次（文档中途断掉 / 干净闭合但少最老一节 / `.md` 腿没有 `</html>` 可看）。把门闩改瞎（`short_read` 恒返 `None`）后 `--selftest` 印出 **4 条 control S 红**，恢复后 0 条——即这四条断言都真的能开门。
+
+比率不是常数，这一轮量到两个：`.md` 腿 `634527/344841 = 1.840`（正文以中文为主），渲染页 `25994905/25108708 = 1.035`（一半以上是 ASCII 脚本载荷）。所以 §二 的 1.846 只属于 `.md` 这类文档，任何拿比率当校验的写法都必须先声明是哪条腿。
+
+提交 1 之后重跑那 16 条离线轴，仍然 **16/16 `exit=0`**，两个跟着提交动的数记下：`check_changelog_headings: HEAD=83 tree=83 lost=0`（§五 表里那行 82/83 是提交前拍的，多出的 1 条现已并入 HEAD，等号回来），`check_char_sanity: pages=198 prose CJK chars=423033`（比 §五 表的 422,629 多 404 字，就是本节写下的这些）。
+
+§五 欠下的那一判（表格里有没有横向溢出）在这里补上，两条腿一起：
+
+- **常驻轴读不了这一页**：`check_table_overflow.py` 对 `00-index/changelog.md` 给的是 `NOHYDRATE ... — harness/CDN, not a content verdict`，整跑 `problems=1` 且唯一一条就是它。也就是说这张 25 MB 的页面**溢出轴也拿不到**，与 §一 的轮次水位线是同一个瓶颈的两种表现——是否拆页仍是操作者的取舍，本轮不动它。
+- **本节整段重渲**：`rendered html: 6 h3, 3 pre, 11030 chars`（比 §五 那一帧多出 1 个 `pre`，就是本节上面的读数块），出图 820×9000。
+- **把 §五 的 16 行表单独按 768 读者列宽渲染并量墨**：`table rows captured=18 (header+sep+16 body)`、`longest row chars=187`、`capture=820x1600 content-rows=24..997 rightmost-ink-x=782 ink-touching-right-edge-rows=0`。最右一滴墨在 x=782，读者列右边界是 24+768=792，且没有任何一行把墨顶到取景框右缘——**表格不溢出，留 10px 余量**。目检同一帧：两列都在列内换行、无裁切、无叠字；左列的判据名被从单词中间断开（`check_widget_pai / ring.py`）是本帧 CSS 的 `word-break:break-all`，不是平台行为，所以它不算缺陷也不算证据，只是别把它读成平台样式。
+
+本轮留下的账：① #132 那条（作者 `**…**` 跨度 vs 线上 `<strong>` 实际范围）仍未量，仍是「先量再决定要不要装第三条腿」；② 短读门闩只判**尾部到齐**，判不出 CDN 两份都完整但大小不同的副本（本轮实测 23,351,607 与 25,994,905 字节同时存在），所以轮次以外的任何字节比较都不能进门闩；③ html 腿停在 90 是第 83 轮定下的口径（大声 NOTE，不 gate），本节写完后它需要再翻页一次才算读者拿得到。
+
 
 ## 2026-09-25（第 90 次）`UNWITNESSED` 那本账挂了五轮，本轮先量它的价再动它：最近 40 次文档修订里 **113 次读者页触碰有 77 次**落进永久红的桶——「只改日期」的修订从此读绿，而「真没同步的页绝不落进这个桶」由控制 W 钉在真实切片跑上，另配一条让切片器失明的变异体 W2
 
