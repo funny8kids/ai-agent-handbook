@@ -33,11 +33,18 @@ is itself a commit that touches the file; if the axis counted that as a change, 
 move `L` to its own date and the next round's --fix would chase it. So a commit counts only if it
 changes a line other than the `updated:` key -- `body_commit_date()` implements that on `-U0` output.
 
-Controls, planted rather than assumed (see `selftest()`): equal must pass, BEHIND and FORWARD must
-each fire, a diff that only rewrites the date key must NOT move the last-body-change date while a
-diff with one content line must, a missing key must be reported rather than skipped, the exemption
-list must be a closed set (a renamed page cannot quietly join it), and an empty sample must die
-rather than print a clean 198-page verdict.
+Controls, planted rather than assumed (see `selftest()`, which lists them in `LEG_NAMES` and returns
+the legs that actually ran): equal must pass, BEHIND and FORWARD must each fire, a diff that only
+rewrites the date key must NOT move the last-body-change date while a diff with one content line must,
+a missing key must be reported rather than skipped, the exemption list must be a closed set (a renamed
+page cannot quietly join it), and an empty sample must die rather than print a clean 198-page verdict.
+Two of them are about this file's own excuses: a page dirty in the working tree may have its FORWARD
+downgraded to `pending` but never its BEHIND, and a page git has no history for at all (untracked, i.e.
+created by the current round) is `pending` too -- while the same row WITHOUT that set must still be a
+NOCOMMIT finding, or the bucket would swallow every date-only commit.
+
+`main()` also reconciles the homepage's 「控制腿共 N 向」 sentence with `len(ran)`: docs prose is the
+only place that number is written down, so the ruler checks it instead of trusting it.
 
 Usage:
     python tools/checks/check_updated_dates.py            # verdict
@@ -117,7 +124,7 @@ def body_commit_date(rel, log=None):
     return None
 
 
-def judge(rows, dirty=frozenset()):
+def judge(rows, dirty=frozenset(), untracked=frozenset()):
     """rows: [(rel, declared or None, last body-change date or None)] -> problems, checked, pending.
 
     `dirty` is the set of paths git reports as modified. FORWARD is suppressed for those and counted
@@ -125,6 +132,11 @@ def judge(rows, dirty=frozenset()):
     is only in the working tree is not history yet -- judging it red would mean failing the very
     act of bumping a date in the round that earned it. BEHIND stays judged either way: an
     under-advertised date is not excused by uncommitted work.
+
+    `untracked` is git's `??` set — pages this round created. They have no history at all, so
+    `last is None` there is not the finding NOCOMMIT describes (a tracked file whose only commit-level
+    change is the date key); it is the same "not history yet" shape as a dirty bump. Round 97 hit it
+    on six new pages at once.
     """
     problems, checked, pending = [], 0, []
     for rel, d, last in rows:
@@ -136,6 +148,10 @@ def judge(rows, dirty=frozenset()):
                             "and this axis cannot read the page" % rel)
             continue
         if last is None:
+            if rel in untracked:
+                pending.append("%s: brand-new page, advertises %s — git has no history to attest it "
+                               "until the commit that lands it" % (rel, d))
+                continue
             problems.append("NOCOMMIT  %s: no commit changes any line but the date key, so the "
                             "printed date has no evidence behind it" % rel)
             continue
@@ -163,18 +179,51 @@ def fix(rel, date):
     io.open(path, "w", encoding="utf-8", newline="\n").write("\n".join(lines))
 
 
-def selftest():
+# The control legs, in the order `selftest()` reaches them. The homepage's 「控制腿共 N 向」 sentence
+# is checked against the legs that ACTUALLY ran, so a leg whose code path disappears cannot stay
+# advertised in the prose, and the prose number cannot be hand-typed upward.
+LEG_NAMES = ["equal", "BEHIND", "FORWARD", "NOKEY", "NOCOMMIT", "exemption", "date-only-commit",
+             "newest-body-wins", "checked-floor", "closed-exemption", "dirty-pending",
+             "untracked-pending", "readme-claim"]
+
+
+def check_readme_claim(home_text, leg_names):
+    """The homepage advertises how many control legs this axis has. Docs prose moves that number,
+    so it is judged here rather than trusted: a deleted leg must not leave the prose advertising it,
+    and a deleted sentence must not read as 'nothing to complain about'."""
+    m = re.search(r"控制腿共 (\d+) 向", home_text)
+    if not m:
+        return ["README-CLAIM  docs/README.md no longer states 「控制腿共 N 向」, so the prose that "
+                "describes this axis has drifted past it"]
+    if int(m.group(1)) != len(leg_names):
+        return ["README-CLAIM  docs/README.md advertises %s control legs, the axis runs %d (%s)"
+                % (m.group(1), len(leg_names), ", ".join(leg_names))]
+    return []
+
+
+def selftest(count=False):
+    legs = []
+
+    def leg(name):
+        legs.append(name)
+
     def case(rel, d, last):
         return judge([(rel, d, last)])[0]
 
+    leg("equal")
     assert not case("docs/a.md", "2026-09-24", "2026-09-24"), "an equal date must read clean"
+    leg("BEHIND")
     assert case("docs/a.md", "2026-09-22", "2026-09-24")[0].startswith("BEHIND"), \
         "the tree's real defect must fire"
+    leg("FORWARD")
     assert case("docs/a.md", "2026-09-26", "2026-09-24")[0].startswith("FORWARD"), \
         "metadata-only refresh must not buy a newer date"
+    leg("NOKEY")
     assert case("docs/a.md", None, "2026-09-24")[0].startswith("NOKEY"), "missing key: report, skip"
+    leg("NOCOMMIT")
     assert case("docs/a.md", "2026-09-24", None)[0].startswith("NOCOMMIT"), \
         "an unevidenced date must be a finding, not a pass"
+    leg("exemption")
     assert not judge([("docs/SUMMARY.md", "2000-01-01", "2026-09-24")])[0], \
         "the navigation source is not a reader page"
     assert judge([("docs/SUMMARY.md", "2000-01-01", "2026-09-24"),
@@ -182,6 +231,7 @@ def selftest():
         "an exempt page must not be counted as checked"
 
     # the exemption that keeps --fix from chasing its own tail
+    leg("date-only-commit")
     date_only = "\n".join([
         "C\t2026-09-25", "diff --git a/docs/a.md b/docs/a.md", "index 111..222 100644",
         "--- a/docs/a.md", "+++ b/docs/a.md", "@@ -5 +5 @@", "-updated: 2026-09-24",
@@ -191,26 +241,51 @@ def selftest():
     body = date_only.replace("+updated: 2026-09-25", "+- 一条真实正文")
     assert body_commit_date("docs/a.md", body) == "2026-09-25", \
         "one content line must count"
+    leg("newest-body-wins")
     newest = ("C\t2026-09-26\ndiff\n--- a/docs/a.md\n+++ b/docs/a.md\n@@ -1 +1 @@\n"
               "-old body\n+new body\n") + date_only + body
     assert body_commit_date("docs/a.md", newest) == "2026-09-26", \
         "the newest body commit wins, records are newest-first"
+    leg("checked-floor")
     assert reader_pages() and judge([(p, "2026-09-24", "2026-09-24") for p in reader_pages()])[1] \
         >= 190, "the checked floor must be above 190 reader pages"
     unexempted = {p for p in reader_pages() if p not in EXEMPT}
     assert len(unexempted) >= 190, "too few reader pages walked: %d" % len(unexempted)
+    leg("closed-exemption")
     for known in NOT_A_PAGE:
         assert any(known.endswith(os.path.basename(p)) for p in reader_pages()), \
             "exemption lists a page that no longer exists: %s" % known
     # a working-tree bump is not yet history: FORWARD waits for the commit, BEHIND has no excuse
+    leg("dirty-pending")
     ps, _checked, pend = judge([("docs/a.md", "2026-09-24", "2026-09-23")], {"docs/a.md"})
     assert not ps and len(pend) == 1, "an uncommitted bump must be pending, not a finding: %s" % ps
     ps, _c, pend = judge([("docs/a.md", "2026-09-22", "2026-09-23")], {"docs/a.md"})
     assert ps and ps[0].startswith("BEHIND") and not pend, \
         "dirtiness must not excuse an under-advertised date: %s" % ps
-    print("selftest: equal/BEHIND/FORWARD/NOKEY/NOCOMMIT + exemption + dirty-bump pending pair + "
-          "date-only-commit exemption + newest-body-wins + tree floor, all as expected")
-    return 0
+    # A page this round created has no history to attest its date — that is `pending`, not the
+    # finding NOCOMMIT describes. Both directions: the same row without the untracked set must
+    # still be a finding, or the new bucket would swallow every date-only commit too.
+    leg("untracked-pending")
+    ps, _c, pend = judge([("docs/new.md", "2026-09-25", None)], untracked={"docs/new.md"})
+    assert not ps and len(pend) == 1, "a brand-new page must be pending, not red: %s" % ps
+    ps, _c, pend = judge([("docs/new.md", "2026-09-25", None)])
+    assert ps and ps[0].startswith("NOCOMMIT") and not pend, \
+        "an unevidenced date on a tracked page must stay a finding: %s" % ps
+    ps, _c, pend = judge([("docs/new.md", None, None)], untracked={"docs/new.md"})
+    assert ps and ps[0].startswith("NOKEY"), \
+        "being new must not excuse a missing key: %s" % ps
+    leg("readme-claim")
+    head = "控制腿共 %d 向：..." % (len(LEG_NAMES) - 1)
+    assert not check_readme_claim(head, LEG_NAMES[:-1]), "a matching claim must read clean"
+    assert check_readme_claim(head.replace(str(len(LEG_NAMES) - 1), str(len(LEG_NAMES) + 4)),
+                              LEG_NAMES[:-1]), \
+        "an advertised count that no longer matches the code must be a finding"
+    assert check_readme_claim("这句忘了写条数", LEG_NAMES[:-1]), \
+        "a deleted sentence must not read as nothing-to-report"
+    assert legs == LEG_NAMES, "the legs that ran are not the legs listed: %s vs %s" % (legs, LEG_NAMES)
+    if not count:
+        print("selftest: controls=%d -- %s, all as expected" % (len(legs), ", ".join(legs)))
+    return legs if count else 0
 
 
 def main():
@@ -231,9 +306,10 @@ def main():
             unreadable.append("%s (%s)" % (rel, exc))
             continue
         rows.append((rel, declared(text), body_commit_date(rel)))
-    dirty = {l[3:].replace("\\", "/") for l in subprocess.run(
-        ["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True,
-        encoding="utf-8").stdout.splitlines() if l[:2].strip() and len(l) > 3}
+    status = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True,
+                            text=True, encoding="utf-8").stdout.splitlines()
+    dirty = {l[3:].replace("\\", "/") for l in status if l[:2].strip() and len(l) > 3}
+    untracked = {l[3:].replace("\\", "/") for l in status if l.startswith("?? ") and len(l) > 3}
     if args.fix:
         for rel, d, last in rows:
             # Only BEHIND is fixed by writing: rewinding a FORWARD date would delete a claim that is
@@ -245,11 +321,16 @@ def main():
         # Re-read from disk: the verdict after a fix must come off the files, not off the plan.
         rows = [(rel, declared(io.open(os.path.join(REPO, rel), encoding="utf-8").read()), last)
                 for rel, _d, last in rows]
-    problems, checked, pending = judge(rows, dirty)
+    problems, checked, pending = judge(rows, dirty, untracked)
+    # The homepage's 「控制腿共 N 向」 is a reader-facing claim about this ruler, so it is reconciled
+    # here against the legs that actually ran rather than against a number typed into the prose.
+    ran = selftest(count=True)
+    home = io.open(os.path.join(DOCS, "README.md"), encoding="utf-8").read()
+    problems += check_readme_claim(home, ran)
     print("updated-date verdict: reader pages=%d checked=%d exempt=%d problems=%d pending-commit=%d "
-          "unreadable=%d"
+          "unreadable=%d controls=%d"
           % (len(pages), checked, len(pages) - checked, len(problems), len(pending),
-             len(unreadable)))
+             len(unreadable), len(ran)))
     if not args.quiet or problems:
         for line in problems:
             print("  PROBLEM " + line)

@@ -180,3 +180,4 @@ flowchart TB
 - [系统设计真题](system-design.md)
 - [RAG 与检索真题](rag-retrieval.md)
 - [动手实验：最小 ReAct 闭环](../19-labs/lab1-react.md)
+- [安全与红队真题](safety-redteam.md)

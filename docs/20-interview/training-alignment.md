@@ -17,7 +17,7 @@ updated: 2026-09-25
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F6E7","primaryBorderColor":"#65A30D","primaryTextColor":"#1F2937","secondaryColor":"#DDEBCA","tertiaryColor":"#F9FBF5","lineColor":"#AACC7A","actorBkg":"#F3F8EC","actorBorder":"#65A30D","actorTextColor":"#1F2937","signalColor":"#8FBC4E","noteBkgColor":"#E5EFD6","noteBorderColor":"#65A30D","noteTextColor":"#1F2937"}}}%%
-flowchart LR
+flowchart TB
   S1["预训练<br/>下一 token 预测"] --> S2["SFT<br/>监督指令微调"]
   S2 --> S3["偏好/强化<br/>RLHF 与它的替代"]
   S3 -.失分点.-> N1["优化目标<br/>谁给的信号"]
@@ -179,3 +179,5 @@ flowchart LR
 - [大模型基础真题](llm-foundations.md)
 - [手撕代码与算法真题](live-coding.md)
 - [RLHF、DPO 与对齐](../03-llm/rlhf-dpo-alignment.md)
+- [数据工程与合成数据真题](data-engineering.md)
+- [前沿与研究岗真题](frontier-research.md)

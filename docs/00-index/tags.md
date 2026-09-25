@@ -2,7 +2,7 @@
 tags: [basics]
 type: index
 status: published
-updated: 2026-09-20
+updated: 2026-09-25
 ---
 
 # 标签索引
@@ -44,6 +44,9 @@ updated: 2026-09-20
 | `interview` | 大厂面试真题（LLM/AI 岗） | [面试真题章导读](../20-interview/README.md) |
 | `system-design` | 面试系统设计题 | [系统设计真题](../20-interview/system-design.md) |
 | `career` | 求职方法与面试策略 | [项目深挖与行为面真题](../20-interview/behavioral-project.md) |
+| `transition` | 转岗与岗位分档准备 | [岗位分档与转岗真题](../20-interview/career-tracks.md) |
+| `multimodal` | 图文与视频多模态 | [多模态与视觉语言真题](../20-interview/multimodal-vision.md) |
+| `research` | 研究岗开放题与实验设计 | [前沿与研究岗真题](../20-interview/frontier-research.md) |
 
 ## 使用规范
 

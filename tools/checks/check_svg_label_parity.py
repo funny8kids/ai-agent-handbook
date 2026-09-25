@@ -32,6 +32,12 @@ OUT = os.path.join(REPO, ".tmp-projects", "svg_label_parity.txt")
 # old wording -> new wording, with the reason the old one could not survive verbatim.
 REWRITES = [
     ("侧板", "底部检查器", "面板从右栏移到底部抽屉：留着「侧板」就对读者说了假话"),
+    # The cover banner prints the corpus's page count twice, and that count is a claim about the
+    # tree — round 97 added six interview pages, so both labels moved together. The number's honesty
+    # is owned by `check_readme_stats.py` (it re-derives the banner badges from the tree); this
+    # registry only records that the redraw changed wording rather than losing it.
+    ("从原理到生产205页20章", "从原理到生产211页20章", "封面横幅的页数徽章随树走：第 97 轮新增六页面试真题"),
+    ("20章205页全景", "20章211页全景", "同一枚徽章在横幅里的第二处画法，与上一行同轮一起改"),
 ]
 
 SEPARATORS = "·/—-→（）()[]{}:：,，。.、;；!！?？\"'“”‘’|+×"

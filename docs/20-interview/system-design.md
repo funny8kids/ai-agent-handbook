@@ -141,3 +141,5 @@ flowchart TB
 - [推理与服务化真题](inference-serving.md)
 - [Agent 工程真题](agent-engineering.md)
 - [RAG 与检索真题](rag-retrieval.md)
+- [安全与红队真题](safety-redteam.md)
+- [岗位分档与转岗真题](career-tracks.md)

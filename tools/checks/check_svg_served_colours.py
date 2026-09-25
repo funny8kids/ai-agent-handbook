@@ -12,15 +12,18 @@ What it asserts, per asset: the colour-literal multiset of the served copy EQUAL
 file's. Not "the new hexes appear somewhere" -- a revision that merely uses a colour FEWER times
 would pass that and mean nothing.
 
-The control leg is the point of the file: the previous revision's drawing is graded against the same
-served bytes and MUST differ. Without it a green run cannot be told apart from a CDN serving a stale
-build, since both leave "some blues are present" true. `--control-asset` names the figure to grade
-that way (default: the first one scanned, which is enough -- the failure mode is a whole-site stale
-build, not one lagging file).
+The control leg is the point of the file: a drawing whose colours provably differ from the served
+copy is graded against those same bytes and MUST differ. Without it a green run cannot be told apart
+from a CDN serving a stale build, since both leave "some blues are present" true. The asset for that
+is the first sampled one that is a recolour; when THIS round moved no colours (round 97 edited the
+banner's page-count TEXT), the leg falls back to the most recent commit that did move them -- a
+control that only exists in recolour rounds is no control, and the old code said so by printing
+"THE PROBE IS DEAD" over a perfectly honest run.
 
-Coverage is a separate bucket from findings, per the round-60/67 rule: an asset whose fetch never
-landed is not a pass, and a run that reaches only part of the sample refuses to claim the tree is
-clean (`--min-reached`, default 10).
+Coverage is a separate bucket from findings, per the round-60/67/95 rule: an asset whose fetch never
+landed is not a pass. `--min-reached` is a floor on FETCH SUCCESS, not on the size of the round's
+work list -- a one-asset round that reaches its one asset prints a SMALL-SAMPLE note and passes,
+while 3-of-12 reached stays red. See `coverage_call()` and `--selftest`.
 
 URLs are never guessed: the page address comes from `llms.txt` by published title, and the asset
 address is read off the `<img>` on that page (the `~gitbook/image` proxy -- `.gitbook/assets/*` 404s
@@ -29,6 +32,7 @@ on the live host).
 Usage:
     python tools/checks/check_svg_served_colours.py
     python tools/checks/check_svg_served_colours.py --assets 04-react-loop.svg 08-collab-patterns.svg
+    python tools/checks/check_svg_served_colours.py --selftest   # offline: the two legs that could not say NO
 """
 import argparse
 import collections
@@ -93,12 +97,85 @@ def grade(want, raw):
     return want - got, got - want
 
 
+def tree_asset(name):
+    return io.open(os.path.join(cs.ASSETS, name), encoding="utf-8").read()
+
+
+def colour_delta(baseline, name):
+    """True when `name`'s colour multiset differs between `baseline` and the working tree."""
+    prior = revision_asset(baseline, name)
+    return bool(prior) and colours(prior) != colours(tree_asset(name))
+
+
+def historical_control(limit=30):
+    """The first (asset, revision) that THIS repo actually recoloured in the past and that still
+    hangs on a page. The falsification leg needs a drawing whose colours differ from the served
+    copy -- and it must not be a leg that only exists in rounds that happen to recolour."""
+    p = subprocess.run(["git", "-C", REPO, "log", "-%d" % limit, "--format=%H",
+                        "--", "docs/.gitbook/assets"], stdout=subprocess.PIPE, check=True)
+    for rev in p.stdout.decode("utf-8", "replace").split():
+        q = subprocess.run(["git", "-C", REPO, "show", "--name-only", "--format=", rev],
+                           stdout=subprocess.PIPE, check=True)
+        for line in q.stdout.decode("utf-8", "replace").splitlines():
+            if not (line.startswith("docs/.gitbook/assets/") and line.endswith(".svg")):
+                continue
+            name = os.path.basename(line)
+            if not os.path.isfile(os.path.join(cs.ASSETS, name)):
+                continue
+            old = colours(revision_asset(rev + "^", name))
+            new = colours(revision_asset(rev, name))
+            if old and old != new:
+                return name, rev
+    return None
+
+
+def coverage_call(sample_n, reached, min_reached):
+    """(passed, note). `--min-reached` prices FETCH SUCCESS, not how many assets a round happened
+    to touch: a fully-reached short sample is a note, a sample that could not be fetched is red.
+
+    The two directions are the point (round 97). Before this, one dirty asset + a floor of 10 made
+    an honest run read as "the sample was never reached", which is the same exit code as the CDN
+    having served nothing -- and a rerun could never clear it.
+    """
+    if reached == sample_n and sample_n < min_reached:
+        return True, ("SMALL-SAMPLE note: this round touches %d asset(s), all reached; the floor "
+                      "of %d counts fetch failures, not a short work list" % (sample_n, min_reached))
+    if reached < min_reached:
+        return False, ("COVERAGE failure (not a content finding): %d reached of %d sampled, floor "
+                       "%d -- rerun." % (reached, sample_n, min_reached))
+    return True, ""
+
+
+def selftest():
+    """Offline controls for the two legs that round 97 found unable to say NO."""
+    ok, note = coverage_call(1, 1, 10)
+    assert ok and "SMALL-SAMPLE" in note, "a fully-reached 1-asset sample must not read as coverage failure"
+    ok, note = coverage_call(12, 3, 10)
+    assert not ok and "COVERAGE" in note, "3 of 12 reached must stay red: %s" % note
+    ok, note = coverage_call(12, 12, 10)
+    assert ok and not note, "a full sample must read clean without a note"
+    ok, note = coverage_call(10, 9, 10)
+    assert not ok, "one missing fetch under the floor must stay red"
+    # the fallback falsification leg must have something to falsify on THIS repo
+    name, rev = historical_control()
+    assert name, "no commit in the last 30 asset touches moved a colour -- the control leg is dead"
+    assert os.path.isfile(os.path.join(cs.ASSETS, name)), "control %s is not in the tree" % name
+    before, after = colours(revision_asset(rev + "^", name)), colours(revision_asset(rev, name))
+    assert before and before != after, "control %s@%s does not actually differ in colours" % (name, rev[:8])
+    print("selftest: coverage call 4-way + fallback control %s@%s (colours moved %d ways)"
+          % (name, rev[:8], len((before - after) + (after - before))))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--assets", nargs="*", default=None)
     ap.add_argument("--min-reached", type=int, default=10)
     ap.add_argument("--control-asset", default=None)
+    ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
+    if args.selftest:
+        return selftest()
 
     discovered, baseline = sample_and_baseline()
     names = args.assets or discovered
@@ -136,25 +213,46 @@ def main():
             print("  %-38s ok  served on %-44s %d colour literals (new=%d retired=%d vs %s)"
                   % (name, rel, sum(want.values()), len(added), len(retired), baseline))
 
-    # Control: grade the PREVIOUS drawing against the same served bytes. If it also reads equal,
-    # this axis cannot tell a fresh build from a stale one and its green means nothing.
-    control = args.control_asset or names[0]
-    prior = revision_asset(baseline, control)
-    # A control that cannot fail is not a control: if the previous revision is missing or byte-equal,
-    # "DIFFERS" would be vacuous and the whole axis would be unreadable as evidence.
-    assert prior and prior != io.open(os.path.join(cs.ASSETS, control), encoding="utf-8").read(), \
-        "control asset %s has no differing %s revision -- the falsification leg is dead" % (control, baseline)
+    # Control: grade a DIFFERENT drawing against the same served bytes. If the prior version also
+    # reads equal, this axis cannot tell a fresh build from a stale one and its green means nothing.
+    #
+    # Round 97 taught the second half of this: the leg used to require the SAMPLED asset to be a
+    # recolour, so a round that edits an asset's TEXT (the banner's page-count badge) drove the
+    # control to "READS CLEAN -- THE PROBE IS DEAD" -- a false alarm about the ruler, not the book.
+    # A control that only exists in recolour rounds is not a control; fall back to the last
+    # recolour this repo actually shipped and falsify against that.
+    control, control_rev = None, baseline
+    for name in ([args.control_asset] if args.control_asset else names):
+        if colour_delta(baseline, name):
+            control, control_rev = name, baseline
+            break
+    fallback = None if control else historical_control()
+    if control:
+        prior = revision_asset(control_rev, control)
+        assert prior != tree_asset(control), \
+            "control asset %s is byte-equal to %s -- the falsification leg is dead" % (control,
+                                                                                       control_rev)
+    else:
+        assert fallback, ("no asset in the sample is a recolour and no past commit recoloured one "
+                          "either -- the falsification leg has nothing to falsify")
+        control, control_rev = fallback
+        prior = revision_asset(control_rev + "^", control)
     raw, _ = cs.served_copy_cooled(control, index)
     less, more = grade(colours(prior), raw or "")
-    print("control: %s graded as %s -> %s (short %d, extra %d)"
-          % (control, baseline, "DIFFERS as it must" if (less or more) else "READS CLEAN -- THE PROBE IS DEAD",
-             sum(less.values()), sum(more.values())))
+    verdict = "DIFFERS as it must" if (less or more) else "READS CLEAN -- THE PROBE IS DEAD"
+    note = "" if control_rev == baseline else \
+        "  [no recolour in this round: falsified against the last commit that moved colours]"
+    print("control: %s graded as %s -> %s (short %d, extra %d)%s"
+          % (control, control_rev, verdict, sum(less.values()), sum(more.values()), note))
 
     print("\nserved-colour parity: assets=%d reached=%d mismatched=%d unreachable=%d "
           "min-reached=%d" % (len(names), reached, len(bad), len(unreachable), args.min_reached))
-    if bad or unreachable or reached < args.min_reached or not (less or more):
-        if reached < args.min_reached:
-            print("COVERAGE failure (not a content finding): the sample was never reached -- rerun.")
+    # `--min-reached` prices fetch success, not the size of this round's work list -- see
+    # `coverage_call()` for why the two must not share an exit code.
+    passed, note = coverage_call(len(names), reached, args.min_reached)
+    if note:
+        print(note)
+    if bad or unreachable or not passed or not (less or more):
         return 1
     print("ok")
     return 0

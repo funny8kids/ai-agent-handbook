@@ -208,6 +208,14 @@
    "title": "[2010.11929] An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
    "verdict": "OK"
   },
+  "https://arxiv.org/abs/2101.03961": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2101.03961",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2101.03961] Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Spa",
+   "verdict": "OK"
+  },
   "https://arxiv.org/abs/2103.00020": {
    "checked": "2026-09-24",
    "final": "https://arxiv.org/abs/2103.00020",
@@ -230,6 +238,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2107.03374] Evaluating Large Language Models Trained on Code",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2107.06499": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2107.06499",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2107.06499] Deduplicating Training Data Makes Language Models Better",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2108.00941": {
@@ -360,6 +376,14 @@
    "title": "[2210.17323] GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers",
    "verdict": "OK"
   },
+  "https://arxiv.org/abs/2211.09110": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2211.09110",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2211.09110] Holistic Evaluation of Language Models",
+   "verdict": "OK"
+  },
   "https://arxiv.org/abs/2212.08073": {
    "checked": "2026-09-24",
    "final": "https://arxiv.org/abs/2212.08073",
@@ -374,6 +398,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2212.09741] One Embedder, Any Task: Instruction-Finetuned Text Embeddings",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2212.10560": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2212.10560",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2212.10560] Self-Instruct: Aligning Language Models with Self-Generated Instructions",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2302.04761": {
@@ -446,6 +478,22 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2304.03442] Generative Agents: Interactive Simulacra of Human Behavior",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2304.08485": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2304.08485",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2304.08485] Visual Instruction Tuning",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2304.12244": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2304.12244",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2304.12244] WizardLM: Empowering large pre-trained language models to follow complex instructions",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2304.13705": {
@@ -550,6 +598,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2306.00978] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2306.05499": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2306.05499",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2306.05499] Prompt Injection attack against LLM-integrated Applications",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2306.05685": {
@@ -662,6 +718,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2308.15363] Text-to-SQL Empowered by Large Language Models: A Benchmark Evaluation",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2309.00071": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2309.00071",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2309.00071] YaRN: Efficient Context Window Extension of Large Language Models",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2309.06180": {
@@ -798,6 +862,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2312.10997] Retrieval-Augmented Generation for Large Language Models: A Survey",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2312.14238": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2312.14238",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2312.14238] InternVL: Scaling up Vision Foundation Models and Aligning for Generic Visual-Linguisti",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2312.16171": {
@@ -942,6 +1014,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2407.21787] Large Language Monkeys: Scaling Inference Compute with Repeated Sampling",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2409.12191": {
+   "checked": "2026-09-25",
+   "final": "https://arxiv.org/abs/2409.12191",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2409.12191] Qwen2-VL: Enhancing Vision-Language Model&#39;s Perception of the World at Any Resoluti",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2410.05779": {
@@ -2079,6 +2159,14 @@
    "title": "GitHub - TheAgentCompany/TheAgentCompany: An agent benchmark with tasks in a simulated software comp",
    "verdict": "OK"
   },
+  "https://github.com/Threekiii/Awesome-AI-Redteam": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/Threekiii/Awesome-AI-Redteam",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - Threekiii/Awesome-AI-Redteam: 一个 AI 攻防知识库。A knowledge base for AI security. · GitHub",
+   "verdict": "OK"
+  },
   "https://github.com/ToolJet/ToolJet": {
    "checked": "2026-09-24",
    "final": "https://github.com/ToolJet/ToolJet",
@@ -2231,6 +2319,22 @@
    "title": "GitHub - adongwanai/AgentGuide: https://adongwanai.github.io/AgentGuide | AI Agent开发指南 | LangGraph实战",
    "verdict": "OK"
   },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/07-career-transition.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/07-career-transition.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/07-career-transition.md at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/08-job-hunting-guide.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/08-job-hunting-guide.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/08-job-hunting-guide.md at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
+  },
   "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md": {
    "checked": "2026-09-25",
    "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/12-company-interview-cases.md",
@@ -2239,12 +2343,60 @@
    "title": "AgentGuide/docs/04-interview/12-company-interview-cases.md at main · adongwanai/AgentGuide · GitHub",
    "verdict": "OK"
   },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/14-llm-future-trends.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/14-llm-future-trends.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/14-llm-future-trends.md at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/18-agent-interview-playbooks/agent-evaluation-playbook.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/18-agent-interview-playbooks/agent-evaluation-playbook.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/18-agent-interview-playbooks/agent-evaluation-playbook.md at main · ado",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/18-agent-interview-playbooks/data-synthesis-playbook.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/18-agent-interview-playbooks/data-synthesis-playbook.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/18-agent-interview-playbooks/data-synthesis-playbook.md at main · adong",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/20-resume-guide.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/20-resume-guide.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/20-resume-guide.md at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
+  },
   "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md": {
    "checked": "2026-09-25",
    "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md",
    "host": "github.com",
    "status": 429,
    "verdict": "BLOCKED"
+  },
+  "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/23-frontier-interview-guides/README.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/23-frontier-interview-guides/README.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/23-frontier-interview-guides/README.md at main · adongwanai/AgentGuide ",
+   "verdict": "OK"
+  },
+  "https://github.com/adongwanai/AgentGuide/tree/main/docs/04-interview": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/adongwanai/AgentGuide/tree/main/docs/04-interview",
+   "host": "github.com",
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview at main · adongwanai/AgentGuide · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/affaan-m/ECC": {
    "checked": "2026-09-24",
@@ -2692,6 +2844,22 @@
    "host": "github.com",
    "status": 200,
    "title": "GitHub - datawhalechina/easy-vibe: 💻 vibe coding 101｜The first course for AI-native product builders",
+   "verdict": "OK"
+  },
+  "https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E5%8F%82%E8%80%83%E7%AD%94%E6%A1%88.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E5%8F%82%E8%80%83%E7%AD%94%E6%A1%88.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "hello-agents/Extra-Chapter/Extra01-参考答案.md at main · datawhalechina/hello-agents · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.md": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "hello-agents/Extra-Chapter/Extra01-面试问题总结.md at main · datawhalechina/hello-agents · GitHub",
    "verdict": "OK"
   },
   "https://github.com/datawhalechina/hugging-multi-agent": {
@@ -3300,6 +3468,14 @@
    "host": "github.com",
    "status": 200,
    "title": "GitHub - kite-org/kite: 🪁 A lightweight, modern Kubernetes dashboard. All your clusters. One workspa",
+   "verdict": "OK"
+  },
+  "https://github.com/km1994/LLMs_interview_notes": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/km1994/LLMs_interview_notes",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - km1994/LLMs_interview_notes: 该仓库主要记录 大模型（LLMs） 算法工程师相关的面试题 · GitHub",
    "verdict": "OK"
   },
   "https://github.com/kyrolabs/awesome-agents": {
@@ -4350,6 +4526,14 @@
    "title": "GitHub - thinkwee/AgentsMeetRL: Awesome List for Agentic RL · GitHub",
    "verdict": "OK"
   },
+  "https://github.com/thu-coai/safety-prompts": {
+   "checked": "2026-09-25",
+   "final": "https://github.com/thu-coai/safety-prompts",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - thu-coai/Safety-Prompts: Chinese safety prompts for evaluating and improving the safety of ",
+   "verdict": "OK"
+  },
   "https://github.com/tiliondev/fortress": {
    "checked": "2026-09-24",
    "final": "https://github.com/tiliondev/fortress",
@@ -4858,8 +5042,8 @@
    "checked": "2026-09-25",
    "final": "https://huggingface.co/datasets/cerebras/SlimPajama-627B",
    "host": "huggingface.co",
-   "status": 401,
-   "verdict": "BLOCKED"
+   "status": "[WinError 10054] 远程主机强迫关闭了一个现有的连接。",
+   "verdict": "NET"
   },
   "https://huggingface.co/datasets/gaia-benchmark/GAIA": {
    "checked": "2026-09-24",
@@ -5848,6 +6032,14 @@
    "host": "xiaolinnote.com",
    "status": 200,
    "title": "大模型面试题 | 小林面试笔记",
+   "verdict": "OK"
+  },
+  "https://zilliz.com.cn/blog/MinHash-LSH-best-dedup-for-model-training": {
+   "checked": "2026-09-25",
+   "final": "https://zilliz.com.cn/blog/MinHash-LSH-best-dedup-for-model-training",
+   "host": "zilliz.com.cn",
+   "status": 200,
+   "title": "去重算法这么多，但模型训练最优解是MinHash LSH ｜Milvus 2.6解读 - Zilliz 向量数据库",
    "verdict": "OK"
   }
  }

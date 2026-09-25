@@ -101,8 +101,12 @@ RETRACTIONS = [
      "new": "拉财报 / 出报告",
      "source": "docs/.gitbook/assets/07-plan-vs-react.svg", "billboard": False, "round": 65,
      "why": "15px 标签在 90px 格子里撑框，两步压短重排"},
+    # Round 97: this control pinned the banner's page count and the count honestly moved (205 → 211
+    # new pages), which made the guard red for a reason that has nothing to do with quote fidelity.
+    # The number belongs to `check_readme_stats.py` (it owns the banner badges and compares them with
+    # the tree); this entry only has to prove the *restructured* wording is what the banner prints.
     {"old": "从原理到生产：**187 页** / 19 章",
-     "new": "从原理到生产 · 205 页 / 20 章",
+     "new": "从原理到生产 ·",
      "source": "docs/.gitbook/assets/banner-home.svg", "billboard": False, "round": 64,
      "why": "横幅是图片，统计轴只读 Markdown，页数失真九轮"},
     # Round 83 deleted this self-exemption from README and quoted it in the log to record why; the

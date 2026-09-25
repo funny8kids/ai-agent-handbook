@@ -17,7 +17,7 @@ updated: 2026-09-25
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F6E7","primaryBorderColor":"#65A30D","primaryTextColor":"#1F2937","secondaryColor":"#DDEBCA","tertiaryColor":"#F9FBF5","lineColor":"#AACC7A","actorBkg":"#F3F8EC","actorBorder":"#65A30D","actorTextColor":"#1F2937","signalColor":"#8FBC4E","noteBkgColor":"#E5EFD6","noteBorderColor":"#65A30D","noteTextColor":"#1F2937"}}}%%
-flowchart LR
+flowchart TB
   A["它替代了什么<br/>旧方案的痛点"] --> B["机制怎么成立<br/>公式或数据流"]
   B --> C["代价落在哪<br/>显存/带宽/步数"]
   C --> D["什么时候坏<br/>失效与变体"]
@@ -176,3 +176,5 @@ flowchart LR
 - [训练与对齐真题](training-alignment.md)
 - [手撕代码与算法真题](live-coding.md)
 - [Transformer 注意力机制](../03-llm/transformer-attention.md)
+- [多模态与视觉语言真题](multimodal-vision.md)
+- [前沿与研究岗真题](frontier-research.md)

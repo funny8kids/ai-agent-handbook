@@ -130,3 +130,4 @@ flowchart LR
 - [系统设计真题](system-design.md)
 - [大模型基础真题](llm-foundations.md)
 - [AI 基础设施章节](../16-ai-infrastructure/README.md)
+- [评测与裁判模型真题](evaluation-judge.md)

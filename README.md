@@ -7,12 +7,12 @@
 **From theory to production**: LLMs & attention · agent loops · tool protocols · memory & RAG · planning · multi-agent · evaluation & safety · engineering · AI infrastructure · embodied AI · 2026 frontier
 
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-7C3AED?style=flat-square"></a>
-<img alt="Pages" src="https://img.shields.io/badge/pages-205-8B5CF6?style=flat-square">
+<img alt="Pages" src="https://img.shields.io/badge/pages-211-8B5CF6?style=flat-square">
 <img alt="Chapters" src="https://img.shields.io/badge/chapters-20-6D28D9?style=flat-square">
 <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-323-4C1D95?style=flat-square">
-<img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-115-A78BFA?style=flat-square">
+<img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-119-A78BFA?style=flat-square">
 <img alt="Labs" src="https://img.shields.io/badge/offline%20labs-6-DB2777?style=flat-square">
-<img alt="Figures" src="https://img.shields.io/badge/figures-266-0D9488?style=flat-square">
+<img alt="Figures" src="https://img.shields.io/badge/figures-272-0D9488?style=flat-square">
 <img alt="Real UI screenshots" src="https://img.shields.io/badge/real%20UI%20shots-8-E11D48?style=flat-square">
 
 <br>
@@ -24,9 +24,9 @@
 
 ---
 
-> **中文**：一本持续更新的开源 AI Agent 手册与资源库：205 页 / 20 章，含 6 个纯标准库、零 API Key、离线可跑的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
+> **中文**：一本持续更新的开源 AI Agent 手册与资源库：211 页 / 20 章，含 6 个纯标准库、零 API Key、离线可跑的动手实验。每一页都要求「把话说实」——原理给出公式与推导、结论给出可点开的出处、案例给出真实源码路径，不做"听起来对"的泛泛之谈。
 >
-> **English**: A continuously updated, open-source AI Agent handbook and resource library — 205 pages across 20 chapters, with 6 offline-runnable hands-on labs (pure stdlib, zero API key). Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
+> **English**: A continuously updated, open-source AI Agent handbook and resource library — 211 pages across 20 chapters, with 6 offline-runnable hands-on labs (pure stdlib, zero API key). Every page has to show its work: principles come with formulas and derivations, claims link to primary sources, and case studies point at real source paths.
 
 在线阅读（GitBook 站点）· Read online on GitBook: **VioletNotes Docs**
 

@@ -69,6 +69,33 @@ def libs():
     return [n for n in pyfiles() if not runnable(n)]
 
 
+def child_env():
+    """Children write UTF-8 into their logs no matter what the console's code page is.
+
+    Round 97: on this box the code page is cp936, so an axis that prints a CJK reading redirected
+    its own log in cp936. The runner then decoded those bytes as UTF-8 with `errors="replace"`,
+    got U+FFFD, and the next print raised `UnicodeEncodeError` — killing the pass at axis 15 of 35
+    while the axes that never ran sat behind a summary line that had no idea they were missing.
+    """
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"
+    return env
+
+
+def emit(stream, name, code, elapsed, reading):
+    """One result line, written so that no possible reading can abort the loop.
+
+    Encoding the line to the stream's own codec with `errors="replace"` and back leaves real text
+    (CJK included) untouched and turns only the characters the console cannot hold into '?'.
+    """
+    line = "%-6s %-38s exit=%-4s %3ds  %s" % (
+        "ok" if code == 0 else "RED", name, code, elapsed, reading[:110])
+    enc = getattr(stream, "encoding", None) or "utf-8"
+    stream.write(line.encode(enc, "replace").decode(enc, "replace") + "\n")
+    stream.flush()
+    return line
+
+
 def run_one(name, extra, logdir):
     path = os.path.join(HERE, name + ".py")
     log = os.path.join(logdir, name + ".log")
@@ -76,7 +103,7 @@ def run_one(name, extra, logdir):
     with io.open(log, "wb") as fh:
         try:
             proc = subprocess.Popen([sys.executable, path] + extra, cwd=ROOT,
-                                    stdout=fh, stderr=subprocess.STDOUT)
+                                    stdout=fh, stderr=subprocess.STDOUT, env=child_env())
             code = proc.wait(timeout=TIMEOUT)
         except subprocess.TimeoutExpired:
             proc.kill()
@@ -130,6 +157,28 @@ def selftest():
     assert parse_flags(["--only", "structure,widget"])[2] == ["structure", "widget"], \
         "a comma list is how a filter gets written by hand"
     assert parse_flags(["--skip", "live", "--logdir", "/tmp/b"])[3:] == (["live"], "/tmp/b")
+    # And the loop itself must not be killable by what an axis printed (round 97 killed 20 axes
+    # this way). Both directions: the raw reading must raise on a strict console — proving that
+    # console really cannot encode it — while `emit` must clear that same console untouched.
+    unreadable = "problems=102 未闭合 \ufffd\ufffd"
+    strict = io.TextIOWrapper(io.BytesIO(), encoding="ascii", errors="strict")
+    try:
+        strict.write(unreadable)
+        strict.flush()
+    except UnicodeEncodeError:
+        pass
+    else:
+        raise AssertionError("the strict console accepted an unencodable reading, so the emit-side "
+                             "control below proves nothing")
+    emit(strict, "check_x", 0, 1, unreadable)
+    strict.flush()
+    assert b"problems=102" in strict.buffer.getvalue(), "the reading must still reach the console"
+    assert b"\xff" not in strict.buffer.getvalue(), "unencodable characters must become '?', not bytes"
+    # The child side of the same bug: axes must be told to write UTF-8, or their logs are in the
+    # console's code page and this runner's decode is a guess.
+    assert child_env()["PYTHONIOENCODING"] == "utf-8", "children would log in the code page again"
+    assert "PYTHONIOENCODING" not in os.environ or os.environ["PYTHONIOENCODING"] != "cp936", \
+        "the runner overrides it either way; this line only records the box's default"
     print("battery controls: OK (axes=%d libs=%d unregistered=%d)"
           % (len(found), len(libs()), len(unregistered())))
 
@@ -209,8 +258,7 @@ def main():
     for name in work:
         code, elapsed, log, reading = run_one(name, extra, logdir)
         codes[name] = code
-        print("%-6s %-38s exit=%-4s %3ds  %s"
-              % ("ok" if code == 0 else "RED", name, code, elapsed, reading[:110]), flush=True)
+        emit(sys.stdout, name, code, elapsed, reading)
         if code != 0:
             bad.append(name)
     # Vacuity guard: a battery that ran nothing is not green, and a filter typo must show up here.

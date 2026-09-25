@@ -236,12 +236,18 @@
 * [20 面试真题 · 本章导读](20-interview/README.md)
 * [大模型基础真题](20-interview/llm-foundations.md)
 * [训练与对齐真题](20-interview/training-alignment.md)
+* [数据工程与合成数据真题](20-interview/data-engineering.md)
 * [RAG 与检索真题](20-interview/rag-retrieval.md)
 * [Agent 工程真题](20-interview/agent-engineering.md)
 * [推理与服务化真题](20-interview/inference-serving.md)
 * [系统设计真题](20-interview/system-design.md)
+* [评测与裁判模型真题](20-interview/evaluation-judge.md)
+* [安全与红队真题](20-interview/safety-redteam.md)
+* [多模态与视觉语言真题](20-interview/multimodal-vision.md)
+* [前沿与研究岗真题](20-interview/frontier-research.md)
 * [手撕代码与算法真题](20-interview/live-coding.md)
 * [项目深挖与行为面真题](20-interview/behavioral-project.md)
+* [岗位分档与转岗真题](20-interview/career-tracks.md)
 
 ## 📖 21 术语表
 * [术语表](21-glossary/README.md)

@@ -2,7 +2,7 @@
 tags: [basics, resource]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-25
 ---
 
 # 术语表
@@ -54,6 +54,12 @@ updated: 2026-09-23
 | 知识蒸馏 | Knowledge Distillation | 用大模型的输出（或 logits）教小模型 |
 
 
+| 对称对比损失 | InfoNCE | 把配对样本当正例、当场其余样本当负例的 softmax 分类损失 |
+| 视觉投影器 | Vision Projector / Q-Former | 把视觉特征压成语言模型可读的若干个「伪 token」 |
+| 多维旋转位置编码 | M-RoPE | 把位置编码拆成分量，分别编码时间、行、列 |
+| 可验证奖励强化学习 | RLVR | 用程序能判对错的任务提供奖励信号的训练范式 |
+| 动作分块 | Action Chunking | 一次预测连续多步动作，摊薄单步推理延迟 |
+
 ## 工具与协议
 
 | 术语 | 英文 | 一句话解释 |
@@ -102,6 +108,27 @@ updated: 2026-09-23
 | 基准测试 | Benchmark | 标准化的能力评估任务集 || 令牌桶 | Token Bucket | 按时间补充配额的限流算法，允许突发又能控均值 |
 | 幂等键 | Idempotency Key | 让重复请求只产生一次副作用的标识，Agent 执行动作的保命符 |
 
+
+## 评测、数据与安全
+
+| 术语 | 英文 | 一句话解释 |
+|---|---|---|
+| 大模型裁判 | LLM-as-Judge | 用模型给模型输出打分的评测方式 |
+| 裁判漂移 | Judge Drift | 裁判版本或解码配置变化，让整套分数一起平移 |
+| 评分者一致性 | Cohen's Kappa | 扣掉「瞎猜也会一致」之后，两套判定的一致程度 |
+| 成对比较 | Pairwise Comparison | 只判谁更好，比绝对分稳，但不具传递性 |
+| 对局排名模型 | Bradley–Terry / Elo | 把成对胜负聚成分数与排名的统计模型 |
+| k 次通过率 | pass@k | 采样 k 次至少一次做对的概率，代码类评测常用 |
+| 攻击成功率 | ASR（Attack Success Rate） | 红队里达成恶意目标的尝试占比 |
+| 间接提示注入 | Indirect Prompt Injection | 恶意指令藏进模型会读的外部内容里 |
+| 会话级检测 | Session-level Monitoring | 跨轮累计意图与敏感动作次数，专治渐进式绕过 |
+| 近似去重 | MinHash + LSH | 用签名分带估相似度，做大规模近重复检测 |
+| 数据配比 | Data Mixture | 各领域语料在训练中的采样比例 |
+| 合成数据 | Synthetic Data | 由模型生成的训练数据 |
+| 拒绝采样 | Rejection Sampling | 多次采样，只保留通过校验的回答 |
+| 数据卡 | Data Card / Model Card | 记录来源、许可、过滤口径与已知缺口的说明 |
+| 训练数据污染 | Data Contamination | 评测题被改写后混进训练语料 |
+| 模型塌缩 | Model Collapse | 反复用自产数据训练导致的分布退化 |
 
 ## 基础设施与部署
 

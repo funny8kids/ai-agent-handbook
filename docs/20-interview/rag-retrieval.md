@@ -17,7 +17,7 @@ updated: 2026-09-25
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F6E7","primaryBorderColor":"#65A30D","primaryTextColor":"#1F2937","secondaryColor":"#DDEBCA","tertiaryColor":"#F9FBF5","lineColor":"#AACC7A","actorBkg":"#F3F8EC","actorBorder":"#65A30D","actorTextColor":"#1F2937","signalColor":"#8FBC4E","noteBkgColor":"#E5EFD6","noteBorderColor":"#65A30D","noteTextColor":"#1F2937"}}}%%
-flowchart LR
+flowchart TB
   Q["查询改写"] --> R["召回<br/>混合检索"]
   R --> K["重排截断"]
   K --> G["生成与引用"]
@@ -154,3 +154,4 @@ flowchart LR
 - [系统设计真题](system-design.md)
 - [大模型基础真题](llm-foundations.md)
 - [记忆与 RAG 章节](../06-memory-rag/README.md)
+- [评测与裁判模型真题](evaluation-judge.md)

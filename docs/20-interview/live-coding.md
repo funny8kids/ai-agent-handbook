@@ -17,7 +17,7 @@ updated: 2026-09-25
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F6E7","primaryBorderColor":"#65A30D","primaryTextColor":"#1F2937","secondaryColor":"#DDEBCA","tertiaryColor":"#F9FBF5","lineColor":"#AACC7A","actorBkg":"#F3F8EC","actorBorder":"#65A30D","actorTextColor":"#1F2937","signalColor":"#8FBC4E","noteBkgColor":"#E5EFD6","noteBorderColor":"#65A30D","noteTextColor":"#1F2937"}}}%%
-flowchart LR
+flowchart TB
   A["写下输入形状<br/>B·T·H·d"] --> B["写下输出形状"]
   B --> C["标出中间量<br/>谁被缩放谁被mask"]
   C --> D["处理边界<br/>padding·因果·末尾"]
@@ -126,3 +126,4 @@ flowchart LR
 - [训练与对齐真题](training-alignment.md)
 - [大模型基础真题](llm-foundations.md)
 - [Agent 工程真题](agent-engineering.md)
+- [岗位分档与转岗真题](career-tracks.md)
