@@ -79,6 +79,40 @@ OK: every graded sentence reaches the reader
 
 ① 第 88 轮 ①（活体控制只藏散文句）**本轮销了**：三种单元都在真实发布页上藏过并判对，另加「只藏侧栏副本不许响」这半边。② **14 归一字符地板**照旧对三条腿一律适用，短标题、短引用不判。③ 第 87 轮记的 `UNWITNESSED` 重挂（把 witness 腿「无法作证」的页改判成桶而不是名单）**连续第三轮没做**，本轮也没给它任何量测——它的性质是**预防性**改造：改成桶必须同时新增一条控制，证明「真没同步的页绝不落进那个桶」，否则就是把红改成白。本轮的预算给了第二节那条能实测出错的控制。④ `check_live_sync` 的落后判断、`published_cut` 的切点分辨率、`grade()` 对 `*` 只知位置不知生效——三条本轮一个字没动。
 
+### 六、收尾（提交并推送、线上同步之后）：活体控制、全站判据、witness 与强调腿各自重读一遍
+
+推送后 `check_live_sync.py --watch` 到收敛（最后一次探测，逐字）：
+
+```text
+HEAD committed 2026-09-25, 2 min ago
+local newest round=89
+  leg md   newest round=89  (318813 bytes, 146 rounds)
+  leg html newest round=89  (24208580 bytes, 519 rounds)
+  witness ok  docs/README.md                                 3/3 added needles live
+  witness: 1 reader page(s) HEAD touched carry HEAD's added text
+```
+
+线上全站散文判据（同步收敛后那一趟，逐字）：
+
+```text
+prose survival: pages=196 units=13979 plain=11740 heading=647 quote=57 widget=1535 | all
+lost sentences: MISS=0 REVISION-BEHIND=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+```
+
+`units` 从开工首跑的 13940 涨到 13979（+39），全部是本轮自己写进去的字（第一~五节 + 首页重写），三个桶照旧全零——这正是第四节改过的口径该看到的样子：钉子只在 `MISS=0 / REVISION-BEHIND=0`，不在计数。线上同步后对**本页**重跑活体控制（`--mutate 00-index/changelog`，`exit=0`，逐字）：
+
+```text
+mutation control: hid a plain (probe '每张图的提示语各说这一张的原图宽', 193 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+mutation control: hid a heading (probe '而句子一个字没动', 112 chars, 1 reader copies, 3 off-reader copies) and the judge named it a MISS, not a lag
+mutation control: hid a quote (probe '拿高度算比值会得到', 72 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+```
+
+三条探针是同步后页面新命中的候选：第 77 轮标题里的 `而句子一个字没动`、第 75 轮正文里的 `每张图的提示语各说这一张的原图宽`、第 72 轮引用行里的 `拿高度算比值会得到`。账目形状与第二节一致：每句读者在场恰好 1 份、读者不在场 2–3 份。强调腿 `check_emphasis_flanking.py --live` 读 `live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0`。
+
+真实渲染截图两帧（Edge headless、视口 1280、`--live`）：本页第 89 次一节是线上第一个 `<h2>`，粗体、内联代码与围栏读数盒渲染正常；首页重写句无 `**`、无漏标。**两处目检探针自身的错也如实记账**（是尺子错，不是网站错）：一帧用 `startsWith('第 89 次')` 找节标题，而真实标题以日期开头，报 `target_found False`；另一帧数 `**` 泄漏时把 `<pre>` 与内联代码里的星号算了进去（95/5 个），权威强调轴一律剥掉这些范围，读数是 0。
+
+离线电池（结构、围栏、frontmatter、解析器、changelog 标题、README 统计、日期、`--selftest` 22 条控制）本地与提交前各一遍，全绿；第 89 轮到此收口。
+
 ## 2026-09-25（第 88 次）完整性判据这一轮长了三只新眼睛——分得清「平台发的是另一版」与「渲染器吞了字」、读得到章节标题、读得到引用块；而它「到底读了多少页」第一次被首页那句话管住：加了一条控制，首页立刻红
 
 本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（页数口径、单元读数、控制清单、「留下的账」从三条改为四条）。**没有为过线删掉或加厚任何一页正文**；本轮全部改动都在尺子上（`tools/checks/check_prose_survival.py`、`tools/checks/live_aria_manifest.py` 的一处注释）。
