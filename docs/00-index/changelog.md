@@ -62,7 +62,7 @@ PAGE-NOT-INDEXED no-such-page-xyzzy.md — 196 indexed pages, none matches (exit
 ### 四、本轮量到的读数
 
 - 作者侧单页（改后）：`--page 00-index/changelog.md` 退出码 0，`leaked_strong_markers=0 (body=0 outline=0)`；全站 `outline scope: printed_by_code=0 whose_rendered_text_is_markdown_significant=42`（旧显著性分母 74）。**74→42 不是收紧成更严的同一把尺**：旧口径把代码字符压进标题一起判，新口径把代码跨度折成原子，配对判据只管「渲染后文字」里带 markdown 显著字符的 42 个标题，其余归 `printed_by_code` 这条新腿。
-- 本节写完后的最终全站作者侧读数：`outline scope: headings=2869 carrying_inline_code=112 printed_by_code=0 whose_rendered_text_is_markdown_significant=42`，`leaked_strong_markers=0 (body=0 outline=0)`，`exit=0`。这两个数比修完后第一次量的 `2863 / 111` 各多 1 与多 6——**多出来的是本节自己**（6 条小标题，其中 §一 那条带行内代码 `--page`）。这条正是第 93 轮 §六 那个「针被自己的字引用」的同类自检：本节一边描述「标题里的行内代码会把星号印给读者」，一边自己就往标题里写了行内代码；`printed_by_code=0` 说明它写的是 `--page` 而不是星号，**日志没有把自己判红，也没有靠回避代码来蒙过这条腿**。
+- 本节写完后的最终全站作者侧读数：`outline scope: headings=2870 carrying_inline_code=113 printed_by_code=0 whose_rendered_text_is_markdown_significant=42`，`leaked_strong_markers=0 (body=0 outline=0)`，`exit=0`。这条数比修完后第一次量的 `2863 / 111` 多 7 条标题、多 2 个带行内代码的标题——**多出来的全是本节自己**（§一–§五 六个小标题，加 §六 一个，其中两条标题里写了行内代码）。这条正是第 93 轮 §六 那个「针被自己的字引用」的同类自检：本节一边描述「标题里的行内代码会把星号印给读者」，一边自己就往标题里写了行内代码；`printed_by_code` 从第一次量到最后一趟都是 **0**，说明它写进去的是 `--page`、`--watch` 这类标识符而不是星号——**日志没有把自己判红，也没有靠回避代码来蒙过这条腿**。反过来，任何后续轮次若引用本节的 `headings` 总数，都必须重跑而不是抄这里的数：这条轴的人口包含这份日志本身。
 - 全站活体腿（新规则）：`prediction-mismatch=0 served_markers=0`，判定 195 页、1 页短读拒判（`FETCH 00-index/changelog.md short read: no closing </html> (14431894 chars)`，退出码 1 来自第 93 轮那条 W 闸门，属正常工作）。这条是**校准**：新腿没有把另外 110 个带代码标题过度预测成外翻。
 - `--selftest`：`controls: OK, every bucket able to fire (20 asserted, the homepage budget for this axis is judged)`。
 - 真实渲染目检（改前，线上侧栏）：DOM 内 `nav anchors in DOM=727`（探针不瞎），该条目 `rendered text repr='三、第三条腿：作者写的 **…** 到读者页面上到底有没有变粗'`、`STAR-ON-SCREEN YES`，截图 293,409 字节（断言 >100,000 且盒子已布局）。**这张图是本轮唯一能证明「星号真的在屏幕上」的证据**，前面的 `served=2` 只是文本抽取。
@@ -72,6 +72,24 @@ PAGE-NOT-INDEXED no-such-page-xyzzy.md — 196 indexed pages, none matches (exit
 ### 五、留下的账与本轮的取舍
 
 ① 线上更新日志仍带着改前那条标题——本轮判据改的是**作者侧预测**，`served=2` 要等页面翻页后才能复验为 0，收尾时会以 `--page` 单页腿重跑并原样记录；② 全站活体腿本轮只跑到 195/196 页判定，短读那条是第 93 轮已知类别，但**这条轴至今没有「短读时不许宣布 served_markers=0」以外的补偿手段**，翻页窗口内它仍是盲区；③ `words_not_in_served_page=2` 与 `bold_spans_atom_only=8` 未归因；④ 目录侧的**其它**渲染差异（链接标题的锚文本、公式标题）本轮只加了星号一条腿，没有做完整目录对平；⑤ 首页那句控制数现在由判据逐字比对，但**其它页面**若引用控制数仍不在比对范围内。
+
+### 六、收尾复验：`.md` 端点三分到齐、首页那三根针落地，而 28 MB 那一页没有——于是本轮撞见两处「退出码会说谎」
+
+推送 `2123202` 后第一次观察（逐字）：
+
+```text
+local newest round=94
+  leg md   newest round=94  (378102 chars / 688099 bytes, 165 rounds)
+  leg html newest round=93  (27541867 chars / 28494759 bytes, 572 rounds)  missing 94
+  witness ok  docs/README.md                                 3/3 added needles live
+```
+
+第 93 轮 §六 那条 `STALE docs/README.md 3/3` 归零：首页三条新针确认到达读者。但**本轮修的那件事在 HTML 页上**——`.md` 端点先翻、页面后翻，第 93 轮量到的「两条腿方向可以相反」这次又反了一次。第二次观察里 HTML 腿直接短读，被第 93 轮那道闸门拒判（`no closing </html>`，本轮它第三次在活体上开火）。所以「侧栏不再印星号」在记录这一刻**仍未到达读者**，复验交给下一轮第一件事，命令与判据都写在任务 #141 里。
+
+两处退出码的问题值得单独记：
+
+- **`--watch` 在 HTML 腿落后时退出 0。** 这是第 83 轮定下的口径（页面太大、只作 NOTE），本身没错；错的是把它当「读者已经拿到」的收尾判据——本轮的修复恰好是读者可见的侧栏修复，用它收尾会假绿。所以本轮另起了一支按轮次探测的等待循环（第 1 趟就撞上短读）。这条区分（「`.md` 到齐」≠「读者页面到齐」）以前只写在 changelog 里，没有落进入参或文档，已记为第 95 轮第二件事。
+- **浏览器腿与 CDN 腿重叠，代价不是假红而是少量了 979 格。** 表格溢出腿在 watch 还在跑时并行执行，报 `NOHYDRATE 00-index/changelog.md — harness/CDN, not a content verdict` 且 `problems=1`；单独重跑 `problems=0`，而 verdict 行的格数从 `1893` 涨到 `2872`——**多出来的正是更新日志自己那一页的表格**。也就是说重叠那次不仅红得没道理，还悄悄把一整页从判决里拿掉了；这条轴把「没量到」与「有内容缺陷」放进同一个 `problems` 计数，本轮没有改它，先记为账。
 
 ## 2026-09-25（第 93 次）一条活体腿可以在整站抓空时读成与真通过一字不差的绿：上一轮那 407 条假 `MISS` 被追到根——判了一份没有闭合标签的半页 HTML，而共用它的强调轴把「没拿全」直接当成「这一页 0 个标记」送去判决
 
