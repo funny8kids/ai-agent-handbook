@@ -9,6 +9,8 @@ live revision directly — one request, no guessing, and the lag is stated in ro
 Usage:
     python tools/checks/check_live_sync.py            -> exit 0 when live has caught up with HEAD
     python tools/checks/check_live_sync.py --watch    -> keep polling until it does (or --timeout)
+    python tools/checks/check_live_sync.py --watch --timeout 3600 --reader-visible
+                                                      -> also wait for the reader's own page
 
 Two legs of the changelog, because they are not the same question (round 64): the `.md` endpoint and
 the rendered page update at different times, and reading only the `.md` let this gate say "in sync"
@@ -33,6 +35,16 @@ that names the `.md` leg as that revision's only evidence, and the exit code ign
 VACUITY / FETCH / NO-URL keep gating. The boundary the control (W) pins: UNWITNESSED is reachable
 ONLY through an empty needle list, so a page whose revision really added printable prose and really
 did not ship it can verdict nothing but STALE — "cannot witness" is still never read as "in sync".
+
+Round 95 split the question itself. Demoting the rendered page (round 83) answered "did the platform
+sync", and `--watch` then exited 0 on a round-94 close-out whose legs read `md=94 / html=93` — a
+green that was true of the `.md` endpoint while the page a reader opens still showed the previous
+round. Both readings are correct about their own leg, so they are now separate inputs:
+  * default (`--watch`): sync question, html lag stays a NOTE. Exit 0 does NOT say a reader can see
+    this round's changelog page, and a round must not close on it alone.
+  * `--reader-visible`: the reader question. The page's own round gates too, and a page leg that
+    could not be read is code 2 (no verdict) rather than a forgiven lag — a leg that never arrived
+    certifies nothing about what a reader is shown. Control X2 pins all three states.
 """
 import argparse
 import datetime
@@ -335,7 +347,7 @@ def witness_leg(rev="HEAD"):
     return bad, unwitnessable, witnessed
 
 
-def sync_verdict(want, have, blind, bad):
+def sync_verdict(want, have, blind, bad, page=0, reader_visible=False):
     """One number for the whole run: 0 in sync, 1 the site is behind, 2 this run judged nothing.
 
     Round 93 found the third state missing. `--watch` did `return 2` the moment a leg could not be
@@ -345,9 +357,19 @@ def sync_verdict(want, have, blind, bad):
     A leg that did not arrive is not evidence about readers, so it gets its own code and never a
     green: only the `.md` leg can blind the verdict (round 83 demoted the HTML page to a NOTE), and
     the HTML leg can never rescue or reject one.
+
+    That last sentence is the `.md`-leg question. `reader_visible` asks the other one — "can a
+    reader who opens the changelog PAGE see this round" — and there the page leg is not forgivable:
+    behind is 1, and blind is 2, because a leg that never arrived cannot certify what a reader is
+    shown. Round 94 closed a round on `md=94 / html=93` with exit code 0, which is how this split
+    got paid for.
     """
     if "md" in blind:
         return 2
+    if reader_visible:
+        if "html" in blind:
+            return 2
+        return 0 if (have >= want and page >= want and not bad) else 1
     return 0 if (have >= want and not bad) else 1
 
 
@@ -587,12 +609,36 @@ def controls():
     if '"html" not in blind' not in tail_src:
         errs.append("control X: the lag NOTE must be gated on the html leg being readable; a leg "
                     "that never arrived cannot state what readers are missing")
+    # X2: the reader's page is now a real input, under its own flag. The first case is round 94's
+    # green verbatim (`md=94 / html=93`, exit code 0), which cannot pass here by construction.
+    for what, want, have, page, blind_x2, bad_x2, expect in (
+            ("md current, the reader's page one round behind", 94, 94, 93, [], [], 1),
+            ("md current, the reader's page unreadable: no verdict, no green", 94, 94, 0,
+             ["html"], [], 2),
+            ("md current and the page current: a reader has this round", 94, 94, 94, [], [], 0),
+            ("the page current while the .md leg lags: the .md leg still gates", 94, 93, 94, [], [], 1),
+            ("both legs current but the witness leg is red", 94, 94, 94, [], ["STALE x 1/1"], 1)):
+        got = sync_verdict(want, have, blind_x2, bad_x2, page, True)
+        if got != expect:
+            errs.append("control X2: %s must verdict %d under --reader-visible, got %d"
+                        % (what, expect, got))
+    if sync_verdict(94, 94, ["html"], [], 93) != 0:
+        errs.append("control X2: without --reader-visible the page leg must stay a NOTE (round 83's "
+                    "measured pinning) — the two questions need separate codes, not one stricter "
+                    "verdict that aborts every sync check")
+    if "args.reader_visible" not in tail_src:
+        errs.append("control X2: main() must pass --reader-visible into sync_verdict; a flag no "
+                    "caller reads leaves round 94's lying green exactly as it shipped")
     return errs
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--watch", action="store_true", help="keep polling until live catches up")
+    ap.add_argument("--reader-visible", action="store_true",
+                    help="gate on the reader's own changelog PAGE too: without this flag a 0 exit "
+                         "says the platform synced, NOT that a reader opening the page can see this "
+                         "round (round 83 demoted that leg; round 94 closed on its green)")
     ap.add_argument("--timeout", type=int, default=0, help="--watch budget, seconds")
     ap.add_argument("--no-witness", action="store_true",
                     help="skip the changed-pages leg (cheap, and then only the .md endpoint is judged)")
@@ -657,13 +703,24 @@ def main():
             print("  NOTE the published changelog PAGE is at round %d: readers opening it are missing %s"
                   % (lag, ", ".join(map(str, missing))))
         have = tops.get("md", 0)
-        ok = sync_verdict(want, have, blind, bad) == 0
+        code = sync_verdict(want, have, blind, bad, lag, args.reader_visible)
+        ok = code == 0
         if not ok:
-            print("not online yet: md leg round %d vs HEAD %d, witness failures %d%s"
-                  % (have, want, len(bad),
+            behind = []
+            if have < want:
+                behind.append(".md leg at round %d" % have)
+            if args.reader_visible and "html" not in blind and lag < want:
+                behind.append("the reader's changelog PAGE at round %d" % lag)
+            if args.reader_visible and "html" in blind:
+                behind.append("the reader's PAGE leg unreadable, so its round is unknown")
+            print("not online yet (%s): HEAD round %d, witness failures %d%s"
+                  % ("; ".join(behind) or "witness leg red", want, len(bad),
                      "" if not blind else ", unreadable legs: " + "/".join(blind)))
+        elif args.reader_visible:
+            print("reader-visible check: the PAGE a reader opens carries round %d, md leg %d, HEAD %d"
+                  % (lag, have, want))
         if ok or not args.watch or time.time() >= deadline:
-            return sync_verdict(want, have, blind, bad)
+            return code
         print("  ... watching, next probe in 90 s")
         time.sleep(90)
 

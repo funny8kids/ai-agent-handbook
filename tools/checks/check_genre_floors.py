@@ -60,7 +60,8 @@ def guide_rows(text=None):
         return []
     rows = []
     for line in m.group(0).split("\n"):
-        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        # Same rule the table axis learned in round 95: `\|` is a literal pipe, not a cell boundary.
+        c = [x.strip() for x in re.split(r"(?<!\\)\|", line.strip().strip("|"))]
         if len(c) < 2 or c[0] in ("体裁", "") or set(c[0]) <= set("-: "):
             continue
         if c[1] not in ("不限",) and not c[1].isdigit():

@@ -371,7 +371,10 @@ def main():
         print("pages=%d (of %d Mermaid pages resolvable through llms.txt) viewports=%s assume=%dpx"
               % (len(pages), total, viewports, args.assume))
         asis, wide = {}, {}
-        problems = []
+        # `problems` is a statement about the site; `gaps` is a statement about this run. Round 95
+        # split them the same way in check_table_overflow after a sweep reported `problems=1` for a
+        # page that had never hydrated at all — read as "one content defect among a clean sweep".
+        problems, gaps = [], []
         for rel, url in pages:
             html = wl.fetch(url) if url.startswith("http") else wl.fetch(wl.SITE + "/" + url)
             for vw in viewports:
@@ -381,11 +384,13 @@ def main():
                     live_copy(html, wl.SITE, probe_script(rid, srv.port, modes)))
                 rep = run(srv, name, vw, rid)
                 if not rep or not rep["modes"]:
-                    problems.append("NOHYDRATE %s @%d (harness/CDN, not a content verdict)" % (rel, vw))
+                    gaps.append("NOHYDRATE %s @%d (harness/CDN: this page/viewport was never measured,"
+                                " which says nothing about its column)" % (rel, vw))
                     continue
                 m = {e["mode"]: e for e in rep["modes"]}
                 if not m.get("asis", {}).get("m"):
-                    problems.append("EMPTY %s @%d viewport=%s" % (rel, vw, rep["viewport"]))
+                    gaps.append("EMPTY %s @%d viewport=%s (the probe ran and read no paragraph box,"
+                                " so this reading is missing, not clean)" % (rel, vw, rep["viewport"]))
                     continue
                 a, wd = m["asis"]["m"]["para"], (m.get("wide") or {}).get("m", {}).get("para")
                 asis.setdefault(vw, []).append((rel, a))
@@ -502,8 +507,16 @@ def main():
         print("  -", p)
     for a in advisories:
         print("  AWAITING-DECISION:", a)
-    print("problems=%d  awaiting-decision=%d" % (len(problems), len(advisories)))
-    return 1 if problems else 0
+    intended = len(pages) * len(viewports)
+    for g in gaps:
+        print("  COVERAGE-GAP %s" % g)
+    if gaps:
+        print("  %d of %d page x viewport readings never arrived: re-run serially (browser legs"
+              " share one CDN budget). Do not read the problems=0 line below as green."
+              % (len(gaps), intended))
+    print("problems=%d  coverage-gaps=%d (readings %d of %d)  awaiting-decision=%d"
+          % (len(problems), len(gaps), intended - len(gaps), intended, len(advisories)))
+    return 1 if (problems or gaps) else 0
 
 
 if __name__ == "__main__":

@@ -46,11 +46,18 @@ Guards:
     and the panels mount on a copy too.
   * the served markup must still carry `role=cell` + the clamp() min-width; otherwise the axis is
     measuring something other than what this file documents.
+  * "not measured" and "measured bad" never share a counter (round 95). Run concurrently with
+    another browser leg, this axis once came back `problems=1` while 979 of the sweep's cells had
+    never been read: the 1 was a page that never hydrated, and a single mixed counter made a
+    coverage hole look like one content defect among a mostly-clean sweep. `account()` keeps them
+    apart, the verdict line states `pages=answered/of-candidates`, and the served-vs-authored cell
+    count is printed per page so a page that answers with half its tables cannot be green.
 
 Usage:
     python tools/checks/check_table_overflow.py
     python tools/checks/check_table_overflow.py --pages 12
     python tools/checks/check_table_overflow.py --pages all
+    python tools/checks/check_table_overflow.py --selftest   # offline: the bucket accounting
 """
 import argparse
 import io
@@ -111,7 +118,12 @@ def authored_tables():
                 m = ROW.match(line.strip())
                 if not m:
                     continue
-                parts = [c.strip() for c in m.group(1).split("|")]
+                # Unescaped pipes are cell boundaries. `\|` inside a cell is a literal character to
+                # the renderer — this page quotes verdict lines that carry one — and splitting on it
+                # made the parser author a cell the reader's table never had (round 95: 981 parsed
+                # against 979 served on two rows, and only the served-vs-authored reconciliation
+                # caught it).
+                parts = [c.strip() for c in re.split(r"(?<!\\)\|", m.group(1))]
                 if all(re.fullmatch(r":?-{2,}:?", p) for p in parts if p):
                     continue                          # the |---|---| separator row
                 n += 1
@@ -295,11 +307,91 @@ def check_control(rep, rel):
     return norm["spillR"]
 
 
+def account(cand_n, answered, measured, served_short, spills, floors, problems, gaps, quiet=False):
+    """Content findings and coverage gaps in separate buckets — either fails the run, but only
+    one of them is a statement about the book."""
+    lines = ["", "-- verdict (%dpx column, %d cells read on %d of %d candidate pages) --"
+             % (COLUMN_LIVE, measured, answered, cand_n)]
+    lines.append("  spilling cells=%d   tables wider than the column=%d" % (len(spills), len(floors)))
+    lines += ["  PROBLEM %s" % p for p in problems]
+    lines += ["  COVERAGE-GAP %s" % g for g in gaps]
+    lines += ["  CELL-DROP %s" % s for s in served_short]
+    if gaps or served_short:
+        lines.append("  %d page(s) of this sweep were never measured, in full or in part: that is a "
+                     "coverage gap, not a content finding." % (len(gaps) + len(served_short)))
+        lines.append("  Re-run serially (browser legs share a CDN budget) — do not read the "
+                     "content-problems=0 below as green.")
+    lines.append("table verdict: pages=%d/%d cells=%d content-problems=%d coverage-gaps=%d"
+                 % (answered, cand_n, measured,
+                    len(problems) + len(spills) + len(floors), len(gaps) + len(served_short)))
+    if not quiet:
+        for line in lines:
+            print(line)
+    assert answered > 0 or cand_n == 0, \
+        "vacuity: %d candidate page(s) were visited and %d answered, so nothing was measured" \
+        % (cand_n, answered)
+    return 1 if (problems or spills or floors or gaps or served_short) else 0
+
+
+def account_selftest():
+    """The two buckets must stay apart, and a page that never answered must not be a 0."""
+    def code(**kw):
+        args = dict(cand_n=8, answered=8, measured=2872, served_short=[], spills=[], floors=[],
+                    problems=[], gaps=[])
+        args.update(kw)
+        return account(quiet=True, **args)
+
+    assert code() == 0, "a clean sweep must pass"
+    assert code(spills=[{"page": "x.md"}]) == 1, "a spilling cell must fail"
+    assert code(problems=["COLUMN x.md main=593"]) == 1, "a broken premise must fail"
+    # the round-94 case: one page of the sweep never hydrated, everything else clean. The old
+    # single counter printed `problems=1` (read as one content defect among 2872 cells); the
+    # bucket-split print says content-problems=0 AND coverage-gaps=1, and must not exit 0.
+    assert code(answered=7, measured=1893, gaps=["NOHYDRATE x.md (no rows)"]) == 1, \
+        "a coverage gap must not exit 0"
+    lines = []
+    import contextlib
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        account(cand_n=8, answered=7, measured=1893, served_short=[], spills=[], floors=[],
+                problems=[], gaps=["NOHYDRATE x.md"], quiet=False)
+        lines = buf.getvalue().splitlines()
+    verdict = [l for l in lines if l.startswith("table verdict")]
+    assert len(verdict) == 1, "the verdict line must be printed exactly once: %s" % lines
+    assert "content-problems=0" in verdict[0] and "coverage-gaps=1" in verdict[0], \
+        "a gap must not be counted as content: %r" % verdict
+    assert any("pages=7/8" in l for l in lines), \
+        "the verdict must say how many candidate pages actually answered: %s" % lines
+    assert any("coverage gap, not a content finding" in l for l in lines), \
+        "the gap must be named as one in prose, not only in a counter: %s" % lines
+    # a page that answers with fewer cells than it authors is the silent half of the same bug
+    assert code(answered=8, measured=2700, served_short=["x.md served=40 authored=120"]) == 1, \
+        "a partial read must fail"
+    # a deliberate --pages sample visits fewer pages by design; that is not a coverage gap
+    assert code(cand_n=2, answered=2, measured=400) == 0, "a sample must not trip the gap bucket"
+    for kw, why in [(dict(cand_n=8, answered=0, measured=0), "no page answered"),
+                    (dict(cand_n=1, answered=0, measured=0), "one page, and it stayed silent")]:
+        try:
+            account(quiet=True, spills=[], floors=[], problems=[], gaps=[], served_short=[], **kw)
+        except AssertionError:
+            continue
+        raise AssertionError("vacuity floor did not fire: %s" % why)
+    print("accounting selftest ok: content findings and coverage gaps keep their own buckets, "
+          "a page that never answered cannot be read as green, and neither can one that answered "
+          "with part of its tables missing")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", default="8", help="how many candidate pages to load in a browser")
     ap.add_argument("--no-control", action="store_true", help="skip the injected control (faster re-runs)")
+    ap.add_argument("--selftest", action="store_true",
+                    help="offline: exercise the coverage/content bucket accounting")
     args = ap.parse_args()
+
+    if args.selftest:
+        return account_selftest()
+
     count = "all" if args.pages == "all" else int(args.pages)
 
     pages = authored_tables()
@@ -311,14 +403,31 @@ def main():
     dummy = os.path.join(tempfile.gettempdir(), "tableaxis-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads no engine; it reads the platform's own page\n")
     srv = Server(js_path=dummy)
-    rid, problems, measured, spills, floors = 0, [], 0, [], []
+    rid, problems, gaps, measured, answered, spills, floors, cell_rows = \
+        0, [], [], 0, 0, [], [], []
     try:
         for rel, toklen, tok in cand:
-            url = live_url(rel)
-            if not url:
-                problems.append("NOURL %s (not reachable through llms.txt)" % rel)
+            try:
+                url = live_url(rel)
+            except Exception as exc:  # noqa: BLE001
+                # Same rule as the page fetch below, and the same failure measured twice this round:
+                # the site index is its own request, and one refused connection mid-sweep must cost
+                # this page its reading, not every page after it.
+                gaps.append("INDEX-FAILURE %s (%s: %s) — no live URL, so this page was never read"
+                            % (rel, exc.__class__.__name__, str(exc)[:120]))
                 continue
-            html = wl.fetch(url)
+            if not url:
+                gaps.append("NOURL %s (not reachable through llms.txt)" % rel)
+                continue
+            try:
+                html = wl.fetch(url)
+            except Exception as exc:  # noqa: BLE001
+                # A page the CDN refused is a reading this run does not have, not a defect in the
+                # book — and it must not abort the sweep either, or every page after it goes
+                # unjudged and the run reports a traceback instead of a coverage count.
+                gaps.append("FETCH-FAILURE %s (%s: %s) — never measured, no statement about its cells"
+                            % (rel, exc.__class__.__name__, str(exc)[:120]))
+                continue
             rid += 1
             name = "tbl-%d.html" % rid
             io.open(os.path.join(srv.root, name), "w", encoding="utf-8").write(
@@ -332,7 +441,8 @@ def main():
             finally:
                 Server.stop(proc)
             if not rep or rep.get("fatal") or rep.get("rows") is None:
-                problems.append("NOHYDRATE %s (%s) — harness/CDN, not a content verdict" % (rel, rep))
+                gaps.append("NOHYDRATE %s (%s) — never measured, so no statement about its cells"
+                            % (rel, rep))
                 continue
             assert rep.get("cells", 0) >= 4, "vacuity: %s reported %s cells" % (rel, rep.get("cells"))
             # The column this axis judges against is a max-width sitting beside two navigation
@@ -356,11 +466,17 @@ def main():
                 "%s: the platform stopped breaking long words inside cells (%s) — every long token " \
                 "in the book now paints over its neighbour" % (rel, wrap)
             measured += rep["cells"]
+            answered += 1
+            # Served-vs-authored, printed before any bar is set on it: a page that answers with two
+            # of its five tables is the silent half of the round-94 loss, and the reading is only
+            # trustworthy once the two numbers are seen side by side across the sweep.
+            authored = sum(len(cs) for _, _, cs in pages[rel])
+            cell_rows.append((rel, rep["cells"], authored))
             spills += [dict(r, page=rel) for r in broken]
             floors += bust
             ctl = "" if args.no_control else " | control spills %dpx with breaking off" % check_control(rep, rel)
-            print("  %-52s main=%-4s cells=%-4d tok=%-3d tables=%-2s worst-ink=%-4d spill=%d bust=%d%s"
-                  % (rel, rep.get("main"), rep["cells"], toklen, len(rep["tables"]),
+            print("  %-52s main=%-4s cells=%-4d/%-4d tok=%-3d tables=%-2s worst-ink=%-4d spill=%d bust=%d%s"
+                  % (rel, rep.get("main"), rep["cells"], authored, toklen, len(rep["tables"]),
                      max(r["inkW"] for r in rep["rows"]), len(broken), len(bust), ctl))
             for r in sorted(broken, key=lambda x: -max(x["spillR"], x["spillL"]))[:5]:
                 print("      SPILL t%s cw=%s ink=%s R=%s L=%s %r"
@@ -370,12 +486,19 @@ def main():
     finally:
         srv.close()
 
-    print("\n-- verdict (%dpx column, %d cells read on %d pages) --" % (COLUMN_LIVE, measured, rid))
-    print("  spilling cells=%d   tables wider than the column=%d" % (len(spills), len(floors)))
-    for p in problems:
-        print("  -", p)
-    print("problems=%d" % (len(problems) + len(spills) + len(floors)))
-    return 1 if (problems or spills or floors) else 0
+    # Equality, not a ratio: eight pages reconciled cell-for-cell before this bar was written
+    # (2872 served / 2874 parsed, and the whole 2-cell difference was the escaped-pipe parser bug
+    # fixed in `authored_tables`). A bar that binds on a satisfied reading is what makes a page
+    # answering with half its tables impossible to read as green.
+    short = ["%s served=%d authored=%d" % (rel, served, authored)
+             for rel, served, authored in cell_rows if served != authored]
+    for rel, served, authored in cell_rows:
+        print("  cell reconciliation  %-52s served=%-5d authored=%-5d %s"
+              % (rel, served, authored, "" if served == authored else "<- MISMATCH"))
+    print("  served total=%d   authored total=%d   (a page that answers with fewer cells than it "
+          "authors is a coverage hole, not a clean read)"
+          % (measured, sum(a for _, _, a in cell_rows)))
+    return account(len(cand), answered, measured, short, spills, floors, problems, gaps)
 
 
 if __name__ == "__main__":
