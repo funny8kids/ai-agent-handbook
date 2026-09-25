@@ -9,6 +9,76 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
+
+本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（控制条数与字母表、`--mutate` 那条的描述、第 88 轮写错的等号）。**没有为过线删掉或加厚任何一页正文**；改动全部在尺子上（`tools/checks/check_prose_survival.py`）。
+
+### 一、缺陷：第 88 轮 §八 ① 那条账，改造首跑就量出「控制自己算错了副本」
+
+`--mutate` 从只藏 `plain` 扩到三种单元的第一版，在真实发布页上读了三条红（逐字）：
+
+```text
+    mutation control could not hide 'agentloop' inside 00-index/changelog.md
+    mutation control: heading on 00-index/changelog.md still read as lost with 1 of 4 copies of the probe left on the page ('同一页在真浏览器里被侧栏和页内')
+    mutation control: quote on 00-index/changelog.md still read as lost with 1 of 3 copies of the probe left on the page ('随后量的图就读成了原始尺寸')
+```
+
+那两行的「4 份 / 3 份」是**控制的账错**：判据读的是 `LA.body_visible()`，它连内容一起删掉 `<script|style|pre|code|annotation>` 与 `<a href="#…">` 两类范围，而那几份里读者眼前只有 1 份。第二条改造换成「不在标签里就算读者看得见」，同一个错倒在反方向，量出来更刺眼：
+
+```text
+mutation control: hid a heading (probe '同一页在真浏览器里被侧栏和页内', 117 chars, 4 visible copies) and the judge named it a MISS, not a lag; with 1 of 4 copies left it stays clean
+    mutation control did NOT fire: hiding a real plain on 00-index/changelog.md read as clean
+```
+
+`did NOT fire` 不是判据漏判——选中的那句真散文**唯一的 raw 连续副本住在 `<script>` 的编辑器负载里**，把它藏掉对判据一个字都没动。也就是说：一条「藏字必须响」的控制，如果它算副本的范围比判据宽，它会先给自己发假绿（第 ① ② 行），再在反向误判时喊狼来了（第 ③ 行）。
+
+### 二、修法：副本按判据自己读的那片文字算，一次给三条判决
+
+`OFFPAGE_BLOCK` 与 `OFFPAGE_NAV` 逐字镜像 `live_aria_manifest.visible()` 的两条删除规则（不是「差不多」，是同一串模式），控制先把它们命中的范围并成「读者不在场」的区间，再数探针的在场副本。三态：
+
+- 藏掉**全部读者在场副本** → `grade()` 必须点名，且 `classify()` 必须判 `MISS`，不许被 `REVISION-BEHIND` 免掉；
+- 只藏**读者不在场副本**（侧栏、脚本、代码盒里的那些），读者的副本一根不动 → 必须**全绿**；
+- 读者在场副本 > 1 时，逐一试「只留第 i 份」，至少一份要读绿。
+
+真实发布页三趟（每趟 `exit=0`，逐字）：
+
+```text
+00-index/changelog.md
+  hid a plain (probe '每章内部只有一种主色', 212 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+  hid a heading (probe '同一页在真浏览器里被侧栏和页内', 117 chars, 1 reader copies, 3 off-reader copies) and the judge named it a MISS, not a lag
+  hid a quote (probe '随后量的图就读成了原始尺寸', 110 chars, 1 reader copies, 2 off-reader copies) and the judge named it a MISS, not a lag
+04-prompt-reasoning/chain-of-thought.md
+  hid a plain (probe '就是把没算完的步补上', 77 chars, 1 reader copies, 2 off-reader copies) ...
+  hid a heading (probe '为什么多写几步就变准', 16 chars, 1 reader copies, 3 off-reader copies) ...
+  ships no quote unit to hide
+docs/README.md（首页）
+  hid a plain (probe '在本机复量了那条路给多少', 42 chars, 1 reader copies, 1 off-reader copies) ...
+  hid a heading (probe '按主题挑资源', 22 chars, 1 reader copies, 3 off-reader copies) ...
+  hid a quote (probe 'continuously', 507 chars, 1 reader copies, 2 off-reader copies) ...
+```
+
+`chain-of-thought` 那一页根本没有 `>` 引用行，所以「这一种单元没得藏」必须报**跳过**而不是报红——一条要求每张页都有引用的控制会把自己的形状当成网站的缺陷。`--selftest` 的 22 条种植控制全绿（`controls: OK, every bucket able to fire`）。
+
+### 三、控制 V：多副本那条分支今天没有真实页踩得到，就钉在合成页上
+
+上面三页里每一个探针都恰好只有 **1 份**读者在场副本，也就是说「留 1 份必须绿」这一支在本轮的网站上从未被执行。补一条离线控制 V：一页同时带 2 份 `<h2>` 正文副本、1 份 `<a href="#">` 侧栏副本、1 份 `<pre>` 副本，三种判决同时钉住——只清侧栏与代码必须全绿，两份正文都清必须**只**点名那一条标题（侧栏还印着同样的字，也不许它免判），清掉一份必须全绿。这条控制是第二节那个口径的守夜人：平台哪天换了侧栏的 DOM 形状，`OFFPAGE_*` 与判据就得一起改，否则 V 先红。
+
+### 四、第 88 轮收尾那句「一字不差」本轮量倒，改在字上而不是内容上
+
+首页第 88 轮写的是：`且 units=13923 与推送前那一趟一字不差`。本轮开工首跑（此时 `docs/` 与第 88 轮收尾那次提交**完全相同**，本轮改动都在 `tools/`）读：
+
+```text
+prose survival: pages=196 units=13940 plain=11707 heading=641 quote=57 widget=1535 | all
+lost sentences: MISS=0 REVISION-BEHIND=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+OK: every graded sentence reaches the reader
+```
+
+`units` 差 **17**（`plain` 11691→11707、`heading` 640→641），而那 17 条正是收尾提交自己新写的字。**这条等号本来就不该写成「计数一字不差」**——写文档就能挪动的数，钉子只能钉在判据推不动的地方：`MISS=0` 且 `REVISION-BEHIND=0`。首页已按实测改成这个口径，并把 13940 与它的来路写在原句里（第 75 轮那条「措辞能挪动的数给地板、挪不动的才给等号」的规矩，本轮是**它自己没遵守**）。
+
+### 五、留下的账与下一步
+
+① 第 88 轮 ①（活体控制只藏散文句）**本轮销了**：三种单元都在真实发布页上藏过并判对，另加「只藏侧栏副本不许响」这半边。② **14 归一字符地板**照旧对三条腿一律适用，短标题、短引用不判。③ 第 87 轮记的 `UNWITNESSED` 重挂（把 witness 腿「无法作证」的页改判成桶而不是名单）**连续第三轮没做**，本轮也没给它任何量测——它的性质是**预防性**改造：改成桶必须同时新增一条控制，证明「真没同步的页绝不落进那个桶」，否则就是把红改成白。本轮的预算给了第二节那条能实测出错的控制。④ `check_live_sync` 的落后判断、`published_cut` 的切点分辨率、`grade()` 对 `*` 只知位置不知生效——三条本轮一个字没动。
+
 ## 2026-09-25（第 88 次）完整性判据这一轮长了三只新眼睛——分得清「平台发的是另一版」与「渲染器吞了字」、读得到章节标题、读得到引用块；而它「到底读了多少页」第一次被首页那句话管住：加了一条控制，首页立刻红
 
 本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（页数口径、单元读数、控制清单、「留下的账」从三条改为四条）。**没有为过线删掉或加厚任何一页正文**；本轮全部改动都在尺子上（`tools/checks/check_prose_survival.py`、`tools/checks/live_aria_manifest.py` 的一处注释）。

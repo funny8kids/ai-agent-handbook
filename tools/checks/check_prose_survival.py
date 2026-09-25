@@ -71,6 +71,7 @@ A green here is only as good as the fetch: a page that could not be downloaded p
 fetch failures go to their own bucket and exit non-zero, never to "0 problems" (round 59's split).
 """
 import argparse
+import bisect
 import html
 import io
 import os
@@ -101,6 +102,12 @@ CHROME = re.compile(SENT_END.pattern +
 # so the served side loses nothing by the same, stricter rule.
 HTML_TAG = re.compile(r"<(?!br\s*/?>)[a-zA-Z/!][^>]*>")
 BR = re.compile(r"<br\s*/?>", re.I)
+# The two ranges `live_aria_manifest.visible()` deletes before it strips tags, i.e. the parts of a
+# served page this judge never reads: script/style/pre/code/annotation payloads, and GitBook's own
+# in-page anchor reprint of every heading. Verbatim mirrors, so the mutation control and the judge
+# cannot disagree about what "on the reader's screen" means.
+OFFPAGE_BLOCK = re.compile(r"<(script|style|pre|code|annotation)\b.*?</\1>", re.S)
+OFFPAGE_NAV = re.compile(r'<a\b[^>]*href="#[^"]*"[^>]*>.*?</a>', re.S)
 # A reference with no terminating `;` is shipped as literal text by the platform: round 84 read the
 # live raw HTML of changelog L128 and found the authored `&quot` arriving as `&amp;quot`, i.e. the
 # reader is shown the word `quot`. Python's `html.unescape` decodes that legacy form, so applying it
@@ -761,14 +768,51 @@ def controls():
     if len(qhits) != 1 or qhits[0][0] != "quote" or "引用块" not in qhits[0][2]:
         errs.append("control U: a swallowed blockquote must be named as the only quote loss, got %r"
                     % (qhits,))
+    # V: where a page keeps several copies of the same sentence, and which of them a reader is shown.
+    # Round 89's live control found its own accounting wrong here twice: counting raw occurrences
+    # treated GitBook's sidebar reprint and the `<script>` editor payload as copies the reader has,
+    # so hiding a real plain sentence that only exists in that payload read as "still clean", while a
+    # heading whose one body copy was gone looked safe because three invisible copies were left. The
+    # contract has three sides and all three are planted here, because on the three pages measured
+    # live this round every probe had exactly one reader copy — the multi-copy branch no real page
+    # exercises has to be exercised somewhere.
+    multi = ("<nav><a href=\"#x\">二到六级标题必须作为独立单位到达读者的眼睛</a></nav>"
+             "<article><h2>二到六级标题必须作为独立单位到达读者的眼睛</h2>"
+             "<h2>二到六级标题必须作为独立单位到达读者的眼睛</h2>"
+             "<p>正文这一句足够长，它必须仍然按散文单独判一次。</p>"
+             "<pre>二到六级标题必须作为独立单位到达读者的眼睛</pre></article>")
+    invisible = ('<a href="#x">二到六级标题必须作为独立单位到达读者的眼睛</a>',
+                 '<pre>二到六级标题必须作为独立单位到达读者的眼睛</pre>')
+    only_nav = multi
+    for frag in invisible:
+        only_nav = only_nav.replace(frag, " ")
+    if grade(hu, re.sub(r"\s+", " ", served_chunks(only_nav))):
+        errs.append("control V: a page whose sidebar and code copies were emptied but whose two body "
+                    "copies stand must read clean, got %r"
+                    % (grade(hu, re.sub(r"\s+", " ", served_chunks(only_nav))),))
+    no_body = multi.replace("<h2>二到六级标题必须作为独立单位到达读者的眼睛</h2>", "")
+    both_out = grade(hu, re.sub(r"\s+", " ", served_chunks(no_body)))
+    if len(both_out) != 1 or both_out[0][0] != "heading":
+        errs.append("control V: the reader's two body copies gone must name the heading even with the "
+                    "sidebar and code copies standing, got %r" % (both_out,))
+    one_out = grade(hu, re.sub(r"\s+", " ", served_chunks(
+        multi.replace("<h2>二到六级标题必须作为独立单位到达读者的眼睛</h2>", "", 1))))
+    if one_out:
+        errs.append("control V: one of two reader copies left standing must read clean, got %r"
+                    % (one_out,))
     return errs
 
 
 def mutation_control(page):
-    """Take a real served page, hide one real sentence in the served HTML, require the judge to name it.
+    """Take a real served page, hide one real sentence of each unit kind, require the judge to name it.
 
     Without this, "MISS: {}" on the whole site is only worth as much as the substring test that
     produced it. The deletion happens on the downloaded HTML, never in a repo file.
+
+    Round 88's §八 ① recorded the hole in this very control: it only ever hid a `plain` unit, so the
+    two buckets the judge gained that round (`heading`, `quote`) had never been proven to fire on a
+    published page. A heading is the harder case because the page prints its own table of contents,
+    so the same words exist in more than one place and hiding one copy is not hiding the sentence.
     """
     index = LA.url_index()
     # Match the way `--page` matches: against the same relative, forward-slashed path run() prints.
@@ -785,31 +829,125 @@ def mutation_control(page):
     _u, served, err = fetch_page(url)
     if err or not served:
         return ["mutation control could not fetch %s (%s)" % (url, err)]
-    units = [u for k, u, _ in chunks(text) if k == "plain"]
+    units = chunks(text)
+    all_units = [(k, u, 1) for k, u, _l in units]
+    tree_norm = re.sub(r"\s+", " ", LA.norm(text))
     flat = re.sub(r"\s+", " ", served_chunks(served))
-    victim = next((u for u in sorted(units, key=len, reverse=True)
-                   if re.sub(r"\s+", " ", u) in flat), None)
-    if not victim:
-        return ["mutation control: no authored sentence of %s is on its own page" % rel]
-    probe = victim.split(" ")[0]
-    cut = served.replace(probe, " ", 1) if probe in served else served.replace(html.escape(probe), " ", 1)
-    if cut == served:
-        return ["mutation control could not hide %r inside %s" % (probe[:24], rel)]
-    out = grade([("plain", victim, 1)], served_chunks(cut))
-    if not out:
-        return ["mutation control did NOT fire: hiding real text on %s read as clean" % rel]
-    # `grade()` only sees that a sentence went missing; `classify()` decides whether anything is
-    # allowed to excuse it. Round 87's lesson is that the excuse is the blind side of a
-    # completeness judge, so the real-page control must be graded by the bucketed judge.
-    rows, _ev = classify([("plain", u, 1) for u in units],
-                         re.sub(r"\s+", " ", served_chunks(cut)), cut,
-                         re.sub(r"\s+", " ", LA.norm(text)))
-    verdicts = {u: (v, exc) for _k, _l, u, v, exc in rows}
-    if verdicts.get(victim, ("clean", None))[0] != "MISS":
-        return ["mutation control: hiding real text on %s was excused as %r" % (rel, verdicts.get(victim))]
-    print("mutation control: hid %r on %s and the judge named it a MISS, not a lag (%d chars)"
-          % (probe[:24], rel, len(victim)))
-    return []
+    # "Outside a tag" is not "on the reader's screen". The judge reads `LA.body_visible()`, which also
+    # drops `<script>` data blobs, `<pre>/<code>` runs, KaTeX `<annotation>` sources and GitBook's own
+    # table-of-contents reprint of every heading. Counting raw occurrences instead picked a plain
+    # sentence whose only raw-contiguous copy sits inside a script blob: hiding every copy of it left
+    # the reader's page byte-identical where the judge looks, and the control reported that a
+    # swallowed sentence "read as clean". These ranges mirror `LA.visible()` so the two judges cannot
+    # disagree about what a reader got.
+    holes = sorted([m.span() for rx in (OFFPAGE_BLOCK, OFFPAGE_NAV) for m in rx.finditer(served)])
+    merged = []
+    for a, b in holes:
+        if merged and a <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+    hole_start = [a for a, _b in merged]
+
+    def readable(spot):
+        j = bisect.bisect_right(hole_start, spot[0]) - 1
+        return not (j >= 0 and merged[j][1] >= spot[1])
+
+    def spots_of(probe):
+        pat = re.compile("|".join(re.escape(f) for f in sorted({probe, html.escape(probe)},
+                                                               key=len, reverse=True)))
+        every = [(m.start(), m.end()) for m in pat.finditer(served)]
+        return every, [s for s in every if readable(s)]
+
+    def wipe(html_text, drop):
+        """Blank out the given raw-HTML spans, leaving the rest of the page untouched."""
+        out, shift = html_text, 0
+        for start, end in drop:
+            out = out[:start - shift] + " " + out[end - shift:]
+            shift += end - start - 1
+        return out
+
+    errs = []
+    for kind in ("plain", "heading", "quote"):
+        of_kind = [u for k, u, _l in units if k == kind]
+        if not of_kind:
+            # Not every page has every kind (a chapter page can ship zero blockquotes). Requiring a
+            # quote to hide on such a page would be a defect of this control, not of the site.
+            print("mutation control: %s ships no %s unit to hide" % (rel, kind))
+            continue
+        # Fewest copies first, then longest. The first pass of this control took the *first* token of
+        # the longest heading, which on the changelog is `2026` — 1200 copies, i.e. it proved the
+        # judge notices when every date on the page vanishes, not when one heading is swallowed.
+        # Raw `str.count` ranks (scanning every candidate with a regex turned a 3-minute control into
+        # a 10-minute one); only the shortlist is then probed for reader-side copies, because a probe
+        # the reader sees as one word but the HTML splits across tags has no copy a text edit hides.
+        cands = [(u, p)
+                 for u in of_kind if re.sub(r"\s+", " ", u) in flat
+                 for p in [max((t for t in u.split(" ") if len(t) >= 3), key=len, default=None) or None]
+                 if p and served.count(p)]
+        victim = probe = None
+        spots = every = []
+        for _raw, _n, u, p in sorted((served.count(p), -len(u), u, p) for u, p in cands)[:40]:
+            ev, vis = spots_of(p)
+            if vis:
+                victim, probe, every, spots = u, p, ev, vis
+                break
+        if probe is None:
+            errs.append("mutation control: %s has no %s unit with a probe that reaches the reader as "
+                        "one hideable run of characters" % (rel, kind))
+            continue
+        copies = len(spots)
+        off = len(every) - copies
+        cut = wipe(served, spots)
+        if cut == served:
+            errs.append("mutation control could not hide %r inside %s" % (probe[:24], rel))
+            continue
+        out = grade([(kind, victim, 1)], served_chunks(cut))
+        if not out:
+            errs.append("mutation control did NOT fire: hiding a real %s on %s read as clean"
+                        % (kind, rel))
+            continue
+        # `grade()` only sees that a sentence went missing; `classify()` decides whether anything is
+        # allowed to excuse it. Round 87's lesson is that the excuse is the blind side of a
+        # completeness judge, so the real-page control must be graded by the bucketed judge.
+        rows, _ev = classify(all_units, re.sub(r"\s+", " ", served_chunks(cut)), cut, tree_norm)
+        verdicts = {u: (v, exc) for _k, _l, u, v, exc in rows}
+        if verdicts.get(victim, ("clean", None))[0] != "MISS":
+            errs.append("mutation control: hiding a real %s on %s was excused as %r"
+                        % (kind, rel, verdicts.get(victim)))
+            continue
+        # The other side of the same contract, and the one a heading needs: the page prints its own
+        # table of contents, so the words of a swallowed heading are still on the screen in the
+        # sidebar. Deleting ONLY those off-reader copies must change nothing — otherwise this control
+        # would be proving that the judge notices the page got shorter, not that a sentence the reader
+        # was supposed to get never arrived.
+        if off:
+            nav_cut = wipe(served, [s for s in every if s not in spots])
+            kept = grade([(kind, victim, 1)], served_chunks(nav_cut))
+            if kept:
+                errs.append("mutation control: %s on %s read as lost after only its %d off-reader "
+                            "copies (sidebar/script/code) were hidden, its %d reader copies intact"
+                            % (kind, rel, off, copies))
+                continue
+        # And the direction that keeps the axis honest about position: with several reader copies,
+        # leaving one of them standing must read clean. Which one survives matters (a table-of-contents
+        # entry can carry the probe without carrying the whole sentence), so each is tried.
+        half = ""
+        if copies > 1:
+            survivors = [i + 1 for i in range(copies)
+                         if not grade([(kind, victim, 1)],
+                                      served_chunks(wipe(served, spots[:i] + spots[i + 1:])))]
+            if not survivors:
+                errs.append("mutation control: %s on %s still read as lost with 1 of %d reader copies "
+                            "of the probe left on the page (%r)"
+                            % (kind, rel, copies, probe[:24]))
+                continue
+            half = ("; with only reader copy %s of %d left it stays clean"
+                    % (",".join(map(str, survivors)), copies))
+        print("mutation control: hid a %s (probe %r, %d chars, %d reader copies, %d off-reader copies) "
+              "and the judge named it a MISS, not a lag%s"
+              % (kind, probe[:24], len(victim), copies, off, half))
+    return errs
 
 
 def main():
