@@ -9,6 +9,118 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 90 次）`UNWITNESSED` 那本账挂了五轮，本轮先量它的价再动它：最近 40 次文档修订里 **113 次读者页触碰有 77 次**落进永久红的桶——「只改日期」的修订从此读绿，而「真没同步的页绝不落进这个桶」由控制 W 钉在真实切片跑上，另配一条让切片器失明的变异体 W2
+
+本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——这轮改的是 `tools/checks/check_live_sync.py` 的判决归属，而它不改任何一行被判决的内容。
+
+### 一、缺陷与它的价：先量「这本账多久踩一次」，再谈改判据
+
+账的来路逐字可查：第 85 轮 §八 第一次写下这条 `UNWITNESSED`（`docs/06-memory-rag/long-context-degradation.md`，那一处只动了 Mermaid 指令行的颜色），并记下「列为第 87 轮第一件事：把『本轮没有读者可见新增』与『追不到文本』分成两桶」；第 86 轮 §八 原样转发；第 87 轮 §十 记「`UNWITNESSED` 桶的分桶仍未动……仍是第 88 轮」；第 88 轮 §九 写「本轮**没做**，仍欠」；第 89 轮 §五 ③ 写「**连续第三轮没做**」。本轮不再口头再欠一次：按「先量再改」的规矩，先离线量出这把永久红到底多久踩一次（不碰网线，只跑切片器）。
+
+```text
+recent 40 docs-revs: reader-pages=113 unwitnessable=77
+99f6fc3 Round 73: ... 11/11 pages cannot witness
+```
+
+113 次读者页触碰里 77 次落进 `UNWITNESSED`——只改 `updated:` 日期、只改 Mermaid 颜色指令、只挪标记位置的修订全都算。它们在旧语义下是**失败行**：`--watch` 会为了一个任何同步都追不动的红把整段轮询预算烧光。上面那次 `99f6fc3`（第 73 轮的主提交）改到的 11 个页面**全部**是这个桶。
+
+### 二、分桶：五个桶，两个纯函数，边界只有一条
+
+旧判据把「无法作证」当失败。本轮把它拆成独立的一档，判决逻辑写成两个可直接喂控制的纯函数（`tools/checks/check_live_sync.py`，下面是函数体的原样摘录）：
+
+```text
+def page_bucket(url, needles):      # 抓取之前，证据本身怎么说
+    if not url:
+        return "NO-URL"
+    if not needles:
+        return "UNWITNESSED"        # 响，但不进 bad
+    return None                     # 有针： fetch 说了算
+
+def page_verdict(needles, lost, phantom):   # 抓取之后，读者文字怎么说
+    if phantom:
+        return "VACUITY"            # 故意压过 STALE：针自己会应答，正反两向都不能作证
+    if lost:
+        return "STALE"
+    if not needles:
+        return "UNWITNESSED"
+    return "OK"
+```
+
+`witness_leg()` 返回三元组 `(bad, unwitnessable, witnessed)`，`ok = have >= want and not bad` 一字未动——变的只是 `UNWITNESSED` 不再进 `bad`。边界只有一条，而它就是这本账欠的那句「改成桶必须同时新增一条控制，证明『真没同步的页绝不落进那个桶』，否则就是把红改成白」（第 89 轮 §五 ③ 原文）：**`UNWITNESSED` 只能经由空针列表到达**，而针列表唯一的产地是 `needles_from`（自带九条控制）。真加了可打印正文、线上却没有的页，判不出 `STALE` 以外的任何值。
+
+### 三、控制 W 与变异体 W2：边界两头各钉一次
+
+- **W**（`--selftest` 内）：针从**真实切片跑**取，不手搓列表——有针的页必须放行去 fetch；`page_verdict(wns, wns, False)` 必须是 `STALE`；全到位是 `OK`；针自匹配是 `VACUITY`；空针是 `UNWITNESSED`；无地址是 `NO-URL`。并且若真实切片器对一句明显的新散文**产不出针**，控制直接红：那等于边界没被任何真页踩到，`STALE` 会全变成 `UNWITNESSED`。
+- **W2**：第 89 轮那句账真正指向的变异体——把 `needles_from` 猴补丁成恒返回 `[]`（即「切片器失明」）。失明之后每一页都必须暴露成 `UNWITNESSED`（门从红变绿，但 cannot-witness 行**照印**），而不是静静地把 11 个真红说成 0 个。
+- 两个变异体各跑一遍（在当前代码上重跑，逐字）：强制 `page_bucket` 恒返回 `None` 读出 `controls red: 3`——`a markup-only revision must land in UNWITNESSED, got None`、`an addressable-by-no-page touched file must stay NO-URL/bad, got None`、`a blind slicer must expose itself as UNWITNESSED on every page`；强制 `page_verdict` 恒返回 `"OK"` 读出 `controls red: 2`——`unsynced page WITH needles must verdict STALE, got 'OK'`、`a self-matching needle must verdict VACUITY (overrides STALE), got 'OK'`。撤掉猴补丁后 `--selftest` 回 `controls: OK, every needle rule able to fire`——W 不是摆设。
+
+### 四、同一修订、新旧两份代码：红 → 响而不红（前后对平）
+
+旧代码（`git show HEAD:tools/checks/check_live_sync.py`）在 `--rev 99f6fc3` 上（逐字）：
+
+```text
+  leg md   newest round=89  (318813 bytes, 146 rounds)
+  UNWITNESSED docs/02-agent-basics/perception-planning-action.md (99f6fc3 added no sliceable text there)
+  ...（共 11 行）
+  witness: 99f6fc3 added no reader-page text outside the changelog — the .md leg is the witness
+not online yet: md leg round 89 vs HEAD 89, witness failures 11   # exit 1
+```
+
+`md` 腿已经是本轮最新，这一行却永远追不动——那正是 §一 量的价。新代码同一修订（逐字）：
+
+```text
+  leg md   newest round=89  (318813 bytes, 146 rounds)
+  leg html newest round=89  (24308344 bytes, 525 rounds)
+  UNWITNESSED docs/02-agent-basics/perception-planning-action.md (99f6fc3 added no printable text there — the .md leg is this revision's only witness)
+  ...（共 11 行）
+  witness: 99f6fc3 added no reader-page text outside the changelog — the .md leg is the witness
+  witness: 11 page(s) CANNOT WITNESS 99f6fc3 (round 90's bucket: loud, never green — this revision is only evidenced by the .md leg)
+```
+
+exit 0。混合修订（第 75 轮主提交 `b8a253d`，26 页里 7 页有针）复跑：
+
+```text
+  witness ok  docs/09-frameworks/README.md                   1/1 added needles live
+  witness ok  docs/12-applications/coding-agent.md           2/2 added needles live
+  witness ok  docs/README.md                                 3/3 added needles live
+  ...（witness ok 共 7 行 / UNWITNESSED 共 19 行）
+  witness: 7 reader page(s) b8a253d touched carry b8a253d's added text
+  witness: 19 page(s) CANNOT WITNESS b8a253d (round 90's bucket: loud, never green — this revision is only evidenced by the .md leg)
+```
+
+exit 0，`witness ok` 与 cannot-witness 并存——桶没有把可作的证吞掉。**FETCH 仍然卡门，本轮实测到**：同一修订首跑抓到 2 条 `FETCH ... URLError` 时 exit 1，逐页行与 `not online yet: ... witness failures 2` 都在；复跑网络恢复即 7/7 全绿。桶只放走「无法作证」，没放走过任何一条真判决。
+
+**本轮的网络返工如实记**：`ConnectionResetError(10054)` 打中过 4 次旧代码运行、2 次新代码运行——全部是两份 changelog 大文档（24 MB 的 HTML 页最重，小文档腿能过）；一次独立单发请求就在失败后几秒成功。因此 §四 的旧代码那次运行用了一层 monkeypatch（md 响应缓存重试、HTML 腿用本轮已录读数代替抓取），被控制的只有抓取重试，witness 逻辑与桶归属逐字未动。
+
+### 五、留下的账与下一步
+
+- **NO-URL 仍按「失败」处理**：本轮只重挂了 `UNWITNESSED`。读者页若地址查不到，两向都不能作证，与「无法作证」不同——那说明判据视野缺一页，重挂成不卡门等于把缺页说成正常。它保持红是有意的，不是漏改。
+- **`--rev` 语义没变**：witness 腿仍可指向历史修订；桶改动对「当前 HEAD 是否已上线」这个主用法只有一个后果——日期型修订不再让 `--watch` 白烧预算（§一 的 77/113）。
+- 第 89 轮 §五 ④ 那三条本轮一个字没动：`check_live_sync` 的落后判断（HTML 页 lag 仍是 NOTE）、`published_cut` 的切点分辨率、`grade()` 对 `*` 只知位置不知生效。14 归一字符地板照旧。
+- **旧代码的 before 读数依赖一层 monkeypatch**（见 §四 末段）：它证明了旧桶把 `UNWITNESSED` 喂进 `bad` 且 `ok` 因此永假，但它不是「网络正常时的一整趟旧代码运行」。下一轮若要在真实网络下复现 before 值，挑只改日期的修订当天跑即可。
+
+### 六、离线电池（提交前，逐条；工作树即本轮将要提交的内容）
+
+| 判据 | 读数 |
+| --- | --- |
+| `check_structure.py` | `pages scanned=198 problems=0`，`executable-tagged=0`，`json contracts parsed=79 unclosed=0`——**首跑它抓住的是本节自己**：贴判据代码时开了 `python` 围栏，`CODEFENCE 00-index/changelog.md: body-line 25`，改标 `text` 后复跑归零（内容一字没删，房规由第 79 轮那条轴守着） |
+| `check_changelog_headings.py` | `HEAD=81 tree=82 lost=0`（新增一节，没弄丢任何旧标题） |
+| `check_readme_stats.py` | `banner pages=196 measured=196`，`README, homepage and cover banner match the tree on every axis.` |
+| `check_updated_dates.py` | `reader pages=198 checked=196 exempt=2 problems=0 pending-commit=0`（本轮没碰任何读者页的 `updated:`，这正是它该读 0 的形状） |
+| `check_char_sanity.py` | `pages=198 prose CJK chars=418893 traditional-form findings=0` |
+| `check_widget_pairing.py` | `pages=198 problems=0`，控制 `phantom=3` |
+| `check_quote_fidelity.py` | `attributed quotes=25 findings=0 verified=23`——本节引用的第 89 轮 §五 ③ 与第 87 轮 §十 原句都在 `RETRACTED-OK/PROSE` 里对上 |
+| `check_katex_formulas.py` | `pages=108 formulas=927 failures=0 version=0.18.7` |
+| `check_genre_floors.py` | `pages=196 published=196 graded=159 problems=0` |
+| `check_lab_runnability.py` | `labs=6 exit0=6 deterministic=6 records_current=6/6 findings=0` |
+| `check_emphasis_flanking.py`（作者腿） | `pages=0 leaked_strong_markers=0`——新增这一节没有往任何页留裸星号 |
+| `check_prose_survival.py --selftest` | `controls: OK, every bucket able to fire`（22 条 A–V） |
+| `check_live_sync.py --selftest` | `controls: OK, every needle rule able to fire`（9 条切片 + W + W2 + N） |
+| `check_link_graph.py` | `ok=702 blocked=14 net=1 unchecked=0 fragments=0 FAILED: 0`，`exit=0` |
+| `check_prose_duplicates.py` | `pages=191 prose_units=7424 formula_units=274 dup=0 near-band=3`（近重复三条是索引页转述，advisory 不卡门） |
+
+这两条徽章（链接图 / 跨页重复）按第 86 轮的账**在同一把尺子上随写文档自己挪数**，所以它们的本轮读数记在这里而不是别处；判定挂工作树，而提交后工作树即 `HEAD`，两者同值。
+
 ## 2026-09-25（第 89 次）活体变异控制从「只会藏散文句」长成三种句子都会藏——而且它第一次分清「读者眼前有几份」与「这串字在页面上还有」；顺手量倒第 88 轮收尾那句「一字不差」
 
 本轮正文 **0 页知识页改动**：读者可见文字只动两处——本页新增本节，以及首页那条完整性句按新读数重写（控制条数与字母表、`--mutate` 那条的描述、第 88 轮写错的等号）。**没有为过线删掉或加厚任何一页正文**；改动全部在尺子上（`tools/checks/check_prose_survival.py`）。

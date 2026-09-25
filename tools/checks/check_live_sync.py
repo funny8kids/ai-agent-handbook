@@ -24,6 +24,15 @@ opening the changelog page are missing rounds X, Y") and the verdict rests on:
      (with a phantom needle per page, so a page that "contains" everything is caught).
 A revision that only touched the changelog has no reader page to witness, which is stated as such
 rather than counted as a pass.
+
+Round 90 gave "cannot witness" its own bucket (owed since round 87). Round 90's own survey read
+77 of 113 reader-page touches across the last 40 docs revisions to be UNWITNESSED — every date
+bump and markup-only commit — so as a failure line it was a permanent red no sync can clear, and
+`--watch` burned its whole budget polling for it. It is now printed per page plus a summary line
+that names the `.md` leg as that revision's only evidence, and the exit code ignores it; STALE /
+VACUITY / FETCH / NO-URL keep gating. The boundary the control (W) pins: UNWITNESSED is reachable
+ONLY through an empty needle list, so a page whose revision really added printable prose and really
+did not ship it can verdict nothing but STALE — "cannot witness" is still never read as "in sync".
 """
 import argparse
 import datetime
@@ -180,17 +189,52 @@ def added_needles(path, rev="HEAD"):
     return needles_from(added, reader_body(path), removed)
 
 
+def page_bucket(url, needles):
+    """What the EVIDENCE says before any fetch happened — pure, so control W can pin its boundary.
+
+    Round 90's re-bucketing (owed since round 87): a page the revision gave no sliceable
+    reader-printable text is UNWITNESSED — a coverage fact, loud but never a sync failure, because
+    no amount of waiting makes such a revision witnessable from that page. A page with needles
+    returns None: the fetch decides. NO-URL stays a failure — a touched page the judge cannot even
+    address proves nothing either way.
+    """
+    if not url:
+        return "NO-URL"
+    if not needles:
+        return "UNWITNESSED"
+    return None
+
+
+def page_verdict(needles, lost, phantom):
+    """What the FETCHED reader text says — the other half of the boundary control W pins.
+
+    The direction round 89 §五③ demanded a proof for: a page that DID add printable text and did
+    NOT receive it is STALE and can never be excused into UNWITNESSED — UNWITNESSED is only ever
+    reachable through an empty `needles`, and `needles_from` (with its nine controls) is the sole
+    producer of that list.
+    """
+    if phantom:
+        return "VACUITY"
+    if lost:
+        return "STALE"
+    if not needles:
+        return "UNWITNESSED"
+    return "OK"
+
+
 def witness_leg(rev="HEAD"):
     """Do the reader pages REV changed really carry REV's text on the live site?
 
-    Returns (bad, witnessed). A page with no published address, no sliceable needle, or a missing
-    needle is a failure: "cannot witness" must never be read as "in sync" (round 59's rule).
+    Returns (bad, unwitnessable, witnessed). Round 90 split the middle list out of `bad`: only
+    STALE / VACUITY / FETCH / NO-URL keep the gate red; "cannot witness" is printed on its own line
+    and can still never be read as "in sync" — such a revision is witnessed by the `.md` leg alone
+    (round 59's rule, now with its own bucket instead of a permanent red).
     """
     sys.path.insert(0, HERE)
     import live_aria_manifest as LA
     import unicodedata
     index = LA.url_index()
-    bad, witnessed = [], 0
+    bad, unwitnessable, witnessed = [], [], 0
     for rel in head_reader_pages(rev):
         local = os.path.join(os.path.dirname(DOCS), rel)
         if not os.path.exists(local):
@@ -198,11 +242,13 @@ def witness_leg(rev="HEAD"):
         text = open(local, encoding="utf-8").read()
         url = index.get(LA.norm(LA.h1_of(text)))
         ns = added_needles(local, rev)
-        if not url:
+        bucket = page_bucket(url, ns)
+        if bucket == "NO-URL":
             bad.append("NO-URL %s" % rel)
             continue
-        if not ns:
-            bad.append("UNWITNESSED %s (%s added no sliceable text there)" % (rel, rev))
+        if bucket == "UNWITNESSED":
+            unwitnessable.append("UNWITNESSED %s (%s added no printable text there — the .md leg "
+                                 "is this revision's only witness)" % (rel, rev))
             continue
         try:
             html = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=180).read()
@@ -221,17 +267,24 @@ def witness_leg(rev="HEAD"):
         page = unicodedata.normalize(
             "NFC", unescape(WITNESS_TAG.sub(" ", LA.body_visible(raw_html))))
         lost = [n for n in ns if n not in page]
-        phantom = ns[0][:8] + u"墙" + ns[0][9:]
-        if phantom in page:
+        phantom = (ns[0][:8] + u"墙" + ns[0][9:]) in page
+        verdict = page_verdict(ns, lost, phantom)
+        if verdict == "VACUITY":
+            # Overrides STALE on purpose: a needle whose mutated twin also matched can certify
+            # neither presence nor absence, so reporting a loss with it would claim more than
+            # the evidence says (the line still lands in `bad` either way — the gate stays red).
             bad.append("VACUITY %s (a needle with one character changed also matched)" % rel)
-        if lost:
+            continue
+        if verdict == "STALE":
             bad.append("STALE %s %d/%d added lines absent: %r" % (rel, len(lost), len(ns), lost[0][:24]))
             continue
         witnessed += 1
         print("  witness ok  %-46s %d/%d added needles live" % (rel, len(ns), len(ns)))
+    for line in unwitnessable:
+        print("  %s" % line)
     for line in bad:
         print("  %s" % line)
-    return bad, witnessed
+    return bad, unwitnessable, witnessed
 
 
 def controls():
@@ -284,6 +337,48 @@ def controls():
             if got != want:
                 errs.append("control: %s (added=%r removed=%r want=%r got=%r)"
                             % (what, added, removed, want, got))
+        # W: round 90's bucket boundary, both directions — the proof the re-bucketing owed since
+        # round 87 ("a page that really did not ship must never land in UNWITNESSED, or red has
+        # only been renamed to white"). UNWITNESSED is reachable only through an empty needle list,
+        # so the control rides on a REAL slicer run, not a hand-made list.
+        wns = needles_from(["这一句新写的正文读者一定会看到，所以它是合法的见证针。"], reader_body(body))
+        if page_bucket("https://x/page", wns) is not None:
+            errs.append("control W: a page WITH printable additions must proceed to the fetch, got %r"
+                        % page_bucket("https://x/page", wns))
+        if not wns:
+            errs.append("control W: the slicer returned no needle for obvious added prose — "
+                        "every STALE would now read UNWITNESSED; the boundary is untested")
+        if page_verdict(wns, wns, False) != "STALE":
+            errs.append("control W: unsynced page WITH needles must verdict STALE, got %r"
+                        % page_verdict(wns, wns, False))
+        if page_verdict(wns, [], False) != "OK":
+            errs.append("control W: a shipped page must verdict OK, got %r"
+                        % page_verdict(wns, [], False))
+        if page_verdict(wns, [], True) != "VACUITY":
+            errs.append("control W: a self-matching needle must verdict VACUITY (overrides STALE), got %r"
+                        % page_verdict(wns, wns, True))
+        if page_bucket("https://x/page", []) != "UNWITNESSED":
+            errs.append("control W: a markup-only revision must land in UNWITNESSED, got %r"
+                        % page_bucket("https://x/page", []))
+        if page_bucket(None, wns) != "NO-URL":
+            errs.append("control W: an addressable-by-no-page touched file must stay NO-URL/bad, got %r"
+                        % page_bucket(None, wns))
+        # W2: the mutant the debt note was really about — a slicer gone blind. Patching
+        # `needles_from` to always return [] must turn control W red, or the boundary is a
+        # decoration the leg never consults.
+        saved = globals()["needles_from"]
+        try:
+            globals()["needles_from"] = lambda *a, **k: []
+            blind = needles_from(["这一句新写的正文读者一定会看到，所以它是合法的见证针。"],
+                                 reader_body(body))
+        finally:
+            globals()["needles_from"] = saved
+        if blind:
+            errs.append("control W2: the monkeypatch did not land — the mutant never ran")
+        if page_bucket("https://x/page", blind) != "UNWITNESSED":
+            errs.append("control W2: a blind slicer must expose itself as UNWITNESSED on every page "
+                        "(the gate then prints its cannot-witness lines LOUD); got %r"
+                        % page_bucket("https://x/page", blind))
     # N: coverage. `head_reader_pages` used to drop any path under `docs/14-templates/` on the
     # premise those pages were authoring scaffolding. Round 87 measured the premise false (all three
     # are `status: published` with H1s in the URL index), and round 86's own main commit changed
@@ -344,12 +439,15 @@ def main():
             print("  leg %-4s newest round=%-3d (%d bytes, %d rounds)%s"
                   % (name, tops[name], size, len(live),
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
-        bad, witnessed = ([], 0) if args.no_witness else witness_leg(args.rev)
+        bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)
         if witnessed:
             print("  witness: %d reader page(s) %s touched carry %s's added text" % (witnessed, args.rev, args.rev))
         elif not args.no_witness:
             print("  witness: %s added no reader-page text outside the changelog — the .md leg is the witness"
                   % args.rev)
+        if unwit:
+            print("  witness: %d page(s) CANNOT WITNESS %s (round 90's bucket: loud, never green — "
+                  "this revision is only evidenced by the .md leg)" % (len(unwit), args.rev))
         lag = tops.get("html", 0)
         if lag < want:
             # Round 83 measured this document pinned at round 79 for hours (same etag on six fetches)
