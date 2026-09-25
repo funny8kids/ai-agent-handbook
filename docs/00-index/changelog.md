@@ -119,6 +119,27 @@ control S: tail needle '配置，内容根目录设为' first appears at 7% of t
 - `check_live_formulas`：`pages=105/106 checked=274 hidden=0 problems=0 fetch-failures=1`——那一页（`09-frameworks/openai-agents-sdk.md`）KaTeX 网络字体没加载完，判据自己把这一步交给重跑：`1 page(s) were never measured: that is a coverage gap, not a content finding. Re-run — do not read it as green.` 本轮没有重跑它（全站一趟 24 分钟），留作第 94 轮第一件事。
 - `check_live_column`：唯一那条红照旧是 `COLUMN-MISMATCH: readers get 608px … but the Mermaid axis assumes 768px`，等的是操作者的 wide-layout 决定（§五 第二条同一件事），不是新缺陷。
 
+#### 收尾的两条线上腿（串行，逐字）
+
+- 正文完整性腿 `check_prose_survival --page 00-index/changelog`，`exit=0`：
+
+```text
+prose survival: pages=1 units=4199 plain=3886 heading=305 quote=8 widget=0 | all
+lost sentences: MISS=0 REVISION-BEHIND=0 STALE-COPY=0 | pages-with-MISS=0 fetch-failures=0 not-listed=0
+OK: every graded sentence reaches the reader
+```
+
+§四 表里那条 `STALE-COPY=197`（当时判成「HTML 腿仍停在第 90 次的未发布段」）随页面翻页一起归零，第 92、93 两轮的正文**确认到达读者**——本轮收尾的完成条件就是这一条。
+
+- 强调标记腿 `check_emphasis_flanking --live`，`exit=1`：
+
+```text
+live leg: pages=196 fetch-failures=1 prediction-mismatch=0 served_markers=0 bold_pages_lost=0 bold_spans_lost=0 (of 5981 authored pairs) words_not_in_served_page=2 bold_spans_atom_only=8
+   FETCH 00-index/changelog.md short read: no closing </html> (9834939 chars)
+```
+
+这条红是本轮两处机制**同时**在活体上开火：§二 的截断副本闸门把这份 9.8 M 的半页挡在判决之外（闸门装好之前，它会变成第 92 轮那几百条假 `MISS`），而 §三 给 `fetch-failures` 通的电让这件事决定退出码——于是它读成「这一页本轮无从判决」，既不是「网站吞了字」，也绝不读成绿。其余 195 页在 5981 对作者侧加粗上零外翻、零丢粗体、零预测不符。留下的账：这条轴没有 `--page` 入口，全书最容易截断的那一份 25 MB 文档会逼下一轮为重跑一页而扫全站六分钟，第 94 轮补这个入口；而「更新日志要不要按年拆」这条操作者取舍，本轮第三次被同一份文档量到。
+
 ## 2026-09-25（第 92 次）一条判据静默停摆四轮，而 README 首页仍在引用它认证过的数字：本轮把 `check_figure_explanations` 里那句 assert 改成上报，压在它下面的两条守卫（引用式路径能否解析、`placements == 45`）重新开跑；根因——「每轮手抄一份判据清单」——换成目录自动发现，本轮目录里实到 **35** 条而手抄清单只有 **18** 条
 
 本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——本轮的缺陷全在尺子上：`tools/checks/check_figure_explanations.py`（assert → 上报，控制 9 → 13 条）、`tools/checks/check_emphasis_flanking.py`（加第三条腿：作者写的 `**…**` 在读者页面上是否真的变成粗体），新增 `tools/checks/run_battery.py`（判据清单由目录扫描得出，并自证覆盖面）。
