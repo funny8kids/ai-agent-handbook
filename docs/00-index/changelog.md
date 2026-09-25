@@ -9,6 +9,70 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 94 次）侧栏把作者写在行内代码里的两个星号原样印给读者，而强调轴看不见：目录取景器把「渲染器会解析的文字」和「渲染器只是抄写的文字」当成同一种——「成对即无害」只在正文成立
+
+### 一、上一轮刚装的 `--page` 单页腿，第一趟就指向自家页面
+
+第 93 轮 §六 收尾那条强调腿记下一笔明账：「这条轴没有 `--page` 入口，全书最容易截断的那一份 25 MB 文档会逼下一轮为重跑一页而扫全站六分钟，第 94 轮补这个入口」。本轮装上（只收窄**抓取**范围，绝不收窄站内索引，否则单页复验会顺手把另外 195 页判成「没毛病」），第一次真用就落在更新日志自己头上：
+
+```text
+live leg: pages=1 (single page: 00-index/changelog.md, of 196 indexed) fetch-failures=0 prediction-mismatch=1 served_markers=2 bold_pages_lost=0 bold_spans_lost=0 (of 2662 authored pairs) words_not_in_served_page=2 bold_spans_atom_only=5
+   MISMATCH 00-index/changelog.md                                author=0 served=2
+```
+
+`author=0` 是作者侧预测，`served=2` 是读者页面实测。为排除「又是半份页面」，另写一支脚本重试到拿到整份副本（第 1 次即 `27,541,867` 字符）再定位这两个标记：`visible_markers=2 -> [260981, 260984]`，两处都在**侧栏 `ON THIS PAGE`** 的副本里，正文侧 `body_only markers=0 -> [] (nav contributes 2)`。原始标记是
+
+```text
+<span class="">三、第三条腿：作者写的 **…** 到读者页面上到底有没有变粗</span>
+```
+
+即第 92 轮 §三 那条小标题里的行内代码——**读者靠目录找这一节时，看到的是一对星号**。
+
+### 二、根因：配对是「渲染」问题，而目录不渲染任何东西
+
+正文侧判得没错：反引号里的内容 CommonMark 配得成功，平台渲成 `<code>` 芯片，`LA.visible()` 又把 `<code>` 剥掉，所以正文里读者确实看不到星号。目录则相反——它把标题的纯文本抄一遍，反引号没了，**字符还在**。可取景器当初是「先把标题压平（去掉反引号），再跑同一条 flanking 规则」建的：压平后那对星号成了普通文字，flanking 见它成对便双双吞掉，于是作者侧预测 0。规则用错了对象：**成对即无害只在渲染器会解析它的地方成立**，对抄写侧要数的是字面星号本身。
+
+改法：一条标题现在贡献两笔——(a) 非代码文字配不上的游程（旧规则），(b) 代码跨度里每一个字面 `**`，且按与服务侧相同的非重叠方式数（新增 `outline_code_leaks()`）。这样 (b) 是服务侧数字的**预测**，不是又一份意见。`outline scope` 那行随之多了 `printed_by_code=`。
+
+两条新控制（差分，不是「本页干净」）：
+
+- `outline-code-pair-printed-verbatim`：把本轮这个真实缺陷原样种回去，作者侧必须预测 0、目录侧必须报 2；
+- `outline-rendered-pair-still-clean`：**同一对星号写在代码跨度外面必须不报**——缺了这条，新腿就退化成「凡是星号都报」，会把全站 111 个带行内代码的标题全判成外翻。
+
+内容侧同步修掉读者可见的那一处：第 92 轮 §三 小标题改为「三、第三条腿：作者写的加粗标记到读者页面上到底有没有变粗」。**没有为过线删掉任何内容**，只把星号从「标题里的行内代码」换成一个中文词；旧锚点在仓库内 0 处被引用（已 grep 确认），改标题不产生断链。
+
+### 三、第二个发现：首页那句「18 条种植控制」根本没有判据在数它
+
+`check_prose_survival.py` 从第 90 轮起就有 `homepage_parity()`，强调轴却没有——首页那句引用的是强调轴的控制数，而这条轴自己不知道。也就是说：**加一条控制却忘了改首页那句，全站没有任何脚本会红**。这正是第 90 轮给另一条轴装闹钟的同一个洞，只是换了一条轴。
+
+补上后 `--selftest` 第一次真跑就先红：
+
+```text
+CONTROL FAIL homepage: 「18 条种植控制」 is not the 20 controls asserted here
+```
+
+（HEAD 侧 `CONTROL_PAGES` 实到 17 条、加 1 条活体控制＝18，工作树 19＋1＝20：本轮正好加了 2 条目录侧控制，而首页那句停在上一轮。）同时给闹钟本身装了反例——「首页预算故意写歪 3 条」必须被抓住，否则闹钟可能只是恰好对上过一次。首页那句现改为 20，并把「预算由判据自己数出来逐字比对」写进 README 那条要点里。
+
+`--page` 也带了自己的控制：名字对不上站内索引时必须 `exit 2`（无判决），不能读成绿：
+
+```text
+PAGE-NOT-INDEXED no-such-page-xyzzy.md — 196 indexed pages, none matches (exit 2: no verdict)
+```
+
+### 四、本轮量到的读数
+
+- 作者侧单页（改后）：`--page 00-index/changelog.md` 退出码 0，`leaked_strong_markers=0 (body=0 outline=0)`；全站 `outline scope: printed_by_code=0 whose_rendered_text_is_markdown_significant=42`（旧显著性分母 74）。**74→42 不是收紧成更严的同一把尺**：旧口径把代码字符压进标题一起判，新口径把代码跨度折成原子，配对判据只管「渲染后文字」里带 markdown 显著字符的 42 个标题，其余归 `printed_by_code` 这条新腿。
+- 本节写完后的最终全站作者侧读数：`outline scope: headings=2869 carrying_inline_code=112 printed_by_code=0 whose_rendered_text_is_markdown_significant=42`，`leaked_strong_markers=0 (body=0 outline=0)`，`exit=0`。这两个数比修完后第一次量的 `2863 / 111` 各多 1 与多 6——**多出来的是本节自己**（6 条小标题，其中 §一 那条带行内代码 `--page`）。这条正是第 93 轮 §六 那个「针被自己的字引用」的同类自检：本节一边描述「标题里的行内代码会把星号印给读者」，一边自己就往标题里写了行内代码；`printed_by_code=0` 说明它写的是 `--page` 而不是星号，**日志没有把自己判红，也没有靠回避代码来蒙过这条腿**。
+- 全站活体腿（新规则）：`prediction-mismatch=0 served_markers=0`，判定 195 页、1 页短读拒判（`FETCH 00-index/changelog.md short read: no closing </html> (14431894 chars)`，退出码 1 来自第 93 轮那条 W 闸门，属正常工作）。这条是**校准**：新腿没有把另外 110 个带代码标题过度预测成外翻。
+- `--selftest`：`controls: OK, every bucket able to fire (20 asserted, the homepage budget for this axis is judged)`。
+- 真实渲染目检（改前，线上侧栏）：DOM 内 `nav anchors in DOM=727`（探针不瞎），该条目 `rendered text repr='三、第三条腿：作者写的 **…** 到读者页面上到底有没有变粗'`、`STAR-ON-SCREEN YES`，截图 293,409 字节（断言 >100,000 且盒子已布局）。**这张图是本轮唯一能证明「星号真的在屏幕上」的证据**，前面的 `served=2` 只是文本抽取。
+- 与第 93 轮收尾那次读数逐项对平：`words_not_in_served_page=2`、`bold_spans_atom_only=8` 两值未变，本轮既没引入也没追（记在下面的账里）。
+- 第 93 轮 §六 交代的「第一件事」已办：那条轴当时有 1 页 KaTeX 字体没加载完而从未被量测，本轮按页重跑，`live formula verdict: pages=1/1 checked=2 hidden=0 problems=0 fetch-failures=0`（`exit=0`，最宽墨迹 356.9px 落在 608px 列内）。覆盖缺口归零，不再是「未量」而是「量过且没问题」。
+
+### 五、留下的账与本轮的取舍
+
+① 线上更新日志仍带着改前那条标题——本轮判据改的是**作者侧预测**，`served=2` 要等页面翻页后才能复验为 0，收尾时会以 `--page` 单页腿重跑并原样记录；② 全站活体腿本轮只跑到 195/196 页判定，短读那条是第 93 轮已知类别，但**这条轴至今没有「短读时不许宣布 served_markers=0」以外的补偿手段**，翻页窗口内它仍是盲区；③ `words_not_in_served_page=2` 与 `bold_spans_atom_only=8` 未归因；④ 目录侧的**其它**渲染差异（链接标题的锚文本、公式标题）本轮只加了星号一条腿，没有做完整目录对平；⑤ 首页那句控制数现在由判据逐字比对，但**其它页面**若引用控制数仍不在比对范围内。
+
 ## 2026-09-25（第 93 次）一条活体腿可以在整站抓空时读成与真通过一字不差的绿：上一轮那 407 条假 `MISS` 被追到根——判了一份没有闭合标签的半页 HTML，而共用它的强调轴把「没拿全」直接当成「这一页 0 个标记」送去判决
 
 ### 一、第 92 轮收尾留下的那条 `MISS=407`，本轮先量它的价
@@ -175,7 +239,7 @@ README 引用的 217 / 171 / 46 与被压住的 `placements=45`，第一次同�
 - 新增 `tools/checks/run_battery.py`：工作表 = 目录扫描（含 `__main__` 才可选，共享模块自动落到 libs 里并印出来）。`--selftest` 把覆盖面变成可判的事：轴数下限 30、点名四条轴必须在册、`unregistered()`（可跑但在工作表之外）必须为空、`check_wide_layout_ab` 必须在 libs、幽灵过滤器匹配不到任何轴时不许判绿、`found + unregistered + libs + excused` 必须等于目录里的全部 `.py`。首跑 `battery controls: OK (axes=35 libs=1 unregistered=0)`。
 - 两条口径值得单写：每条轴超时是**它自己的结果**（`BATTERY_TIMEOUT`，默认 3000 s），绝不折进「passed」；`--only`/`--skip` 过滤到空集时 `assert work` 直接红——一条都不跑的电池不算绿，这正是本轮想修的「看起来绿了」的那类事故。
 
-### 三、第三条腿：作者写的 `**…**` 到读者页面上到底有没有变粗
+### 三、第三条腿：作者写的加粗标记到读者页面上到底有没有变粗
 
 这条轴原先只有两条腿：正文里外翻的 `**`（读者能看见的字面星号）与大纲/标题展平。本轮加第三条——**每一对作者写的强调标记，在 served 页面上是否真的产出一个 `<strong>`**。四态判决：`ok`（文字出现在 served 的某个 `<strong>` 里）/ `lost`（标记被吃掉、粗体没产出）/ `absent`（这一页的这份副本里根本没有这段文字，翻页自愈）/ `atom`（文字被行内代码切开，无法证明是同一个粗体范围）。
 

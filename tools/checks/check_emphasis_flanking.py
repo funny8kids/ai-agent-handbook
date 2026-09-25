@@ -60,6 +60,18 @@ last") measured **0**. The differences were ruler noise: GitBook's own error-ban
 lives inside a `<script>` string (`Error in site configuration:`, 2 copies in raw HTML, 0 in
 reader-visible text), the outline reprints heading bold, and KaTeX spans flatten differently on
 the two sides. Matching by text rather than by extent is immune to all three.
+
+Round 94 found the outline rule under-counting. `--page 00-index/changelog` read `author=0
+served=2` on a whole copy, and both markers sat in the sidebar's copy of this book's own round-92
+heading. The body had it right -- a code span renders as `<code>`, which `visible_markers` strips
+-- but the outline has no code formatting to strip, so the reader navigated by
+`作者写的 **…** 到读者页面上到底有没有变粗`. The nav sight had been built by flattening a heading
+(backticks gone) and running the SAME flanking rule over it: correct for text the renderer parses,
+wrong for text it merely copies, because `**…**` satisfies CommonMark and the pairing rule
+swallowed both delimiters. A heading now contributes (a) the runs its non-code text cannot pair and
+(b) every literal `**` inside its code spans, counted the same non-overlapping way the served side
+counts them. Site-wide sight (b) was worth 2 markers on 1 of 112 code-carrying headings -- the one
+this round reworded.
 """
 import argparse
 import html
@@ -144,12 +156,12 @@ def paragraphs(text):
     return paras
 
 
-def heading_paras(text):
-    """[(line_no, heading_text, carried_inline_code)] as the page OUTLINE prints it.
+def _heading_rows(text):
+    """[(line_no, outline_text, carries_code, code_span_contents)] per published heading.
 
-    The body rule blanks a code span to one atom, which is right for `<main>` and wrong for the
-    sidebar: there GitBook has already dropped the backticks, so the span's own characters are
-    reading text. Feeding the flattened string through the same flanking rule is the whole fix.
+    `outline_text` is the heading as the sidebar's EMPHASIS rendering sees it: a code span becomes
+    one atom and a link loses its target. A code span must not be merged into this string, because
+    `unpaired` would let a backticked pair close itself -- see `outline_code_leaks`.
     """
     lines = text.replace("\r\n", "\n").split("\n")
     mask, _ = LA.fence_prose_mask(text)
@@ -161,32 +173,77 @@ def heading_paras(text):
         m = HEADING.match(line.strip())
         if not m:
             continue
-        coded = 1 if INLINE_CODE.search(m.group(2)) else 0
-        flat = INLINE_CODE.sub(lambda g: g.group(0).strip("`").strip(), m.group(2))
-        out.append((n + 1, HEADING_LINK.sub(lambda g: g.group(1), flat).strip(), coded))
+        spans = [s.strip("`").strip() for s in INLINE_CODE.findall(m.group(2))]
+        flat = INLINE_CODE.sub(ATOM, m.group(2))
+        out.append((n + 1, HEADING_LINK.sub(lambda g: g.group(1), flat).strip(),
+                    1 if spans else 0, spans))
     return out
+
+
+def heading_paras(text):
+    """[(line_no, heading_text, carried_inline_code)] as the page OUTLINE prints it.
+
+    The body rule blanks a code span to one atom, which is right for `<main>` and wrong for the
+    sidebar: there GitBook has already dropped the backticks, so the span's own characters are
+    reading text. Those characters are counted by `outline_code_leaks`, not folded in here.
+    """
+    return [(ln, flat, coded) for ln, flat, coded, _spans in _heading_rows(text)]
+
+
+NAV_MARKER = re.compile(r"\*\*")
+
+
+def outline_code_leaks(text):
+    """Every literal `**` a heading's inline code puts in the outline -- no flanking, no pairing.
+
+    Round 94 measured the live changelog at `author=0 served=2` with a whole copy fetched. The body
+    wraps the span in `<code>`, which `visible_markers` strips, so a backticked `**…**` is invisible
+    there; the sidebar has no code formatting to strip, and its raw markup is
+
+        <span class="">三、第三条腿：作者写的 **…** 到读者页面上到底有没有变粗</span>
+
+    so BOTH delimiters of a pair that CommonMark would render as bold still reach the reader.
+    Pairing is a question about rendering, and the outline renders nothing: it prints the code
+    span's characters. Counting `**` the same non-overlapping way `visible_markers` does is what
+    makes this the prediction of the served number rather than a second opinion about it.
+    """
+    return [(ln, span[max(0, m.start() - 12):m.end() + 12],
+             "NAV-CODE-STRONG printed verbatim by the outline")
+            for ln, _flat, _coded, spans in _heading_rows(text)
+            for span in spans for m in NAV_MARKER.finditer(span)]
 
 
 def unpaired_paras(paras):
     return unpaired(None, [(ln, flat) for ln, flat, _c in paras])
 
 
+def outline_leaks(text):
+    """Both outline sights together: runs the renderer cannot pair, plus what code spans print."""
+    return ([(ln, ctx, why + " [nav]") for ln, ctx, why in unpaired_paras(heading_paras(text))]
+            + [(ln, ctx, why + " [nav]") for ln, ctx, why in outline_code_leaks(text)])
+
+
 def scope_line():
     """How wide the outline sight actually is -- the denominators behind 'only 1 was red'.
 
-    A heading whose code span holds an identifier (`get_weather`) or a bracket (`[t]`) flattens
-    into text the flanking table has nothing to pair, so it reaches the reader unchanged: the
-    significant-character count is the population this rule actually examines, not a size list.
+    Two populations, because the rule has two sights. A heading whose CODE carries `**` is settled
+    by the printer, not by the flanking table, so it counts in `printed_by_code`. The pairing
+    population is the headings whose RENDERED text carries markdown-significant characters: an
+    identifier (`get_weather`) or a bracket (`[t]`) in code flattens into text the table has
+    nothing to pair, which is why it is not in that denominator either.
     """
-    heads = coded = sig = 0
+    heads = coded = sig = literal = 0
     for path in walk():
-        rows = heading_paras(open(path, encoding="utf-8").read())
+        rows = _heading_rows(open(path, encoding="utf-8").read())
         heads += len(rows)
-        for _ln, flat, has_code in rows:
+        for _ln, flat, has_code, spans in rows:
             coded += has_code
+            n_lit = sum(len(NAV_MARKER.findall(s)) for s in spans)
+            literal += n_lit
             sig += 1 if any(c in flat for c in "*_[]<>#$~") else 0
-    return ("outline scope: headings=%d carrying_inline_code=%d whose_flattening_is_markdown_significant=%d"
-            % (heads, coded, sig))
+    return ("outline scope: headings=%d carrying_inline_code=%d printed_by_code=%d"
+            " whose_rendered_text_is_markdown_significant=%d"
+            % (heads, coded, literal, sig))
 
 
 def kind(c):
@@ -409,7 +466,50 @@ CONTROL_PAGES = [
     ("outline-lone-underscore-identifier", "## 字段 `get_weather` 与 `tool_result` 的差别\n", 0, 0),
     ("outline-code-inside-fence-stays-hidden", "````text\n### 演示 `**`\n````\n", 0, 0),
     ("outline-link-label-unwrapped", "## 见 [**RAG 基础**](../06-memory-rag/rag-basics.md) 一节\n", 0, 0),
+    # round 94: the shape that escaped the outline leg for one round -- `**…**` PAIRS under the
+    # flanking table, so the pairing sight called it clean, and the sidebar printed both delimiters.
+    ("outline-code-pair-printed-verbatim",
+     "### 三、第三条腿：作者写的 `**…**` 到读者页面上到底有没有变粗\n", 0, 2),
+    # ...and the guard that the new leg is not a blanket "count every asterisk": the same pair
+    # outside a code span is real emphasis, renders bold, and reaches the nav as text.
+    ("outline-rendered-pair-still-clean", "### 三、第三条腿：作者写的 **…** 到读者页面上有没有变粗\n", 0, 0),
 ]
+
+
+def outline_total(src):
+    """Both outline sights as one number -- what the live leg has to predict."""
+    return len(outline_leaks(src))
+
+
+HOME_CONTROLS = re.compile(r"(\d+) 条种植控制")
+
+
+def control_count():
+    """What this axis actually asserts: the shape table plus the fetch seam's two directions."""
+    return len(CONTROL_PAGES) + 1
+
+
+def homepage_parity(bullet=None):
+    """The homepage's 「N 条种植控制」 about THIS axis must be this axis's own number.
+
+    Round 90 wired exactly this alarm for `check_prose_survival` and stopped there, so the emphasis
+    bullet kept a reader-facing count that nothing read: round 94's two new outline controls made it
+    stale by the amount of work the round did. `bullet` lets a control feed a doctored sentence --
+    an alarm nobody can make ring is not an alarm.
+    """
+    if bullet is None:
+        readme = open(os.path.join(DOCS, "README.md"), encoding="utf-8").read().split("\n")
+        bullet = next((l for l in readme if "check_emphasis_flanking.py" in l), None)
+        if bullet is None:
+            return ["homepage: no sentence cites check_emphasis_flanking.py, so its control "
+                    "budget has no judge"]
+    m = HOME_CONTROLS.search(bullet)
+    if not m:
+        return ["homepage: the emphasis bullet must cite 「N 条种植控制」 so this assertion can read it"]
+    if int(m.group(1)) != control_count():
+        return ["homepage: 「%s 条种植控制」 is not the %d controls asserted here"
+                % (m.group(1), control_count())]
+    return []
 
 
 def fetch_seam_control():
@@ -437,28 +537,38 @@ def selftest():
     ok = True
     for name, src, want, want_nav in CONTROL_PAGES:
         got = len(unpaired(src))
-        got_nav = len(unpaired_paras(heading_paras(src)))
+        got_nav = outline_total(src)
         if got != want or got_nav != want_nav:
             ok = False
             print("CONTROL FAIL %-38s expected=%d/%d got=%d/%d"
                   % (name, want, want_nav, got, got_nav))
             for ln, ctx, why in unpaired(src):
                 print("        body", why, repr(ctx))
-            for ln, ctx, why in unpaired_paras(heading_paras(src)):
+            for ln, ctx, why in outline_leaks(src):
                 print("        nav ", why, repr(ctx))
     # the negative controls must be able to fire: same text, marker moved one char
     fired = len(unpaired("它是一个**目标**，不是。\n"))
     if fired:
         ok = False
         print("CONTROL FAIL legal pair fired (%d)" % fired)
-    # ...and the outline rule must be able to miss: unwrap one marker and it has to speak
-    silent = len(unpaired_paras(heading_paras("## 平台把 `**` 配成了\n")))
-    if silent != 1:
-        ok = False
-        print("CONTROL FAIL outline rule unable to fire (%d)" % silent)
+    # ...and the outline rule must be able to miss: a code span's delimiters have to be counted
+    # whether or not the flanking table would pair them.
+    for shape, want in (("## 平台把 `**` 配成了\n", 1), ("## 作者写的 `**…**` 变粗了吗\n", 2)):
+        silent = outline_total(shape)
+        if silent != want:
+            ok = False
+            print("CONTROL FAIL outline rule unable to fire on %r (%d, want %d)"
+                  % (shape, silent, want))
     ok = bold_selftest() and ok
     ok = fetch_seam_control() and ok
-    print("controls: %s" % ("OK, every bucket able to fire" if ok else "BROKEN"))
+    for msg in homepage_parity():
+        ok = False
+        print("CONTROL FAIL %s" % msg)
+    if not homepage_parity("绿色由 %d 条种植控制撑着" % (control_count() + 3)):
+        ok = False
+        print("CONTROL FAIL a homepage budget off by three read as parity")
+    print("controls: %s (%d asserted, the homepage budget for this axis is judged)"
+          % ("OK, every bucket able to fire" if ok else "BROKEN", control_count()))
     return ok
 
 
@@ -585,12 +695,11 @@ def bold_selftest():
 
 def leaks_of(src):
     """(strong_runs, em_runs) over BOTH sights a reader has: body prose and the page outline."""
-    items = unpaired(src) + [(ln, ctx, why + " [nav]")
-                             for ln, ctx, why in unpaired_paras(heading_paras(src))]
+    items = unpaired(src) + outline_leaks(src)
     return ([x for x in items if "STRONG" in x[2]], [x for x in items if "EM" in x[2]])
 
 
-def run(workers=6, live=False):
+def run(workers=6, live=False, only=None):
     rows = []
     for path in walk():
         strong, em = leaks_of(open(path, encoding="utf-8").read())
@@ -622,12 +731,32 @@ def run(workers=6, live=False):
         return 0 if not leaks else 1
 
     index = LA.url_index()
-    pages = []
+    all_pages = []
     for path in walk():
         k = LA.norm(LA.h1_of(open(path, encoding="utf-8").read()))
         if k in index:
-            pages.append((path, index[k]))
-    listed = {rel(p) for p, _u in pages}
+            all_pages.append((path, index[k]))
+    # A `--page` run narrows what gets FETCHED, never what the site index is: if `listed`
+    # followed the filter, every other leak-bearing page would print NOT-LISTED and gate the
+    # exit code for a page this run never meant to grade.
+    listed = {rel(p) for p, _u in all_pages}
+    # Round 93's account, implemented: the changelog is the one document the CDN reliably
+    # truncates (three short reads measured in one round: 9.8 M / 13.8 M / 18.9 M of 27 M), and
+    # without a page entry a single re-grade costs a full-site walk. `--page` must be able to
+    # name THAT page, so the filter runs after the index lookup rather than instead of it.
+    if only:
+        want = only.strip("/")
+        want = want[len("docs/"):] if want.startswith("docs/") else want
+        want = want[:-3] if want.endswith(".md") else want
+        pages = [(p, u) for p, u in all_pages if rel(p) in (want, only.strip("/"))]
+        if not pages:
+            # A filter that matches nothing and prints `pages=0` with a green exit is the
+            # blind-ruler shape this repo keeps finding, so a typo is a hard 2, not a 0.
+            print("PAGE-NOT-INDEXED %s — %d indexed pages, none matches (exit 2: no verdict)"
+                  % (only, len(all_pages)))
+            return 2
+    else:
+        pages = all_pages
     pred = {rel(p): len(leaks_of(open(p, encoding="utf-8").read())[0]) for p, _u in pages}
     bolded = {rel(p): authored_bold(open(p, encoding="utf-8").read()) for p, _u in pages}
     unlisted = {r: n for r, n in
@@ -660,10 +789,12 @@ def run(workers=6, live=False):
                 bad.append((r, pred.get(r, 0), n))
             if l:
                 lost.append((r, l))
-    print("live leg: pages=%d fetch-failures=%d prediction-mismatch=%d served_markers=%d "
+    print("live leg: pages=%d%s fetch-failures=%d prediction-mismatch=%d served_markers=%d "
           "bold_pages_lost=%d bold_spans_lost=%d (of %d authored pairs) "
           "words_not_in_served_page=%d bold_spans_atom_only=%d"
-          % (len(got), len(err), len(bad), sum(n for _r, n, _l, _u, _e in got if n is not None),
+          % (len(got), (" (single page: %s, of %d indexed)" % (only.strip("/"), len(all_pages)))
+             if only else "",
+             len(err), len(bad), sum(n for _r, n, _l, _u, _e in got if n is not None),
              len(lost), sum(len(l) for _r, l in lost),
              sum(len(v) for v in bolded.values()), absent, atoms))
     for r, l in sorted(lost, key=lambda x: -len(x[1]))[:12]:
@@ -682,11 +813,19 @@ def run(workers=6, live=False):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", action="store_true", help="require the served page to match the prediction")
+    ap.add_argument("--page", help="fetch only this page (needs --live); a name that is not "
+                                   "indexed exits 2 rather than reading green")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
     if args.selftest:
+        # The single-page entry is only safe if its own failure mode is nailed: an unmatched
+        # name must NOT become `pages=0` plus the green exit the full run prints. This calls
+        # the live branch, which returns before any fetch when the filter is empty.
+        if run(live=True, only="no-such-page-xyzzy.md") != 2:
+            print("   CONTROL FAIL --page with an unmatched name must exit 2, not read green")
+            sys.exit(2)
         sys.exit(0 if selftest() else 2)
-    sys.exit(run(live=args.live))
+    sys.exit(run(live=args.live, only=args.page))
 
 
 if __name__ == "__main__":
