@@ -18,7 +18,7 @@
    "verdict": "OK"
   },
   "https://academic.oup.com/mind/article/LIX/236/433/986238": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://academic.oup.com/mind/article/LIX/236/433/986238",
    "host": "academic.oup.com",
    "status": 403,
@@ -1321,7 +1321,7 @@
    "verdict": "OK"
   },
   "https://dl.acm.org/doi/10.1145/1571941.1572114": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://dl.acm.org/doi/10.1145/1571941.1572114",
    "host": "dl.acm.org",
    "status": 403,
@@ -2223,6 +2223,28 @@
    "title": "",
    "verdict": "OK"
   },
+  "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
+   "checked": "2026-09-26",
+   "final": "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md",
+   "host": "github.com",
+   "status": 429,
+   "verdict": "BLOCKED"
+  },
+  "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E9%80%9A%E7%94%A8AIGC%E7%AE%97%E6%B3%95%E5%B2%97%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
+   "checked": "2026-09-26",
+   "final": "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E9%80%9A%E7%94%A8AIGC%E7%AE%97%E6%B3%95%E5%B2%97%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md",
+   "host": "github.com",
+   "status": 200,
+   "title": "AIGC-Interview-Book/大厂高频面试题（实时更新）/通用AIGC算法岗高频面试题.md at main · WeThinkIn/AIGC-Interview-Book · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/DeepSeek%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
+   "checked": "2026-09-26",
+   "final": "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/DeepSeek%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md",
+   "host": "github.com",
+   "status": 429,
+   "verdict": "BLOCKED"
+  },
   "https://github.com/WenyuChiou/awesome-agentic-ai-zh": {
    "checked": "2026-09-24",
    "final": "https://github.com/WenyuChiou/awesome-agentic-ai-zh",
@@ -2376,11 +2398,12 @@
    "verdict": "OK"
   },
   "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/22-algorithm-ai-coding-question-bank.md",
    "host": "github.com",
-   "status": 429,
-   "verdict": "BLOCKED"
+   "status": 200,
+   "title": "AgentGuide/docs/04-interview/22-algorithm-ai-coding-question-bank.md at main · adongwanai/AgentGuide",
+   "verdict": "OK"
   },
   "https://github.com/adongwanai/AgentGuide/blob/main/docs/04-interview/23-frontier-interview-guides/README.md": {
    "checked": "2026-09-25",
@@ -5039,11 +5062,11 @@
    "verdict": "OK"
   },
   "https://huggingface.co/datasets/cerebras/SlimPajama-627B": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://huggingface.co/datasets/cerebras/SlimPajama-627B",
    "host": "huggingface.co",
-   "status": "[WinError 10054] 远程主机强迫关闭了一个现有的连接。",
-   "verdict": "NET"
+   "status": 401,
+   "verdict": "BLOCKED"
   },
   "https://huggingface.co/datasets/gaia-benchmark/GAIA": {
    "checked": "2026-09-24",
@@ -5254,7 +5277,7 @@
    "verdict": "OK"
   },
   "https://linux.do/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://linux.do/",
    "host": "linux.do",
    "status": 403,
@@ -5413,35 +5436,35 @@
    "verdict": "OK"
   },
   "https://openai.com/index/gpt-6-astra-next-generation-work/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://openai.com/index/gpt-6-astra-next-generation-work/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/gpt-6-astra/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://openai.com/index/gpt-6-astra/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-gpt-live-1-in-the-api/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://openai.com/index/introducing-gpt-live-1-in-the-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-the-agents-api/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://openai.com/index/introducing-the-agents-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/news/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://openai.com/news/",
    "host": "openai.com",
    "status": 403,
@@ -5688,7 +5711,7 @@
    "verdict": "OK"
   },
   "https://wiki.linuxfoundation.org/realtime/start": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://wiki.linuxfoundation.org/realtime/start",
    "host": "wiki.linuxfoundation.org",
    "status": 403,
@@ -5839,14 +5862,14 @@
    "verdict": "OK"
   },
   "https://www.iso.org/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://www.iso.org/",
    "host": "www.iso.org",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.iso.org/standard/65457.html": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://www.iso.org/standard/65457.html",
    "host": "www.iso.org",
    "status": 403,
@@ -5957,14 +5980,14 @@
    "verdict": "OK"
   },
   "https://www.reddit.com/r/LocalLLaMA/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://www.reddit.com/r/LocalLLaMA/",
    "host": "www.reddit.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.ruanyifeng.com/blog/": {
-   "checked": "2026-09-25",
+   "checked": "2026-09-26",
    "final": "https://www.ruanyifeng.com/blog/",
    "host": "www.ruanyifeng.com",
    "status": 403,

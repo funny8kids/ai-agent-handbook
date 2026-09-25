@@ -256,6 +256,79 @@ def coverage_findings(stats):
     return out
 
 
+# ---------------------------------------------------------------- citation coverage --------
+
+# 「每篇知识/资源页都有参考资料，而且里面是真能点开的来源」是首页的一条主张，此前没有任何脚本
+# 复跑过它——第 76/77/85/86/99 轮反复踩过同一类账（首页印着一个没有判据的数）。这条腿把它接进本
+# 文件，因为「引用了什么外部地址」的抽取器这里已经有一把（`iter_links`：剥围栏与行内代码，
+# 认 `[..](..)` 也认裸 `<https://…>`），再造一把只会让两个读数分家。
+CITED_TYPES = ("knowledge", "resource")
+CITE_SECTION = "参考资料"
+REF_CLAIM = re.compile(r"(\d+) 篇知识/资源页全部有「参考资料」[^0-9]{0,40}?(\d+) 条去重后的外部一手来源")
+
+
+def split_frontmatter(text):
+    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+    return (m.group(1), text[m.end():]) if m else ("", text)
+
+
+def cite_sections(body):
+    """Yield the raw text of every `## 参考资料` heading block in a page body."""
+    heads = [(m.start(), m.group(1).strip()) for m in
+             re.finditer(r"^##[ \t]+(.*?)[ \t]*$", body, re.M)]
+    for k, (start, title) in enumerate(heads):
+        if title != CITE_SECTION:
+            continue
+        end = heads[k + 1][0] if k + 1 < len(heads) else len(body)
+        yield body[start:end]
+
+
+def citation_leg(pages):
+    """-> (findings, pages-in-scope, distinct external sources cited by those sections).
+
+    Pure over the file list it is handed, so a control can plant a page without moving the tree.
+    """
+    findings, scoped, sources = [], 0, set()
+    for path in pages:
+        text = read(path)
+        fm, body = split_frontmatter(text)
+        ty = re.search(r"^type:\s*(\w+)", fm, re.M)
+        if not ty or ty.group(1) not in CITED_TYPES:
+            continue
+        scoped += 1
+        secs = list(cite_sections(body))
+        cited = [t for sec in secs
+                 for _l, _img, t in iter_links(path, sec)
+                 if t.startswith(("http://", "https://"))]
+        if not secs:
+            findings.append("REF-MISSING %s has no ## %s section" % (rel_of(path), CITE_SECTION))
+        elif not cited:
+            findings.append("REF-EMPTY %s cites no clickable external source in %s"
+                            % (rel_of(path), CITE_SECTION))
+        sources.update(t.rstrip(".,;:!?") for t in cited)
+    return findings, scoped, len(sources)
+
+
+def homepage_ref_leg(scoped, sources, text=None):
+    """Reconcile the homepage's two numbers with the tree. Overstating is a defect; a reading the
+    book has simply outgrown is dated prose, not a lie — so `pages`/`sources` are floors, while the
+    equality stays on the one thing writing cannot move: `REF-*` findings must be zero."""
+    text = read(os.path.join(DOCS, "README.md")) if text is None else text
+    m = REF_CLAIM.search(text)
+    if not m:
+        return ["HOMEPAGE-REF-BLIND the homepage no longer prints the 「N 篇知识/资源页…N 条去重后的"
+                "外部一手来源」 reading — the counts are unprinted, not correct"]
+    out = []
+    for got, want, key in ((int(m.group(1)), scoped, "pages"), (int(m.group(2)), sources, "sources")):
+        if got > want:
+            out.append("HOMEPAGE-REF-HIGH %s: homepage says %d, tree reads %d (claiming more than "
+                       "the scan found)" % (key, got, want))
+        elif got < want:
+            out.append("ADVISORY HOMEPAGE-REF-DATED %s: homepage says %d, tree has grown to %d — "
+                       "re-anchor this round" % (key, got, want))
+    return out
+
+
 # ---------------------------------------------------------------- homepage claim -------------
 
 # The homepage prints this axis's counts, and writing documentation moves several of them (a new
@@ -665,6 +738,78 @@ def controls():
     assert homepage_claim_leg(st, tl, [], two, text="a homepage that dropped the reading")[0][0] \
         .startswith("HOMEPAGE-BLIND"), "deleting the sentence must not read as a pass"
     hits["homepage reading reconciled; drift and absence both fire"] = 1
+
+    # --- citation coverage: the 「每篇知识/资源页都有参考资料」 claim, both directions ---
+    good, scoped, sources = citation_leg(body_pages())
+    assert good == [], "the shipped tree must read clean on citations: %s" % good[:4]
+    assert scoped > 150 and sources > 300, \
+        "a scan this narrow cannot call the claim clean (pages=%d sources=%d)" % (scoped, sources)
+    hits["citation leg reads the real tree, coverage self-reports"] = 1
+
+    pages = {
+        # a section with one clickable external source: clean
+        "k1": ("type: knowledge\n", "## 参考资料\n\n- [a](https://cite-a.example/)\n"),
+        # the same URL cited again from a second page: still one distinct source
+        "k2": ("type: knowledge\n", "## 参考资料\n\n- [a again](https://cite-a.example/)\n"),
+        # a resource page whose only pointer is internal: the section exists but cites nothing
+        "r1": ("type: resource\n", "## 参考资料\n\n- [内部页](changelog.md)\n"),
+        # a bare <https://…> autolink is a citation too (the round-81 tokenizer lesson)
+        "k3": ("type: knowledge\n", "## 参考资料\n\n- <https://cite-b.example/>\n"),
+        # the only URL sits inside a fence: documentation of syntax, not a source
+        "k4": ("type: knowledge\n", "## 参考资料\n\n```\nhttps://cite-fenced.example\n```\n"),
+        # an empty section followed by an external link in a *later* section
+        "k5": ("type: knowledge\n",
+               "## 参考资料\n\n- [内部](changelog.md)\n\n## 附录\n\n- [b](https://cite-late.example/)\n"),
+        # no such section at all
+        "k6": ("type: knowledge\n", "## 相关知识点\n\n- [x](changelog.md)\n"),
+        # out of scope: an index page is not required to carry sources
+        "i1": ("type: index\n", "## 相关知识点\n\n- [x](changelog.md)\n"),
+    }
+    tmp = []
+    try:
+        for name, (fm, body) in pages.items():
+            path = os.path.join(DOCS, "00-index", "_cite_%s_tmp.md" % name)
+            io.open(path, "w", encoding="utf-8").write("---\n%s---\n\n# 控制页\n\n%s" % (fm, body))
+            tmp.append(path)
+        fnd, n_scoped, n_src = citation_leg(tmp)
+        kinds = {f.split()[0] for f in fnd}
+        fired = {f.split()[1] for f in fnd}
+        assert "REF-MISSING" in kinds and any("_cite_k6" in f for f in fired), \
+            "a page with no 参考资料 section must fire: %s" % fnd
+        assert "REF-EMPTY" in kinds and any("_cite_r1" in f for f in fired), \
+            "a section with only internal links must fire: %s" % fnd
+        assert any("_cite_k4" in f for f in fired), \
+            "a URL documented inside a fence is not a citation: %s" % fnd
+        assert any("_cite_k5" in f for f in fired), \
+            "a link after the NEXT heading must not count as this section's source: %s" % fnd
+        assert not any("_cite_k1" in f or "_cite_k2" in f or "_cite_k3" in f for f in fnd), \
+            "the three good shapes must stay silent: %s" % fnd
+        assert not any("_cite_i1" in f for f in fnd), "an index page is out of scope: %s" % fnd
+        assert n_scoped == 7 and n_src == 2, \
+            "scope/dedupe miscounted (scoped=%d sources=%d, want 7 knowledge+resource pages " \
+            "and 2 distinct URLs)" % (n_scoped, n_src)
+        hits["citation leg: 4 defects fire, 3 good shapes silent, scope+dedupe counted"] = 1
+
+        claim = ("**167 篇知识/资源页全部有「参考资料」**（按 frontmatter `type` 统计，不是靠肉眼挑）"
+                 "：378 条去重后的外部一手来源逐条点开核对")
+        assert homepage_ref_leg(167, 378, text=claim) == [], \
+            "a matching homepage must read clean: %s" % homepage_ref_leg(167, 378, text=claim)
+        assert any(f.startswith("HOMEPAGE-REF-HIGH pages")
+                   for f in homepage_ref_leg(166, 378, text=claim)), "claiming more pages than found must fire"
+        assert any(f.startswith("HOMEPAGE-REF-HIGH sources")
+                   for f in homepage_ref_leg(167, 377, text=claim)), "claiming more sources than found must fire"
+        dated = homepage_ref_leg(168, 380, text=claim)
+        assert len(dated) == 2 and all(f.startswith("ADVISORY HOMEPAGE-REF-DATED") for f in dated), \
+            "the tree growing past the sentence is dated prose, not a defect: %s" % dated
+        assert homepage_ref_leg(167, 378, text="首页把这条统计删掉了")[0] \
+            .startswith("HOMEPAGE-REF-BLIND"), "deleting the sentence must not read as a pass"
+        hits["homepage citation reading: exact / overstated / dated / absent"] = 1
+    finally:
+        for path in tmp:
+            if os.path.exists(path):
+                os.remove(path)
+    assert not any("_cite_" in rel_of(p) for p in body_pages()), "citation controls must leave no residue"
+    hits["citation control pages leave no residue"] = 1
     return hits
 
 
@@ -693,6 +838,10 @@ def main():
     claim_findings, want = homepage_claim_leg(stats, tally, missing, anchors)
     findings += claim_findings
 
+    ref_findings, ref_pages, ref_sources = citation_leg(body_pages())
+    findings += ref_findings
+    findings += homepage_ref_leg(ref_pages, ref_sources)
+
     oldest = min((e.get("checked", "never") for e in cache.values()), default="never")
     print("link graph: pages=%d listed=%d nav-links=%d relative=%d external-links=%d "
           "distinct-external=%d citing-pairs=%d"
@@ -704,6 +853,8 @@ def main():
                                                                      oldest))
     print("anchors: fragments-seen=%d graded-live=%d" % (len(anchors), graded))
     print("homepage claim: %s" % " ".join("%s=%d" % (k, want[k]) for k in sorted(want)))
+    print("citation coverage: knowledge/resource pages=%d ref-findings=%d distinct sources=%d"
+          % (ref_pages, len(ref_findings), ref_sources))
     for f in findings:
         print("  " + f)
     hard = [f for f in findings if not f.startswith("ADVISORY")]

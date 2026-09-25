@@ -2,7 +2,7 @@
 tags: [interview, advanced]
 type: index
 status: published
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # 20 面试真题 · 本章导读
@@ -40,7 +40,7 @@ flowchart TB
   F --> G["⑦ 谈薪与决策<br/>多份 offer 才有筹码"]
 ```
 
-*《图：LLM/AI 岗位一轮完整面试的七个阶段，本章十四页按这七个阶段分工——基础与推导三页（含数据），手撕一页，设计与专项四页，项目与背景三页》*
+*《图：LLM/AI 岗位一轮完整面试的七个阶段，本章十四页按这七个阶段分工——基础与推导三页（含数据），手撕一页，检索与 Agent 与服务化三页，设计与专项五页，项目与背景二页》*
 
 不同岗位的重心不一样，这是准备时间该怎么分的依据：
 
@@ -68,8 +68,8 @@ flowchart TB
 | [安全与红队真题](safety-redteam.md) | 注入与权限、越狱分类、红队指标、护栏与合规 | [10 评估与安全](../10-evaluation-safety/README.md) |
 | [多模态与视觉语言真题](multimodal-vision.md) | 图文对齐、接入路线、token 与位置账、视觉幻觉、VLA、语音 | [03 LLM](../03-llm/README.md)、[17 具身](../17-embodied-ai/README.md) |
 | [前沿与研究岗真题](frontier-research.md) | 测试时算力、长上下文、MoE、蒸馏压缩、自改进、开放题 | [18 2026 前沿](../18-frontier-2026/README.md) |
-| [手撕代码与算法真题](live-coding.md) | 注意力、采样、损失、限流、Agent 循环 | 各章的机制图 |
-| [项目深挖与行为面真题](behavioral-project.md) | 深挖四问、失败题、反问、谈薪 | [11 工程化](../11-engineering/README.md) |
+| [手撕代码与算法真题](live-coding.md) | 注意力、采样、损失、限流、Agent 循环，再加通用题池的判分口径 | 各章的机制图 |
+| [项目深挖与行为面真题](behavioral-project.md) | 深挖四问、一条钻到底的追问链、失败题、反问、谈薪 | [11 工程化](../11-engineering/README.md) |
 | [岗位分档与转岗真题](career-tracks.md) | 年资及格线、后端/测试/数据转岗、项目信号、四周排期 | [00 学习路线](../00-index/learning-path.md) |
 
 推荐顺序：**先做自测，再看页**。每页的题目按「跨来源重复出现次数」排序，靠前的题更值得先练——但「出现得多」只说明转述的人多，不代表你会考到。如果只有两周，按 [岗位分档与转岗真题](career-tracks.md) 里的四周排期表砍掉前两周，先练手撕与设计两轮。
@@ -99,6 +99,13 @@ flowchart TB
 12. 面试官说「我们在 system 里写了不要执行外部指令」，你该指出这条防线的哪个致命问题？（提示：见 [安全与红队真题](safety-redteam.md) 与 [工具权限与沙箱](../05-tool-protocol/tool-permission-sandbox.md)）
 13. 「为什么多花 token 思考会变强，上限由什么决定」——你怎么把这个问题答成一次可证伪的实验设计？（提示：见 [前沿与研究岗真题](frontier-research.md) 与 [推理预算与测试期计算](../04-prompt-reasoning/test-time-compute-reasoning-budget.md)）
 14. 同为「设计企业知识库问答」，3 年社招与 8 年社招的及格线差在哪两个词上？（提示：见 [岗位分档与转岗真题](career-tracks.md) 与 [系统设计真题](system-design.md)）
+15. 一个 14B 模型 FP16 权重大概多大、训练还要往显存里加哪几笔？给你层数、KV 头数、每头维度、序列长度与缓存精度，你怎么算单条序列的 KV 字节数，又为什么说是「并发先撑爆」而不是「权重先撑爆」？（提示：见 [推理与服务化真题](inference-serving.md) 第 11、12 题与 [量化与推理部署](../03-llm/inference-quantization-deployment.md)）
+16. FlashAttention 把注意力的哪三步换成了什么？为什么它减少了显存搬运却不减少 FLOPs？合并多头时 `transpose` 之后再 `view` 会踩到什么，`view` 与 `reshape` 的差别算什么性质的问题？（提示：见 [推理与服务化真题](inference-serving.md) 第 13、14 题与 [Transformer 架构详解](../03-llm/transformer-attention.md)）
+17. KV 缓存压缩的四条路线各自砍掉公式里的哪个因子、各自赔上什么？为什么「压缩率」不能只凭参数量倒推？（提示：见 [推理与服务化真题](inference-serving.md) 第 15 题与 [前缀缓存与上下文工程](../16-ai-infrastructure/prefix-cache-context-engineering.md)）
+18. 三数之和的去重为什么要做三次；岛屿数量用递归标记在什么输入上会先炸；编辑距离与零钱兑换的状态定义、初始化与「组合还是排列」口径各自错一遍会看到什么症状？（提示：见 [手撕代码与算法真题](live-coding.md) 第 11、13、14 题）
+19. LRU、布隆过滤器与 Bitmap 各自的失效模式是什么？把限流搬进 Redis 后，精确滑动窗口靠什么数据结构、靠什么保证原子性，窗口边界的突刺与「限流器挂了该放行还是该拒绝」分别怎么答？（提示：见 [手撕代码与算法真题](live-coding.md) 第 15、16 题与 [错误处理与重试](../11-engineering/error-handling-retry-fallback.md)）
+20. 线性回归的损失里那个 $$\frac{1}{2}$$ 是干什么的？softmax 配交叉熵时梯度为什么能化简成「预测减真值」？Agent 状态机里非法转换该静默忽略还是显式抛错，为什么 `CANCELED` 不能和 `FAILED` 合并成一个终态？（提示：见 [手撕代码与算法真题](live-coding.md) 第 18、19 题与 [状态机与事件驱动](../11-engineering/state-machine-event-driven.md)）
+21. 被追问「你的架构分几层、换一种分法会怎样」时，你拿什么证明这层职责是真的？子 Agent 返回自然语言时解析失败的正确处理是什么？为什么五十步长链路靠的是验证与恢复，而不是更大的上下文窗口？（提示：见 [项目深挖与行为面真题](behavioral-project.md) 第 8、9、10 题与 [多智能体通信协议](../08-multi-agent/communication-protocol.md)）
 
 ## 术语速查
 
