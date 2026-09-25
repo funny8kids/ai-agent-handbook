@@ -283,6 +283,20 @@ def reader_html(served):
     return CHROME.sub(" ", served)
 
 
+def serve_copy(url, fetch=PS.fetch_page):
+    """A served copy whole enough to grade, or a raise — never an empty string.
+
+    `PS.fetch_page` reports both a failed fetch and round 93's short-read refusal as `("", reason)`
+    instead of raising. `probe()` catches exceptions, not tuples, so reading the second slot
+    directly handed `""` to the marker count: every page the author leg predicts clean stayed clean
+    on a copy that carried nothing, and the run looked like a full-site pass.
+    """
+    _url, text, err = fetch(url)
+    if err:
+        raise ValueError(err)
+    return text
+
+
 def prose_of(served):
     """The reader's visible sentence text, in the same space-free form `arrival_key` uses.
 
@@ -398,6 +412,27 @@ CONTROL_PAGES = [
 ]
 
 
+def fetch_seam_control():
+    """The live leg must be unable to grade a copy that did not arrive whole. Both directions."""
+    ok = True
+    whole = "<html><body><p>这一句读者应当看到</p></body></html>"
+    for kept, reason in ((whole, None),
+                         ("", "short read: no closing </html> (18900551 chars)")):
+        def fake(url, kept=kept, reason=reason):
+            return (url, kept, reason)
+        try:
+            got, raised = serve_copy("https://example.invalid/page", fetch=fake), None
+        except ValueError as exc:
+            got, raised = None, str(exc)
+        if reason is None and (raised or got != whole):
+            ok = False
+            print("CONTROL FAIL complete copy refused or mangled: %r" % (raised,))
+        if reason and raised is None:
+            ok = False
+            print("CONTROL FAIL short copy graded as %r instead of refusing" % (got,))
+    return ok
+
+
 def selftest():
     ok = True
     for name, src, want, want_nav in CONTROL_PAGES:
@@ -422,6 +457,7 @@ def selftest():
         ok = False
         print("CONTROL FAIL outline rule unable to fire (%d)" % silent)
     ok = bold_selftest() and ok
+    ok = fetch_seam_control() and ok
     print("controls: %s" % ("OK, every bucket able to fire" if ok else "BROKEN"))
     return ok
 
@@ -601,7 +637,7 @@ def run(workers=6, live=False):
     def probe(item):
         path, url = item
         try:
-            served = PS.fetch_page(url)[1]
+            served = serve_copy(url)
         except Exception as exc:
             return (rel(path), None, None, None, str(exc))
         strongs = served_strongs(served)

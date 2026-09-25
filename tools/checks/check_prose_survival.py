@@ -395,15 +395,46 @@ def classify(units, flat, html_text, tree_norm):
     return rows, evidence
 
 
+def short_read(url, text):
+    """Did the whole document arrive? None means yes; a string names why no verdict may be graded.
+
+    Round 92 hit the class from the wrong side: the full-site leg graded a changelog copy that had
+    arrived as 18,900,551 chars with no closing tag, and printed MISS=407 — every sentence past the
+    cut counted as a swallow, which reads exactly like the renderer eating the tail of a page. The
+    response carries no usable Content-Length and the same URL returns different sizes while GitBook
+    rebuilds (round 91 measured 25.1M / 22.6M / 12.0M for one document), so the only completeness
+    evidence available locally is the document's own end. A short read always loses the tail, so
+    refusing the copy costs one re-run; grading it manufactures hundreds of fake swallows and buries
+    the real ones. Bar measured before writing: 12/12 complete served pages fetched across the whole
+    tree end with `</html>` (`</body></html>` after the RSC payload), so a guard on that end cannot
+    go blind to a page shape it has never seen.
+    """
+    if url.endswith(".md"):                                  # the markdown endpoint has no closing tag
+        return None
+    if not text.strip():
+        return "empty body"
+    if not text.rstrip().endswith("</html>"):
+        return "no closing </html> (%d chars)" % len(text)
+    return None
+
+
 def fetch_page(url):
     # A reset connection is noise, not a swallowed sentence, so one retry; a page that survives two
     # attempts is still a bucket of its own and still exits non-zero (round 83 saw two SSL resets).
+    # A truncated copy is retried for the same reason and, if it persists, lands in the same bucket —
+    # it is never graded, because half a page proves nothing about the other half.
     err = None
     for _ in range(2):
         try:
-            return url, LA.fetch(url), None
+            text = LA.fetch(url)
         except Exception as exc:                              # noqa: BLE001 - a flaked fetch is a bucket, not a trace
             err = "%s: %s" % (type(exc).__name__, str(exc)[:90])
+            continue
+        reason = short_read(url, text)
+        if reason:
+            err = "short read: " + reason
+            continue
+        return url, text, None
     return url, "", err
 
 
@@ -812,6 +843,33 @@ def controls():
     if one_out:
         errs.append("control V: one of two reader copies left standing must read clean, got %r"
                     % (one_out,))
+    # W is the truncation class round 92 reported as MISS=407 on the changelog. Both directions are
+    # planted, and the guard has to be shown to change the verdict — otherwise this control only
+    # proves a string test, and the fake reds it exists to prevent could come back unchanged.
+    whole = "<html><body><article><p>这一句读者应当看到，它完整地发布在页面上。</p>" \
+            "<p>尾巴这一句同样足够长，它绝不该被判成读者丢掉的句子。</p></article></body></html>"
+    if short_read("https://example.invalid/page", whole) is not None:
+        errs.append("control W: a complete served copy must be graded, got %r"
+                    % (short_read("https://example.invalid/page", whole),))
+    cut = whole[:whole.index("尾巴这一句")]
+    reason = short_read("https://example.invalid/page", cut)
+    if not reason or "closing" not in reason:
+        errs.append("control W: a copy whose tail went missing must be refused as a short read, got %r"
+                    % (reason,))
+    tail_unit = chunks("尾巴这一句同样足够长，它绝不该被判成读者丢掉的句子。")
+    if len(tail_unit) != 1:
+        errs.append("control W: the planted tail clause must be one graded unit, got %r" % (tail_unit,))
+    both = chunks("这一句读者应当看到，它完整地发布在页面上。\n尾巴这一句同样足够长，它绝不该被判成读者丢掉的句子。")
+    if grade(both, re.sub(r"\s+", " ", served_chunks(whole))):
+        errs.append("control W: the complete copy must read clean, got %r"
+                    % (grade(both, re.sub(r"\s+", " ", served_chunks(whole))),))
+    fake = grade(both, re.sub(r"\s+", " ", served_chunks(cut)))
+    if len(fake) != 1 or "尾巴" not in fake[0][2]:
+        errs.append("control W: the refused copy must be exactly the fake MISS the guard exists to "
+                    "prevent (a swallowed sentence the reader never lost), got %r" % (fake,))
+    if short_read("https://example.invalid/page.md", cut) is not None:
+        errs.append("control W: the markdown endpoint has no closing tag and must not be refused "
+                    "for it")
     return errs
 
 

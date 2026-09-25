@@ -9,6 +9,66 @@ updated: 2026-09-25
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-25（第 93 次）一条活体腿可以在整站抓空时读成与真通过一字不差的绿：上一轮那 407 条假 `MISS` 被追到根——判了一份没有闭合标签的半页 HTML，而共用它的强调轴把「没拿全」直接当成「这一页 0 个标记」送去判决
+
+### 一、第 92 轮收尾留下的那条 `MISS=407`，本轮先量它的价
+
+上一轮记录的是「那份 25 MB 的线上正文完整性读数不可信」，但没有把它钉成可复现的类别。本轮第一趟就复现了：`check_live_sync.py` 抓更新日志的 HTML 腿，直接报
+
+```text
+live changelog (html) unreadable (ValueError: short read (no closing </html>), so no round count is trustworthy) — no verdict, this is not a site failure
+```
+
+同一条 URL 在一分钟之内两次抓取：一次 `18,900,551` 字符且**不以 `</html>` 收尾**（第 92 轮那趟把它的尾巴全判成吞字，产出 407 条假 `MISS`），一次 `25,108,708` 字符且正常收尾。也就是说这不是「平台发了一版短的」，而是**同一份文档的两种到达状态**，与第 91 轮量到的三尺寸（25.1M / 22.6M / 12.0M）同族。判据能拿到的完整性证据只有文档自己的结尾——响应没有可用的 `Content-Length`。
+
+### 二、闸门落在共用取页函数上，两侧都有控制
+
+`check_prose_survival.py` 新增 `short_read(url, text)`，`fetch_page()` 改为：短读先重试一次（与 SSL 抖动同一处置），仍旧不完整就带着原因落进 `fetch-failures`——那条桶本来就卡退出码——**半份页面不参与判决**。`.md` 端点没有闭合标签，显式豁免。
+
+写闸门之前先量门槛，否则闸门会把判据弄瞎：全站按步长抽 12 页（首页、知识页、资源页、lab 页、章节 README 各覆盖到）**12/12 份完整副本都以 `</html>` 收尾**。这条等式就是这条判据的可满足性证明。
+
+控制 **W**（`check_prose_survival` 的第 23 条，字母接着 A–V；与 `check_live_sync` 里第 90 轮那条 witness 控制 W/W2 不是一条，两个文件各自点名）四向：完整副本必须返回 `None`（可以判）；缺尾副本必须报 `no closing </html>`；**被拒的那份副本一旦被判决，必须正好产出这条闸门要防的那一条假 `MISS`**（差分，不是「这条页是干净的」）；`.md` 端点不因缺标签被拒。`--selftest` 首跑就把这句钉在实处——它先红在**首页那句还没改的控制数**上：
+
+```text
+control W: the planted tail clause must be one graded unit, got []
+homepage: 「22 条种植控制（A–V）」 is not the 23 controls asserted here (ABCDEFGHIJKLMNOPQRSTUVW)
+```
+
+第一条是本轮自己的探针错：埋的尾巴句 13 个归一字符，坐在第 88 轮那条 14 字地板之下，于是它根本不成单元、差分抓不到东西。改成一句足够长的之后两条都过，`--selftest` 读 `controls: OK, every bucket able to fire`。**对平闹钟先于修复生效**，这条正是它的设计目的。
+
+### 三、真正值钱的发现在共用取页函数的**另一侧**：强调轴的活体腿此前无法区分「抓空」与「全站没有标记外翻」
+
+`check_emphasis_flanking.py --live` 用 `PS.fetch_page(url)[1]` 取页，外面套 `try/except`。而 `fetch_page` 把失败与短读都返回成 `("", reason)`，**从不抛**——于是那个 `except` 是死代码，`fetch-failures` 这条桶结构上永远不可能出声，空字符串被直接送去数 `**`。
+
+这条洞的价用本轮的树量出来是满价的：第 92 轮全站修完之后，**196/196 个在册页的作者侧预测值都是 0 个外翻标记**（`leaks_of()` 逐页数过）。空副本 → `served_markers=0` → 与预测相等 → 一条 `MISMATCH` 都没有 → `fetch-failures=0` → 退出码 0。换句话说，**整站抓空会读出与上一轮那份真通过一字不差的绿**。
+
+修法是在强调轴自己这侧加接头 `serve_copy(url, fetch=PS.fetch_page)`：`err` 非空即 `raise`，让它那侧本已存在的 `except` 与退出码门重新接上电。控制落在 `fetch_seam_control()`（第 18 条）：注入一个报「没拿全」的假 fetcher 必须抛，注入完整副本必须原样返回。首页那条「17 条种植控制」同步改成 18。
+
+一句诚实的补账：**这不代表上一轮那份绿是假的**——同一趟读数里 `absent`/`words_not_in_served_page=38`/`atom=13` 三桶都要求页面真的到货，整站抓空会把 5910 条加粗对全判成 `absent`。是那条等式腿**单独**不具判别力，而它恰好是收尾引用的那一条。
+
+### 四、本轮读数
+
+| 判据 | 读数 | 说明 |
+| --- | --- | --- |
+| `check_prose_survival --selftest` | `controls: OK, every bucket able to fire`（23 条，A–W） | 修复前该趟先红在控制数对平上 |
+| `check_prose_survival --page 00-index/changelog` | `pages=1 units=4141 … MISS=0 REVISION-BEHIND=0 STALE-COPY=197 fetch-failures=0` | 完整副本照判；197 条是 HTML 腿仍停在第 90 次的未发布段 |
+| `check_live_sync`（`.md` 腿） | `leg md newest round=92 (361883 chars / 660031 bytes, 157 rounds)` | 第 92 轮的字已到读者 |
+| `check_live_sync`（HTML 腿） | `leg html newest round=90 … missing 91, 92`，同分钟内另一趟直接报 short read | 更新日志**页面**落后两轮，见 §五 |
+| `check_emphasis_flanking --selftest` | `controls: OK`（18 条） | 含新的取页接头双向控制 |
+| `check_emphasis_flanking --live`（全站复跑，闸门装好之后） | `pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0 bold_pages_lost=0 bold_spans_lost=0 (of 5942 authored pairs) words_not_in_served_page=68 bold_spans_atom_only=13` | 与第 92 轮那份的差在 `5942`（本轮 README 与本页新增的字也被数进作者侧）与 `words=68`（同批新字尚未上线）；`fetch-failures` 这条桶从此才有电，控制 18 证明它抓得住空副本 |
+| 完整副本门槛 | 抽样 12 页 `12/12 ends_html=True` | 闸门可满足性证明 |
+| `check_quote_fidelity` | 修复前 `attributed quotes=26 findings=1`（`changelog.md:179 UNMATCHED`）→ 修复后 `attributed quotes=25 findings=0`，退出码 `1 → 0` | 见 §五 第一条：一条**上一轮随提交上线的红** |
+
+### 五、修掉的一条上一轮红账，与留下的
+
+- **`check_quote_fidelity` 是红的，而它红在第 92 轮自己写的字上**：本轮第一趟跑它读 `attributed quotes=26 findings=1`、退出码 1，判决行点名 `00-index/changelog.md:179`，被认定成引用的是那一节对判据状态名 `absent` 的一句**释义**（它不是任何人写过的话，所以全书找不到出处）。这不是本轮的字：`git show HEAD:docs/00-index/changelog.md` 第 124 行就是同一句同一动词，而 `check_quote_fidelity.py` 本轮一个字没改（`git status --porcelain` 对它为空）——**也就是上一轮的收尾提交是带着红上线的**。原因是这条轴量的正是收尾自己写的那段话：写完那一节之后再没有复跑它。修法落在措辞上而不是规则上：去掉引用括号与「说的是」这个动词，释义读起来还是释义，`attributed quotes=25 findings=0` 退出码 0。**没有为它放宽动词表，也没有登记成豁免**——那两条路都会让下一句同样的伪引用读绿。
+
+  这一处顺手量出这条轴的一条**不对称**（本轮自己踩坑踩出来的，两处都记着）：把判决行原样抄进行内代码，它照旧按引用判；改抄进围栏，它**仍然**从围栏里抽出引用（`attributed quotes` 两次都是 26）。也就是说「围栏里的字不在语料里」只对**被查找的出处**成立，对**被抽出的引用**不成立——第 71 轮那条「引用式路径能否解析」的规矩管不到这里。所以上面这一句没有把判决行连括号一起贴回来，而是点名行号与状态名。
+- **HTML 腿落后两轮（90 vs 92）是本轮新量到的事实，但没有动它**：`published_cut` 与 `check_live_sync` 都按「`.md` 腿为准、页面落后如实打印」工作，这是第 83 轮定的口径。要不要把 25 MB 的更新日志按年拆分（拆完抓取不再容易截断、页面翻页也可能更快）是**产品级取舍**，本轮一个字没动，等操作者定。
+- 强调轴 `fetch-failures` 现在有电了，但**没有给它配覆盖率地板**（例如「fetch-failures > 页数 5% 即视为判据失明」）。当前退出码只要桶非空就红，够响；等真出现「一半页抓空仍读绿」的形态再加。
+- 其余活体轴的取电状态本轮逐条 grep 过：`live_aria_manifest`、`check_live_formulas`、`check_live_images`、`check_widget_visibility_live` 都是「fetch 抛 → 自己的 `except` 收进桶」，桶是活的；只有 `check_prose_survival` 会把异常咽成返回值，所以下游 `try/except` 失效——这也说明**共享取页函数的返回值约定应当只有一种**，但把 11 个文件一次性改成抛是超出本轮需要的大改，没做。
+- `.md` 端点本轮显式豁免完整性检查，因为它根本没有 `</html>`；如果哪天有人拿它判正文，还需要一条自己的完整性证据（长度或末行），这条账与第 91 轮 `tail_needle()` 的思路同源。
+
 ## 2026-09-25（第 92 次）一条判据静默停摆四轮，而 README 首页仍在引用它认证过的数字：本轮把 `check_figure_explanations` 里那句 assert 改成上报，压在它下面的两条守卫（引用式路径能否解析、`placements == 45`）重新开跑；根因——「每轮手抄一份判据清单」——换成目录自动发现，本轮目录里实到 **35** 条而手抄清单只有 **18** 条
 
 本轮正文 **0 页知识页改动**：读者可见文字只动本页（新增本节）。**没有为过线删掉或加厚任何一页正文**——本轮的缺陷全在尺子上：`tools/checks/check_figure_explanations.py`（assert → 上报，控制 9 → 13 条）、`tools/checks/check_emphasis_flanking.py`（加第三条腿：作者写的 `**…**` 在读者页面上是否真的变成粗体），新增 `tools/checks/run_battery.py`（判据清单由目录扫描得出，并自证覆盖面）。
@@ -121,7 +181,7 @@ live leg: pages=196 fetch-failures=0 prediction-mismatch=0 served_markers=0
 - **图注轴的线上腿本轮没跑**（`--live`）。它的离线腿加 13 条控制已经通过，而它的活体变异控制（`live mutation ok`，删掉一条真图注后 6/7 页暴露为无解释）本轮也复跑过；剩下的风险是平台外壳文案造成假 `LOST`——那正是强调轴这轮踩过的坑（每格注入 `<svg><title>`、侧栏重印标题、未解码实体）。所以这条腿要跑就必须串行、并且按 §三 修好的 `visible()` 口径读，下一轮补。
 - **浏览器/抓取类腿本轮受串行限制**：`check_content_overflow`、`check_live_formulas`、`check_emphasis_flanking --live` 三条都在跑全站真渲染，同一段时间里叠加第二条会互相挤 CDN，于是把剩下的线上腿推到下一轮，而不是并发跑出一份好看的读数。
 - **13 条 `atom`**：跨行内代码边界的强调（`**A` + 代码 + `B**`）平台切成两段，判据无法证明它是同一个粗体范围，落 `bold_spans_atom_only` 而不是 `lost`。这 13 条继续留作已知不可判，不当缺陷也不为它改正文。
-- **`absent` 会随翻页自愈**：这一态说的是「这份页面副本里没有这段文字」，GitBook 的 SSR 分片翻页后可能换一份，因此它的读数天生不稳定；本轮 196 页里 `bold_pages_lost=0`，没有页落进这一态。
+- **`absent` 会随翻页自愈**：这一态只是说这份页面副本里没有这段文字，GitBook 的 SSR 分片翻页后可能换一份，因此它的读数天生不稳定；本轮 196 页里 `bold_pages_lost=0`，没有页落进这一态。
 - **`words_not_in_served_page=38` 不追求归零**：这些是强调文字在 served 侧被行内代码/复制按钮/分片切断造成的词面不匹配，判决已经把它们排除在 `lost` 之外；把它们清零需要改正文，而那是「挪动被量的东西去过线」。
 - **部分范围加粗仍不在轴上**：判据问的是「这对标记有没有产出一个粗体」，不问「粗体范围是否恰好等于作者意图的范围」——§三 那组 `containment=0` 说明后者目前无法在 served DOM 上稳定测量。
 - 操作者级账目照旧（不在本轮动手范围）：标题跳级 48/271/53、25 MB 更新日志页是否拆分、14 字符针的门槛、`published_cut` 的分辨率、608px 列宽 AB 与宽版式开关、Mermaid 文本变量、emoji 口径、知识体裁子键、聊天里贴过的 GitHub PAT 需要吊销、空间 logo 那个坏 `<img>` 要在 dashboard 重传。
