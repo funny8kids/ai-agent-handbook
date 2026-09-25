@@ -126,7 +126,7 @@ def paragraphs(text):
 
 
 def heading_paras(text):
-    """[(line_no, heading_text)] as the page OUTLINE prints it: code unwrapped, links to labels.
+    """[(line_no, heading_text, carried_inline_code)] as the page OUTLINE prints it.
 
     The body rule blanks a code span to one atom, which is right for `<main>` and wrong for the
     sidebar: there GitBook has already dropped the backticks, so the span's own characters are
@@ -142,9 +142,32 @@ def heading_paras(text):
         m = HEADING.match(line.strip())
         if not m:
             continue
+        coded = 1 if INLINE_CODE.search(m.group(2)) else 0
         flat = INLINE_CODE.sub(lambda g: g.group(0).strip("`").strip(), m.group(2))
-        out.append((n + 1, HEADING_LINK.sub(lambda g: g.group(1), flat).strip()))
+        out.append((n + 1, HEADING_LINK.sub(lambda g: g.group(1), flat).strip(), coded))
     return out
+
+
+def unpaired_paras(paras):
+    return unpaired(None, [(ln, flat) for ln, flat, _c in paras])
+
+
+def scope_line():
+    """How wide the outline sight actually is -- the denominators behind 'only 1 was red'.
+
+    A heading whose code span holds an identifier (`get_weather`) or a bracket (`[t]`) flattens
+    into text the flanking table has nothing to pair, so it reaches the reader unchanged: the
+    significant-character count is the population this rule actually examines, not a size list.
+    """
+    heads = coded = sig = 0
+    for path in walk():
+        rows = heading_paras(open(path, encoding="utf-8").read())
+        heads += len(rows)
+        for _ln, flat, has_code in rows:
+            coded += has_code
+            sig += 1 if any(c in flat for c in "*_[]<>#$~") else 0
+    return ("outline scope: headings=%d carrying_inline_code=%d whose_flattening_is_markdown_significant=%d"
+            % (heads, coded, sig))
 
 
 def kind(c):
@@ -254,14 +277,14 @@ def selftest():
     ok = True
     for name, src, want, want_nav in CONTROL_PAGES:
         got = len(unpaired(src))
-        got_nav = len(unpaired(src, heading_paras(src)))
+        got_nav = len(unpaired_paras(heading_paras(src)))
         if got != want or got_nav != want_nav:
             ok = False
             print("CONTROL FAIL %-38s expected=%d/%d got=%d/%d"
                   % (name, want, want_nav, got, got_nav))
             for ln, ctx, why in unpaired(src):
                 print("        body", why, repr(ctx))
-            for ln, ctx, why in unpaired(src, heading_paras(src)):
+            for ln, ctx, why in unpaired_paras(heading_paras(src)):
                 print("        nav ", why, repr(ctx))
     # the negative controls must be able to fire: same text, marker moved one char
     fired = len(unpaired("它是一个**目标**，不是。\n"))
@@ -269,7 +292,7 @@ def selftest():
         ok = False
         print("CONTROL FAIL legal pair fired (%d)" % fired)
     # ...and the outline rule must be able to miss: unwrap one marker and it has to speak
-    silent = len(unpaired("## 平台把 `**` 配成了\n", heading_paras("## 平台把 `**` 配成了\n")))
+    silent = len(unpaired_paras(heading_paras("## 平台把 `**` 配成了\n")))
     if silent != 1:
         ok = False
         print("CONTROL FAIL outline rule unable to fire (%d)" % silent)
@@ -280,7 +303,7 @@ def selftest():
 def leaks_of(src):
     """(strong_runs, em_runs) over BOTH sights a reader has: body prose and the page outline."""
     items = unpaired(src) + [(ln, ctx, why + " [nav]")
-                             for ln, ctx, why in unpaired(src, heading_paras(src))]
+                             for ln, ctx, why in unpaired_paras(heading_paras(src))]
     return ([x for x in items if "STRONG" in x[2]], [x for x in items if "EM" in x[2]])
 
 
@@ -310,6 +333,7 @@ def run(workers=6, live=False):
         if len(em) > 2:
             print("      ... %d more lone-* runs (literal in the renderer, not a leak)"
                   % (len(em) - 2))
+    print(scope_line())
     if not live:
         print("NOTE author leg only: pass --live to require the served page to agree per page")
         return 0 if not leaks else 1
