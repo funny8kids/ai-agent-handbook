@@ -17,8 +17,10 @@ Usage:
     python tools/checks/run_battery.py --only structure --only widget   # substring filter
     python tools/checks/run_battery.py --skip live      # skip the browser legs (fast offline pass)
     python tools/checks/run_battery.py --args --live    # extra args handed to every axis
+    python tools/checks/run_battery.py --help           # this usage
 Exit code is 0 only when every axis that ran exited 0; a timeout is reported as its own result,
-never folded into "passed".
+never folded into "passed". A flag this runner does not know is a red exit 2, never a silent
+"then run everything" -- round 95 measured `--help` starting a full live sweep for that reason.
 """
 import io
 import os
@@ -109,12 +111,40 @@ def selftest():
     assert not [n for n in found if "no-such-axis" in n], "an empty work list is not a pass"
     assert sorted(found + unregistered() + libs() + sorted(EXCUSED)) == pyfiles(), \
         "the axis/excluded split does not cover the directory"
+    # The same rule the work list obeys applies to the flags: input this runner does not understand
+    # must be a red exit, not a default. Each of these is what round 95 actually typed or nearly
+    # typed; before the guard existed every one of them started the whole battery.
+    for typo in (["--help-me"], ["--nope"], ["--only"], ["--skip"], ["--logdir"], ["structure"]):
+        try:
+            parse_flags(typo)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("parse_flags(%s) was accepted — an unknown flag must not fall "
+                                 "through to a full battery" % (typo,))
+    assert parse_flags(["--help"])[0] == "help" and parse_flags(["-h"])[0] == "help", \
+        "--help must print the usage"
+    assert parse_flags([])[0] is None, "no flags is the one legitimate full run"
+    assert parse_flags(["--args", "--live", "--not-my-flag"])[1] == ["--live", "--not-my-flag"], \
+        "past --args the flags belong to the axes, not to this runner"
+    assert parse_flags(["--only", "structure,widget"])[2] == ["structure", "widget"], \
+        "a comma list is how a filter gets written by hand"
+    assert parse_flags(["--skip", "live", "--logdir", "/tmp/b"])[3:] == (["live"], "/tmp/b")
     print("battery controls: OK (axes=%d libs=%d unregistered=%d)"
           % (len(found), len(libs()), len(unregistered())))
 
 
-def main():
-    argv, extra, only, skip, logdir = sys.argv[1:], [], [], [], None
+def parse_flags(argv):
+    """(mode, extra, only, skip, logdir). `mode` is None (run), "selftest", "list" or "help".
+
+    An unrecognised flag raises instead of falling through to a full battery: round 95 typed
+    `--help` here, got no such option message from nobody, and started every axis in the
+    directory - live legs included, which then starved the sync probe that same round. Unknown
+    input reading as "the default, run everything" is the silent-green class this file exists to
+    end, one level up: the work list stopped being hand-typed, and the flags stayed that way.
+    Everything after `--args` is the axes' business and is handed through verbatim.
+    """
+    mode, extra, only, skip, logdir = None, [], [], [], None
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -122,6 +152,8 @@ def main():
             extra = argv[i + 1:]
             break
         elif a in ("--only", "--skip"):
+            if i + 1 >= len(argv):
+                raise ValueError("%s needs a value" % a)
             i += 1
             # Comma-separated as well as repeated: the natural way to write a list by hand must not
             # turn into the failure this file exists to prevent. A whole comma string is not a
@@ -130,18 +162,44 @@ def main():
             # the operator has to debug.
             (only if a == "--only" else skip).extend(s for s in argv[i].split(",") if s)
         elif a == "--logdir":
+            if i + 1 >= len(argv):
+                raise ValueError("--logdir needs a path")
             i += 1
             logdir = argv[i]
         elif a == "--selftest":
-            selftest()
-            return 0
+            mode = "selftest"
+            break
         elif a == "--list":
-            for n in axes():
-                print(n)
-            print("# shared modules (no __main__): %s" % (", ".join(libs()) or "none"))
-            print("# runnable but outside the work list: %s" % (", ".join(unregistered()) or "none"))
-            return 0
+            mode = "list"
+            break
+        elif a in ("-h", "--help"):
+            mode = "help"
+            break
+        else:
+            raise ValueError("unknown flag %r for run_battery.py (its own flags stop at --args; "
+                             "see --help)" % a)
         i += 1
+    return mode, extra, only, skip, logdir
+
+
+def main():
+    try:
+        mode, extra, only, skip, logdir = parse_flags(sys.argv[1:])
+    except ValueError as e:
+        sys.stderr.write("%s\n" % e)
+        return 2
+    if mode == "help":
+        print(__doc__.strip())
+        return 0
+    if mode == "selftest":
+        selftest()
+        return 0
+    if mode == "list":
+        for n in axes():
+            print(n)
+        print("# shared modules (no __main__): %s" % (", ".join(libs()) or "none"))
+        print("# runnable but outside the work list: %s" % (", ".join(unregistered()) or "none"))
+        return 0
     logdir = logdir or os.path.join(os.environ.get("TEMP", "/tmp"), "battery")
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
