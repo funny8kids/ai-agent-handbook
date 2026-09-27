@@ -21,6 +21,10 @@ import os
 import re
 import sys
 
+from flag_guard import reject_unknown
+
+FLAGS = ()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
 
@@ -279,6 +283,8 @@ def controls():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_chapter_extras"):
+        return 2
     totals, findings = run()
     n = controls()
     print("controls ok (%d planted: clean chapter, 7 defects each caught, exemption both directions, "

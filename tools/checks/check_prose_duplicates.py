@@ -31,9 +31,12 @@ import sys
 import tempfile
 from collections import defaultdict
 
+from flag_guard import reject_unknown
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 DOCS = os.path.join(REPO, "docs")
+FLAGS = ("--top",)
 
 SKIP_DIRS = (".git", "assets", "node_modules")
 SKIP_PATH_HINTS = (os.path.join("00-index",), "SUMMARY.md")
@@ -349,6 +352,8 @@ def real_page_mutation_control():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_prose_duplicates"):
+        return 2
     top = int(sys.argv[sys.argv.index("--top") + 1]) if "--top" in sys.argv else 8
     controls()
     real_page_mutation_control()

@@ -27,6 +27,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
+from flag_guard import reject_unknown
+
+FLAGS = ()
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -167,6 +171,8 @@ def controls():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_lab_runnability"):
+        return 2
     n = controls()
     stats, findings = run()
     print("controls ok (%d planted: clean lab, exit 3, silent, unseeded-random, "

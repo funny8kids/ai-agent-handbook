@@ -101,6 +101,56 @@ def selftest_axes():
         os.path.join(HERE, n + ".py"), encoding="utf-8").read())]
 
 
+FLAG_PROBE = "--not-a-real-flag"
+# The guard as it is written in `check_char_sanity`: two lines, so removing one leaves a stray
+# `return 2` and an IndentationError instead of the fall-through this phantom exists to show.
+GUARD_BLOCK = '    if reject_unknown(sys.argv[1:], FLAGS, "check_char_sanity"):\n        return 2\n'
+PHANTOM = "phantom_flagless_axis"
+
+
+def flag_rejection_control():
+    """Every axis must refuse a flag it does not parse (round 96's rule, generalised in round 101).
+
+    Round 96 closed the fall-through in this runner; round 101 found it alive in `check_link_graph`
+    (there `--help` printed a complete cached verdict as though the leg the caller asked for had
+    run), and the other hand-scanning axes sat next to it unguarded. The rule now lives in
+    `flag_guard.py`, and it is swept here over the *discovered* work list rather than a typed one,
+    because the axes that kept the bug were precisely the ones nobody thought to list. An axis that
+    uses argparse passes for free; the sweep exists so a new hand-scanning axis cannot join the
+    directory without paying for it.
+
+    A control that cannot fail is decoration, so a phantom drives it: a copy of a real axis with its
+    guard block removed must fall through to its own default pass and be caught by rc != 2.
+    """
+    misses = []
+    for name in axes():
+        r = subprocess.run([sys.executable, os.path.join(HERE, name + ".py"), FLAG_PROBE],
+                           capture_output=True, cwd=ROOT, env=child_env(), timeout=600)
+        if r.returncode != 2:
+            misses.append("%s(rc=%d)" % (name, r.returncode))
+    assert not misses, ("axes ran a default pass on `%s` instead of refusing it: %s"
+                        % (FLAG_PROBE, ", ".join(misses)))
+
+    src = io.open(os.path.join(HERE, "check_char_sanity.py"), encoding="utf-8").read()
+    assert GUARD_BLOCK in src, ("the phantom can no longer find the guard block it strips, so the "
+                               "rc==2 sweep above proves nothing about falling through")
+    path = os.path.join(HERE, PHANTOM + ".py")
+    try:
+        io.open(path, "w", encoding="utf-8").write(src.replace(GUARD_BLOCK, "", 1))
+        r = subprocess.run([sys.executable, path, FLAG_PROBE], capture_output=True,
+                           cwd=ROOT, env=child_env(), timeout=600)
+        out = r.stdout.decode("utf-8", "replace")
+        assert r.returncode != 2, ("the phantom refused the flag too, so the sweep above would pass "
+                                   "even with no guard anywhere")
+        assert "pages=" in out, ("the phantom skipped its default pass instead of running it: %r"
+                                 % (out[-160:],))
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
+    assert not os.path.exists(path) and PHANTOM not in pyfiles(), "the phantom left a file behind"
+    return len(axes())
+
+
 def child_env():
     """Children write UTF-8 into their logs no matter what the console's code page is.
 
@@ -267,8 +317,10 @@ def selftest():
     assert child_env()["PYTHONIOENCODING"] == "utf-8", "children would log in the code page again"
     assert "PYTHONIOENCODING" not in os.environ or os.environ["PYTHONIOENCODING"] != "cp936", \
         "the runner overrides it either way; this line only records the box's default"
-    print("battery controls: OK (axes=%d libs=%d unregistered=%d)"
-          % (len(found), len(libs()), len(unregistered())))
+    # One flag this runner does not parse must be refused by *every* axis, not only by this file.
+    swept = flag_rejection_control()
+    print("battery controls: OK (axes=%d libs=%d unregistered=%d) + flag refusal swept=%d"
+          % (len(found), len(libs()), len(unregistered()), swept))
 
 
 def parse_flags(argv):

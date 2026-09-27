@@ -18,7 +18,7 @@
    "verdict": "OK"
   },
   "https://academic.oup.com/mind/article/LIX/236/433/986238": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://academic.oup.com/mind/article/LIX/236/433/986238",
    "host": "academic.oup.com",
    "status": 403,
@@ -1393,7 +1393,7 @@
    "verdict": "OK"
   },
   "https://dl.acm.org/doi/10.1145/1571941.1572114": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://dl.acm.org/doi/10.1145/1571941.1572114",
    "host": "dl.acm.org",
    "status": 403,
@@ -3256,53 +3256,58 @@
    "verdict": "OK"
   },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/gptnano.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/gptnano.py",
    "host": "github.com",
-   "status": 404,
-   "verdict": "DEAD"
+   "status": 200,
+   "title": "ai-agent-handbook/nano/gptnano.py at main · funny8kids/ai-agent-handbook · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_backward.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_backward.py",
    "host": "github.com",
-   "status": 404,
-   "verdict": "DEAD"
+   "status": 429,
+   "verdict": "BLOCKED"
   },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_budget.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_budget.py",
    "host": "github.com",
-   "status": 404,
-   "verdict": "DEAD"
+   "status": 200,
+   "title": "ai-agent-handbook/nano/nano_budget.py at main · funny8kids/ai-agent-handbook · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_export.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_export.py",
    "host": "github.com",
-   "status": 429,
-   "verdict": "BLOCKED"
+   "status": 200,
+   "title": "ai-agent-handbook/nano/nano_export.py at main · funny8kids/ai-agent-handbook · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_forward.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_forward.py",
+   "host": "github.com",
+   "status": 200,
+   "title": "ai-agent-handbook/nano/nano_forward.py at main · funny8kids/ai-agent-handbook · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py": {
+   "checked": "2026-09-28",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py",
    "host": "github.com",
    "status": 429,
    "verdict": "BLOCKED"
   },
-  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py": {
-   "checked": "2026-09-27",
-   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py",
-   "host": "github.com",
-   "status": 404,
-   "verdict": "DEAD"
-  },
   "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_train.py": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_train.py",
    "host": "github.com",
-   "status": 404,
-   "verdict": "DEAD"
+   "status": 200,
+   "title": "ai-agent-handbook/nano/nano_train.py at main · funny8kids/ai-agent-handbook · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/getsentry/XcodeBuildMCP": {
    "checked": "2026-09-24",
@@ -5233,7 +5238,7 @@
    "verdict": "OK"
   },
   "https://huggingface.co/datasets/cerebras/SlimPajama-627B": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://huggingface.co/datasets/cerebras/SlimPajama-627B",
    "host": "huggingface.co",
    "status": 401,
@@ -5456,7 +5461,7 @@
    "verdict": "OK"
   },
   "https://linux.do/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://linux.do/",
    "host": "linux.do",
    "status": 403,
@@ -5615,35 +5620,35 @@
    "verdict": "OK"
   },
   "https://openai.com/index/gpt-6-astra-next-generation-work/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://openai.com/index/gpt-6-astra-next-generation-work/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/gpt-6-astra/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://openai.com/index/gpt-6-astra/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-gpt-live-1-in-the-api/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://openai.com/index/introducing-gpt-live-1-in-the-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-the-agents-api/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://openai.com/index/introducing-the-agents-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/news/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://openai.com/news/",
    "host": "openai.com",
    "status": 403,
@@ -5898,7 +5903,7 @@
    "verdict": "OK"
   },
   "https://wiki.linuxfoundation.org/realtime/start": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://wiki.linuxfoundation.org/realtime/start",
    "host": "wiki.linuxfoundation.org",
    "status": 403,
@@ -6057,14 +6062,14 @@
    "verdict": "OK"
   },
   "https://www.iso.org/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://www.iso.org/",
    "host": "www.iso.org",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.iso.org/standard/65457.html": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://www.iso.org/standard/65457.html",
    "host": "www.iso.org",
    "status": 403,
@@ -6175,14 +6180,14 @@
    "verdict": "OK"
   },
   "https://www.reddit.com/r/LocalLLaMA/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://www.reddit.com/r/LocalLLaMA/",
    "host": "www.reddit.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.ruanyifeng.com/blog/": {
-   "checked": "2026-09-27",
+   "checked": "2026-09-28",
    "final": "https://www.ruanyifeng.com/blog/",
    "host": "www.ruanyifeng.com",
    "status": 403,

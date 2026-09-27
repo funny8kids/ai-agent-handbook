@@ -20,8 +20,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from live_aria_manifest import (display_math_blocks, fence_blocks, fence_openings,  # noqa: E402
                                 fence_prose_mask)  # one fence ruler, one math ruler
+from flag_guard import reject_unknown  # noqa: E402  an unparsed flag must not fall through
 
 DOCS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs"))
+FLAGS = ("--controls",)
 KEYS = ("tags", "type", "status", "updated")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 # Round 54's operator directive: reader pages carry no executable code — where a reader would have to
@@ -435,6 +437,8 @@ echo hi
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_structure"):
+        return 2
     if "-c" in sys.argv or "--controls" in sys.argv:
         run_controls()
         return 0

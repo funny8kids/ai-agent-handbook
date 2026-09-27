@@ -19,6 +19,10 @@ import re
 import subprocess
 import sys
 
+from flag_guard import reject_unknown
+
+FLAGS = ()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 FILE = os.path.join("docs", "00-index", "changelog.md")
@@ -57,6 +61,8 @@ def controls():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_changelog_headings"):
+        return 2
     controls()
     head = subprocess.run(["git", "show", "HEAD:%s" % FILE.replace(os.sep, "/")],
                           capture_output=True, cwd=REPO)

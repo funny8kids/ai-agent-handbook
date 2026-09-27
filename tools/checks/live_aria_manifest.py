@@ -33,11 +33,14 @@ Usage:
 """
 import io, json, os, re, sys, urllib.request
 
+from flag_guard import reject_unknown
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
 SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
 LLMS = SITE + "/llms.txt"
 PROBE = os.path.join(HERE, "live_aria_probe.js")
+FLAGS = ("--all", "--calibrate", "--diff", "--headless", "--sample")
 
 
 def norm(s):
@@ -608,6 +611,8 @@ def diff(live):
 
 def main():
     args = sys.argv[1:]
+    if reject_unknown(args, FLAGS, "live_aria_manifest"):
+        return 2
     controls()
     if "--calibrate" in args:
         at = args.index("--calibrate") + 1

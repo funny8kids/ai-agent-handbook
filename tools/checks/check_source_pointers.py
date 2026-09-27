@@ -30,6 +30,10 @@ import shutil
 import sys
 import tempfile
 
+from flag_guard import reject_unknown
+
+FLAGS = ()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 DOCS = os.path.join(ROOT, "docs")
@@ -164,6 +168,8 @@ def real_page_mutation_control():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_source_pointers"):
+        return 2
     n_hit, n_clean = controls()
     n_pages = real_page_mutation_control()
     print("controls ok (%d planted hits caught / %d look-alikes kept clean)" % (n_hit, n_clean))

@@ -25,6 +25,10 @@ import os
 import re
 import sys
 
+from flag_guard import reject_unknown
+
+FLAGS = ()
+
 REPO = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + "/../..")
 DOCS = os.path.join(REPO, "docs")
 README = os.path.join(REPO, "README.md")
@@ -281,6 +285,8 @@ def run_controls(stats):
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_readme_stats"):
+        return 2
     stats = measure()
     print("measured:", ", ".join("%s=%d" % kv for kv in sorted(stats.items())))
     run_controls(stats)

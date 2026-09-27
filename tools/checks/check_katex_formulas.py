@@ -32,9 +32,11 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 DOCS = os.path.join(REPO, "docs")
+FLAGS = ("--katex-dir",)
 RENDERER = os.path.join(HERE, "katex_render.mjs")
 sys.path.insert(0, HERE)
 import live_aria_manifest as L  # noqa: E402  (shared tokenizer: one definition of "authored")
+from flag_guard import reject_unknown  # noqa: E402  an unparsed flag must not fall through
 
 PHANTOM = "\\frac{1}{"            # must be the only failure, proving the renderer fires
 # The build README quotes. An off-version run is a tool failure, not a reading: round 59 found a
@@ -72,6 +74,8 @@ def collect():
 
 def main():
     args = sys.argv[1:]
+    if reject_unknown(args, FLAGS, "check_katex_formulas"):
+        return 2
     kdir = katex_dir(args[args.index("--katex-dir") + 1] if "--katex-dir" in args else None)
     pages, items = collect()
     payload = items + [{"page": "<self-test>", "kind": "display", "src": PHANTOM}]

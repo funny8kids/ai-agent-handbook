@@ -53,8 +53,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import live_aria_manifest as lam             # noqa: E402  shared tokenizer (fences + code spans)
 import check_widget_visibility_live as wl    # noqa: E402  llms.txt index + retrying fetch
+from flag_guard import reject_unknown         # noqa: E402  an unparsed flag must not fall through
 
 DOCS = lam.DOCS
+FLAGS = ("--sample",)
 SITE = wl.SITE
 IMG_MD = re.compile(r'!\[([^\]]*)\]\(<([^>]+)>|!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)')
 IMG_TAG = re.compile(r'<img\b[^>]*>', re.I)
@@ -310,6 +312,8 @@ def controls():
 
 def main():
     args = sys.argv[1:]
+    if reject_unknown(args, FLAGS, "check_live_images"):
+        return 2
     controls()
     pages = image_pages()
     total = sum(len(r["imgs"]) for r in pages)

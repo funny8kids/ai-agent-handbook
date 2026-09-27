@@ -36,8 +36,10 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import live_aria_manifest as lam        # noqa: E402  shared inline-code tokenizer
+from flag_guard import reject_unknown   # noqa: E402  an unparsed flag must not fall through
 ROOT = os.path.dirname(os.path.dirname(HERE))
 DOCS = os.path.join(ROOT, "docs")
+FLAGS = ("--live",)
 
 CAPTION = re.compile(r"^\*《图：(.+)》\*\s*$")
 # Deictic-only: points at the figure, says nothing about it.
@@ -660,6 +662,8 @@ def live_captions(sample=12):
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_figure_explanations"):
+        return 2
     n = controls()
     print("controls ok (%d planted cases, both directions: bare must fire, caption/guided must not)" % n)
     pages, tried = real_page_mutation_control()

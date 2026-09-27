@@ -19,7 +19,10 @@ Usage:  python tools/checks/check_char_sanity.py [--report]
 import io, os, re, sys
 from collections import Counter
 
+from flag_guard import reject_unknown
+
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+FLAGS = ("--report",)
 DOCS = os.path.join(REPO, "docs")
 TABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "traditional_chars.txt")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -86,6 +89,8 @@ def run_controls(trad):
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_char_sanity"):
+        return 2
     trad = load_table()
     run_controls(trad)
     files, total_cjk, findings = 0, 0, []

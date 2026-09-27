@@ -41,6 +41,10 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
+
+from flag_guard import reject_unknown  # noqa: E402  an unparsed flag must not fall through
+
+FLAGS = ("--head-control", "--pages-only", "--selftest")
 CHAPTER_DIR = "22-build-llm-from-scratch"
 SPEC_NAME = "spec.md"
 SCRIPT_TIMEOUT_S = 3600
@@ -717,6 +721,8 @@ def utf8_out():
 
 def real_main(argv):
     utf8_out()
+    if reject_unknown(argv, FLAGS, "check_build_llm_from_scratch"):
+        return 2
     if "--selftest" in argv:
         return selftest()
     if "--head-control" in argv:

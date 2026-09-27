@@ -42,6 +42,7 @@ Usage:
   python tools/checks/check_link_graph.py --live      + grade anchor fragments on the site
   python tools/checks/check_link_graph.py --refresh   + (re)probe external URLs, throttled
   python tools/checks/check_link_graph.py --selftest  planted phantoms for every bucket
+Anything else starting with `--` exits 2 rather than quietly running the default pass.
 """
 import datetime
 import io
@@ -50,21 +51,25 @@ import os
 import re
 import socket
 import ssl
+import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import unquote, urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from live_aria_manifest import prose, url_index, norm, h1_of  # noqa: E402  one prose ruler
+from flag_guard import reject_unknown  # noqa: E402  the same rule for every hand-scanned argv
 
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 DOCS = os.path.join(REPO, "docs")
 CACHE = os.path.join(HERE, "data", "external_links.json")
 NON_BODY = ("SUMMARY.md", "MANIFEST.md")
+FLAGS = ("--selftest", "--refresh", "--live")
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
@@ -77,6 +82,7 @@ HEAD = re.compile(r"^ {0,3}#{1,6}[ \t]+(.+?)[ \t]*$", re.M)
 DEAD_STATUS = {404, 410, 451}
 BLOCK_STATUS = {401, 403, 407, 429}
 HEAD_RETRY = {400, 405, 406, 501}          # HEAD not understood -> fall back to GET
+SHRUG_STATUS = {500, 502, 503, 504}        # the server fell over; this says nothing about the citation
 SOFT_TOKENS = ("not found", "notfound", "page not found", "页面不存在", "找不到页面", "does not exist")
 # A bare "404" in a title only counts when it stands alone. arXiv titles are their own counterexample:
 # 「[2404.06654] RULER: What's the Real Context Size…」 is a live paper the old substring rule read
@@ -429,6 +435,24 @@ def same_site(a, b):
     return strip(a.lower()) == strip(b.lower())
 
 
+def http_error_verdict(code):
+    """What a status code says about the *citation*, not about the server that answered.
+
+    Round 101 measured the difference on this repository's own blob URLs: GitHub served 200, then
+    a connection reset, then 429, then 503 to the same path within two minutes. The old mapping put
+    that last one in `HTTP-503`, which the gate reads as UNREADABLE — a defect finding — so a
+    transient server shrug could fail a round over a link that every reader opens fine. NET already
+    means 'the probe could not look', so that is where a 5xx belongs; anything odder stays loud.
+    """
+    if code in DEAD_STATUS:
+        return "DEAD"
+    if code in BLOCK_STATUS:
+        return "BLOCKED"
+    if code in SHRUG_STATUS:
+        return "NET"
+    return "HTTP-%d" % code
+
+
 def probe(url):
     """One URL -> verdict dict. Trouble is retried once after a cooldown; still-trouble stays
     inconclusive, which the coverage bucket counts and the defect bucket never does.
@@ -447,9 +471,11 @@ def probe(url):
             except urllib.error.HTTPError as e:
                 if e.code in HEAD_RETRY:
                     res = _fetch(url, "GET")
+                elif e.code in SHRUG_STATUS and attempt == 0:
+                    time.sleep(COOLDOWN)
+                    continue
                 else:
-                    return {"verdict": "DEAD" if e.code in DEAD_STATUS else
-                            ("BLOCKED" if e.code in BLOCK_STATUS else "HTTP-%d" % e.code),
+                    return {"verdict": http_error_verdict(e.code),
                             "status": e.code, "host": host, "final": url}
             except (urllib.error.URLError, socket.timeout, ssl.SSLError, OSError) as e:
                 if attempt == 0:
@@ -477,11 +503,78 @@ def probe(url):
     return {"verdict": "PROBE-ERROR", "status": "unreachable", "host": host, "final": url}
 
 
+def our_slug():
+    """`owner/repo` of the repository this check runs inside, read off git rather than off a
+    constant: the rule is 'a citation into the book's own repo', and a hard-coded name rots the
+    day the repo moves. None when there is no origin, which only makes the branch below inert."""
+    try:
+        out = subprocess.check_output(["git", "-C", REPO, "config", "--get", "remote.origin.url"],
+                                      stderr=subprocess.DEVNULL, timeout=15)
+    except Exception:  # noqa: BLE001 - no git, no own-repo branch
+        return None
+    m = re.search(r"[:/]([^/:]+)/([^/]+?)(?:\.git)?/?$", out.decode("utf-8", "replace").strip())
+    return "%s/%s" % (m.group(1), m.group(2)) if m else None
+
+
+def landed_in_tree(url, slug=None):
+    """The repo-relative path a citation points at, when it cites our own repo AND that file is in
+    this tree. Otherwise None.
+
+    Round 101 needed this because the chapter's nine pages cite `.../blob/main/nano/*.py`, and the
+    cache was harvested the same day, an hour before the push: GitHub answered 404 to a file that
+    did not exist yet, `DEAD` is in OK_VERDICTS so `refresh` never asks again, and the axis would
+    have reported five dead citations forever over links that are true at every reader since.
+    Matching is by the remote's own slug, not by path shape: `torvalds/linux/blob/main/README.md`
+    points at a path this tree also has, and it is not ours.
+    """
+    slug = slug if slug is not None else our_slug()
+    if not slug:
+        return None
+    try:
+        parsed = urlparse(url)
+        parts = [unquote(p) for p in parsed.path.split("/") if p]
+    except ValueError:
+        return None
+    host = parsed.netloc
+    if host == "github.com":
+        if len(parts) < 5 or parts[:2] != slug.split("/") or parts[2] not in ("blob", "tree", "raw", "edit"):
+            return None
+        rest = parts[4:]
+    elif host == "raw.githubusercontent.com":
+        if len(parts) < 4 or parts[:2] != slug.split("/"):
+            return None
+        rest = parts[3:]
+    else:
+        return None
+    if not rest or os.path.isabs(rest[-1]):
+        return None
+    full = os.path.normpath(os.path.join(REPO, *rest))
+    if not full.startswith(REPO + os.sep) or not os.path.isfile(full):
+        return None
+    return os.path.relpath(full, REPO)
+
+
+def needs_probe(url, cache):
+    """Ask the wire again about this citation?
+
+    Not-found verdicts are frozen for everybody else (a dead third-party citation is a content
+    decision, and re-probing 780 URLs a round is how the 429s start), but a cached 404 on a file
+    the book itself ships is stale by construction the moment that file lands."""
+    verdict = (cache.get(url) or {}).get("verdict")
+    if verdict not in OK_VERDICTS:
+        return True
+    return verdict in ("DEAD", "SOFT-404") and landed_in_tree(url) is not None
+
+
 def refresh(external, cache, force_all=False):
     """Probe what the book cites. A cached OK/MOVED/DEAD/SOFT-404 is kept; an inconclusive entry
-    is retried, because 'the probe got reset' is not a verdict about the citation."""
-    todo = sorted(external) if force_all else [
-        u for u in sorted(external) if cache.get(u, {}).get("verdict") not in OK_VERDICTS]
+    is retried, because 'the probe got reset' is not a verdict about the citation. A cached
+    not-found on a file this repo now ships is retried too (`needs_probe`)."""
+    todo = sorted(external) if force_all else [u for u in sorted(external) if needs_probe(u, cache)]
+    ours = [u for u in todo if landed_in_tree(u)]
+    if ours:
+        print("  own-repo re-probes: %d cached not-found verdicts point at files this tree ships"
+              " (%s)" % (len(ours), ", ".join(os.path.basename(u) for u in ours[:8])), flush=True)
     stamp = datetime.date.today().isoformat()
     if not todo:
         return 0
@@ -654,6 +747,65 @@ def controls():
     assert incon == {"BLOCKED": 1} and sum(tally.values()) == 5 and not missing
     hits["dead+soft+moved fire, blocked excused"] = 1
 
+    # --- own-repo not-found verdicts go stale when the book ships the file itself (round 101) ---
+    slug = our_slug()
+    assert slug and "/" in slug, "no origin slug, so the own-repo branch cannot be exercised here"
+    ours_ok = "https://github.com/%s/blob/main/docs/SUMMARY.md" % slug
+    ours_raw = "https://raw.githubusercontent.com/%s/main/docs/SUMMARY.md" % slug
+    ours_gone = "https://github.com/%s/blob/main/docs/no-such-page-here.md" % slug
+    assert landed_in_tree(ours_ok, slug) == os.path.join("docs", "SUMMARY.md"), ours_ok
+    assert landed_in_tree(ours_raw, slug) == os.path.join("docs", "SUMMARY.md"), ours_raw
+    assert landed_in_tree(ours_gone, slug) is None, "a page this tree does not ship must stay frozen"
+    assert landed_in_tree("https://github.com/torvalds/linux/blob/main/README.md", slug) is None, \
+        "this tree has a README.md too; the rule is the remote's slug, not the path shape"
+    assert landed_in_tree("https://example.com/%s/blob/main/docs/SUMMARY.md" % slug, slug) is None, \
+        "the same path on another host is not a citation into this repo"
+    assert landed_in_tree("https://github.com/%s/blob/main/../../outside.env" % slug, slug) is None, \
+        "a traversal-shaped citation must not read as a file inside the repo"
+
+    def dead_of(url, verdict="DEAD"):
+        return {url: {"verdict": verdict, "status": 404 if verdict == "DEAD" else 200}}
+
+    assert needs_probe(ours_ok, dead_of(ours_ok)) and needs_probe(ours_raw, dead_of(ours_raw)), \
+        "a 404 cached before the push would otherwise stand forever"
+    assert needs_probe(ours_ok, dead_of(ours_ok, "SOFT-404")), \
+        "a not-found page served at 200 is just as stale as a 404"
+    assert not needs_probe(ours_gone, dead_of(ours_gone)), \
+        "the repair must not become 're-probe every dead link every round'"
+    assert not needs_probe("https://a.example/", dead_of("https://a.example/")), \
+        "a third-party 404 is a content decision, not a retry budget"
+    assert not needs_probe(ours_ok, {ours_ok: {"verdict": "OK", "status": 200}}), \
+        "the live citations must not be re-probed to prove this branch"
+    hits["own-repo 404 re-probes, everything else stays frozen"] = 1
+
+    # --- a status code is a verdict on the citation only when it is about the citation (round 101) ---
+    assert http_error_verdict(404) == "DEAD" and http_error_verdict(451) == "DEAD", \
+        "a not-found and a taken-down page are content findings"
+    assert http_error_verdict(429) == "BLOCKED" and http_error_verdict(403) == "BLOCKED", \
+        "rate-limit and permission are the already-excused family"
+    assert http_error_verdict(503) == "NET" and http_error_verdict(502) == "NET", \
+        "this is the branch that reddened a round over a GitHub hiccup"
+    assert http_error_verdict(507) == "HTTP-507", \
+        "an unexplained status stays loud; the repair is not 'silence every 5xx'"
+    shrug = {"https://shrug.example/": {"x.md"}}
+    fnd3, _, incon3, _ = external_leg(shrug, {"https://shrug.example/": {"verdict": "NET", "status": 503}})
+    assert not fnd3 and incon3 == {"NET": 1}, \
+        "a shrug must land in the inconclusive bucket, never in the defect bucket: %s %s" % (fnd3, incon3)
+    hits["5xx shrug inconclusive, odd status still a finding"] = 1
+
+    # --- an unknown flag must cost the caller, not silently run the default pass (round 101) ---
+    # `--help` used to print a full cached verdict here, exactly the bug round 96 closed in the
+    # battery runner. Driven through a real subprocess because the guard is in `main`, not in a
+    # predicate: an axis that only *looks* like it validated its flags is what let this survive.
+    for bad in ("--help", "--refsh", "--live-no"):
+        res = subprocess.run([sys.executable, os.path.abspath(__file__), bad],
+                             capture_output=True, timeout=120)
+        assert res.returncode == 2 and b"unknown flag" in res.stdout + res.stderr, \
+            "`%s` must exit 2, not run the default pass: rc=%s %r" % (
+                bad, res.returncode, (res.stdout + res.stderr)[:200])
+        assert b"link graph:" not in res.stdout, "`%s` still printed a verdict" % bad
+    hits["unknown flag exits 2 instead of printing a verdict"] = 1
+
     # --- the not-found sniff, both directions (round 81 fired on its own first pass) ---
     live = sniff({"body": "<title>[2404.06654] RULER: What&#39;s the Real Context Size "
                           "of Your Long-Context Language Models?</title>"})
@@ -815,6 +967,11 @@ def controls():
 
 def main():
     argv = sys.argv[1:]
+    if reject_unknown(argv, FLAGS, "check_link_graph"):
+        # Round 96 made the battery refuse an unknown flag; this ruler reads argv by hand, so it
+        # kept the older bug -- `--help` here ran the whole cached pass and printed a verdict as if
+        # the leg the caller asked for had run. A typo'd flag must cost the caller, not the reader.
+        return 2
     if "--selftest" in argv:
         hits = controls()
         print("controls: %d buckets, every one able to fire" % len(hits))

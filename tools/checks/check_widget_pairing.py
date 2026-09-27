@@ -15,6 +15,10 @@ and the inventory judge cannot disagree about what is a widget.
 """
 import io, os, re, sys
 
+from flag_guard import reject_unknown
+
+FLAGS = ()
+
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs"))
 
 PAIRS = {"hint": "endhint", "tabs": "endtabs", "tab": "endtab",
@@ -166,6 +170,8 @@ def inventory_controls():
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_widget_pairing"):
+        return 2
     problems, pages = 0, 0
     tally, quoted, pages_with = {}, {}, 0
     for dirpath, _, filenames in os.walk(ROOT):

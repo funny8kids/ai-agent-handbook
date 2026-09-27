@@ -21,7 +21,10 @@ import os
 import re
 import sys
 
+from flag_guard import reject_unknown
+
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+FLAGS = ("--report",)
 DOCS = os.path.join(REPO, "docs")
 SUMMARY = os.path.join(DOCS, "SUMMARY.md")
 
@@ -126,6 +129,8 @@ def run_controls(rows, problems):
 
 
 def main():
+    if reject_unknown(sys.argv[1:], FLAGS, "check_nav_h1_sync"):
+        return 2
     rows, problems = audit()
     run_controls(rows, problems)
     print("SUMMARY labels audited against page H1: %d pages" % len(rows))

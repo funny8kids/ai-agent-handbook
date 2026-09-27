@@ -23,9 +23,12 @@ import time
 import urllib.error
 import urllib.request
 
+from flag_guard import reject_unknown
+
 SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
 LLMS = SITE + "/llms.txt"
 DOCS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "docs"))
+FLAGS = ("--all", "--dry", "--sample")
 UA = {"User-Agent": "Mozilla/5.0 (handbook self-check)"}
 
 TOKEN = re.compile(r"\{%-?\s*(stepper|step|tabs|tab)\b((?:%(?!\})|[^%])*)%\}")
@@ -316,6 +319,8 @@ def run_extractor_controls():
 
 def main():
     args = sys.argv[1:]
+    if reject_unknown(args, FLAGS, "check_widget_visibility_live"):
+        return 2
     run_extractor_controls()
     page_index_controls()
     visible_controls()
