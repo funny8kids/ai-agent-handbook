@@ -1,0 +1,58 @@
+权重来源 nano/weights_alice.json   词表 36   上下文窗口 24   每段生成 220 个字符
+每步都从头重算整段前向，故意不用 KV Cache：省下的正是第 7 页要算的那笔账
+
+[贪心 #1] 提示 'alice was beginning to get very'
+  生成 220 字符:  ther ther the the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the w
+  3-gram 命中语料 218/218 = 100.0%   头 60 字符 100.0% -> 尾 60 字符 100.0%（头尾持平，这一段没有漂移）
+
+[贪心 #2] 提示 'the rabbit went straight on in'
+  生成 220 字符:  ther the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the wa
+  3-gram 命中语料 218/218 = 100.0%   头 60 字符 100.0% -> 尾 60 字符 100.0%（头尾持平，这一段没有漂移）
+
+[贪心 #3] 提示 'there was nothing so very'
+  生成 220 字符:  ther ther the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was t
+  3-gram 命中语料 218/218 = 100.0%   头 60 字符 100.0% -> 尾 60 字符 100.0%（头尾持平，这一段没有漂移）
+
+[贪心 #4] 提示 'she was considering in her own'
+  生成 220 字符:  the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the was the
+  3-gram 命中语料 218/218 = 100.0%   头 60 字符 100.0% -> 尾 60 字符 100.0%（头尾持平，这一段没有漂移）
+
+[温度 1.0 #1] 提示 'alice was beginning to get very'
+  生成 220 字符:  bubis o ma ot get oudea eer sise a thaingen rate wasind sthe thellr gainved sakabbing tainkit-convelellf ! down so ther ind afin)
+a o: shelf uvend der avean dout malice turios me a. tupry-pin, sto sthet, o thet, whabbri
+  3-gram 命中语料 133/218 = 61.0%   头 60 字符 58.6% -> 尾 60 字符 65.5%（尾段反而更贴语料，多了 6.9 个点）
+
+[温度 1.0 #2] 提示 'the rabbit went straight on in'
+  生成 220 字符:  was fuling er hag to go sit so: ra wedithonst sand, hacon, heea len woh coung alice orat, bepit-;o "arer wat watit fre shea pin. sraccpock saindst; norss
+estut ory wit, the own her when nor! ar. bo helate!,, arer wishow
+  3-gram 命中语料 133/218 = 61.0%   头 60 字符 62.1% -> 尾 60 字符 65.5%（尾段反而更贴语料，多了 3.4 个点）
+
+[温度 1.0 #3] 提示 'there was nothing so very'
+  生成 220 字符:  in ang or
+cofpiceloss sher mad frary he own bes abbbbit oo sent po dvicky senthe out own
+sin mear tapons sokid the wa waysh agaking;
+buraing, bury a per ud fot fotet with udepiting os souinght
+iosicen alicer t,ory, "aft
+  3-gram 命中语料 134/218 = 61.5%   头 60 字符 72.4% -> 尾 60 字符 50.0%（越生成越离轨，尾段掉了 22.4 个点）
+
+[温度 1.0 #4] 提示 'she was considering in her own'
+  生成 220 字符:  it the pleto the ther tut aaby lokeb
+sthea out the rat down eer consing ias haingen por as lepit it, "o a rudddenry lis ased whet, to vetunddet of a yeritced, ithalntcha benther pit ther sos, wut wich shad bro to pits
+a
+  3-gram 命中语料 139/218 = 63.8%   头 60 字符 72.4% -> 尾 60 字符 65.5%（越生成越离轨，尾段掉了 6.9 个点）
+
+判定（达标线：≥4 段、每段 ≥200 字符、每段 3-gram ≥60%、贪心与温度 1.0 不同）:
+  段数 8   每段长度 220 220 220 220 220 220 220 220 -> OK
+  贪心最低 100.0%   温度 1.0 最低 61.0%   最差一段 61.0% -> OK
+  贪心与温度 1.0 不同的段数 4 / 4 -> OK
+    同提示 #1 从第 1 个字符开始分叉：贪心 'ther ther th'  抽样 'bubis o ma o'
+    同提示 #2 从第 1 个字符开始分叉：贪心 'ther the was'  抽样 'was fuling e'
+    同提示 #3 从第 1 个字符开始分叉：贪心 'ther ther th'  抽样 'in ang or\nco'
+    同提示 #4 从第 1 个字符开始分叉：贪心 'the was the '  抽样 'it the pleto'
+
+温度对分布做了什么（同一个位置，词表前 6 项概率）
+  贪心用的原始 softmax: 0.00070 0.01603 0.00000 0.00000 0.00000 0.00007
+  温度 1.0 之后:        0.00070 0.01603 0.00000 0.00000 0.00000 0.00007（温度 1 是恒等，用来确认口径没写错）
+  温度 0.5: 最大概率 0.97733  熵 0.1284 nats（越高越敢换词，也越容易跑飞）
+  温度 2.0: 最大概率 0.44334  熵 1.8782 nats（越高越敢换词，也越容易跑飞）
+  贪心的最大概率 0.78869 -> 温度越低，长文本越容易塌进重复循环

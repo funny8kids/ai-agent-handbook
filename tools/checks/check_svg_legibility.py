@@ -90,7 +90,8 @@ except AttributeError:
     pass
 
 import check_widget_visibility_live as wl                      # noqa: E402
-from check_live_column import live_copy, COPY_VIEWPORT            # noqa: E402
+from check_live_column import (live_copy, COPY_VIEWPORT, COPY_CAP_BINDS_AT,
+                               confirm_window, window_selftest)                              # noqa: E402
 from check_mermaid_geometry import Server                      # noqa: E402
 
 COLUMN_LIVE = 768           # round 62's <main>; re-asserted every run
@@ -601,8 +602,12 @@ def live_leg(srv, rows, column, count=4):
     measured the same copies on the sentinel-checked engine: the chapter sidebar and the page TOC
     mount there too, so the copy's column is the live page's minus a scrollbar gutter (593px at a
     1280 window, 609px at 1024), and the 768px cap only binds from 1440 up. The leg therefore asks
-    for `COPY_VIEWPORT`, asserts the browser confirms that window, and keeps asserting the cap —
-    now because the cap really is what binds at that width, not because the panels were missing.
+    for `COPY_VIEWPORT` and keeps asserting the cap — now because the cap really is what binds at
+    that width, not because the panels were missing.
+    Round 101 moved the window guard off the flag: whether `--window-size=1500` becomes a 1500px
+    window is a property of which engine the suite picked (Edge reserves 30px of it), while the
+    premise this leg needs is that the laid-out window is one where the cap binds. So it asserts on
+    the page's own reported width against `COPY_CAP_BINDS_AT`, and prints the engine's reserve.
     """
     pages = worst_pages(rows, count)
     seen = []
@@ -637,13 +642,17 @@ def live_leg(srv, rows, column, count=4):
         assert rep and rep.get("figs"), \
             "copy leg read no SVG figure on %s (imgs on page: %s; probe JS error: %r)" \
             % (rel, rep and rep.get("imgs"), fatal_of(srv, rid))
-        assert rep.get("vw") == COPY_VIEWPORT, \
-            "asked for a vw=%d window, the copy of %s reported %s — the column asserted next is then" \
-            " read off some other viewport" % (COPY_VIEWPORT, rel, rep.get("vw"))
+        assert rep.get("vw"), \
+            "copy leg read no window from the copy of %s (probe JS error: %r)" % (rel, fatal_of(srv, rid))
+        # The premise the next assertion needs is the cap-binding window, and on this machine Edge
+        # lays out a 1470px window when asked for 1500 (check_live_column's round-101 table), so the
+        # guard reads the page's report instead of the flag and refuses a window too narrow for the
+        # 768 cap to be what is binding.
+        confirm_window(COPY_VIEWPORT, rep["vw"], "copy of %s" % rel, need=COPY_CAP_BINDS_AT)
         measured += 1
         assert rep["main"] == column, \
             "<main> measures %s on the copy of %s at vw=%d, not %d — the column this axis is about " \
-            "changed" % (rep["main"], rel, COPY_VIEWPORT, column)
+            "changed" % (rep["main"], rel, rep["vw"], column)
         for f in rep["figs"]:
             assert "max-width:100%" in f["style"], \
                 "the served <img> no longer carries max-width:100%% (%s on %s): the scaling " \
@@ -653,8 +662,8 @@ def live_leg(srv, rows, column, count=4):
                 "figure painted %.3f x natural, arithmetic says %.3f (%s on %s)" \
                 % (scale, min(1.0, column / f["nat"]), f, rel)
             seen.append((f["nat"], scale))
-        print("  copy %s: %d svg figures, scales %s"
-              % (rel.split("/")[0], len(rep["figs"]),
+        print("  copy %s: %d svg figures laid out at vw=%d, scales %s"
+              % (rel.split("/")[0], len(rep["figs"]), rep["vw"],
                  sorted({round(x[1], 3) for x in seen[-len(rep["figs"]):]})))
     scaled = [x for x in seen if x[1] < 0.99]
     assert measured >= 2, \
@@ -772,6 +781,7 @@ def main():
     rows = figures(args.column)
     worst = offline_report(rows, args.column)
     classifier_selftest()
+    window_selftest()          # the guard live_leg's copy reading leans on (round 101)
 
     dummy = os.path.join(tempfile.gettempdir(), "svg-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads no bundle\n")

@@ -18,7 +18,7 @@
    "verdict": "OK"
   },
   "https://academic.oup.com/mind/article/LIX/236/433/986238": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://academic.oup.com/mind/article/LIX/236/433/986238",
    "host": "academic.oup.com",
    "status": 403,
@@ -80,6 +80,14 @@
    "title": "[1412.6575] Embedding Entities and Relations for Learning and Inference in Knowledge Bases",
    "verdict": "OK"
   },
+  "https://arxiv.org/abs/1412.6980": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/1412.6980",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[1412.6980] Adam: A Method for Stochastic Optimization",
+   "verdict": "OK"
+  },
   "https://arxiv.org/abs/1508.07909": {
    "checked": "2026-09-24",
    "final": "https://arxiv.org/abs/1508.07909",
@@ -102,6 +110,22 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[1603.09320] Efficient and robust approximate nearest neighbor search using Hierarchical Navigable S",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/1606.08415": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/1606.08415",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[1606.08415] Gaussian Error Linear Units (GELUs)",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/1607.06450": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/1607.06450",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[1607.06450] Layer Normalization",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/1703.06907": {
@@ -144,6 +168,14 @@
    "title": "[1809.08887] Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Semantic Parsi",
    "verdict": "OK"
   },
+  "https://arxiv.org/abs/1904.09751": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/1904.09751",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[1904.09751] The Curious Case of Neural Text Degeneration",
+   "verdict": "OK"
+  },
   "https://arxiv.org/abs/1908.10084": {
    "checked": "2026-09-24",
    "final": "https://arxiv.org/abs/1908.10084",
@@ -166,6 +198,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2003.02320] Knowledge Graphs",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2003.12206": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/2003.12206",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2003.12206] Improving Reproducibility in Machine Learning Research (A Report from the NeurIPS 2019 ",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2004.04906": {
@@ -728,6 +768,14 @@
    "title": "[2309.00071] YaRN: Efficient Context Window Extension of Large Language Models",
    "verdict": "OK"
   },
+  "https://arxiv.org/abs/2309.02772": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/2309.02772",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2309.02772] Hot or Cold? Adaptive Temperature Sampling for Code Generation with Large Language Mode",
+   "verdict": "OK"
+  },
   "https://arxiv.org/abs/2309.06180": {
    "checked": "2026-09-24",
    "final": "https://arxiv.org/abs/2309.06180",
@@ -750,6 +798,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2309.16609] Qwen Technical Report",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2309.17453": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/2309.17453",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2309.17453] Efficient Streaming Language Models with Attention Sinks",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2310.01798": {
@@ -990,6 +1046,14 @@
    "host": "arxiv.org",
    "status": 200,
    "title": "[2406.12045] $τ$-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains",
+   "verdict": "OK"
+  },
+  "https://arxiv.org/abs/2407.01082": {
+   "checked": "2026-09-27",
+   "final": "https://arxiv.org/abs/2407.01082",
+   "host": "arxiv.org",
+   "status": 200,
+   "title": "[2407.01082] Turning Up the Heat: Min-p Sampling for Creative and Coherent LLM Outputs",
    "verdict": "OK"
   },
   "https://arxiv.org/abs/2407.16741": {
@@ -1248,6 +1312,14 @@
    "title": "CrewAI",
    "verdict": "OK"
   },
+  "https://cs231n.github.io/neural-networks-3/": {
+   "checked": "2026-09-27",
+   "final": "https://cs231n.github.io/neural-networks-3/",
+   "host": "cs231n.github.io",
+   "status": 200,
+   "title": "CS231n Deep Learning for Computer Vision",
+   "verdict": "OK"
+  },
   "https://deepmind.google/discover/blog/genie-2-a-large-scale-foundation-world-model/": {
    "checked": "2026-09-24",
    "final": "https://deepmind.google/blog/genie-2-a-large-scale-foundation-world-model/",
@@ -1321,7 +1393,7 @@
    "verdict": "OK"
   },
   "https://dl.acm.org/doi/10.1145/1571941.1572114": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://dl.acm.org/doi/10.1145/1571941.1572114",
    "host": "dl.acm.org",
    "status": 403,
@@ -1807,6 +1879,14 @@
    "title": "",
    "verdict": "OK"
   },
+  "https://github.com/KellerJordan/modded-nanogpt": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/KellerJordan/modded-nanogpt",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - KellerJordan/modded-nanogpt: NanoGPT (124M) in 90 seconds · GitHub",
+   "verdict": "OK"
+  },
   "https://github.com/Kiln-AI/Kiln": {
    "checked": "2026-09-24",
    "final": "https://github.com/Kiln-AI/Kiln",
@@ -2224,11 +2304,12 @@
    "verdict": "OK"
   },
   "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md",
    "host": "github.com",
-   "status": 429,
-   "verdict": "BLOCKED"
+   "status": 200,
+   "title": "AIGC-Interview-Book/大厂高频面试题（实时更新）/字节跳动高频面试题.md at main · WeThinkIn/AIGC-Interview-Book · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/%E9%80%9A%E7%94%A8AIGC%E7%AE%97%E6%B3%95%E5%B2%97%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
    "checked": "2026-09-26",
@@ -2239,11 +2320,12 @@
    "verdict": "OK"
   },
   "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/DeepSeek%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://github.com/WeThinkIn/AIGC-Interview-Book/blob/main/%E5%A4%A7%E5%8E%82%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98%EF%BC%88%E5%AE%9E%E6%97%B6%E6%9B%B4%E6%96%B0%EF%BC%89/DeepSeek%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E9%A2%98.md",
    "host": "github.com",
-   "status": 429,
-   "verdict": "BLOCKED"
+   "status": 200,
+   "title": "AIGC-Interview-Book/大厂高频面试题（实时更新）/DeepSeek高频面试题.md at main · WeThinkIn/AIGC-Interview-Book · GitHub",
+   "verdict": "OK"
   },
   "https://github.com/WenyuChiou/awesome-agentic-ai-zh": {
    "checked": "2026-09-24",
@@ -3173,6 +3255,55 @@
    "title": "ai-agent-handbook/labs/lab6_guardrails.py at main · funny8kids/ai-agent-handbook · GitHub",
    "verdict": "OK"
   },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/gptnano.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/gptnano.py",
+   "host": "github.com",
+   "status": 404,
+   "verdict": "DEAD"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_backward.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_backward.py",
+   "host": "github.com",
+   "status": 404,
+   "verdict": "DEAD"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_budget.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_budget.py",
+   "host": "github.com",
+   "status": 404,
+   "verdict": "DEAD"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_export.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_export.py",
+   "host": "github.com",
+   "status": 429,
+   "verdict": "BLOCKED"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_forward.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_forward.py",
+   "host": "github.com",
+   "status": 429,
+   "verdict": "BLOCKED"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_sample.py",
+   "host": "github.com",
+   "status": 404,
+   "verdict": "DEAD"
+  },
+  "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_train.py": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_train.py",
+   "host": "github.com",
+   "status": 404,
+   "verdict": "DEAD"
+  },
   "https://github.com/getsentry/XcodeBuildMCP": {
    "checked": "2026-09-24",
    "final": "https://github.com/getsentry/MobileBuildMCP",
@@ -3475,6 +3606,38 @@
    "host": "github.com",
    "status": 200,
    "title": "GitHub - jmiao24/Paper2Agent: Paper2Agent is a multi-agent AI system that automatically transforms r",
+   "verdict": "OK"
+  },
+  "https://github.com/karpathy/build-nanogpt": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/karpathy/build-nanogpt",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - karpathy/build-nanogpt: Video+code lecture on building nanoGPT from scratch · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/karpathy/llm.c": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/karpathy/llm.c",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - karpathy/llm.c: LLM training in simple, raw C/CUDA · GitHub",
+   "verdict": "OK"
+  },
+  "https://github.com/karpathy/minbpe": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/karpathy/minbpe",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - karpathy/minbpe: Minimal, clean code for the Byte Pair Encoding (BPE) algorithm commonly us",
+   "verdict": "OK"
+  },
+  "https://github.com/karpathy/nanoGPT": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/karpathy/nanoGPT",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - karpathy/nanoGPT: The simplest, fastest repository for training/finetuning medium-sized GPT",
    "verdict": "OK"
   },
   "https://github.com/kaushikb11/awesome-llm-agents": {
@@ -4381,6 +4544,14 @@
    "title": "",
    "verdict": "OK"
   },
+  "https://github.com/safetensors/safetensors": {
+   "checked": "2026-09-27",
+   "final": "https://github.com/safetensors/safetensors",
+   "host": "github.com",
+   "status": 200,
+   "title": "GitHub - safetensors/safetensors: Simple, safe way to store and distribute tensors · GitHub",
+   "verdict": "OK"
+  },
   "https://github.com/scadastrangelove/awesome-ai-security-tools": {
    "checked": "2026-09-24",
    "final": "https://github.com/scadastrangelove/awesome-ai-security-tools",
@@ -5062,7 +5233,7 @@
    "verdict": "OK"
   },
   "https://huggingface.co/datasets/cerebras/SlimPajama-627B": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://huggingface.co/datasets/cerebras/SlimPajama-627B",
    "host": "huggingface.co",
    "status": 401,
@@ -5180,6 +5351,14 @@
    "title": "大模型训练岗面经：从预训练到RLHF，面试官到底在问什么？（含多模态/RAG/Agent高频题）半年面了7家大模型相关岗 - 掘金",
    "verdict": "OK"
   },
+  "https://karpathy.github.io/2015/05/21/rnn-effectiveness/": {
+   "checked": "2026-09-27",
+   "final": "https://karpathy.github.io/2015/05/21/rnn-effectiveness/",
+   "host": "karpathy.github.io",
+   "status": 200,
+   "title": "The Unreasonable Effectiveness of Recurrent Neural Networks",
+   "verdict": "OK"
+  },
   "https://keda.sh/": {
    "checked": "2026-09-24",
    "final": "https://keda.sh/",
@@ -5277,7 +5456,7 @@
    "verdict": "OK"
   },
   "https://linux.do/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://linux.do/",
    "host": "linux.do",
    "status": 403,
@@ -5436,35 +5615,35 @@
    "verdict": "OK"
   },
   "https://openai.com/index/gpt-6-astra-next-generation-work/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://openai.com/index/gpt-6-astra-next-generation-work/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/gpt-6-astra/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://openai.com/index/gpt-6-astra/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-gpt-live-1-in-the-api/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://openai.com/index/introducing-gpt-live-1-in-the-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/index/introducing-the-agents-api/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://openai.com/index/introducing-the-agents-api/",
    "host": "openai.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://openai.com/news/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://openai.com/news/",
    "host": "openai.com",
    "status": 403,
@@ -5662,6 +5841,14 @@
    "title": "Durable Execution Solutions | Temporal",
    "verdict": "OK"
   },
+  "https://timvieira.github.io/blog/exp-normalize-trick/": {
+   "checked": "2026-09-27",
+   "final": "https://timvieira.github.io/blog/exp-normalize-trick/",
+   "host": "timvieira.github.io",
+   "status": 200,
+   "title": "Exp-Normalize Trick &mdash; Graduate Descent",
+   "verdict": "OK"
+  },
   "https://tinypng.com": {
    "checked": "2026-09-24",
    "final": "https://tinypng.com",
@@ -5711,7 +5898,7 @@
    "verdict": "OK"
   },
   "https://wiki.linuxfoundation.org/realtime/start": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://wiki.linuxfoundation.org/realtime/start",
    "host": "wiki.linuxfoundation.org",
    "status": 403,
@@ -5845,6 +6032,14 @@
    "title": "EtherCAT Technology Group | HOME",
    "verdict": "OK"
   },
+  "https://www.gutenberg.org/files/11/11-0.txt": {
+   "checked": "2026-09-27",
+   "final": "https://www.gutenberg.org/files/11/11-0.txt",
+   "host": "www.gutenberg.org",
+   "status": 200,
+   "title": "",
+   "verdict": "OK"
+  },
   "https://www.inngest.com/": {
    "checked": "2026-09-24",
    "final": "https://www.inngest.com/",
@@ -5862,14 +6057,14 @@
    "verdict": "OK"
   },
   "https://www.iso.org/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://www.iso.org/",
    "host": "www.iso.org",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.iso.org/standard/65457.html": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://www.iso.org/standard/65457.html",
    "host": "www.iso.org",
    "status": 403,
@@ -5980,14 +6175,14 @@
    "verdict": "OK"
   },
   "https://www.reddit.com/r/LocalLLaMA/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://www.reddit.com/r/LocalLLaMA/",
    "host": "www.reddit.com",
    "status": 403,
    "verdict": "BLOCKED"
   },
   "https://www.ruanyifeng.com/blog/": {
-   "checked": "2026-09-26",
+   "checked": "2026-09-27",
    "final": "https://www.ruanyifeng.com/blog/",
    "host": "www.ruanyifeng.com",
    "status": 403,

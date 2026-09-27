@@ -63,6 +63,7 @@ from check_mermaid_geometry import (COLUMN, Server, browser, headless_flags)  # 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 SPREAD_TOL = 16                 # px of disagreement between pages before the selector is suspect
+_WINDOW_NOTES = set()           # (asked, got) pairs already printed this run
 
 # ---------------------------------------------------------------- the copy's column (round 82)
 # Round 73 wrote down that a copy of a live page lays the article out at its full 768px cap, because
@@ -85,9 +86,21 @@ SPREAD_TOL = 16                 # px of disagreement between pages before the se
 #   * a leg that measures a COPY and asserts the 768 cap must ask a window where the cap can bind at
 #     all, and must say which window it asked. That window is COPY_VIEWPORT, and every downstream
 #     axis that lays a reader page out now renders at it.
-# The old excuse for not asking wider ("this sandbox's Edge clamps innerWidth at ~1250px") is gone:
-# the shell honours `--window-size` exactly, measured above and asserted per run in `run()`.
+# The old excuse for not asking wider ("this sandbox's Edge clamps innerWidth at ~1250px") is gone
+# for the shell: chrome-headless-shell honours `--window-size` to the pixel, measured above. But the
+# candidate list puts Edge first, so whenever Edge answers the sentinel *it* runs the ladder — and
+# round 101 measured what it does to the flag (`--headless=new`, each size twice):
+#     asked vw    Edge reported innerWidth    delta
+#     1024        994                         -30
+#     1280        1250                        -30
+#     1500        1470                        -30
+#     1600        1570                        -30
+# A deterministic 30px reserve, not a clamp at ~1250 — wide windows work on Edge too. What does not
+# hold is asserting the flag value as the viewport: that assertion measures which engine the suite
+# happened to pick, so `confirm_window` reads the page's own report and prints the reserve.
 COPY_VIEWPORT = 1500
+COPY_CAP_BINDS_AT = 1455          # the narrowest reported window at which a copy's <main> reaches 768
+WINDOW_CLAMP_SLACK = 60           # widest asked-vs-reported gap any engine used here produces (Edge: 30)
 
 # The ladder the copy leg walks: the two laptop windows, and the window where the cap binds. Asking
 # only the narrow ones is how this axis spent 20 rounds reporting a copy column it never re-checked
@@ -243,14 +256,83 @@ def shoot(srv, name, vw, height=1200):
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def confirm_window(asked, got, where, need=None):
+    """Pin a column reading to the window the page actually laid out, not to the flag we passed.
+
+    The ladder above was measured on chrome-headless-shell, which honours `--window-size` to the
+    pixel. Edge is first in the candidate list and hands back a window 30px narrower at every size
+    (round 101, table above), so a leg that asserts the flag value asserts which engine ran — while
+    the premise it is there to protect is about the window: the article column only reaches its cap
+    from `COPY_CAP_BINDS_AT` up. So this reads the page's own report, tolerates what engines here
+    really reserve, says the reserve out loud once, and refuses a reading from a window the caller's
+    premise cannot hold in.
+    """
+    assert got is not None, "%s: the page reported no window width at all (asked vw=%d)" % (where, asked)
+    if got != asked:
+        key = (asked, got)
+        if key not in _WINDOW_NOTES:
+            _WINDOW_NOTES.add(key)
+            print("  window: %s asked vw=%d, the page laid out %d (%+d) — the flag is not the "
+                  "viewport; every guard below reads the report" % (where, asked, got, got - asked))
+    assert asked - WINDOW_CLAMP_SLACK <= got <= asked + 5, \
+        "%s: asked for a vw=%d window, the page reported %d — more than the %dpx the engines here " \
+        "reserve, so this reading came from another viewport" % (where, asked, got, WINDOW_CLAMP_SLACK)
+    if need is not None:
+        assert got >= need, \
+            "%s: this reading needs a laid-out window of at least %dpx for its premise to hold " \
+            "(asked %d, reported %d)" % (where, need, asked, got)
+    return got
+
+
+# (asked, reported, premise, must-pass) — every branch of `confirm_window` gets its own arm,
+# including the two readings that used to be conflated: the shell's exact 1500 and Edge's 1470.
+WINDOW_ARMS = [(COPY_VIEWPORT, COPY_VIEWPORT, None, True),
+               (COPY_VIEWPORT, 1470, COPY_CAP_BINDS_AT, True),
+               (COPY_VIEWPORT, COPY_CAP_BINDS_AT, COPY_CAP_BINDS_AT, True),
+               (COPY_VIEWPORT, COPY_CAP_BINDS_AT - 1, COPY_CAP_BINDS_AT, False),
+               (COPY_VIEWPORT, COPY_VIEWPORT - WINDOW_CLAMP_SLACK, None, True),
+               (COPY_VIEWPORT, COPY_VIEWPORT - WINDOW_CLAMP_SLACK - 1, None, False),
+               (COPY_VIEWPORT, COPY_VIEWPORT + 6, None, False),
+               (COPY_VIEWPORT, 900, None, False),
+               (COPY_VIEWPORT, None, COPY_CAP_BINDS_AT, False)]
+
+
+def window_selftest():
+    """Drive `confirm_window` over planted engine reports, offline, no browser.
+
+    Round 101 replaced `reported vw == COPY_VIEWPORT` in two sister axes (check_svg_legibility's copy
+    leg, check_table_overflow) with this guard, because the machine's Edge lays out 1470px when asked
+    for 1500 and the old assert reddened on the engine rather than on the book. A loosened guard has
+    to be shown still able to bite, so each branch gets an arm: the exact reading (the shell), the
+    real reserve, the widest window that still binds the 768 cap, one pixel below that bar, the
+    slack's edge and one past it, a report wider than the flag, an unrelated viewport, and a page
+    that reported no window at all.
+    """
+    passed, reddened = [], []
+    for asked, got, need, want in WINDOW_ARMS:
+        try:
+            confirm_window(asked, got, "arm reported=%s need=%s" % (got, need), need)
+            ok, why = True, ""
+        except AssertionError as exc:
+            ok, why = False, str(exc)
+        assert ok == want, "window arm (asked %d, reported %s, need %s) %s: %s" % (
+            asked, got, need, "should have passed but reddened" if want else
+            "should have reddened but passed", why)
+        (passed if ok else reddened).append(got)
+    assert len(reddened) == sum(1 for a in WINDOW_ARMS if not a[3]), \
+        "vacuity: the red arms are %s, so the guard is not judging them" % reddened
+    print("window guard ok: %d of %d planted reports pass (the shell's exact %d and Edge's real %d "
+          "at an asked %d), and %d redden — including %s, i.e. the guard is not simply always green"
+          % (len(passed), len(WINDOW_ARMS), COPY_VIEWPORT, 1470, COPY_VIEWPORT,
+             len(reddened), reddened))
+
+
 def run(srv, name, vw, rid, timeout=70):
     proc = shoot(srv, name, vw)
     rep = srv.wait(rid, timeout, proc)
     Server.stop(proc)
     if rep and rep.get("viewport"):
-        got = rep["viewport"][0]
-        # headless reserves a scrollbar gutter; anything bigger means we measured another viewport
-        assert vw - 60 <= got <= vw + 5, "asked for vw=%d, browser reported %d" % (vw, got)
+        confirm_window(vw, rep["viewport"][0], "copy ladder")
     return rep
 
 
@@ -334,15 +416,18 @@ def hydrated_leg(urls):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3)
-    print("note: the engine this axis runs on honours --window-size exactly (round 82 measured the "
-          "copy ladder from 1024 to 1920), so every vw below is an asked-and-confirmed viewport.")
     ap.add_argument("--assume", type=int, default=COLUMN,
                     help="the column the Mermaid geometry axis assumes (check_mermaid_geometry.COLUMN)")
     ap.add_argument("--all-viewports", action="store_true")
     ap.add_argument("--no-hydrated", action="store_true",
                     help="skip the live-page leg (Playwright); the copy leg alone cannot see the "
                          "navigation panels that squeeze a reader's column")
+    ap.add_argument("--selftest", action="store_true",
+                    help="offline: drive the window guard over planted engine reports and stop")
     args = ap.parse_args()
+    if args.selftest:
+        window_selftest()
+        return 0
     viewports = VIEWPORTS + [1280, 2560] if args.all_viewports else VIEWPORTS
 
     modes = [("asis", False), ("wide", True)]
@@ -352,6 +437,7 @@ def main():
     rid = 0
     try:
         # ---- guards on our own ruler -------------------------------------------------
+        window_selftest()
         rid += 1
         name = "col-ctl-%d.html" % rid
         ctl_probe = probe_script(rid, srv.port, modes, min_paragraphs=4)

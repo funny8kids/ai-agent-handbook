@@ -249,8 +249,19 @@
 * [项目深挖与行为面真题](20-interview/behavioral-project.md)
 * [岗位分档与转岗真题](20-interview/career-tracks.md)
 
-## 📖 21 术语表
-* [术语表](21-glossary/README.md)
+## ✍️ 22 从零手写一个大模型
+* [22 从零手写一个大模型 · 本章导读](22-build-llm-from-scratch/README.md)
+* [本章达标线：一页一页能验算的验收表](22-build-llm-from-scratch/spec.md)
+* [字符分词：文本变成整数，再原样变回来](22-build-llm-from-scratch/build-01-tokenizer.md)
+* [前向：把形状链一路走到 logits](22-build-llm-from-scratch/build-02-forward.md)
+* [参数与算力账：这个模型值多少钱](22-build-llm-from-scratch/build-03-budget.md)
+* [交叉熵与反向：手写梯度对撞数值梯度](22-build-llm-from-scratch/build-04-backward.md)
+* [真训练：700 步、112.7 秒，和一条差点没过的线](22-build-llm-from-scratch/build-05-train.md)
+* [采样与出字：命中率 100% 的那一段，最不会说话](22-build-llm-from-scratch/build-06-sampling.md)
+* [导出与上线：48488 字节的权重，和它离真部署还差的五件事](22-build-llm-from-scratch/build-07-export.md)
+
+## 📖 23 术语表
+* [术语表](23-glossary/README.md)
 
 ## 🤝 99 关于
 * [贡献指南](99-about/contributing.md)

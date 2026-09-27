@@ -391,16 +391,16 @@ echo hi
     assert sum(1 for p in scan("t.md", both) if p.startswith("TBLORPHAN")) == 1, \
         "control: exempting display math also exempted the orphan run on the same page"
     # the shipped page that had the defect: clean now, and the grader demonstrably reads its rows
-    gl = os.path.join(DOCS, "21-glossary", "README.md")
+    gl = os.path.join(DOCS, "23-glossary", "README.md")
     if os.path.isfile(gl):
         with open(gl, "rb") as fh:
             gltext = fh.read().decode("utf-8")
         counts = []
-        assert not any(p.startswith("TBLARITY") for p in scan("21-glossary/README.md", gltext, counts)), \
+        assert not any(p.startswith("TBLARITY") for p in scan("23-glossary/README.md", gltext, counts)), \
             "the shipped glossary table still has an off-arity row: %s" % [p for p in
-                                                                           scan("21-glossary/README.md", gltext)
+                                                                           scan("23-glossary/README.md", gltext)
                                                                            if p.startswith("TBLARITY")]
-        assert not any(p.startswith("TBLORPHAN") for p in scan("21-glossary/README.md", gltext)), \
+        assert not any(p.startswith("TBLORPHAN") for p in scan("23-glossary/README.md", gltext)), \
             "the shipped glossary still carries a headerless pipe run the reader sees as text"
         assert counts and counts[0][1] >= 8 and counts[0][2] >= 100, \
             "vacuity: the glossary page graded %s tables/rows, so 'clean' is not coverage" % (counts,)
@@ -414,7 +414,7 @@ echo hi
                  and len(row_cells(gl_lines[i])) == len(row_cells(gl_lines[i + 1])))
         reglued = "\n".join(gl_lines[:k] + [gl_lines[k] + " || " + gl_lines[k + 1][1:]]
                             + gl_lines[k + 2:])
-        hits = [p for p in scan("21-glossary/README.md", reglued) if p.startswith("TBLARITY")]
+        hits = [p for p in scan("23-glossary/README.md", reglued) if p.startswith("TBLARITY")]
         assert len(hits) == 1, \
             "control: re-gluing the shipped row gave %d findings, expected exactly 1" % len(hits)
         # And the orphan class on the shipped artifact: strip one table's header + delimiter and
@@ -424,7 +424,7 @@ echo hi
                  and TABLE_DELIM.match(gl_lines[i + 1].strip())
                  and gl_lines[i + 2].startswith("| ") and gl_lines[i + 3].startswith("| "))
         beheaded = "\n".join(gl_lines[:h] + gl_lines[h + 2:])
-        hits = [p for p in scan("21-glossary/README.md", beheaded) if p.startswith("TBLORPHAN")]
+        hits = [p for p in scan("23-glossary/README.md", beheaded) if p.startswith("TBLORPHAN")]
         assert len(hits) == 1, \
             "control: deleting a shipped table header gave %d orphan findings, expected exactly 1" \
             % len(hits)

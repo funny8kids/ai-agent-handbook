@@ -2,7 +2,7 @@
 tags: [interview, advanced]
 type: index
 status: published
-updated: 2026-09-26
+updated: 2026-09-28
 ---
 
 # 20 面试真题 · 本章导读
@@ -152,6 +152,6 @@ flowchart TB
 
 - [学习路线](../00-index/learning-path.md)
 - [动手实验](../19-labs/README.md)
-- [术语表](../21-glossary/README.md)
+- [术语表](../23-glossary/README.md)
 - [评测与裁判模型真题](evaluation-judge.md)
 - [安全与红队真题](safety-redteam.md)

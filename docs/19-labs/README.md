@@ -2,7 +2,7 @@
 tags: [lab, hands-on]
 type: index
 status: published
-updated: 2026-09-24
+updated: 2026-09-28
 ---
 
 # 19 动手实验 · 本章导读
@@ -10,6 +10,8 @@ updated: 2026-09-24
 {% hint style="info" %}
 **一句话**：六个零依赖、零 API key 的实验，每个都用「分步演示 + 可点标签」把 ReAct、RAG、MCP、多智能体、评测、护栏逐步骤走一遍——不必读源码，也能看清每一步发生了什么。
 {% endhint %}
+
+## 三条硬规矩
 
 看十遍架构图，不如把循环一步步跟着走通。这一章的每个实验都遵守三条硬规矩：
 

@@ -78,7 +78,8 @@ except AttributeError:
     pass
 
 import check_widget_visibility_live as wl                      # noqa: E402
-from check_live_column import live_copy, COPY_VIEWPORT           # noqa: E402  <base>-rewritten page copy
+from check_live_column import (live_copy, COPY_VIEWPORT, COPY_CAP_BINDS_AT,        # noqa: E402
+                               confirm_window, window_selftest)                    # <base>-rewritten page copy
 from check_mermaid_geometry import Server                        # noqa: E402  localhost + browser runner
 
 COLUMN_LIVE = 768           # round 62's measurement of <main>; re-asserted every run
@@ -341,6 +342,9 @@ def account_selftest():
         args.update(kw)
         return account(quiet=True, **args)
 
+    # The window guard this axis's copy leg now leans on (round 101): the same arms as the owner's
+    # run, because a loosened equality check has to be shown still able to bite.
+    window_selftest()
     assert code() == 0, "a clean sweep must pass"
     assert code(spills=[{"page": "x.md"}]) == 1, "a spilling cell must fail"
     assert code(problems=["COLUMN x.md main=593"]) == 1, "a broken premise must fail"
@@ -448,15 +452,16 @@ def main():
             # The column this axis judges against is a max-width sitting beside two navigation
             # panels, so it only exists at a window wide enough for it: check_live_column measured
             # 593px for the same page at a 1280 window and 768px from 1440 up. Asking for the narrow
-            # one and asserting the wide number is how this axis went red on an engine swap.
-            assert rep.get("vw") == COPY_VIEWPORT, \
-                "asked for a vw=%d window, the copy reported %s — every column number below is then" \
-                " read off a different viewport" % (COPY_VIEWPORT, rep.get("vw"))
+            # one and asserting the wide number is how this axis went red on an engine swap — and so
+            # is asserting the flag value, because this machine's Edge lays out 1470px when asked for
+            # 1500 (round 101). The guard therefore reads the page's own reported window.
+            confirm_window(COPY_VIEWPORT, rep.get("vw"), "copy of %s" % rel,
+                           need=COPY_CAP_BINDS_AT)
             if rep.get("main") != COLUMN_LIVE:
                 # Reported rather than asserted: one page rendering at another column is a finding
                 # about that page, while aborting the run would hide every page after it.
                 problems.append("COLUMN %s measured <main>=%s at vw=%d, not the %dpx under test"
-                                % (rel, rep.get("main"), COPY_VIEWPORT, COLUMN_LIVE))
+                                % (rel, rep.get("main"), rep.get("vw"), COLUMN_LIVE))
             assert "clamp(" in rep.get("style", ""), \
                 "%s: cells no longer carry the clamp() min-width the axis documents: %r" % (rel, rep.get("style"))
             broken = [r for r in rep["rows"] if max(r["spillR"], r["spillL"]) > SPILL_TOL]
@@ -475,8 +480,9 @@ def main():
             spills += [dict(r, page=rel) for r in broken]
             floors += bust
             ctl = "" if args.no_control else " | control spills %dpx with breaking off" % check_control(rep, rel)
-            print("  %-52s main=%-4s cells=%-4d/%-4d tok=%-3d tables=%-2s worst-ink=%-4d spill=%d bust=%d%s"
-                  % (rel, rep.get("main"), rep["cells"], authored, toklen, len(rep["tables"]),
+            print("  %-52s vw=%-5s main=%-4s cells=%-4d/%-4d tok=%-3d tables=%-2s worst-ink=%-4d spill=%d bust=%d%s"
+                  % (rel, rep.get("vw"), rep.get("main"), rep["cells"], authored, toklen,
+                     len(rep["tables"]),
                      max(r["inkW"] for r in rep["rows"]), len(broken), len(bust), ctl))
             for r in sorted(broken, key=lambda x: -max(x["spillR"], x["spillL"]))[:5]:
                 print("      SPILL t%s cw=%s ink=%s R=%s L=%s %r"

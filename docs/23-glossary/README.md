@@ -2,7 +2,7 @@
 tags: [basics, resource]
 type: index
 status: published
-updated: 2026-09-25
+updated: 2026-09-28
 ---
 
 # 术语表
@@ -57,6 +57,19 @@ updated: 2026-09-25
 | 视觉投影器 | Vision Projector / Q-Former | 把视觉特征压成语言模型可读的若干个「伪 token」 |
 | 多维旋转位置编码 | M-RoPE | 把位置编码拆成分量，分别编码时间、行、列 |
 | 可验证奖励强化学习 | RLVR | 用程序能判对错的任务提供奖励信号的训练范式 |
+| 分词与词表 | Tokenizer / Vocabulary | 文本与整数序列之间那套可逆规则，以及它一共认得哪些符号 |
+| 交叉熵 | Cross-entropy | 预测分布与真实下一个 token 之间的差距，语言模型默认的损失 |
+| 未归一化分数 | Logits | softmax 之前的那串原始分数，模型「还没表态」的输出 |
+| 因果掩码 | Causal Mask | 训练时禁止任一位置看见自己右边的 token，好让自回归成立 |
+| 层归一化 | Layer Norm | 把每个位置的向量重新拉回统一尺度，深层才训得稳 |
+| 反向传播 | Backpropagation | 沿计算图把损失对每个参数的偏导逐项传回去的链式法则 |
+| 数值梯度检查 | Gradient Check | 拿扰动参数前后的差分当尺子，专门用来验收手写的反向 |
+| 困惑度 | Perplexity | 把损失取指数，读成「平均要在这几个候选里犹豫」 |
+| 学习率调度 | LR Schedule（warmup + cosine） | 每一步挪多大，以及这个「多大」怎么随步数变化 |
+| 温度采样 | Temperature | 把 logits 除以一个常数再抽样，调的是随机性而不是知识 |
+| 贪心解码 | Greedy Decoding | 每步只取概率最大那一项，重复与退化最容易在这里露出来 |
+| 键值缓存 | KV Cache | 解码时存下历史的 K/V 以免重算，长上下文显存的主项 |
+| 权重检查点 | Checkpoint | 权重连同配置一起落盘的那份文件，重载必须逐位一致 |
 
 ## 工具与协议
 
