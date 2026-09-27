@@ -900,30 +900,55 @@ def selftest():
 
 
 def head_control():
-    """The second反例 spec.md promises: run *this* judge over the tree as it stood at HEAD, where
-    chapter 22 is not published at all. It must come back red, not dead."""
+    """The second反例 spec.md promises: run *this* judge over the tree from before chapter 22 was
+    published at all. It must come back red, not dead.
+
+    Pinned by asking git which commit added this chapter and stepping back one, rather than by
+    reading HEAD: chapter 22 shipped in round 101, so HEAD's own tree now *has* the pages and
+    answers with a COVERAGE exit 2 (the RUN leg was not re-measured) instead of the SPEC red this
+    control exists to prove. "The chapter does not exist" is a tree that has to be looked up.
+    """
     utf8_out()
-    tmp = os.path.join(tempfile.gettempdir(), "r101-head-control")
-    if os.path.isdir(tmp):
-        shutil.rmtree(tmp, ignore_errors=True)
     def git(*a):
         return subprocess.run(["git"] + list(a), cwd=REPO, capture_output=True, text=True,
                               encoding="utf-8", errors="replace")
-    p = git("worktree", "add", "--detach", tmp, "HEAD")
+    added = git("log", "--format=%H", "--diff-filter=A", "--",
+                "docs/%s/%s" % (CHAPTER_DIR, SPEC_NAME))
+    commits = [c for c in (added.stdout or "").split() if c]
+    if len(commits) != 1:
+        print("反例树找不出来：%s 的新增提交 %d 条（%s）" % (SPEC_NAME, len(commits), commits))
+        return 2
+    base = (git("rev-parse", "%s^" % commits[0]).stdout or "").strip()
+    if not base:
+        print("反例树的父提交读不出：%s^" % commits[0][:9])
+        return 2
+    # The premise asserted rather than assumed: if that tree ever carries the chapter again, this
+    # control is no longer a counterexample and must say so instead of grading a published chapter.
+    listed = git("ls-tree", "--name-only", "%s:docs/%s" % (base, CHAPTER_DIR))
+    if listed.returncode == 0 and (listed.stdout or "").strip():
+        print("反例树 %s 里已经有本章文件，SPEC 红这条控制不再成立" % base[:9])
+        return 2
+    tmp = os.path.join(tempfile.gettempdir(), "r101-head-control")
+    if os.path.isdir(tmp):
+        shutil.rmtree(tmp, ignore_errors=True)
+    p = git("worktree", "add", "--detach", tmp, base)
     if p.returncode != 0:
         print("worktree add failed: %s" % (p.stderr or p.stdout)[-300:])
         return 2
     try:
         dst = os.path.join(tmp, "tools", "checks")
-        shutil.copy(os.path.abspath(__file__), os.path.join(dst, os.path.basename(__file__)))
+        # The judge travels with its own modules: importing flag_guard out of a pre-round-101 tree
+        # would end this as a Traceback, which is the ruler dying rather than the red being wanted.
+        for name in (os.path.basename(__file__), "flag_guard.py"):
+            shutil.copy(os.path.join(HERE, name), os.path.join(dst, name))
         q = subprocess.run([sys.executable, os.path.join(dst, os.path.basename(__file__)),
                             "--pages-only"], cwd=tmp, capture_output=True, text=True,
                            encoding="utf-8", errors="replace")
         out = norm(q.stdout or "")
-        print("HEAD control: exit=%d\n%s" % (q.returncode, out))
-        assert "Traceback" not in (q.stderr or ""), "判据在 HEAD 树上直接崩了，不是一次红判决"
-        assert q.returncode == 1, "HEAD 上一章未发布，判据必须整场红（exit 1），实得 %d" % q.returncode
-        assert "SPEC" in out, "HEAD 上的红没有落进 SPEC 桶"
+        print("pre-chapter control (%s): exit=%d\n%s" % (base[:9], q.returncode, out))
+        assert "Traceback" not in (q.stderr or ""), "判据在缺章树上直接崩了，不是一次红判决"
+        assert q.returncode == 1, "缺章树上本章未发布，判据必须整场红（exit 1），实得 %d" % q.returncode
+        assert "SPEC" in out, "缺章树上的红没有落进 SPEC 桶"
         return 0
     finally:
         r = git("worktree", "remove", "--force", tmp)
