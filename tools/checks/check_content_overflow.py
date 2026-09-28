@@ -229,6 +229,59 @@ def whole_line_inline():
     return rows
 
 
+INDENT = re.compile(r"^[ \t]+\S")
+PAIR = re.compile(r"\$\$(.+?)\$\$")
+BULLET = re.compile(r"^[ \t]*[-*+] ")
+
+
+def continuation_math_lines(lines):
+    """Line numbers where an inline `$$…$$` sits on an indented continuation line.
+
+    This is the one inline placement the platform has never been measured on. Census this round,
+    over the whole corpus with fences excluded: 155 list-item lines and 302 paragraph lines carry an
+    inline pair (both served as `katex` spans, per the live split leg), and exactly ONE indented
+    continuation did -- a line this round's own fix produced and then removed. So the rule is not
+    "that form is wrong"; it is "nothing here has ever proved what the reader gets", and round 102
+    learned what that costs when the answer was `katex=0`.
+
+    A list item's own line stays silent even when it is indented (a nested `- ` item is one of the
+    155 precedented forms); only a line that *hangs* under something else is unmeasured. Fences are
+    excluded by CommonMark closure (a run of backticks closes only if it is at least as long as the
+    one that opened it), because the book's own examples quote markup at the reader.
+    """
+    hits, open_run = [], 0
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            run = len(stripped) - len(stripped.lstrip("`"))
+            if open_run:
+                if run >= open_run:
+                    open_run = 0
+            else:
+                open_run = run
+            continue
+        if open_run or BULLET.match(line) or not (INDENT.match(line) and PAIR.search(line)):
+            continue
+        hits.append(i)
+    return hits
+
+
+def continuation_math():
+    rows = []
+    for dirpath, _, filenames in os.walk(DOCS):
+        rel_dir = os.path.relpath(dirpath, DOCS).replace("\\", "/")
+        if rel_dir.startswith("14-templates"):
+            continue
+        for fn in sorted(filenames):
+            if not fn.endswith(".md") or fn == "SUMMARY.md":
+                continue
+            rel = os.path.relpath(os.path.join(dirpath, fn), DOCS).replace("\\", "/")
+            for ln in continuation_math_lines(io.open(os.path.join(dirpath, fn), encoding="utf-8")
+                                              .read().splitlines()):
+                rows.append((rel, ln))
+    return rows
+
+
 def locate(page, src):
     """Best-effort `file:line` for an authored source, so a width hit is reachable by eye."""
     text = io.open(os.path.join(DOCS, page), encoding="utf-8").read()
@@ -734,6 +787,7 @@ def main():
               "whole-line-but-inline form=%d"
               % (len(inline_items), len({s for _, s in inline_items}),
                  len({p for p, _ in inline_items}), len(whole_line_inline())))
+    control_continuation()
 
     dummy = os.path.join(tempfile.gettempdir(), "overflow-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads KaTeX, not Mermaid\n")
@@ -876,6 +930,13 @@ def main():
               "measures it). Write the fence form if display was the intent:" % len(wl_rows))
         for p, ln, s in wl_rows:
             print("    FORM-WHOLELINE %s:%d :: %s" % (p, ln, s.replace("\n", " ")[:64]))
+    cont_rows = continuation_math()
+    print("unmeasured-placement rows=%d (indented continuation line carrying an inline "
+          "$$…$$: never served, never measured)" % len(cont_rows))
+    for p, ln in cont_rows:
+        print("  FORM-CONT %s:%d :: put the formula on the line that carries it (the list item's own "
+              "line, or the paragraph's) or into a fenced block — those are the only forms the live "
+              "split leg has evidence for" % (p, ln))
     # Print once, not per column: a stray option character is in the authored source, so it is
     # wrong at every width and a second report of it would only double the noise.
     print("\n  render-errors=%d  inline-errors=%d  stray-markup=%d"
@@ -883,7 +944,35 @@ def main():
     for p, s, g in stray:
         print("  STRAY-MARKUP %s :: paints %r as text :: %s"
               % (p, g, s.replace("\n", " ")[:70]))
-    return 1 if hits or errors or stray or inline_err else 0
+    return 1 if hits or errors or stray or inline_err or cont_rows else 0
+
+
+def control_continuation():
+    """Both directions, because a rule that cannot fire guards nothing and one that misfires reds
+    the corpus: the unmeasured placement must be caught on each of the two things it can hang under,
+    and the precedented forms beside it must stay silent."""
+    phantom_under_bullet = ["- 要点：先写奖励比：$$r(x,y)$$，代入即得",
+                            "  $$\\mathcal{L}=-\\log\\sigma(w-l)$$，其中 `Δ` 是差。"]
+    phantom_under_paragraph = ["正文里先写 $$r(x,y)$$。",
+                               "  接着 $$\\mathcal{L}=-(w-l)$$，其中 `Δ` 是差。"]
+    bullet_inline = ["- 要点：先写奖励比：$$r(x,y)$$，代入即得 $$\\mathcal{L}=-(w-l)$$，其中 `Δ` 是差。"]
+    nested_bullet = ["- 外层：", "  - 内层把公式写在自己的行上：$$\\mathcal{L}=-(w-l)$$。"]
+    paragraph = ["正文里写 $$x=y$$ 是常态。", "", "- 另一条要点。"]
+    fenced = ["- 要点：下面这段是给人读的写法示例：", "  ```markdown", "  - 引用里的例子 $$a$$",
+              "    $$b$$", "  ```"]
+    for name, lines in (("under a bullet", phantom_under_bullet),
+                        ("under a paragraph", phantom_under_paragraph)):
+        got = continuation_math_lines(lines)
+        assert len(got) == 1 and got[0] == 2, \
+            "the phantom continuation %s was not caught: %s" % (name, got)
+    for name, lines in (("list-item line", bullet_inline), ("nested list item", nested_bullet),
+                        ("paragraph", paragraph), ("fenced example", fenced)):
+        assert not continuation_math_lines(lines), \
+            "the %s form flags as an unmeasured placement: %s" % (name, lines)
+    print("continuation-placement control ok: the indented-continuation phantom is caught under both "
+          "a bullet and a paragraph, while the 155-line precedent (math on the list item's own line, "
+          "nested items included), the 302-line paragraph precedent and a fenced example of the same "
+          "markup stay silent")
 
 
 if __name__ == "__main__":
