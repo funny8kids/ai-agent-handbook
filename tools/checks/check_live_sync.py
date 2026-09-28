@@ -54,6 +54,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from html import unescape
 
@@ -68,6 +69,17 @@ LOCAL_CHANGELOG = os.path.join(DOCS, "00-index", "changelog.md")
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 ROUND = re.compile(r"第 (\d+) 次")
+# Round 106: how many times one leg may ask for its document before the run gives up on judging.
+# Measured, not guessed. At 13:16 UTC this leg took a single HTTP 500 from Cloudflare on the 29 MB
+# changelog PAGE and the whole reader-visible run printed "no verdict" (exit 2) — the correct refusal,
+# but bought with one request. Four minutes later the same URL answered every read as a 200 carrying a
+# document of the same 28,279,274 characters (newest round 105, closing `</html>` present): of 6 serial
+# probes between 13:19 and 13:23, 3 gzip reads were complete 3/3 while 3 identity reads arrived cut
+# twice (14,167,941 and 18,786,034 chars) — so a refusal is a short window, and one attempt spends the
+# round's closing check on it.
+LEG_ATTEMPTS = 3
+LEG_BACKOFF = 20  # seconds, multiplied by the attempt number: 20 s then 40 s spans the measured window
+
 
 
 def tail_needle():
@@ -142,6 +154,39 @@ def live_rounds(url, tail=None, transport=None):
     # differ by ~15x and only the pair says which one arrived.
     enc = ((headers.get("Content-Encoding") if headers else "") or "identity").lower()
     return ([int(r) for r in ROUND.findall(html)], len(html), len(body), len(raw), enc)
+
+
+class LegBlind(Exception):
+    """Every attempt at one leg's document failed. Carries the reasons, in order."""
+
+    def __init__(self, attempts, reasons):
+        Exception.__init__(self, "%d attempt(s), all refused — %s" % (attempts, "; ".join(reasons)))
+        self.attempts = attempts
+        self.reasons = reasons
+
+
+def read_leg(url, tail=None, attempts=LEG_ATTEMPTS, backoff=LEG_BACKOFF, sleep=time.sleep,
+             transport=None):
+    """`live_rounds`, asked up to `attempts` times, returning the attempt that arrived on.
+
+    Round 106 found the asymmetry: the prose judge had been given 6 attempts against this very page's
+    short reads (round 99), while the leg that closes a round's reader-visible verdict asked once. One
+    Cloudflare 500 — measured at 13:16 above, answered 200 four minutes later — therefore turned the
+    round's closing check into "no verdict" with the site actually current. Retrying buys coverage,
+    and it costs nothing the refusal did not already cost: a leg that still cannot be read raises
+    `LegBlind`, so it lands in `blind` and the run still exits 2 instead of reading the silence as
+    sync. The counter comes back with the rounds because a leg that needs 3 tries every round is a
+    different fact from one that needed 1, and printing it is the only way to see that.
+    """
+    reasons = []
+    for attempt in range(1, attempts + 1):
+        try:
+            return live_rounds(url, tail, transport=transport) + (attempt,)
+        except Exception as exc:  # noqa: BLE001 - any refusal is the bucket's, not a traceback
+            reasons.append("%s: %s" % (exc.__class__.__name__, str(exc)[:90]))
+            if attempt < attempts:
+                sleep(backoff * attempt)
+    raise LegBlind(len(reasons), reasons)
 
 
 def local_rounds():
@@ -635,6 +680,103 @@ def controls():
                                                               str(exc)[:60]))
         for e in wire.selftest():
             errs.append(e)
+        # Y: the leg's retry window (round 106). Two shapes are asserted here because both failed
+        # before this round: a leg that asks once spends the round's closing verdict on one transient
+        # refusal, and a retry nobody calls is a story. The first gate is the source, so the arms
+        # below cannot be proving a helper the run never reaches.
+        with open(os.path.abspath(__file__), encoding="utf-8") as fh:
+            ysrc = fh.read()
+        yanchor = re.search(r"^def ma" + r"in\(\):", ysrc, re.M)
+        ytail = ysrc[yanchor.start():] if yanchor else ""
+        if not yanchor:
+            errs.append("control Y: cannot find main() — the retry scan is blind")
+        if "read_leg(url, " not in ytail:
+            errs.append("control Y: the leg loop must read through read_leg(); a retry helper that "
+                        "main() never calls leaves the one-attempt blindness in place")
+        if "live_rounds(url" in ytail:
+            errs.append("control Y: main() still calls live_rounds directly for a leg — that call "
+                        "site bypasses the retry window, so the round can still end 「no verdict」 "
+                        "on a refusal that answers 200 a minute later")
+        if "attempt %d of %d" not in ytail:
+            errs.append("control Y: the leg line must print which attempt arrived — a leg that needs "
+                        "the whole window every round is a different fact from one that needs none, "
+                        "and only the printed count distinguishes them")
+        leg_doc = ("第 7 次：读者可见的中文句子。\n"
+                   "- 迁移 GitBook 配置，内容目录设为 `docs/`\n").encode("utf-8")
+
+        def scripted(*outcomes):
+            box = list(outcomes)
+
+            def transport(_url):
+                out = box.pop(0)
+                if isinstance(out, Exception):
+                    raise out
+                return out
+            return transport
+
+        slept = []
+        # The floor is asserted as a number, not as `slept == [LEG_BACKOFF × 1]`: that comparison is
+        # satisfied by a backoff of 0, which would make three attempts one request taken three times in
+        # the same second. Round 106 measured the refusal resolving within ~4 minutes, so the window
+        # has to be walked, not re-hit.
+        if LEG_BACKOFF < 10:
+            errs.append("control Y: the leg's backoff floor is %d s — attempts must be seconds apart, "
+                        "or the retry reads the same CDN moment instead of a later one" % LEG_BACKOFF)
+
+        # Y1: the measured case — refused once, answered on the retry. Must produce a verdict.
+        try:
+            got = read_leg("https://example.invalid/changelog.md", tail="内容目录设为",
+                           transport=scripted(ValueError("short read (no closing </html>)"),
+                                              ({"Content-Encoding": "identity"}, leg_doc)),
+                           sleep=slept.append)
+        except Exception as exc:  # noqa: BLE001 - a leg that cannot recover is a finding, not a crash
+            errs.append("control Y: a leg refused once then answered must still return its rounds, "
+                        "raised %s: %s" % (exc.__class__.__name__, str(exc)[:70]))
+            got = None
+        if got is not None:
+            if got[0] != [7] or got[5] != 2:
+                errs.append("control Y: a leg refused once then answered must return rounds [7] on "
+                            "attempt 2, got %r at %r" % (got[0], got[5]))
+            if slept != [LEG_BACKOFF]:
+                errs.append("control Y: the retry must wait between attempts (backoff × attempt), "
+                            "recorded %r — retrying without a gap re-reads the same CDN moment"
+                            % (slept,))
+        # Y2: the differential. The identical script, one attempt, must be blind — otherwise Y1 only
+        # proves the document parses and the fix is not the thing that produced the verdict.
+        try:
+            read_leg("https://example.invalid/changelog.md", tail="内容目录设为", attempts=1,
+                     transport=scripted(ValueError("short read (no closing </html>)"),
+                                        ({"Content-Encoding": "identity"}, leg_doc)),
+                     sleep=slept.append)
+            errs.append("control Y: with a single attempt the same refusal produced a verdict, so "
+                        "Y1 did not measure the retry")
+        except LegBlind as exc:
+            if exc.attempts != 1:
+                errs.append("control Y: the one-attempt blind must report 1, got %d" % exc.attempts)
+        # Y3: a refusal that persists must stay a refusal. Retrying for coverage is only honest while
+        # 「never arrived」 still ends the run with no verdict instead of a green.
+        for what, outcomes in (
+                ("every attempt reset", [urllib.error.URLError("reset")] * LEG_ATTEMPTS),
+                # One LIST ITEM per attempt: `({...}, body) * LEG_ATTEMPTS` repeats the two elements
+                # rather than the pair, so the scripted transport hands back a bare dict, live_rounds
+                # fails to unpack it, and the arm refuses for the wrong reason — the short-read gate
+                # then looks guarded while nothing reaches it (round 106, found by the mutation sweep).
+                ("every attempt a cut body",
+                 [({"Content-Encoding": "identity"}, leg_doc[:20])] * LEG_ATTEMPTS)):
+
+            try:
+                out = read_leg("https://example.invalid/changelog.md", tail="内容目录设为",
+                               transport=scripted(*outcomes), sleep=slept.append)
+                errs.append("control Y: %s produced rounds %r — half a document, or none at all, "
+                            "must never be judged" % (what, out[0]))
+            except LegBlind as exc:
+                if exc.attempts != LEG_ATTEMPTS:
+                    errs.append("control Y: %s must exhaust all %d attempts, reported %d"
+                                % (what, LEG_ATTEMPTS, exc.attempts))
+                if what == "every attempt reset" and "URLError" not in str(exc):
+                    errs.append("control Y: the printed refusal must keep the reason's class — "
+                                "「unreadable」 alone cannot tell a short read from a DNS failure")
+
         local = open(LOCAL_CHANGELOG, encoding="utf-8").read()
         if not tail or local.find(tail) < 0.9 * len(local):
             errs.append("control S: tail needle %r first appears at %.0f%% of the changelog — a "
@@ -777,19 +919,22 @@ def main():
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
-                live, chars, size, on_wire, enc = live_rounds(url, tail_needle())
-            except Exception as exc:  # noqa: BLE001
+                live, chars, size, on_wire, enc, tries = read_leg(url, tail_needle())
+            except LegBlind as exc:
                 # The reason is the finding: "ValueError" alone cannot distinguish this round's
-                # short-read guard from a DNS failure, and the two want opposite follow-ups.
-                print("live changelog (%s) unreadable (%s: %s) — no verdict from this leg, this is "
-                      "not a site failure" % (name, exc.__class__.__name__, exc))
+                # short-read guard from a DNS failure, and the two want opposite follow-ups. The
+                # attempt count travels with it, so a leg that is merely noisy reads differently from
+                # one that refused every try in the window (round 106).
+                print("live changelog (%s) unreadable (%s) — no verdict from this leg, this is "
+                      "not a site failure" % (name, exc))
                 blind.append(name)
                 continue
             tops[name] = max(live) if live else 0
             missing = sorted({r for r in local if r > tops[name]})
             print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d bytes on a %d-byte wire "
-                  "%s, %d rounds)%s"
-                  % (name, tops[name], chars, size, size, on_wire, enc, len(live),
+                  "%s, %d rounds, attempt %d of %d)%s"
+                  % (name, tops[name], chars, size, size, on_wire, enc, len(live), tries,
+                     LEG_ATTEMPTS,
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
         try:
             bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)
