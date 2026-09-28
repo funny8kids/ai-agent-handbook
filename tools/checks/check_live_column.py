@@ -98,6 +98,34 @@ _WINDOW_NOTES = set()           # (asked, got) pairs already printed this run
 # A deterministic 30px reserve, not a clamp at ~1250 — wide windows work on Edge too. What does not
 # hold is asserting the flag value as the viewport: that assertion measures which engine the suite
 # happened to pick, so `confirm_window` reads the page's own report and prints the reserve.
+#
+# Round 104 found the half of that reasoning that was still wrong. Tolerating the reserve is not the
+# same as neutralising it: the ladder keyed every copy reading by the width it ASKED, so on Edge an
+# asked 1024 became a reading of a 994px page and an asked 1280 a 1250px page. Both sit under
+# GitBook's own sidebar breakpoints, and the navigation that spends 400px/672px at 1024/1280 partly
+# unmounts below them, so <main> falls through to its 768 cap. Those were the readings this round
+# started from (copy leg keyed by ASKED width, live leg keyed by the reader's window):
+#     asked vw    copy: window / container / main / mounted sheets    live: window / container / main / sheets
+#     1024        994  / 979   / 768 / 0                              1024 / 1024  / 624 / 1 (288)
+#     1280        1250 / 1235  / 768 / 1 (288)                        1280 / 1280  / 608 / 2 (288+256)
+#     1500        1470 / 1455  / 768 / 2 (288+256)                    1440 / 1440  / 768 / 2 (288+256)
+# `<main>` is `flex-basis: 0; max-width: 768px`, and its flex line - not its own parent, which is
+# `display: contents` and therefore 0px wide - carries `max-width: 1440px`. So the column is the LINE
+# minus what the line's other children spend, capped, and that is what the axis now measures and
+# prints on both legs (`flexLine`/`lineWidth` in CENSUS_JS). After the fix, same page, both legs:
+#     window      copy: line / main / spent by chrome   live: line / main / spent by chrome
+#     1024        1009 / 609 / 400                      1024 / 624 / 400
+#     1280        1265 / 593 / 672                      1280 / 608 / 672
+#     1500        1440 / 768 / 672 (cap binds)          1440 / 768 / 672 (cap binds)
+# The chrome spends the identical 400px/672px on both sides at a matched window, and the only
+# difference left is the 15px the copy's own classic scrollbar takes out of the line (1009 = 1024-15,
+# 1265 = 1280-15; at 1500 both lines are the same 1440 because the cap binds before the gutter does).
+# That is "a copy is the live page minus a scrollbar" restated as a mechanism - round 82 measured it
+# correctly on chrome-headless-shell, which honours the flag, and it broke the moment round 101 let
+# Edge answer the sentinel. The fix is to ask for `vw + reserve` so the page lays out at the reader's
+# width, and to refuse a reading whose reported window is not that width - never to compare across a
+# breakpoint. And `window - column` must not be called the navigation cost: at vw=1920 that would
+# blame 1152px on the chrome when the line it lives in only ever had 672px to spend.
 COPY_VIEWPORT = 1500
 COPY_CAP_BINDS_AT = 1455          # the narrowest reported window at which a copy's <main> reaches 768
 WINDOW_CLAMP_SLACK = 60           # widest asked-vs-reported gap any engine used here produces (Edge: 30)
@@ -108,11 +136,12 @@ WINDOW_CLAMP_SLACK = 60           # widest asked-vs-reported gap any engine used
 VIEWPORTS = [1024, 1280, COPY_VIEWPORT]
 
 WIDE_NEEDS = 1152 + 520         # a window this wide is needed before max-w-6xl could bind here
-# The breakpoints a reader actually arrives at, read off the LIVE page. Round 82 keeps that split for a
-# different reason than round 73 gave: a copy does mount the panels (ladder above), but it is laid out
-# by a CLI shell that reserves a 15px classic-scrollbar gutter, while this leg runs in Playwright, which
-# sets the viewport exactly and reserves nothing. So the live leg answers "what does the reader get" and
-# the copy leg answers "what does a leg that renders a copy get" — only the first is a content bar.
+# The breakpoints a reader actually arrives at, read off the LIVE page, and they must include every
+# width the copy ladder lays out: a copy is only evidence about a page once a live reading exists at
+# the SAME window (see the round-104 table above - the two legs agree to the 15px gutter once they
+# meet, and disagree by 160px when one of them has quietly fallen a breakpoint band lower). 1500 is
+# in the list for exactly that reason: it is the window every copy-based downstream leg renders at,
+# so it is the one width the "is the copy faithful?" verdict has to be argued at on the live page.
 # `is_mobile` is the phone case, which the CLI flag set cannot ask for at all.
 #
 # And a copy must not be screenshotted to "eyeball the premise": round 82 shot one and got GitBook's
@@ -120,7 +149,65 @@ WIDE_NEEDS = 1152 + 520         # a window this wide is needed before max-w-6xl 
 # throws once it hydrates on a copied URL. The copy's numbers survive that because the probe runs
 # earlier, on the server-rendered DOM (which is also why `check_svg_legibility` beacons a `fatal`).
 # Eyeball evidence for a reader's column has to come from the live page.
-HYDRATED_AT = [(1024, False), (1280, False), (1440, False), (1920, False), (390, True)]
+HYDRATED_AT = [(1024, False), (1280, False), (1440, False), (COPY_VIEWPORT, False), (1920, False),
+               (390, True)]
+
+
+# The same DOM census runs on both legs, so a copy's column and the live column are comparable down
+# to the element that owns the difference. Authored without backslashes: this block is pasted into a
+# %-formatted template and into the Playwright probe, and a `\s` would have to be escaped differently
+# in each.
+CENSUS_JS = """
+  function panels() {
+    var out = [], all = document.querySelectorAll('aside,nav');
+    for (var i = 0; i < all.length; i++) {
+      var e = all[i], x = w(e);
+      if (x > 40) out.push(e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]
+                            + '=' + x + '/' + getComputedStyle(e).position);
+    }
+    return out;
+  }
+  function chain(m) {
+    var out = [], n = m, depth = 0;
+    while (n && n.tagName && depth < 8) {
+      var cs = getComputedStyle(n);
+      out.push(n.tagName.toLowerCase() + '.' + String(n.className).split(' ')[0]
+               + ' w=' + w(n) + ' max=' + cs.maxWidth + ' pos=' + cs.position
+               + ' basis=' + cs.flexBasis);
+      n = n.parentElement; depth++;
+    }
+    return out;
+  }
+  // `<main>` is basis-0 with a 768 cap, so the reader's column is the line minus what its siblings
+  // spend. `siblings` names the DOM-level neighbours; `flexLine` finds the box whose width actually
+  // gets divided up, which is the part `vw - column` gets wrong.
+  // The flex line that owns <main>. It is NOT main's own parent: the wrappers between them are
+  // `display: contents`, which puts a child into the grandparent's layout and leaves the wrapper
+  // itself 0px wide. And that line carries `max-width: 1440px`, so at vw=1920 the reader's window
+  // is not what gets divided up - `vw - column` would blame 1152px on the navigation when the line
+  // only ever had 672px to spend.
+  function flexLine(m) {
+    var n = m ? m.parentElement : null;
+    while (n && n.tagName !== 'BODY') {
+      if (getComputedStyle(n).display.indexOf('flex') >= 0) return n;
+      n = n.parentElement;
+    }
+    return null;
+  }
+  function lineWidth(m) { return w(flexLine(m)); }
+  function siblings(m) {
+    var p = m.parentElement, out = [];
+    if (!p) return out;
+    var kids = p.children;
+    for (var i = 0; i < kids.length; i++) {
+      var e = kids[i], cs = getComputedStyle(e);
+      out.push((e === m ? '[main] ' : '') + e.tagName.toLowerCase() + '.'
+               + String(e.className).split(' ')[0] + ' w=' + w(e) + ' pos=' + cs.position
+               + ' disp=' + cs.display + ' basis=' + cs.flexBasis);
+    }
+    return out;
+  }
+"""
 
 
 def probe_script(rid, port, modes, min_paragraphs=4):
@@ -131,6 +218,7 @@ def probe_script(rid, port, modes, min_paragraphs=4):
   var RID = %r, API = 'http://127.0.0.1:%d', MODES = %s, MINP = %d;
   function w(el) { return el ? Math.round(el.getBoundingClientRect().width) : null; }
   function root() { return document.querySelector('main'); }
+%s
   function measure() {
     var m = root();
     if (!m) return null;
@@ -142,7 +230,8 @@ def probe_script(rid, port, modes, min_paragraphs=4):
     [].forEach.call(document.querySelectorAll('[data-ctl]'), function (e) {
       ctl[e.getAttribute('data-ctl')] = w(e);
     });
-    return {para: widest, main: w(m), paragraphs: ps.length, ctl: ctl,
+    return {para: widest, main: w(m), line: lineWidth(m), paragraphs: ps.length, ctl: ctl,
+            panels: panels(), chain: chain(m), siblings: siblings(m),
             h1: w(m.querySelector('h1')),
             caps: String(m.className).replace(/\\s+/g, ' ').slice(0, 220)};
   }
@@ -189,7 +278,7 @@ def probe_script(rid, port, modes, min_paragraphs=4):
   else poll();
 })();
 </script>
-""" % (rid, port, json.dumps(modes), min_paragraphs)
+""" % (rid, port, json.dumps(modes), min_paragraphs, CENSUS_JS)
 
 
 def fixture(inject):
@@ -336,17 +425,154 @@ def run(srv, name, vw, rid, timeout=70):
     return rep
 
 
+def engine_reserve(rep, asked):
+    """How many pixels this machine's browser takes off `--window-size` before the page lays out.
+
+    Round 82 established the copy/live relation as "the live page minus a 15px classic-scrollbar
+    gutter", and the ladder keyed its readings by the width it ASKED for. Both were true only while
+    the engine handed back what it was asked: Edge here reserves 30px, so an asked 1024 lays out at
+    994 and an asked 1280 at 1250 - and 994/1250 sit BELOW GitBook's own 1024/1280 sidebar
+    breakpoints, so the copy mounts one navigation sheet fewer than the reader does, <main> falls
+    through to its 768 cap, and the axis spent the round reporting a 144-160px "copy vs live" gap
+    that was really the engine crossing a breakpoint under the ruler's feet. Measuring the reserve
+    once, on the control page, lets every ladder run ask for a window the page then reports as the
+    reader's width - so copy and live are compared at the same CSS width, which is the only
+    comparison the gutter premise is about.
+    """
+    assert rep and rep.get("viewport"), "no window reported, so no reserve can be measured"
+    reserve = asked - rep["viewport"][0]
+    assert 0 <= reserve <= WINDOW_CLAMP_SLACK, \
+        "the engine reported a window %dpx off the asked %d - outside the %dpx the engines here " \
+        "produce, so this run's layout width is unknown" % (rep["viewport"][0], asked,
+                                                            WINDOW_CLAMP_SLACK)
+    return reserve
+
+
+# The gutter a saved copy loses to its classic scrollbar, plus the px the engines here vary by. Both
+# legs measured on the shell: 609 vs 624 at 1024, 593 vs 608 at 1280, 753 vs 768 at 1440.
+GUTTER = 15
+ENGINE_VARIANCE = 9
+
+
+# (asked reader width, window the page reported, may be keyed?) — the second arm is the whole round:
+# an asked 1024 that laid out 994 used to be filed as a 1024 reading, and those 30px are exactly the
+# distance to GitBook's sidebar breakpoint.
+LADDER_ARMS = [(1024, 1024, True), (1024, 994, False), (1280, 1280, True), (1024, 1026, False),
+               (1500, 1470, False), (1024, None, False)]
+
+
+def ladder_key(vw, reported):
+    """File a copy reading under the width the PAGE laid out, and only when that is the reader's.
+
+    A copy measured at 994 answers a question about a 994px reader. Keying it as 1024 is what made
+    this axis compare a 994px page with a 1024px reader and call the 144px difference a site defect.
+    The tolerance is 1px: two pixels cannot cross a breakpoint, while anything larger is an engine
+    whose reserve moved between the control run and this one - a reading of unknown width is a
+    coverage gap, not a datum.
+    """
+    if reported is None or abs(reported - vw) > 1:
+        return None
+    return vw
+
+
+def column_fidelity(copy, live):
+    """One matched-width pair: is this copy the live page minus its scrollbar?
+
+    Called only at a width both legs laid out (see `paired_widths`), which is what makes the old
+    ±24 band a real test rather than a comparison across a breakpoint.
+    """
+    delta = live - copy
+    if 0 <= delta <= GUTTER + ENGINE_VARIANCE:
+        return None
+    if delta < 0:
+        return ("COPY-NOT-LIVE: at the same window the copy lays <main> out %dpx WIDER than the "
+                "live page (copy=%d live=%d) - the copy has room the reader does not, so every "
+                "copy-based leg under-reads the squeeze" % (-delta, copy, live))
+    return ("COPY-NOT-LIVE: at the same window the copy is %dpx NARROWER than the live page "
+            "(copy=%d live=%d), past the %dpx gutter and the %dpx the engines here vary - the two "
+            "are not the same layout" % (-delta, copy, live, GUTTER, ENGINE_VARIANCE))
+
+
+def paired_widths(copy_rows, live_rows):
+    """The widths both legs laid out - the only ones a copy may be compared at.
+
+    Derived from the two readings rather than from a constant, so an engine with a different reserve
+    narrows the comparison instead of silently widening it.
+    """
+    return sorted(set(copy_rows) & set(live_rows))
+
+
+# (copy, live, expected verdict) at one matched window.
+FIDELITY_ARMS = [(609, 624, "ok"), (753, 768, "ok"), (624, 624, "ok"), (600, 624, "ok"),
+                 (599, 624, "COPY-NOT-LIVE"), (768, 624, "COPY-NOT-LIVE"),
+                 (700, 624, "COPY-NOT-LIVE"), (624, 608, "COPY-NOT-LIVE")]
+
+
+def fidelity_selftest():
+    silent, red = [], []
+    for copy, live, want in FIDELITY_ARMS:
+        got = column_fidelity(copy, live)
+        verdict = "ok" if got is None else got.split(":")[0]
+        assert verdict == want, "fidelity arm copy=%d live=%d judged %s, expected %s (%s)" % (
+            copy, live, verdict, want, got)
+        (red if got else silent).append((copy, live))
+    assert silent and len(red) == sum(1 for a in FIDELITY_ARMS if a[2] != "ok"), \
+        "vacuity: the fidelity guard reddened %s" % red
+    print("fidelity guard ok: %d of %d planted pairs are silent (the shell's real 609-vs-624 and "
+          "753-vs-768 gutters) and %d redden (%s) - the reddening set holds a copy wider than its "
+          "live page and a copy 1px past the band, so the guard is neither always green nor always red"
+          % (len(silent), len(FIDELITY_ARMS), len(red), red))
+
+
+def ladder_key_selftest():
+    keyed, refused = [], []
+    for vw, reported, want in LADDER_ARMS:
+        got = ladder_key(vw, reported)
+        assert (got is not None) == want, "ladder arm (vw=%d, reported=%s) keyed %s, want %s" % (
+            vw, reported, got, "a reading" if want else "a refusal")
+        (keyed if got else refused).append("%s->%s" % (vw, reported))
+    assert len(refused) >= 3, "vacuity: the ladder refused nothing (%s)" % keyed
+    print("ladder key ok: %d of %d planted reports are keyed at the reader's width, %d are refused "
+          "as coverage gaps (%s) - the 1024->994 refusal is the case that used to be filed as a "
+          "1024 reading and reported as a 144px site defect"
+          % (len(keyed), len(LADDER_ARMS), len(refused), refused))
+
+
+# Same control page, driven twice: the reserve is measured, and a planted off-by-a-lot report has to
+# be refused rather than compensated into silence.
+RESERVE_ARMS = [(1280, 1250, True), (1280, 1280, True), (1280, 1280 - WINDOW_CLAMP_SLACK, True),
+                (1280, 1280 - WINDOW_CLAMP_SLACK - 1, False), (1280, 1290, False),
+                (1280, None, False)]
+
+
+def reserve_selftest():
+    ok, red = [], []
+    for asked, got, want in RESERVE_ARMS:
+        rep = {"viewport": [got, 900]} if got is not None else {}
+        try:
+            engine_reserve(rep, asked)
+            good, why = True, ""
+        except (AssertionError, TypeError) as exc:
+            good, why = False, str(exc)[:70]
+        assert good == want, "reserve arm (asked %d, got %s) %s: %s" % (
+            asked, got, "should pass" if want else "should refuse", why)
+        (ok if good else red).append(got)
+    assert len(red) == sum(1 for a in RESERVE_ARMS if not a[2]), \
+        "vacuity: the reserve guard only ever reddened %s" % red
+    print("reserve guard ok: %d of %d planted engine reports are compensated, %d are refused "
+          "(the refusals are %s) - the compensation cannot swallow an arbitrary offset"
+          % (len(ok), len(RESERVE_ARMS), len(red), red))
+
+
 HYDRATED_PROBE = r"""
 () => {
   const w = el => Math.round(el.getBoundingClientRect().width);
   const main = document.querySelector('main');
   if (!main) return null;
+%s
   let para = 0;
   for (const p of main.querySelectorAll('p')) para = Math.max(para, w(p));
-  const panels = [...document.querySelectorAll('aside,nav')].filter(e => w(e) > 40)
-      .map(e => e.tagName.toLowerCase() + '.' +
-                String(e.className).split(/\s+/)[0] + '=' + w(e) +
-                (e.getAttribute('aria-label') ? '(' + e.getAttribute('aria-label') + ')' : ''));
+  const panelCensus = panels();
   const phantom = !!document.getElementById('r73-no-such-element');
   // The controls are planted AFTER the reading above, and that order is load-bearing: in round 73 a
   // 960px control appended into a figure's own wrapper stretched that shrink-to-fit wrapper to 960,
@@ -360,9 +586,11 @@ HYDRATED_PROBE = r"""
     ctl['plant-' + px] = w(d);
     d.remove();
   }
-  return {vw: innerWidth, main: w(main), para: para, panels: panels, ctl: ctl, phantom: phantom};
+  return {vw: innerWidth, main: w(main), para: para, line: lineWidth(main),
+          panels: panelCensus,
+          chain: chain(main), siblings: siblings(main), ctl: ctl, phantom: phantom};
 }
-"""
+""" % CENSUS_JS
 
 
 def hydrated_leg(urls):
@@ -427,6 +655,9 @@ def main():
     args = ap.parse_args()
     if args.selftest:
         window_selftest()
+        reserve_selftest()
+        ladder_key_selftest()
+        fidelity_selftest()
         return 0
     viewports = VIEWPORTS + [1280, 2560] if args.all_viewports else VIEWPORTS
 
@@ -451,16 +682,24 @@ def main():
         print("controls ok: one probe read a 500px box as %s and an 1100px box as %s - the column "
               "number below is a reading, not what the ruler returns for everything"
               % (boxes["asis"]["narrow"], boxes["asis"]["wide"]))
+        reserve_selftest()
+        reserve = engine_reserve(rep, 1280)
+        if reserve:
+            print("engine reserve: the control asked vw=1280 and the page reported %d, so every "
+                  "ladder run below asks vw+%d and is then keyed by the width the PAGE reported - "
+                  "copy and live meet at one CSS width, and a navigation breakpoint cannot sit "
+                  "between the two readings" % (rep["viewport"][0], reserve))
 
         # ---- the live site -----------------------------------------------------------
         pages, total = diagram_pages(args.pages)
         print("pages=%d (of %d Mermaid pages resolvable through llms.txt) viewports=%s assume=%dpx"
               % (len(pages), total, viewports, args.assume))
         asis, wide = {}, {}
+        copy_dom = {}
         # `problems` is a statement about the site; `gaps` is a statement about this run. Round 95
         # split them the same way in check_table_overflow after a sweep reported `problems=1` for a
         # page that had never hydrated at all — read as "one content defect among a clean sweep".
-        problems, gaps = [], []
+        problems, gaps, pair_gaps = [], [], []
         for rel, url in pages:
             html = wl.fetch(url) if url.startswith("http") else wl.fetch(wl.SITE + "/" + url)
             for vw in viewports:
@@ -468,10 +707,17 @@ def main():
                 name = "col-live-%d.html" % rid
                 io.open(os.path.join(srv.root, name), "w", encoding="utf-8").write(
                     live_copy(html, wl.SITE, probe_script(rid, srv.port, modes)))
-                rep = run(srv, name, vw, rid)
+                rep = run(srv, name, vw + reserve, rid)
                 if not rep or not rep["modes"]:
                     gaps.append("NOHYDRATE %s @%d (harness/CDN: this page/viewport was never measured,"
                                 " which says nothing about its column)" % (rel, vw))
+                    continue
+                key = ladder_key(vw, rep["viewport"][0])
+                if key is None:
+                    gaps.append("WINDOW-DRIFT %s: asked the engine for %d to land on a %dpx page "
+                                "window, the page reported %d - a copy laid out at another width "
+                                "answers another reader, so this reading is dropped rather than "
+                                "keyed to %d" % (rel, vw + reserve, vw, rep["viewport"][0], vw))
                     continue
                 m = {e["mode"]: e for e in rep["modes"]}
                 if not m.get("asis", {}).get("m"):
@@ -479,11 +725,12 @@ def main():
                                 " so this reading is missing, not clean)" % (rel, vw, rep["viewport"]))
                     continue
                 a, wd = m["asis"]["m"]["para"], (m.get("wide") or {}).get("m", {}).get("para")
-                asis.setdefault(vw, []).append((rel, a))
-                wide.setdefault(vw, []).append((rel, wd))
-                print("  %-46s vw=%-5d column=%-5s wide-layout=%-5s main=%s ps=%s"
-                      % (rel, rep["viewport"][0], a, wd, m["asis"]["m"]["main"],
-                         m["asis"]["m"]["paragraphs"]))
+                asis.setdefault(key, []).append((rel, a))
+                wide.setdefault(key, []).append((rel, wd))
+                copy_dom[(key, rel)] = m["asis"]["m"]
+                print("  %-46s vw=%-5d column=%-5s wide-layout=%-5s main=%s line=%s ps=%s sheets=%s"
+                      % (rel, key, a, wd, m["asis"]["m"]["main"], m["asis"]["m"].get("line"),
+                         m["asis"]["m"]["paragraphs"], m["asis"]["m"].get("panels")))
 
         # ---- the same site, laid out by the reader's own browser ----------------------
         hyd, hyd_note = {}, None
@@ -496,6 +743,10 @@ def main():
                 r0 = hyd[vw][0]
                 print("  vw=%-5d column=%-5s (pages: %s)  panels beside the article: %s"
                       % (vw, sorted(set(vals)), len(vals), "; ".join(r0["panels"][:3])))
+                print("        chain(live): %s" % " < ".join(r0["chain"][:6]))
+                cd = copy_dom.get((vw, r0["page"]))
+                if cd:
+                    print("        chain(copy of the same page): %s" % " < ".join(cd["chain"][:6]))
     finally:
         srv.srv.shutdown()
 
@@ -519,10 +770,11 @@ def main():
     # (1) The cap downstream legs judge against has to bind on the copy they ask for. Every axis that
     #     lays a reader page out renders at COPY_VIEWPORT and asserts <main> == its column constant,
     #     so this is where that shared premise is proved once, with the whole ladder in view.
-    # (2) A copy must stay the live page minus a scrollbar. If the panels ever stop mounting again
-    #     (round 73's reading), the copy jumps ~160px ABOVE the live column and every leg that judges
-    #     on a copy over-states the reader's room - so the copy is only trusted while it is not wider
-    #     than the live page, and not narrower than one gutter's worth.
+    # (2) A copy has to be the live page at the SAME window, minus its scrollbar. Round 104 moved this
+    #     from "same asked vw" to "same laid-out window", because asked was never the width the copy
+    #     page used: on Edge an asked 1024 laid out 994, unmounted the navigation, and the guard spent
+    #     the round reporting a 144px gap between two pages that were never at the same width. The
+    #     judgement itself is `column_fidelity`, driven offline over planted pairs by --selftest.
     if COPY_VIEWPORT in asis:
         cap = min(v for _, v in asis[COPY_VIEWPORT])
         assert cap == args.assume, \
@@ -531,26 +783,32 @@ def main():
             "above before trusting their verdicts" % (args.assume, COPY_VIEWPORT, cap)
         print("  cap guard: a copy at vw=%d lays the article out at %dpx == the %dpx the geometry "
               "axes judge against" % (COPY_VIEWPORT, cap, args.assume))
-    for vw in sorted(asis):
-        if vw not in hyd:
-            continue
-        c, h = min(v for _, v in asis[vw]), min(r["para"] for r in hyd[vw])
-        gutter = h - c
-        if 0 <= gutter <= 24:
-            print("  copy vs live at vw=%-5d: copy=%-4d live=%-4d gutter=%-2dpx (a saved copy is the"
-                  " live page minus its scrollbar)" % (vw, c, h, gutter))
+    met = paired_widths(asis, hyd)
+    for vw in met:
+        c = min(v for _, v in asis[vw])
+        h = min(r["para"] for r in hyd[vw])
+        verdict = column_fidelity(c, h)
+        if verdict:
+            problems.append("vw=%d %s" % (vw, verdict))
         else:
-            problems.append("COPY-NOT-LIVE vw=%d: the copy lays the article out at %dpx while the"
-                            " live page gives %dpx (%dpx apart - not a scrollbar). One of the two is"
-                            " no longer the reader's page, so no copy-based leg's column is"
-                            " trustworthy until this is explained" % (vw, c, h, gutter))
+            print("  copy vs live at the same vw=%-5d window: copy=%-4d live=%-4d gutter=%-2dpx "
+                  "(a saved copy is the live page minus its classic scrollbar)"
+                  % (vw, c, h, h - c))
+    if not hyd:
+        pair_gaps.append("NO-LIVE-COMPARISON: the live leg read %d widths, so every copy reading"
+                         " above is unjudged - a saved page cannot show what its reader gets, and this"
+                         " run does not get to report a clean column" % len(hyd))
+    for vw in sorted(set(asis) - set(met)):
+        pair_gaps.append("NO-LIVE-PARTNER vw=%d: the copy leg laid a page out at this width and the "
+                         "live leg never measured it, so nothing here says what a reader at %dpx gets"
+                         " - a copy-only reading cannot certify its own column" % (vw, vw))
 
-    # ---- copy vs live, and the phone case -------------------------------------------
-    # Reported rather than counted as a problem: this axis now sees both numbers, and closing the gap
-    # is a content/product decision (redraw the figures for a narrower column, or switch the space to
-    # GitBook's wide layout) and not something the ruler can fix by editing itself. What it must not
-    # do is go quiet - a green with no mention of the narrower column would let every downstream axis
-    # keep certifying against the wider one.
+    # ---- what the reader's window actually spends, and the phone case -----------------
+    # Printed, not counted: the navigation cost is a platform fact, and the decision it feeds - whether
+    # the book's figures are judged at the 768px a wide reader gets or at the 608px a laptop reader
+    # gets - belongs to the operator (it is `COLUMN-MISMATCH` below, and it stays red until chosen).
+    # What this loop must not do is go quiet: a green with no mention of the narrower column would let
+    # every downstream axis keep certifying against the wider one.
     advisories = []
     if hyd_note:
         print("  hydrated leg skipped: %s" % hyd_note)
@@ -559,14 +817,25 @@ def main():
         if vw not in hyd:
             continue
         h = min(r["para"] for r in hyd[vw])
-        print("  live desktop vw=%-5d reader column=%d" % (vw, h))
-        if vw in asis:
-            c = min(v for _, v in asis[vw])
-            if c - h > SPREAD_TOL:
-                advisories.append(
-                    "COPY-OPTIMISTIC vw=%d: the copy lays the article out at %dpx while the live page"
-                    " gives its reader %dpx (%dpx eaten by the navigation panels) - an axis that reads"
-                    " the copy over-states the reader's room by that much" % (vw, c, h, c - h))
+        r0 = hyd[vw][0]
+        # `vw - column` would blame the reader's whole window on the navigation, but <main> lives in a
+        # flex line capped at 1440px, and the wrappers above it are display:contents (0px). The cost
+        # is what THAT line spends on everything except <main> - printed for every desktop breakpoint
+        # so a widening of the chrome shows up as a number, not an inference.
+        line, box = r0.get("line"), r0.get("main")
+        spends = "unknown (no flex line found)" if not line or not box else "%dpx" % (line - box)
+        print("  live desktop vw=%-5d reader column=%-4d flex line=%-5s main=%-5s the line spends"
+              " %s on everything but the article  sheets=%s"
+              % (vw, h, line, box, spends, "; ".join(r0["panels"][:3]) or "none"))
+        if line and box:
+            assert line - box >= 0, "the flex line (%s) is narrower than its own <main> (%s) at vw=%d" \
+                % (line, box, vw)
+        if h < args.assume:
+            advisories.append(
+                "COLUMN-DECISION vw=%d: a reader here gets %dpx, %dpx less than the %dpx the Mermaid,"
+                " SVG and overflow legs certify against - which of the two is the book's bar is the"
+                " operator's call, and until it is made every copy-based verdict describes a wider"
+                " reader than this one" % (vw, h, args.assume - h, args.assume))
     for vw, mobile in HYDRATED_AT:
         if mobile and vw in hyd:
             print("  phone vw=%-5d reader column=%s (pinch-zoom belongs to the reader, so this is"
@@ -593,16 +862,22 @@ def main():
         print("  -", p)
     for a in advisories:
         print("  AWAITING-DECISION:", a)
+    # Two kinds of gap, and only the first is a page x viewport reading: a width the live leg never
+    # measured says nothing about how many readings arrived, it says the copy has no partner to be
+    # judged against. Counting one inside the other is how a run can print "readings 9 of 9" next to
+    # a tenth complaint.
     intended = len(pages) * len(viewports)
-    for g in gaps:
+    for g in gaps + pair_gaps:
         print("  COVERAGE-GAP %s" % g)
     if gaps:
         print("  %d of %d page x viewport readings never arrived: re-run serially (browser legs"
               " share one CDN budget). Do not read the problems=0 line below as green."
               % (len(gaps), intended))
-    print("problems=%d  coverage-gaps=%d (readings %d of %d)  awaiting-decision=%d"
-          % (len(problems), len(gaps), intended - len(gaps), intended, len(advisories)))
-    return 1 if (problems or gaps) else 0
+    print("problems=%d  coverage-gaps=%d (readings %d of %d)  unpaired-widths=%d"
+          "  awaiting-decision=%d"
+          % (len(problems), len(gaps), intended - len(gaps), intended, len(pair_gaps),
+             len(advisories)))
+    return 1 if (problems or gaps or pair_gaps) else 0
 
 
 if __name__ == "__main__":
