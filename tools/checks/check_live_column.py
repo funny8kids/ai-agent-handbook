@@ -58,7 +58,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import check_widget_visibility_live as wl            # noqa: E402  llms.txt index + retrying fetch
-from check_mermaid_geometry import (COLUMN, Server, browser, headless_flags)  # noqa: E402  assumption under test
+from check_mermaid_geometry import (COLUMN, COLUMN_PHONE, LABEL_BAR, Server, browser,
+                                    headless_flags)  # noqa: E402  assumptions under test
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -301,7 +302,7 @@ def live_copy(html, site, inject):
     return html.replace("</body>", inject + "</body>", 1)
 
 
-def diagram_pages(n):
+def diagram_pages(n, whole=False):
     """Local pages that author Mermaid, mapped to live URLs through the site's own index."""
     entries = wl.llms_entries()
     index, ambiguous = wl.page_index(entries)
@@ -325,8 +326,25 @@ def diagram_pages(n):
             if url:
                 out.append((path.replace(wl.DOCS + os.sep, "").replace("\\", "/"),
                             url[:-3] if url.endswith(".md") else url))
+    if whole:
+        assert out, "vacuity: no Mermaid page resolved to a live URL at all"
+        return out, len(out)
     assert len(out) >= n, "vacuity: only %d Mermaid pages resolved to a live URL" % len(out)
     return out[:n], len(out)
+
+
+def diagram_pages_dense(n):
+    """The Mermaid pages that author the most diagrams, in that order.
+
+    The phone leg anchors a subtraction, so it is measured on the pages a phone reader is most
+    likely to blame: the walk-order first pages happen to carry one diagram each, which is a
+    sample of the top of a page rather than of the book's diagram-dense pages.
+    """
+    all_pages, total = diagram_pages(0, whole=True)
+    def blocks(rel):
+        text = io.open(os.path.join(wl.DOCS, rel.replace("/", os.sep)), encoding="utf-8").read()
+        return len(re.findall(r"^```mermaid", text, flags=re.M))
+    return sorted(all_pages, key=lambda p: -blocks(p[0]))[:n], total
 
 
 def shoot(srv, name, vw, height=1200):
@@ -641,15 +659,293 @@ def hydrated_leg(urls):
     return rows, None
 
 
+# ------------------------------------------------------------- the phone reader's diagram box
+# Round 107 measured the 342px box once, by hand, and wrote it into check_mermaid_geometry.py as
+# `COLUMN_PHONE`; the prose there said plainly that nothing re-measured it. This leg is that
+# re-measurement, and three facts had to be measured on the live page first, because each one
+# breaks a leg written from the desktop case:
+#   * `main svg` is not a diagram selector. At vw=390 on 00-index/learning-path.md it matched 180
+#     element icons (gb-icon, button-leading-icon) before a single diagram appeared.
+#   * a diagram's own chain is `div.group/mermaid.relative` (358 = the whole phone column) >
+#     `div.cursor-grab.overflow-hidden` (358) > `div.overflow-auto.p-2.[&_svg]:max-w-full` (358,
+#     padding 8/8) > `svg width="100%"` painted 342. So the box is that scroll div's CONTENT width,
+#     358 - 8 - 8, i.e. a subtraction the platform performs, not a number anyone may re-type.
+#   * Mermaid mounts lazily and paints only once the block is scrolled into view. A first pass over
+#     eight pages read every container still in its placeholder state: `div.flex.h-24` holding a 32px
+#     loader svg (class `h-8 w-8`, viewBox 0 0 128 116, and unlike a diagram NO style.max-width).
+#     A leg that measures on arrival measures a spinner - and would report 358 as the box.
+PHONE_VW = 390
+PHONE_DIAGRAMS_PER_PAGE = 2
+PHONE_POLL_TRIES = 24
+PHONE_POLL_MS = 500
+PHONE_BOX_TOL = 2                 # px; the box is 358-8-8, so a correct reading lands exactly
+PHONE_BAR = LABEL_BAR             # px; the same floor the geometry axis reports against
+
+BOX_JS = """
+(k) => {
+  const c = document.querySelectorAll('[class*="group/mermaid"]')[k];
+  if (!c) return null;
+  const svg = c.querySelector('svg');
+  if (!svg) return {state: 'no-svg'};
+  const w = el => Math.round(el.getBoundingClientRect().width);
+  const host = svg.parentElement, hs = getComputedStyle(host);
+  let minFs = null, nodes = 0;
+  const lab = svg.querySelectorAll('text,tspan,.nodeLabel,.label,'
+                                   + 'foreignObject div,foreignObject span');
+  for (const t of lab) {
+    const f = parseFloat(getComputedStyle(t).fontSize);
+    nodes++;
+    if (isFinite(f) && (minFs === null || f < minFs)) minFs = f;
+  }
+  return {container: w(c), svg: w(svg), styleMaxW: svg.style.maxWidth || '',
+          vb: svg.getAttribute('viewBox') || '', svgCls: String(svg.getAttribute('class') || ''),
+          hostTag: host.tagName.toLowerCase(), hostCls: String(host.getAttribute('class') || ''),
+          hostClientW: host.clientWidth, padL: hs.paddingLeft, padR: hs.paddingRight,
+          hostOverflowX: hs.overflowX, scrollW: host.scrollWidth,
+          labelNodes: nodes, minFs: minFs};
+}
+"""
+
+
+def _px(text):
+    """`1056.66px` -> 1056.66; anything mermaid did not write stays None."""
+    try:
+        return float(str(text).strip().rstrip("px"))
+    except (TypeError, ValueError):
+        return None
+
+
+def _vb_width(vb):
+    parts = str(vb or "").split()
+    try:
+        return float(parts[2]) if len(parts) >= 4 else None
+    except ValueError:
+        return None
+
+
+def diagram_reading(facts):
+    """(state, reading) for one container. The classification lives in Python, not in the injected
+    JS, so --selftest can drive planted readings through it - including the loader state this leg
+    exists to refuse."""
+    if not facts:
+        return "NO-CONTAINER", None
+    if facts.get("state") == "no-svg":
+        return "NO-SVG", None
+    natural = _px(facts.get("styleMaxW"))
+    vbw = _vb_width(facts.get("vb"))
+    if not natural or not vbw:
+        # mermaid writes style.max-width only when it has rendered the diagram, so its absence is
+        # the placeholder - not a diagram the phone reader cannot see.
+        return "PLACEHOLDER", facts
+    pad = (_px(facts.get("padL")) or 0) + (_px(facts.get("padR")) or 0)
+    box = facts["hostClientW"] - pad
+    scale = facts["svg"] / vbw if vbw else None
+    min_fs = facts.get("minFs")
+    label = round(min_fs * scale, 2) if min_fs and scale else None
+    return "PAINTED", {"box": box, "container": facts["container"], "natural": natural,
+                       "vb_width": vbw, "painted": facts["svg"], "scale": scale,
+                       "label_px": label, "label_nodes": facts.get("labelNodes", 0),
+                       "scroll_w": facts.get("scrollW"), "client_w": facts["hostClientW"],
+                       "host_cls": facts.get("hostCls"),
+                       "pad": pad, "overflow_x": facts.get("hostOverflowX")}
+
+
+def phone_verdict(readings, box=COLUMN_PHONE):
+    """What a set of painted phone readings says about the platform: (problems, gaps, lines)."""
+    problems, gaps, lines = [], [], []
+    under = 0
+    for r in readings:
+        if r["label_px"] is not None and r["label_px"] < PHONE_BAR:
+            under += 1
+        drifted = abs(r["box"] - box) > PHONE_BOX_TOL
+        if drifted:
+            problems.append("PHONE-DIAG-BOX: the phone reader is given %dpx for a diagram while"
+                            " check_mermaid_geometry judges them against %dpx (round 107's reading)"
+                            " - the platform changed the box or the wrapper's padding, so re-anchor"
+                            " COLUMN_PHONE on this number before trusting either"
+                            % (r["box"], box))
+        # The fitted premise is only meaningful on an anchored box: when the platform shrinks the
+        # box the svg fills the new box correctly, and every diagram would then report a second,
+        # derivative complaint next to the one that actually needs fixing.
+        expected = min(box, r["natural"])
+        if not drifted and abs(r["painted"] - expected) > PHONE_BOX_TOL:
+            problems.append("PHONE-SVG-NOT-FITTED: natural %dpx painted %dpx in a %dpx box (it"
+                            " should be %dpx - width:100%% fills the box, max-width caps at natural),"
+                            " so the axis no longer knows what the reader's browser did to this"
+                            " diagram" % (r["natural"], r["painted"], r["box"], expected))
+        # scrollWidth is measured against the wrapper's own clientWidth, not against the box:
+        # scrollWidth already contains the padding, so a diagram that fits reports clientWidth
+        # exactly (358 here) and would be accused of scrolling by a box-relative bar. This is the
+        # difference between "the platform gave the reader a slider" and "the padding is 8px".
+        if r["scroll_w"] and r["scroll_w"] > r["client_w"]:
+            problems.append("PHONE-SCROLLER: the %s wrapper reports scrollWidth %d against its own"
+                            " clientWidth %d, so this diagram is inside something that can scroll"
+                            " - the geometry axis's 'over-wide means scaled down, never scrolled'"
+                            " premise needs re-testing"
+                            % (r["host_cls"][:40], r["scroll_w"], r["client_w"]))
+        if not r["label_nodes"]:
+            gaps.append("PHONE-BLIND-LABELS: a painted diagram with 0 label nodes (mermaid draws"
+                        " node labels as HTML inside foreignObject, so a count of only text/tspan"
+                        " reads blind) - its label size is unmeasured, not clean")
+        lines.append("      box=%-4d (container %d - wrapper padding %d) natural=%-6d painted=%-4d"
+                     " scale=%.3f smallest label=%spx %s  wrapper=%s"
+                     % (r["box"], r["container"], r["pad"], r["natural"], r["painted"], r["scale"],
+                        r["label_px"], "BELOW-BAR" if r["label_px"] is not None and
+                        r["label_px"] < PHONE_BAR else "ok", r["host_cls"][:46]))
+    lines.append("   %d of %d painted diagrams sampled here paint their smallest label below %gpx;"
+                 " the corpus-wide count is check_mermaid_geometry's phone reading, which this leg"
+                 " now anchors on the live page" % (under, len(readings), PHONE_BAR))
+    return problems, gaps, lines
+
+
+def phone_selftest(box=COLUMN_PHONE):
+    """Offline: the classifier must refuse a spinner, and each judgement branch must be reachable."""
+    painted = {"container": 358, "svg": 342, "styleMaxW": "1056.66px", "vb": "0 0 1056.65625 177",
+               "hostTag": "div", "hostCls": "overflow-auto p-2 [&_svg]:max-w-full",
+               "hostClientW": 358, "padL": "8px", "padR": "8px", "hostOverflowX": "auto",
+               "scrollW": 358, "labelNodes": 41, "minFs": 16}
+    loader = {"container": 358, "svg": 32, "styleMaxW": "", "vb": "0 0 128 116",
+              "hostTag": "div", "hostCls": "flex h-24 items-center justify-center text-tint",
+              "hostClientW": 358, "padL": "0px", "padR": "0px", "hostOverflowX": "visible",
+              "scrollW": 358, "labelNodes": 0, "minFs": None}
+    arms = [("painted diagram", painted), ("loader placeholder", loader),
+            ("container not mounted yet", None), ("mounted, no svg yet", {"state": "no-svg"})]
+    states = {name: diagram_reading(f)[0] for name, f in arms}
+    assert states["painted diagram"] == "PAINTED", states
+    assert states["loader placeholder"] == "PLACEHOLDER", \
+        "a spinner would be measured as a diagram: %s" % states
+    assert states["container not mounted yet"] == "NO-CONTAINER" and \
+        states["mounted, no svg yet"] == "NO-SVG", states
+    r = diagram_reading(painted)[1]
+    assert r["box"] == box and abs(r["label_px"] - 5.18) < 0.02, r
+    problems, gaps, _ = phone_verdict([r], box)
+    assert not problems and not gaps, "the honest reading is being accused: %s %s" % (problems, gaps)
+
+    drifted = dict(painted, hostClientW=318, svg=302, scrollW=318)   # the column lost 40px
+    problems, _, _ = phone_verdict([diagram_reading(drifted)[1]], box)
+    assert any(p.startswith("PHONE-DIAG-BOX") for p in problems), \
+        "a 302px box slipped past the anchor check: %s" % problems
+    assert all(p.startswith("PHONE-DIAG-BOX") for p in problems), \
+        "the box-drift arm also tripped another gate, so it proves nothing about either: %s" % problems
+
+    unfitted = dict(painted, svg=358)                          # svg painted at the CONTAINER width
+    problems, _, _ = phone_verdict([diagram_reading(unfitted)[1]], box)
+    assert any(p.startswith("PHONE-SVG-NOT-FITTED") for p in problems), \
+        "a diagram painted outside its box slipped past: %s" % problems
+    assert all(p.startswith("PHONE-SVG-NOT-FITTED") for p in problems), \
+        "the not-fitted arm also tripped another gate: %s" % problems
+
+    scrolling = dict(painted, scrollW=1057)                    # a real horizontal scroller appears
+    problems, _, _ = phone_verdict([diagram_reading(scrolling)[1]], box)
+    assert any(p.startswith("PHONE-SCROLLER") for p in problems), \
+        "the 'scaled, never scrolled' premise went untested: %s" % problems
+    assert all(p.startswith("PHONE-SCROLLER") for p in problems), \
+        "the scroller arm also tripped another gate: %s" % problems
+
+    blind = dict(painted, labelNodes=0)
+    _, gaps, _ = phone_verdict([diagram_reading(blind)[1]], box)
+    assert any(g.startswith("PHONE-BLIND-LABELS") for g in gaps), \
+        "a reading with no labels at all was reported as clean: %s" % gaps
+
+    narrow = dict(painted, styleMaxW="300px", vb="0 0 300 200", svg=300)
+    problems, _, _ = phone_verdict([diagram_reading(narrow)[1]], box)
+    assert not problems, "a diagram narrower than the box is capped at natural, not stretched: %s" \
+        % problems
+    print("phone leg ok: a real reading anchors at %dpx (labels %s px), a loader is refused as"
+          " PLACEHOLDER, and the four failure arms (box drift %dpx, painted-at-container, a real"
+          " scroller, zero label nodes) each name their own gate"
+          % (box, r["label_px"], diagram_reading(drifted)[1]["box"]))
+
+
+def phone_diagram_leg(pages, per_page=PHONE_DIAGRAMS_PER_PAGE):
+    """Measure the diagram box a phone reader is given, on the live page, diagram by diagram.
+
+    Returns (rows, gaps, note). Nothing here may go quiet: `pages=3, boxes=0` would otherwise read
+    as a clean sweep while the leg measured nothing but spinners.
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return [], [], ("playwright is not installed, so the phone diagram box was NOT re-measured;"
+                        " check_mermaid_geometry still prints its 342px reading, unanchored")
+    rows, gaps = [], []
+    with sync_playwright() as p:
+        br = p.chromium.launch(headless=True)
+        for rel, url in pages:
+            ctx = br.new_context(viewport={"width": PHONE_VW, "height": 900}, is_mobile=True,
+                                 device_scale_factor=3)
+            pg = ctx.new_page()
+            got = 0
+            try:
+                pg.goto(url, wait_until="domcontentloaded", timeout=90000)
+                pg.wait_for_selector('[class*="group/mermaid"]', timeout=45000)
+                pg.wait_for_timeout(2000)
+                k, seen = 0, 1
+                while got < per_page and k < seen + 4:
+                    facts, state, reading = None, None, None
+                    for _ in range(PHONE_POLL_TRIES):
+                        # GitBook mounts a diagram container only when the reader's scroll reaches
+                        # it, so "index k is not in the DOM" means "not scrolled far enough" until
+                        # the page stops scrolling. Wheeling is the reader's own gesture, and it is
+                        # what makes a page's second diagram reachable at all.
+                        count = pg.evaluate("() => document.querySelectorAll("
+                                            "'[class*=\"group/mermaid\"]').length")
+                        seen = max(seen, count)
+                        if k < count:
+                            pg.evaluate("(k) => {document.querySelectorAll("
+                                        "'[class*=\"group/mermaid\"]')[k]"
+                                        ".scrollIntoView({block:'center'});}", k)
+                        elif not pg.evaluate("() => {const y = window.scrollY;"
+                                             " window.scrollBy(0, 900);"
+                                             " return Math.round(window.scrollY) !== Math.round(y);}"):
+                            break              # bottom of the page, and index k never mounted
+                        facts = pg.evaluate(BOX_JS, k)
+                        state, reading = diagram_reading(facts)
+                        if state == "PAINTED":
+                            break
+                        pg.wait_for_timeout(PHONE_POLL_MS)
+                    if state == "PAINTED":
+                        got += 1
+                        rows.append(dict(reading, page=rel, index=k))
+                    elif state in ("NO-CONTAINER", "NO-SVG"):
+                        # The poll scrolled the whole page and index k still is not there: the page
+                        # has no further diagram for this leg to read.
+                        break
+                    else:
+                        gaps.append("PHONE-PLACEHOLDER %s #%d (scrolled into view and polled %d x"
+                                    " %dms; the container never left its loader state, so this"
+                                    " page's box is unmeasured rather than clean)"
+                                    % (rel, k, PHONE_POLL_TRIES, PHONE_POLL_MS))
+                    k += 1
+                if not got:
+                    gaps.append("PHONE-NO-DIAGRAM %s: the leg reached the page and painted nothing"
+                                " to measure" % rel)
+            except Exception as exc:
+                gaps.append("PHONE-NOLOAD %s (%s)" % (rel, str(exc)[:70]))
+            finally:
+                ctx.close()
+        br.close()
+    return rows, gaps, None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3)
     ap.add_argument("--assume", type=int, default=COLUMN,
                     help="the column the Mermaid geometry axis assumes (check_mermaid_geometry.COLUMN)")
+    ap.add_argument("--assume-phone", type=int, default=COLUMN_PHONE,
+                    help="the diagram box check_mermaid_geometry derives its phone reading from"
+                         " (check_mermaid_geometry.COLUMN_PHONE)")
     ap.add_argument("--all-viewports", action="store_true")
     ap.add_argument("--no-hydrated", action="store_true",
                     help="skip the live-page leg (Playwright); the copy leg alone cannot see the "
                          "navigation panels that squeeze a reader's column")
+    ap.add_argument("--no-phone", action="store_true",
+                    help="skip the phone diagram-box leg; check_mermaid_geometry's 342px reading is"
+                         " then unanchored again, exactly the state round 107 left behind")
+    ap.add_argument("--phone-pages", type=int, default=2,
+                    help="how many diagram-dense pages the phone leg walks (default 2; the pages"
+                         " are chosen by how many Mermaid blocks each authors)")
     ap.add_argument("--selftest", action="store_true",
                     help="offline: drive the window guard over planted engine reports and stop")
     args = ap.parse_args()
@@ -658,6 +954,7 @@ def main():
         reserve_selftest()
         ladder_key_selftest()
         fidelity_selftest()
+        phone_selftest()
         return 0
     viewports = VIEWPORTS + [1280, 2560] if args.all_viewports else VIEWPORTS
 
@@ -683,6 +980,7 @@ def main():
               "number below is a reading, not what the ruler returns for everything"
               % (boxes["asis"]["narrow"], boxes["asis"]["wide"]))
         reserve_selftest()
+        phone_selftest()
         reserve = engine_reserve(rep, 1280)
         if reserve:
             print("engine reserve: the control asked vw=1280 and the page reported %d, so every "
@@ -747,6 +1045,27 @@ def main():
                 cd = copy_dom.get((vw, r0["page"]))
                 if cd:
                     print("        chain(copy of the same page): %s" % " < ".join(cd["chain"][:6]))
+
+        # ---- round 108's phone diagram box -------------------------------------------
+        # The hydrated leg above reads <main> (358 at vw=390); this reads what the diagram is
+        # actually GIVEN inside it (342), which is the number check_mermaid_geometry's phone
+        # reading is derived from. Kept as its own leg because the two need different waits:
+        # a paragraph box exists in the server HTML, a Mermaid diagram only paints once scrolled
+        # into view - and measuring the page before that measures a loader icon.
+        phone, phone_gaps, phone_note = [], [], None
+        if not args.no_phone:
+            dense, dense_total = diagram_pages_dense(args.phone_pages)
+            phone, phone_gaps, phone_note = phone_diagram_leg(dense)
+            print("\nphone diagram leg (live page, vw=%d, up to %d diagram(s) per page): %d painted"
+                  " from the %d most diagram-dense of %d Mermaid pages"
+                  % (PHONE_VW, PHONE_DIAGRAMS_PER_PAGE, len(phone), len(dense), dense_total))
+            for r in phone:
+                print("  %-46s #%d" % (r["page"], r["index"]))
+                print("      %s" % phone_verdict([r], args.assume_phone)[2][0])
+        else:
+            phone_note = ("--no-phone was passed, so the %dpx phone diagram box is UNANCHORED this"
+                          " run (round 107's one-off reading is still what the geometry axis"
+                          " derives from)" % COLUMN_PHONE)
     finally:
         srv.srv.shutdown()
 
@@ -840,6 +1159,34 @@ def main():
         if mobile and vw in hyd:
             print("  phone vw=%-5d reader column=%s (pinch-zoom belongs to the reader, so this is"
                   " context rather than a bar)" % (vw, sorted({r["para"] for r in hyd[vw]})))
+    # The phone diagram box is judged, not printed as context: `check_mermaid_geometry` derives its
+    # phone reading from this subtraction, and a constant that nothing re-measures is how round 107
+    # ended up shipping a number it had only read once.
+    if phone_note:
+        print("  phone leg: %s" % phone_note)
+        # An opt-out is judged the same way a broken leg is: the hydrated leg's `--no-hydrated`
+        # already lands NO-LIVE-COMPARISON rather than a green, because a flag that silences the
+        # only re-measurement of a shipped constant must cost the run its pass.
+        pair_gaps.append("PHONE-LEG-BLIND: %s - the geometry axis's 342px phone reading is"
+                         " unanchored this run" % phone_note)
+    if phone:
+        p, g, _ = phone_verdict(phone, args.assume_phone)
+        problems.extend(p)
+        gaps.extend(g)
+        boxes = sorted({r["box"] for r in phone})
+        print("  phone diagram box on the live page: %s px in a %s px column, read from %d painted"
+              " diagram(s) - this is what check_mermaid_geometry's phone row is derived from"
+              % (boxes, sorted({r["container"] for r in phone}), len(phone)))
+        if len(boxes) > 1:
+            problems.append("PHONE-BOX-SPREAD: the same phone window gave %s for different"
+                            " diagrams, so the box is not the one subtraction this leg models"
+                            % boxes)
+    elif not args.no_phone and not phone_note:
+        pair_gaps.append("PHONE-NO-READING: the phone leg ran and painted 0 diagrams, so the %dpx"
+                         " box it exists to anchor went unmeasured - that is a coverage failure,"
+                         " not a clean sweep" % args.assume_phone)
+    for g in phone_gaps:
+        pair_gaps.append(g)
 
     for vw, rows in sorted(wide.items()):
         vals = [v for _, v in rows if v]

@@ -79,6 +79,8 @@ COLUMN_LAPTOP = 608
 # Round 107: the phone reader's own box, measured live at vw=390 — `<main>` comes back 358 wide and
 # the diagram sits inside GitBook's mermaid wrapper, whose own padding leaves the svg 342. Not the
 # column minus a guess: 358 was the column and 342 is what the diagram is actually given.
+# Round 108: `check_live_column.py`'s phone diagram leg re-reads this box on the live page every run
+# and reddens PHONE-DIAG-BOX if the platform stops giving the diagram 342 of the 358.
 COLUMN_PHONE = 342
 LABEL_BAR = 12.0                    # px; the bar check_svg_legibility.py certifies SVG labels at
 WINDOW = 1280                       # fixture viewport: the cell has to fit inside it
@@ -594,8 +596,10 @@ def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
           " 73's log entry%s"
           % (target, " (the column axis re-measures %d on the live page every run)" % target
              if target == COLUMN_LAPTOP else
-             ". Unlike the 608px line, nothing re-measures this box on the live page each run: it is"
-             " round 107's reading, and the standing gap is a phone leg in check_live_column.py"))
+             ". Both boxes are now re-measured on the live page: the 608px one by the column axis's"
+             " hydrated leg, this one by its phone diagram leg (round 108), which reads the diagram"
+             " svg's painted width inside the %dpx column and reddens PHONE-DIAG-BOX if the %dpx"
+             " constant below stops matching" % (COLUMN_PHONE, COLUMN_PHONE)))
     if target == COLUMN_LAPTOP:
         print("  accuracy of the line above: derived from this run's paint, and checked against a real"
               " 608px render in round 73 - painted fonts match to 0.1%, the under-bar count to within"
