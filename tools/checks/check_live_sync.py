@@ -48,6 +48,7 @@ round. Both readings are correct about their own leg, so they are now separate i
 """
 import argparse
 import datetime
+import gzip
 import os
 import re
 import subprocess
@@ -55,6 +56,8 @@ import sys
 import time
 import urllib.request
 from html import unescape
+
+import wire_decode as wire
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
@@ -107,10 +110,26 @@ def short_read(text, needle, is_html):
     return None
 
 
-def live_rounds(url, tail=None):
-    req = urllib.request.Request(url, headers=UA)
-    raw = urllib.request.urlopen(req, timeout=180).read()
-    html = raw.decode("utf-8", "replace")
+def _transport(url):
+    """(response headers, body as it came off the wire) for one reader-document read.
+
+    Built through `wire.request`, because the request shape is the finding: un-advertised, this URL
+    streams ~29 MB and Cloudflare ends about half such connections early (round 99 measured 5 of 8).
+    """
+    with urllib.request.urlopen(wire.request(url, UA), timeout=180) as resp:
+        return getattr(resp, "headers", None), resp.read()
+
+
+def live_rounds(url, tail=None, transport=None):
+    headers, raw = (transport or _transport)(url)
+    try:
+        body = wire.decode(headers, raw, url)
+    except wire.WireError as exc:
+        # One exception type for "the document did not arrive", whether the connection stopped early
+        # or the compressed member did: the leg's bucket and control S's arm are written around
+        # ValueError, and a bare WireError escaping here would be a traceback instead of a refusal.
+        raise ValueError("short read (%s), so no round count is trustworthy" % exc)
+    html = body.decode("utf-8", "replace")
     reason = short_read(html, tail, not url.endswith(".md"))
     if reason:
         raise ValueError("short read (%s), so no round count is trustworthy" % reason)
@@ -118,7 +137,11 @@ def live_rounds(url, tail=None):
     # mostly CJK, so one UTF-8 character costs ~1.85 bytes and that mislabel manufactured a
     # discrepancy round 90's log recorded as unexplained (621,559 B fetched directly vs 336,586
     # "B" here — the same document, two units). Report both, and the ambiguity is gone.
-    return [int(r) for r in ROUND.findall(html)], len(html), len(raw)
+    # Round 105 adds the third number, because "bytes" alone went on lying again: on this leg the
+    # document is now usually compressed on the wire, so the bytes READ and the bytes OF the document
+    # differ by ~15x and only the pair says which one arrived.
+    enc = ((headers.get("Content-Encoding") if headers else "") or "identity").lower()
+    return ([int(r) for r in ROUND.findall(html)], len(html), len(body), len(raw), enc)
 
 
 def local_rounds():
@@ -311,7 +334,8 @@ def witness_leg(rev="HEAD"):
                                  "is this revision's only witness)" % (rel, rev))
             continue
         try:
-            html = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=180).read()
+            with urllib.request.urlopen(wire.request(url, UA), timeout=180) as resp:
+                html = wire.decode(getattr(resp, "headers", None), resp.read(), url)
         except Exception as exc:  # noqa: BLE001
             bad.append("FETCH %s %s" % (rel, exc.__class__.__name__))
             continue
@@ -493,18 +517,28 @@ def controls():
         doc = os.path.join(tmp, "u.md")
         with open(doc, "w", encoding="utf-8") as fh:
             fh.write("# 记录\n\n第 7 次：读者可见的中文句子。\n第 6 次：另一句中文。\n")
-        rounds, chars, size = live_rounds("file:///" + doc.replace("\\", "/"))
+        rounds, chars, size, on_wire, enc = live_rounds("file:///" + doc.replace("\\", "/"))
         if rounds != [7, 6]:
             errs.append("control U: the round parser itself must see 7 and 6, got %r" % rounds)
         if not chars < size:
             errs.append("control U: CJK text must read as chars(%d) < utf-8 bytes(%d) — a run where "
                         "they are equal proves the two numbers are not what their labels say"
                         % (chars, size))
+        # The third unit, for the same reason: an uncompressed read has wire == document, and a
+        # compressed one does not. A leg that printed only one of them is what round 91 hit.
+        if enc != "identity" or on_wire != size:
+            errs.append("control U: a file:// body has no Content-Encoding, so it must read as "
+                        "identity with wire bytes == document bytes, got enc=%r wire=%d size=%d"
+                        % (enc, on_wire, size))
         with open(os.path.abspath(__file__), encoding="utf-8") as fh:
             src = fh.read()
         if "(%d chars / %d bytes" not in src or "chars, size" not in src:
             errs.append("control U: the leg line must label both numbers and pass the character "
                         "count first, or the printout is free to lie about its unit again")
+        if "%d bytes on a %d-byte wire" not in src:
+            errs.append("control U: the leg line must also print the wire bytes with its encoding — "
+                        "after round 105 the two are ~15x apart and one number cannot say which "
+                        "document arrived")
     # S: short reads. Round 91 nearly recorded "the platform dropped 51 rounds" as a site failure;
     # it was a connection that ended early in a 25 MB page that ships no Content-Length. Three
     # ways to be short, one control each, plus the assertion that the chosen needle is really at
@@ -553,6 +587,54 @@ def controls():
                     errs.append("control S: %s must read as complete, got %r" % (what, got))
             elif got is None or not got.startswith(want):
                 errs.append("control S: %s must read short as %r, got %r" % (what, want, got))
+        # S-wire: the request shape, judged on the same producer rather than on a copy of its logic.
+        # Round 99 raised this leg to 6 attempts against a truncation rate it had measured but not
+        # explained; the explanation is that the leg asked for ~29 MB of uncompressed HTML. Each arm
+        # below hands `live_rounds` a body plus the Content-Encoding a server would send with it, so
+        # a decoder that stopped inflating would feed gzip bytes to the round parser and see no rounds
+        # at all — which is what the silent arms refuse, and what the cut arms refuse in the other
+        # direction.
+        doc_bytes = ("第 7 次：读者可见的中文句子。\n第 6 次：另一句中文。\n"
+                     "- 迁移 GitBook 配置，内容目录设为 `docs/`\n").encode("utf-8")
+        packed = gzip.compress(doc_bytes)
+
+        def wire_transport(hdrs, body):
+            return lambda _url, h=hdrs, b=body: (h, b)
+
+        for what, hdrs, body in (
+                ("a complete gzip body", {"Content-Encoding": "gzip"}, packed),
+                ("the same document uncompressed", {"Content-Encoding": "identity"}, doc_bytes),
+                ("a read with no headers at all (file://)", None, doc_bytes)):
+            try:
+                got = live_rounds("https://example.invalid/changelog.md", tail="内容目录设为",
+                                  transport=wire_transport(hdrs, body))[0]
+            except Exception as exc:  # noqa: BLE001
+                errs.append("control S-wire: %s must yield rounds [7, 6], raised %s: %s"
+                            % (what, exc.__class__.__name__, str(exc)[:70]))
+                continue
+            if got != [7, 6]:
+                errs.append("control S-wire: %s parsed %r, expected [7, 6] — the body on the wire is "
+                            "not reaching the round parser as text" % (what, got))
+        for what, hdrs, body in (
+                ("a gzip member cut in half", {"Content-Encoding": "gzip"}, packed[:len(packed) // 2]),
+                ("plain text labelled gzip", {"Content-Encoding": "gzip"}, doc_bytes),
+                ("a body in an encoding this leg cannot read", {"Content-Encoding": "br"}, packed)):
+            try:
+                got = live_rounds("https://example.invalid/changelog.md", tail="内容目录设为",
+                                  transport=wire_transport(hdrs, body))
+                errs.append("control S-wire: %s returned rounds %r — half a document would be judged "
+                            "instead of refused" % (what, got[0]))
+            except ValueError as exc:
+                if "short read" not in str(exc):
+                    errs.append("control S-wire: %s must refuse as a short read, got %r"
+                                % (what, str(exc)[:90]))
+            except Exception as exc:  # noqa: BLE001
+                errs.append("control S-wire: %s escaped as %s (%s) — every 「the document did not "
+                            "arrive」 outcome must be the ValueError this leg's bucket catches, or a "
+                            "cut body becomes a traceback" % (what, exc.__class__.__name__,
+                                                              str(exc)[:60]))
+        for e in wire.selftest():
+            errs.append(e)
         local = open(LOCAL_CHANGELOG, encoding="utf-8").read()
         if not tail or local.find(tail) < 0.9 * len(local):
             errs.append("control S: tail needle %r first appears at %.0f%% of the changelog — a "
@@ -695,7 +777,7 @@ def main():
         print("local newest round=%d" % want)
         for name, url in LEGS:
             try:
-                live, chars, size = live_rounds(url, tail_needle())
+                live, chars, size, on_wire, enc = live_rounds(url, tail_needle())
             except Exception as exc:  # noqa: BLE001
                 # The reason is the finding: "ValueError" alone cannot distinguish this round's
                 # short-read guard from a DNS failure, and the two want opposite follow-ups.
@@ -705,8 +787,9 @@ def main():
                 continue
             tops[name] = max(live) if live else 0
             missing = sorted({r for r in local if r > tops[name]})
-            print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d rounds)%s"
-                  % (name, tops[name], chars, size, len(live),
+            print("  leg %-4s newest round=%-3d (%d chars / %d bytes, %d bytes on a %d-byte wire "
+                  "%s, %d rounds)%s"
+                  % (name, tops[name], chars, size, size, on_wire, enc, len(live),
                      "" if not missing else "  missing %s" % ", ".join(map(str, missing))))
         try:
             bad, unwit, witnessed = ([], [], 0) if args.no_witness else witness_leg(args.rev)

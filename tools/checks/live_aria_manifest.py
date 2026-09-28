@@ -34,6 +34,7 @@ Usage:
 import io, json, os, re, sys, urllib.request
 
 from flag_guard import reject_unknown
+import wire_decode as wire
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
@@ -327,8 +328,10 @@ def expect_of(text):
 
 
 def url_index():
-    req = urllib.request.Request(LLMS, headers={"User-Agent": "python-urllib"})
-    text = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    with urllib.request.urlopen(wire.request(LLMS, {"User-Agent": "python-urllib"}),
+                                timeout=30) as resp:
+        text = wire.decode(getattr(resp, "headers", None), resp.read(), LLMS).decode(
+            "utf-8", "replace")
     by_title = {}
     for title, url in re.findall(r"\[([^\]]+)\]\((https://[^)\s]+\.md)\)", text):
         by_title.setdefault(norm(title.strip()), []).append(url.strip())
@@ -452,8 +455,10 @@ def leak_sites(served):
 
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "python-urllib"})
-    return urllib.request.urlopen(req, timeout=60).read().decode("utf-8", "replace")
+    req = wire.request(url, {"User-Agent": "python-urllib"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return wire.decode(getattr(resp, "headers", None), resp.read(), url).decode(
+            "utf-8", "replace")
 
 
 def formula_defects():

@@ -24,6 +24,7 @@ import urllib.error
 import urllib.request
 
 from flag_guard import reject_unknown
+import wire_decode as wire
 
 SITE = "https://violetnotes.gitbook.io/violetnotes-docs"
 LLMS = SITE + "/llms.txt"
@@ -42,13 +43,20 @@ def fetch(url, binary=False, tries=5):
     ~30 fetches deep, with the same URL succeeding standalone seconds later). A caller that must
     not turn a persistent reset into a false verdict should catch this and record a coverage
     failure — see check_svg_sanitizer.py's fetch-failures bucket.
+
+    Every attempt asks for the body gzip-compressed (`wire.request`), because the alternative was
+    measured: an un-advertised GET of the changelog page streams ~29 MB and Cloudflare cut 5 of 8
+    such connections early (round 99's log), which is what those "short read" coverage gaps actually
+    were. A cut gzip member surfaces as `wire.WireError`, which subclasses URLError and so retries
+    here exactly like a reset connection does — and still raises after the last attempt rather than
+    returning half a page.
     """
     last = None
     for n in range(tries):
         try:
-            req = urllib.request.Request(url, headers=UA)
+            req = wire.request(url, UA)
             with urllib.request.urlopen(req, timeout=90) as resp:
-                data = resp.read()
+                data = wire.decode(getattr(resp, "headers", None), resp.read(), url)
             return data if binary else data.decode("utf-8", "replace")
         except (urllib.error.URLError, OSError) as exc:
             last = exc

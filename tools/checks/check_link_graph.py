@@ -64,6 +64,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from live_aria_manifest import prose, url_index, norm, h1_of  # noqa: E402  one prose ruler
 from flag_guard import reject_unknown  # noqa: E402  the same rule for every hand-scanned argv
+import wire_decode as wire  # noqa: E402  every reader-page read asks for the body compressed
 
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 DOCS = os.path.join(REPO, "docs")
@@ -393,9 +394,11 @@ def save_cache(cache):
 
 
 def _fetch(url, method):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*",
-                                               "Accept-Language": "en,zh-CN",
-                                               "Accept-Encoding": "gzip"})
+    # Header through the shared seam; the body deliberately is NOT run through wire.decode, because
+    # this probe reads 8192 bytes and only wants the status plus the start of the document. A whole
+    # page is `get_page_text`'s job — see the round-58 note below about EOFError on a cut member.
+    req = urllib.request.Request(url, headers=wire.headers({"User-Agent": UA, "Accept": "*/*",
+                                                             "Accept-Language": "en,zh-CN"}))
     req.get_method = lambda: method
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
         body = ""
@@ -412,6 +415,16 @@ def _fetch(url, method):
                     raw = b""
             body = raw.decode("utf-8", "replace")
         return {"status": r.status, "final": r.geturl(), "body": body}
+
+
+def get_page_text(url):
+    """One whole reader page, inflated if the CDN compressed it. The anchor leg's default fetcher.
+
+    It used to build its own request without `Accept-Encoding`, so it streamed these pages the way
+    the round-count legs streamed the changelog — see wire_decode's measured table.
+    """
+    with urllib.request.urlopen(wire.request(url, {"User-Agent": UA}), timeout=TIMEOUT) as r:
+        return wire.decode(r.headers, r.read(), url).decode("utf-8", "replace")
 
 
 def sniff(res):
@@ -642,9 +655,7 @@ def live_anchor_leg(anchors, fetch=None, index=None, title_of=None, read_of=None
     worth printing if the probe proved it can see anchors at all. The index/title readers are
     injectable so the controls can run this same code path offline.
     """
-    fetch = fetch or (lambda u: urllib.request.urlopen(
-        urllib.request.Request(u, headers={"User-Agent": UA}), timeout=TIMEOUT
-    ).read().decode("utf-8", "replace"))
+    fetch = fetch or get_page_text
     read_of = read_of or read
     title_of = title_of or (lambda path: h1_of(read_of(path)))
     findings = []
