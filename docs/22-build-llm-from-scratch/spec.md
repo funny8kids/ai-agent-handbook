@@ -70,10 +70,10 @@ flowchart TB
 | 页 | 达标线 |
 |---|---|
 | [分词](build-01-tokenizer.md) | 解码恒等；词表大小 = 语料去重字符数；序列长度 = 字符数 |
-| [前向](build-02-forward.md) | 未训练 loss 与 $\ln V$ 差 ≤ 2%；每行注意力权重和 = 1.000000 |
+| [前向](build-02-forward.md) | 未训练 loss 与 $$\ln V$$ 差 ≤ 2%；每行注意力权重和 = 1.000000 |
 | [参数账](build-03-budget.md) | 分模块求和 = 模型实测参数量（差 0）；训练实跑 < 120 秒 |
 | [反向](build-04-backward.md) | 抽样 ≥12 个参数，最大相对误差 ≤ 1e-3；且**故意少算一项**的变异必须 ≥ 1e-1 |
-| [训练](build-05-train.md) | 末段 loss ≤ 0.70·$\ln V$；记录 ≥20 行；两次运行 stdout 逐字节相同 |
+| [训练](build-05-train.md) | 末段 loss ≤ 0.70·$$\ln V$$；记录 ≥20 行；两次运行 stdout 逐字节相同 |
 | [采样](build-06-sampling.md) | ≥4 段、每段 ≥200 字符、每段 3-gram 命中语料 ≥60%；贪心与温度 1.0 样本不同 |
 | [导出](build-07-export.md) | 权重 sha256 稳定；重载后 logits 逐位一致；参数量与「参数账」页对平 |
 | [导读](README.md) | 三件套齐；冻结配置 JSON 与脚本里的 `CONFIG` 对平 |

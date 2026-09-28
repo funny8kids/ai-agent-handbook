@@ -10,7 +10,7 @@
 <img alt="Pages" src="https://img.shields.io/badge/pages-220-8B5CF6?style=flat-square">
 <img alt="Chapters" src="https://img.shields.io/badge/chapters-21-6D28D9?style=flat-square">
 <img alt="Projects" src="https://img.shields.io/badge/indexed%20projects-323-4C1D95?style=flat-square">
-<img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-121-A78BFA?style=flat-square">
+<img alt="Math" src="https://img.shields.io/badge/pages%20with%20math-128-A78BFA?style=flat-square">
 <img alt="Labs" src="https://img.shields.io/badge/offline%20labs-6-DB2777?style=flat-square">
 <img alt="Figures" src="https://img.shields.io/badge/figures-281-0D9488?style=flat-square">
 <img alt="Real UI screenshots" src="https://img.shields.io/badge/real%20UI%20shots-8-E11D48?style=flat-square">

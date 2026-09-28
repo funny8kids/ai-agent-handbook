@@ -219,6 +219,80 @@ def formula_sources(text):
     return out, defects
 
 
+RAW_DOLLAR = re.compile(r"(?<!\$)\$(?!\$)([^$\n]+?)(?<!\$)\$(?!\$)")
+LATEX_SIGNAL = re.compile(r"[\\^_{}=]")
+
+
+def raw_dollar_math(text):
+    """[(line_no, span)] for math the author asked for with SINGLE $...$.
+
+    GitBook has no single-$ math mode. Measured on the published chapter-22 forward page (round
+    101, live HTML): katex=0 and the reader's own <strong> element read
+    「它的 loss 必须几乎等于 $\\ln V$」 — the delimiters and the backslash are the sentence.
+    Nothing noticed, because every formula ruler in this repo pairs `$$` (formula_sources above)
+    and the live hydration leg only visits pages that author a *display* formula (106 of the
+    book's 121 formula pages), so an inline-only page is outside its scope by construction.
+    This reads the whole corpus at authoring time instead.
+
+    A span is a formula when it is pure ASCII, carries a letter, and either hugs its delimiters or
+    holds a LaTeX signal (`\\`, `^`, `_`, `{}`, `=`). `check_katex_formulas.py --selftest` grades
+    that against the spans this book actually contains, both directions: chapter 16/18's prices are
+    rejected because the prose between two prices is Chinese (「$1193.67 掉到 $683.38」 is one
+    accidental pair), because a lone `$1193.67$` is a currency sign rather than a formula, and
+    because a money pair always swallows the space of the word it straddles (`'10 / '`,
+    `'0.0077 vs '`) without holding a LaTeX signal. `$ \\ln V $` — a formula with sloppy spacing —
+    is still caught by the signal branch, because it reaches the reader as markup just the same.
+    """
+    out = []
+    for n, line in enumerate(prose(text).split("\n"), 1):
+        scan = re.sub(r"\$\$[^$\n]*\$\$", "@", line)
+        if "$$" in scan:
+            continue          # a display delimiter lives on this line; formula_sources judges it
+        for m in RAW_DOLLAR.finditer(scan):
+            src = m.group(1)
+            if not src.isascii() or not re.search(r"[A-Za-z]", src):
+                continue
+            if src == src.strip() or LATEX_SIGNAL.search(src):
+                out.append((n, src))
+    return out
+
+
+MATH_SPAN = re.compile(r"\$\$[^$\n]*\$\$")
+LINK_LABEL = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+
+
+def math_in_unrendered_place(text):
+    """[(kind, line_no, fragment)] for `$$…$$` sitting where the platform cannot render it.
+
+    Round 102 rewrote 95 single-$ spans into `$$…$$`, and four of them stood in a heading or in a
+    link label. Those two places are not prose:
+
+      * HEADING — GitBook re-prints every heading into the page's own table of contents, and that
+        copy is NOT run through the inline renderer. Measured twice on this site: round 90 found a
+        heading's inline-code backticks vanishing while its content stayed, and round 94 measured
+        `author=0 served=2` for the `**` inside a heading's code span — the sidebar shows the
+        characters, not the markup's effect. A `$$` pair inside a heading therefore reaches the
+        reader as four characters in two places at once.
+      * LINK-LABEL — never measured, and the corpus's answer is that nobody has ever tried it: of
+        the 424 body lines carrying `$$`, exactly one authored a formula inside a link label, and
+        it was this round's own edit. The book's convention is inline code there (`1/√d_k`), so the
+        unverified construct stays out rather than shipping a guess about the renderer.
+
+    Runs on prose(), so a page that *documents* the syntax — `## 用 `$$` 包住公式` — reads clean:
+    the delimiters inside the code span are not math.
+    """
+    out = []
+    for n, line in enumerate(prose(text).split("\n"), 1):
+        if not MATH_SPAN.search(line):
+            continue
+        s = line.strip()
+        if s.startswith("#"):
+            out.append(("HEADING", n, s[:70]))
+        out += [("LINK-LABEL", n, m.group(1).strip()[:70])
+                for m in LINK_LABEL.finditer(line) if MATH_SPAN.search(m.group(1))]
+    return out
+
+
 def formula_counts(text):
     """(formulas the reader should see, defect list) under GitBook's own tokenizer.
 

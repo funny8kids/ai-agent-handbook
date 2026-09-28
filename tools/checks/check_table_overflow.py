@@ -28,10 +28,12 @@ Two consequences, and the axis measures both instead of assuming them:
     6 columns (checked offline, `floor_check()`), so there is nothing to fix today — but the floor
     is a real cliff, so the check is part of the axis rather than a paragraph in a changelog.
 
-Sampling rule, stated because it is not a random sample: the browser pass visits the pages holding
-the longest looking-unbreakable cell runs (offline prefilter, `candidates()`). "The worst cases
-measure clean" is the claim; "all 175 table pages measure clean" would need a run this sandbox
-cannot fit in one session, and `--pages all` is there when it can.
+Sampling rule, stated because it is not a random sample, and because since round 102 it has two
+halves. Every page that authors an inline `$$` cell in a table is visited -- an unbreakable formula
+ignores the platform's breaking rule, so `--pages` is not allowed to push one out of the sweep. The
+budget then covers the other half: the N pages holding the longest unbreakable *text* runs. "The
+worst cases measure clean" is the claim; "all 175 table pages measure clean" would need a run this
+sandbox cannot fit in one session, and `--pages all` is there when it can.
 
 Guards:
   * positive control, injected AFTER the real cells are read (so it cannot contaminate them): the
@@ -96,6 +98,31 @@ BREAKS = re.compile(r"[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef\s,;)/-]+")
 # `overflow-wrap:normal` — because a browser ends a line after a hyphen. A control that cannot fail
 # is not a control.)
 CONTROL_TOKEN = "agent_trajectory_finetuning_pipeline_overview_architecture_v2.png"
+
+# Round 102 put inline `$$…$$` into 20 table cells across 10 pages, and this axis' ranking could not
+# see a single one of them: `TOKEN` is a character class of letters, digits and dots, and a formula
+# source is braces and backslashes. That is not a cosmetic blind spot — an inline formula is the one
+# cell atom the platform's own protection cannot rescue. Measured with the pinned 0.18.7 build:
+# `.katex` inherits the cell's `overflow-wrap:anywhere` and its own `white-space`, while
+# `.katex-base` computes `white-space:nowrap`, so the glyphs lay out as one unbreakable run and the
+# ink can leave the cell while all the surrounding Chinese text breaks happily. One such cell really
+# did spill 6.13px, in a 152px column, which is why formula pages are visited first from now on.
+MATH_CELL = re.compile(r"\$\$([^$]+)\$\$")
+
+
+def cell_math(cell):
+    """The longest inline `$$…$$` authored in one cell, or "" if the cell carries none.
+
+    Quoted markup is not a formula: the changelog and the style guide write `$$…$$` inside backticks
+    to describe this very defect, and the reader sees literal dollars there, so those pages are not
+    candidates for ink leaving their box. Note the code span is *deleted*, not unwrapped the way
+    `unbreakable()` unwraps it -- unwrapped, the quoted `$$x$$` still reads as a formula pair and the
+    census says 11 pages where the reader's ink says 10.
+    """
+    stripped = re.sub(r"<[^>]+>", "", cell)
+    stripped = re.sub(r"`[^`]*`", "", stripped)
+    runs = MATH_CELL.findall(stripped)
+    return max(runs, key=len) if runs else ""
 
 
 def authored_tables():
@@ -163,13 +190,24 @@ def floor_check(pages):
 
 
 def candidates(pages, count):
-    """Pages holding the longest unbreakable cell tokens — the ones most able to spill."""
-    scored = []
-    for rel, rows in pages.items():
-        tok = max((unbreakable(c) for _, _, cs in rows for c in cs), key=len, default="")
-        scored.append((len(tok), rel, tok))
-    scored.sort(reverse=True)
-    return [(rel, ln, tok) for ln, rel, tok in (scored if count == "all" else scored[:count])]
+    """Pages to visit live: every cell that carries an inline formula, then the longest text runs.
+
+    Two rankings because the two atoms fail for two different reasons, and `--pages` budgets only
+    the text half. A text run spills only if the platform's `overflow-wrap` stops working, so the
+    longest run is the right probe; an inline formula cannot be rescued by any breaking rule, so
+    *any* page that authors one is a candidate and the count must not push it out of the sweep.
+    """
+    math_rows, text_rows = [], []
+    for rel, rows in sorted(pages.items()):
+        cells = [c for _, _, cs in rows for c in cs]
+        tok = max((unbreakable(c) for c in cells), key=len, default="")
+        wide_math = max((cell_math(c) for c in cells), key=len, default="")
+        (math_rows if wide_math else text_rows).append(
+            (len(wide_math), len(tok), rel, tok if not wide_math else "$$%s$$" % wide_math[:30]))
+    math_rows.sort(reverse=True)
+    text_rows.sort(key=lambda t: (t[1], t[2]), reverse=True)
+    picked = math_rows + (text_rows if count == "all" else text_rows[:max(0, count)])
+    return [(rel, ln, tok) for _m, ln, rel, tok in picked], len(math_rows)
 
 
 def live_url(rel):
@@ -334,6 +372,32 @@ def account(cand_n, answered, measured, served_short, spills, floors, problems, 
     return 1 if (problems or spills or floors or gaps or served_short) else 0
 
 
+def candidates_selftest():
+    """The formula half of the sample must survive any --pages budget, and must not be invented."""
+    pages = {
+        "long-text.md": [(1, 2, ["col", "https://example.com/" + CONTROL_TOKEN])],
+        "wide-formula.md": [(1, 4, ["拓扑", "$$\\binom{n}{2}=O(n^2)$$", "优点", "缺点"])],
+        "tiny-formula.md": [(1, 2, ["词表大小", "$$V$$"])],
+        "plain.md": [(1, 3, ["a", "b", "c"])],
+    }
+    picked, n_math = candidates(pages, 1)
+    rels = [rel for rel, _ln, _tok in picked]
+    assert n_math == 2, "the census missed a formula page: %d" % n_math
+    assert {"wide-formula.md", "tiny-formula.md"} <= set(rels), \
+        "a --pages 1 budget pushed an inline-formula page out of the sweep: %s" % rels
+    assert sum(1 for r in rels if r.endswith("text.md")) == 1, \
+        "the text budget is not one page: %s" % rels
+    assert "plain.md" not in rels, "a page with neither formula nor a long run was sampled: %s" % rels
+    # the cell-level reader: a display formula on its own line is not an inline cell atom
+    assert cell_math("$$x$$") == "x" and cell_math("正文，无公式") == ""
+    assert cell_math("$V$ 的单美元写法") == "", "single-$ was read as a formula cell"
+    all_picked, _ = candidates(pages, "all")
+    assert len(all_picked) == len(pages), "--pages all must still visit every table page"
+    print("  candidates: %d arms ok (formula pages survive a --pages 1 budget, plain pages do not "
+          "join, $-pairs are the only cell math)" % 6)
+    return 0
+
+
 def account_selftest():
     """The two buckets must stay apart, and a page that never answered must not be a 0."""
     def code(**kw):
@@ -387,22 +451,29 @@ def account_selftest():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pages", default="8", help="how many candidate pages to load in a browser")
+    ap.add_argument("--pages", default="8",
+                    help="how many long-unbreakable-TEXT pages to load (inline-$$ pages are always "
+                         "visited and are not part of this budget)")
     ap.add_argument("--no-control", action="store_true", help="skip the injected control (faster re-runs)")
     ap.add_argument("--selftest", action="store_true",
                     help="offline: exercise the coverage/content bucket accounting")
     args = ap.parse_args()
 
     if args.selftest:
-        return account_selftest()
+        rc = candidates_selftest()
+        return rc if rc else account_selftest()
 
     count = "all" if args.pages == "all" else int(args.pages)
 
     pages = authored_tables()
     widest, cells = floor_check(pages)
-    cand = candidates(pages, count)
-    print("browser pass over the %d pages with the longest unbreakable tokens (widest table = %d cols)"
-          % (len(cand), widest))
+    cand, math_pages = candidates(pages, count)
+    print("browser pass over %d page(s) (widest table = %d cols): every one of the %d pages that "
+          "authors an inline $$ cell, plus the %d longest unbreakable text runs"
+          % (len(cand), widest, math_pages, len(cand) - math_pages))
+    assert math_pages == len([1 for rel, rows in pages.items()
+                              if any(cell_math(c) for _, _, cs in rows for c in cs)]), \
+        "the inline-formula census drifted: %d counted, different from the pages walk" % math_pages
 
     dummy = os.path.join(tempfile.gettempdir(), "tableaxis-none.js")
     io.open(dummy, "w", encoding="utf-8").write("// this axis loads no engine; it reads the platform's own page\n")

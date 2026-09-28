@@ -178,6 +178,13 @@ HOMEPAGE_CLAIMS = [
     ("mermaid", re.compile(r"页内配图\*\*：(\d+) 个 Mermaid 内联图")),
     ("svg", re.compile(r"\+\s*(\d+) 张页内自绘 SVG")),
     ("shots", re.compile(r"\+\s*\*\*(\d+) 张真实产品界面截图")),
+    # The homepage's English blurb restates the same numbers for the other half of the readers.
+    # Round 102 re-anchored the math count from 121 to 128 and updated only the Chinese sentence
+    # and the badge; no parser looked at the English one, so it would have kept saying 121.
+    ("pages", re.compile(r"(\d+) pages across \d+ chapters")),
+    ("chapters", re.compile(r"\d+ pages across (\d+) chapters")),
+    ("math", re.compile(r"(\d+) of them carrying rendered formulas")),
+    ("labs", re.compile(r"(\d+) offline-runnable hands-on labs")),
 ]
 HOMEPAGE = os.path.join(DOCS, "README.md")
 
@@ -243,6 +250,7 @@ HIT_CONTROLS = [
 
 
 def run_controls(stats):
+    phantoms = 0
     for key, floor in FLOORS.items():
         assert stats[key] >= floor, "vacuity: %s measured %d below floor %d" % (key, stats[key], floor)
     assert stats["ghosts"] >= 1, \
@@ -257,6 +265,7 @@ def run_controls(stats):
         "phantom control failed: a bogus page badge was not flagged (%s)" % problems
     assert any("zh prose" in p for p in problems), \
         "phantom control failed: a bogus prose page count was not flagged (%s)" % problems
+    phantoms += 1
     assert len(readme_claims(read(README))[0]) >= 5, \
         "badge parser is broken on the real README — controls would be meaningless"
     home = read(HOMEPAGE)
@@ -265,6 +274,17 @@ def run_controls(stats):
     hp = check_homepage(stats, home_bad, quiet=True)
     assert any("homepage figures=999" in p for p in hp), \
         "phantom control failed: a bogus homepage figure count slipped through (%s)" % hp
+    phantoms += 1
+    # Round 102's own defect: the math re-anchor updated the Chinese sentence and both badges and
+    # left the English blurb on the previous count -- no parser had ever read that sentence.
+    stale = stats["math"] - 1
+    en_bad = re.sub(r"\d+ of them carrying rendered formulas",
+                    "%d of them carrying rendered formulas" % stale, home, count=1)
+    assert en_bad != home, "phantom control is vacuous: the English math claim matched nothing"
+    ep = check_homepage(stats, en_bad, quiet=True)
+    assert ep == ["homepage math=%d measured=%d" % (stale, stats["math"])], \
+        ("phantom control failed: a stale English math count was not flagged on its own (%s)" % ep)
+    phantoms += 1
     # The control replays this round's actual defect: the banner said 187 while the tree said 196.
     banner = read(BANNER)
     ban_bad = re.sub("[0-9]+ 页", "187 页", banner)
@@ -272,6 +292,7 @@ def run_controls(stats):
     bp = check_banner(stats, ban_bad, quiet=True)
     assert sum(1 for p in bp if p.startswith("banner pages")) == 2, \
         "phantom control failed: a stale banner page count was not flagged in both places (%s)" % bp
+    phantoms += 1
     for rel, metric in HIT_CONTROLS:
         path = os.path.join(REPO, rel)
         if metric == "shots":
@@ -281,7 +302,8 @@ def run_controls(stats):
         stripped = math_pairs(read(path))
         if metric == "math":
             assert stripped, "hit control: %s should count as a math page" % rel
-    print("controls: floors ok, ghost refs excluded, 4 phantoms flagged, hit controls found")
+    print("controls: floors ok, ghost refs excluded, %d phantoms flagged, hit controls found"
+          % phantoms)
 
 
 def main():

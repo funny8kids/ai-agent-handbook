@@ -8,7 +8,7 @@ updated: 2026-09-28
 # 真训练：700 步、112.7 秒，和一条差点没过的线
 
 {% hint style="info" %}
-**一句话**：这一站的达标线有三条——**末段 loss ≤ 0.70·$\ln V$**、**记录 ≥20 行**、**两次运行 stdout 逐字节相同**。前两条是模型问题，第三条是可复现问题；而它一开始是**过不了的**，页面下方那张 11 行扫描表就是证据。
+**一句话**：这一站的达标线有三条——**末段 loss ≤ 0.70·$$\ln V$$**、**记录 ≥20 行**、**两次运行 stdout 逐字节相同**。前两条是模型问题，第三条是可复现问题；而它一开始是**过不了的**，页面下方那张 11 行扫描表就是证据。
 {% endhint %}
 
 - 可运行脚本：[`nano/nano_train.py`](https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_train.py)（库与优化器在 [`nano/gptnano.py`](https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/gptnano.py)）
