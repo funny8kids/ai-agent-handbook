@@ -13,7 +13,13 @@ updated: 2026-09-28
 
 - 可运行脚本：[`nano/nano_budget.py`](https://github.com/funny8kids/ai-agent-handbook/blob/main/nano/nano_budget.py)
 
-冻结配置是 $$L=2, H=2, d=12, d_{ff}=24, T=24, B=8, \text{steps}=700, V=36$$。全章七个脚本共用这一份 `CONFIG`，[本章达标线](spec.md) 还把它的边界钉成硬线：`n_layer ≤ 2`、`d_model ≤ 40`、`block_size ≤ 24`、`train_steps ≤ 800`，超出去的写法属于基础设施话题，不在此章。
+冻结配置如下：
+
+$$
+L=2, H=2, d=12, d_{ff}=24, T=24, B=8, \text{steps}=700, V=36
+$$
+
+全章七个脚本共用这一份 `CONFIG`，[本章达标线](spec.md) 还把它的边界钉成硬线：`n_layer ≤ 2`、`d_model ≤ 40`、`block_size ≤ 24`、`train_steps ≤ 800`，超出去的写法属于基础设施话题，不在此章。
 
 ## 三笔账，各自能被谁验算
 

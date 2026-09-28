@@ -32,7 +32,13 @@ flowchart TD
 
 单样本的交叉熵是 $$-\log p_{y}$$，实现里先算 log-softmax：
 
-$$\log p_i = x_i - \operatorname{logsumexp}(x),\qquad \operatorname{logsumexp}(x)=m+\log\!\textstyle\sum_j e^{x_j-m},\quad m=\max_j x_j$$
+$$
+\log p_i = x_i - \operatorname{logsumexp}(x)
+$$
+
+$$
+\operatorname{logsumexp}(x)=m+\log\!\textstyle\sum_j e^{x_j-m},\qquad m=\max_j x_j
+$$
 
 减去最大值这一步不是优化而是**正确性**：`nano/gptnano.py` 里 `logsumexp` 用了这个恒等式，因为 $$\exp$$ 在 float 下会溢出，而移位后的最大项恰好是 $$e^0=1$$（原作者把它称作 exp-normalize trick，见参考链接）。有了它，第 1 页那句「均匀猜测的 loss 是 $$\ln V$$」才不是比喻：所有 logits 相等时，$$p_i=1/V$$，loss 精确等于 $$\ln V=3.583519$$。
 

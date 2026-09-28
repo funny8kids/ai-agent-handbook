@@ -2,7 +2,7 @@
 tags: [interview, llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-26
+updated: 2026-09-28
 ---
 
 # 手撕代码与算法真题
@@ -57,8 +57,7 @@ flowchart TB
 **4. 手写 DPO 的损失。**
 
 - 要点：DPO 的巧妙处在于不训显式奖励模型，而是把奖励写成策略与参考策略的对数似然比：$$r(x,y)=\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$$，代入偏好损失即得
-  $$\mathcal{L}=-\log\sigma\!\left(\beta\big(\Delta_\theta^{w}-\Delta_\theta^{l}\big)\right)$$
-  其中 `Δ` 是「策略减参考」的对数似然差。
+  $$\mathcal{L}=-\log\sigma\!\left(\beta\big(\Delta_\theta^{w}-\Delta_\theta^{l}\big)\right)$$，其中 `Δ` 是「策略减参考」的对数似然差。
 - 实现上的真考点：`logprob` 要按**回答部分的 token 求和**（配合 loss mask），而不是取均值或算进 padding；`π_ref` 要冻结且不进梯度。
 - 加分：能解释 `β` 的作用（对偏离参考模型的惩罚强度），以及它调错会看到什么症状（太大几乎不动，太小会把通用能力训崩）。
 - 回看：[偏好对齐 DPO](../03-llm/rlhf-dpo-alignment.md)
