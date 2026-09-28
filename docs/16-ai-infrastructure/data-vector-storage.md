@@ -24,7 +24,7 @@ updated: 2026-09-23
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
+flowchart TB
   S[来源<br/>Wiki/工单/代码/DB] --> I[采集与规范化<br/>转 Markdown/JSON]
   I --> C[清洗与切块<br/>语义边界/脱敏]
   C --> E[Embedding+元数据<br/>acl/版本]
@@ -37,7 +37,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
+flowchart TB
   Q[查询] --> RET[混合召回]
   RET --> RR[重排/过滤<br/>权限·时间]
   RR --> GEN[生成 + 引用]

@@ -59,7 +59,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#EDEDFC","primaryBorderColor":"#4F46E5","primaryTextColor":"#1F2937","secondaryColor":"#D8D6F9","tertiaryColor":"#F8F8FE","lineColor":"#9E99F1","actorBkg":"#F1F0FD","actorBorder":"#4F46E5","actorTextColor":"#1F2937","signalColor":"#847EED","noteBkgColor":"#DFDEFA","noteBorderColor":"#4F46E5","noteTextColor":"#1F2937","labelBoxBkgColor":"#EDEDFC","labelBoxBorderColor":"#4F46E5"}}}%%
-flowchart LR
+flowchart TB
   A["输入: '今天天气真'"] --> B[LLM]
   B --> C["输出概率: 好(0.62) / 不错(0.18) / 糟糕(0.05) ..."]
   C --> D[采样一个 token 拼回输入]

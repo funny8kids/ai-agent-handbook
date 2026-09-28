@@ -17,7 +17,7 @@ updated: 2026-09-28
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7E8EA","primaryBorderColor":"#0F172A","primaryTextColor":"#1F2937","secondaryColor":"#CACCD0","tertiaryColor":"#F5F6F6","lineColor":"#7B7F8A","actorBkg":"#ECECEE","actorBorder":"#0F172A","actorTextColor":"#1F2937","signalColor":"#575D6A","noteBkgColor":"#D4D5D9","noteBorderColor":"#0F172A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7E8EA","labelBoxBorderColor":"#0F172A"}}}%%
-flowchart LR
+flowchart TB
   A["最后一个位置的 logits<br/>36 项"] --> B["除以温度<br/>再 softmax"]
   B -->|"温度 0"| C["贪心：取最大项"]
   B -->|"温度 1.0"| D["按分布抽样"]

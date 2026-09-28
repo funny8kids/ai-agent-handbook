@@ -35,7 +35,7 @@ updated: 2026-09-23
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F4EBFD","primaryBorderColor":"#9333EA","primaryTextColor":"#1F2937","secondaryColor":"#E7D2FA","tertiaryColor":"#FBF7FE","lineColor":"#C48FF3","actorBkg":"#F6EFFD","actorBorder":"#9333EA","actorTextColor":"#1F2937","signalColor":"#B370F0","noteBkgColor":"#ECDAFB","noteBorderColor":"#9333EA","noteTextColor":"#1F2937","labelBoxBkgColor":"#F4EBFD","labelBoxBorderColor":"#9333EA"}}}%%
-flowchart LR
+flowchart TB
     A["编程 Agent<br/>测试通过即验收"] --> B["数据分析<br/>SQL 结果可机检"]
     B --> C["企业知识库<br/>引用准确率可测"]
     C --> D["客服/浏览器/研究<br/>人工评估占比升高"]

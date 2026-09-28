@@ -38,7 +38,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart LR
+flowchart TB
   RD["Reader 数据连接器<br/>SimpleDirectoryReader / LlamaHub"] --> NParser["Node Parser 切块<br/>句窗 / 层级 / 语义切块"]
   NParser --> IDX[("Index<br/>Vector / KG / Summary")]
 ```
@@ -47,7 +47,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart LR
+flowchart TB
   Q[用户问题] --> RET["Retriever<br/>向量 / 混合 / AutoMerging"]
   RET --> SYN["Query Engine<br/>组装上下文 + LLM 生成"]
   SYN --> ANS["回答 + 引用"]

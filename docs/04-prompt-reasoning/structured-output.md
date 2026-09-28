@@ -65,7 +65,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
-flowchart LR
+flowchart TB
   A["解码第 t 步<br/>词表概率分布"] --> B["schema 编译成状态机<br/>给出合法 token"]
   B --> C["非法 token 置零<br/>重新归一化"]
   C --> D["采样一个 token<br/>追加到序列"]
@@ -77,7 +77,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E6F3F9","primaryBorderColor":"#0284C7","primaryTextColor":"#1F2937","secondaryColor":"#C7E4F3","tertiaryColor":"#F5FAFD","lineColor":"#74BBE0","actorBkg":"#EBF5FB","actorBorder":"#0284C7","actorTextColor":"#1F2937","signalColor":"#4EA9D8","noteBkgColor":"#D1E9F5","noteBorderColor":"#0284C7","noteTextColor":"#1F2937","labelBoxBkgColor":"#E6F3F9","labelBoxBorderColor":"#0284C7"}}}%%
-flowchart LR
+flowchart TB
   F["语法 100% 合法的 JSON"] --> G{"枚举、范围<br/>日期真实性？"}
   G -->|"通过"| H["交给下游程序消费"]
   G -->|"失败"| I["回填具体错误信息<br/>带错误重试"]

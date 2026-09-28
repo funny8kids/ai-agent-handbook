@@ -83,6 +83,12 @@ COLUMN_LAPTOP = 608
 # and reddens PHONE-DIAG-BOX if the platform stops giving the diagram 342 of the 358.
 COLUMN_PHONE = 342
 LABEL_BAR = 12.0                    # px; the bar check_svg_legibility.py certifies SVG labels at
+# Round 62: what GitBook's `layout-wide` actually leaves a diagram — 1152px `<main>` minus the ~61px
+# inset the default column measured at. The homepage quotes it, so the wide-layout reading below is
+# judged against this number and not against 1152.
+WIDE_COLUMN = 1091
+HOMEPAGE = os.path.join(DOCS, "README.md")
+HOME_MARK = "Mermaid 图经真解析器逐块校验"   # identifies the homepage bullet this axis owns
 WINDOW = 1280                       # fixture viewport: the cell has to fit inside it
 SHOT_BUDGET = 20000                # virtual ms the --eyeball screenshot is allowed to paint in
 EDGE_CANDIDATES = [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -557,22 +563,15 @@ def judge(rows, cells, column=COLUMN, floor=0.0):
     return problems, widths, heights, controls, laid
 
 
-def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
-    """What the same diagrams cost a reader in another column, derived from this run's measured paint.
-
-    Called twice by the default run: once for the 608px laptop column (round 73) and once for the
-    342px box a phone reader is given (round 107). Same arithmetic, same report-only status, because
-    in both cases the fix is a content decision about the diagrams, not a ruler's.
+def derived_fonts(laid, column, target):
+    """The smallest label each diagram paints in some *other* column, from this run's measured paint.
 
     Mermaid scales a too-wide diagram uniformly, so a label painted at F px inside a `column` box is
-    painted at F * min(1, 608/w) / min(1, column/w) inside a 608 box, where w is the natural width
-    this run measured in the browser. That is arithmetic on measured numbers, not a second render, so
-    round 73 checked it against one: rendering all 217 diagrams at 608 instead of deriving them
-    reproduces every painted font to within 0.1%, and the under-bar count to within the one diagram
-    sitting 0.006px from the bar (11.994 predicted, 12.0 measured). A count printed here is therefore
-    a bar-crossing tally, not a per-diagram judgement - the diagrams within a hair of 12px could land
-    either side. `--column 608` remains the way to re-render for real.
-    Report-only: redrawing the book's diagrams for 608px is a content decision, not a ruler's.
+    painted at F * min(1, target/w) / min(1, column/w) in a `target` box, where w is the natural width
+    this run measured in the browser. Round 73 checked that derivation against a real 608px render of
+    every diagram: painted fonts matched to 0.1% and the under-bar count differed by the single
+    diagram sitting 0.006px from the bar. So a count derived this way is a bar-crossing tally, not a
+    per-diagram judgement, and `--column <target>` remains the way to render for real.
     """
     pairs = []
     for x in laid:
@@ -580,6 +579,20 @@ def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
             continue
         s_here = min(1.0, column / x["w"])
         pairs.append((x, x["font"] * min(1.0, target / x["w"]) / s_here))
+    return pairs
+
+
+def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
+    """What the same diagrams cost a reader in another column, derived from this run's measured paint.
+
+    Called twice by the default run: once for the 608px laptop column (round 73) and once for the
+    342px box a phone reader is given (round 107). Same arithmetic, same report-only status, because
+    in both cases the fix is a content decision about the diagrams, not a ruler's.
+
+    See derived_fonts for the arithmetic and the round 73 check behind it. Report-only: redrawing the
+    book's diagrams for 608px is a content decision, not a ruler's.
+    """
+    pairs = derived_fonts(laid, column, target)
     if not pairs:
         print("  %s reading: no diagram reported a painted font, so nothing to derive" % who)
         return pairs
@@ -614,6 +627,170 @@ def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
     return pairs
 
 
+# ---- round 109: the homepage's geometry sentence pays for its own numbers -----------------------
+# Every figure in that bullet used to be hand-copied from a run nobody re-ran. It rotted for 47
+# rounds (the page claimed "104 张超宽" long after the axis started printing a different number),
+# and round 109 re-anchored it by hand *again* — so the same class of lie shipped for one more turn.
+# The clause patterns are copied out of the homepage's own sentences: reword or delete one and this
+# axis reddens HOMEPAGE-BLIND instead of silently dropping the check.
+HOME_BLOCKS = r"全书 (\d+) 张 Mermaid 图经真解析器逐块校验"
+HOME_MAXW = r"最宽 (\d+)px"
+HOME_CLAUSE = (r"按真实列宽重跑全站：(\d+) 张超宽、(\d+) 张被缩小、\*\*(\d+) 张能横向滚动\*\*，"
+               r"(\d+) 张标签实绘 <12px、最小 \*\*([\d.]+)px\*\*")
+HOME_CHOICE = r"把 (\d+) 张压回 768"
+HOME_WIDE = r"按它复跑全站还剩 \*\*(\d+) 张\*\*轻微超宽（(\d+)–(\d+)px，最小标签 ([\d.]+)px）"
+HOME_CLEAR = r"「(\d+) 张 <12px」清零"
+HOME_MIN_NUMBERS = 13          # how much of the sentence this axis claims to have judged
+
+
+def home_line(text):
+    """The one homepage bullet this axis owns. The gate judges that line, never the whole file."""
+    lines = [ln for ln in text.splitlines() if HOME_MARK in ln]
+    return lines[0] if len(lines) == 1 else None
+
+
+def homepage_numbers(rows, widths, problems, scaled, scrolling, laid, column):
+    """This run's readings, in the units the homepage writes them in."""
+    fonts = [x["font"] for x in laid if x["font"]]
+    over = sorted([x["w"] for x in laid if x["w"] > WIDE_COLUMN])
+    wide_fonts = [v for _, v in derived_fonts(laid, column, WIDE_COLUMN)]
+    return {
+        "blocks": len(rows),
+        "maxw": int(round(max(widths))),
+        "overwide": len([p for p in problems if p.startswith("OVERWIDE")]),
+        "scaled": len(scaled),
+        "scrolling": len(scrolling),
+        "under12": len([f for f in fonts if f < LABEL_BAR]),
+        "minfont": round(min(fonts), 1),
+        "wide_count": len(over),
+        "wide_lo": int(round(min(over))) if over else 0,
+        "wide_hi": int(round(max(over))) if over else int(round(max(widths))),
+        "wide_minfont": round(min(wide_fonts), 1) if wide_fonts else 0.0,
+        "wide_under12": len([v for v in wide_fonts if v < LABEL_BAR]),
+    }
+
+
+def homepage_tally(numbers, text):
+    """(findings, judged): compare the homepage's geometry sentence against this run.
+
+    Scoped to the one bullet this axis owns — a gate over the whole file would fire on any bullet's
+    number and its silence would never mean "checked". Judged short of HOME_MIN_NUMBERS is itself a
+    finding, so a sentence that stops containing the clauses reddens instead of reading green.
+    """
+    findings, judged = [], []
+    line = home_line(text)
+    if line is None:
+        return (["HOMEPAGE-BLIND bullet: docs/README.md no longer has exactly one bullet carrying "
+                 "「%s」, so this axis has nothing to judge" % HOME_MARK], judged)
+
+    def want(label, pattern, groups):
+        m = re.search(pattern, line)
+        if not m:
+            findings.append("HOMEPAGE-BLIND %s: 首页那句「%s」里找不到这段字：%s…"
+                            % (label, HOME_MARK, pattern[:24]))
+            return
+        for idx, value in groups:
+            judged.append(label)
+            got = m.group(idx)
+            if abs(float(got) - float(value)) > 0.5:
+                findings.append("HOMEPAGE-BADGE %s: 首页印 %s，判据这一趟量到 %s" % (label, got, value))
+
+    want("block-count", HOME_BLOCKS, [(1, numbers["blocks"])])
+    for m in re.finditer(HOME_MAXW, line):
+        judged.append("max-width")
+        if abs(float(m.group(1)) - numbers["maxw"]) > 0.5:
+            findings.append("HOMEPAGE-BADGE max-width: 首页印 %s，判据这一趟量到 %d"
+                            % (m.group(1), numbers["maxw"]))
+    want("column-%d" % COLUMN, HOME_CLAUSE,
+         [(1, numbers["overwide"]), (2, numbers["scaled"]), (3, numbers["scrolling"]),
+          (4, numbers["under12"]), (5, numbers["minfont"])])
+    want("overwide-restated", HOME_CHOICE, [(1, numbers["overwide"])])
+    want("wide-layout", HOME_WIDE, [(1, numbers["wide_count"]), (2, numbers["wide_lo"]),
+                                    (3, numbers["wide_hi"]), (4, numbers["wide_minfont"])])
+    want("wide-clears", HOME_CLEAR, [(1, numbers["under12"])])
+    if numbers["wide_under12"]:
+        findings.append("HOMEPAGE-STILL-UNDER: 首页说宽版布局下「<12px」清零，实测在 %dpx 格子里还有 "
+                        "%d 张低于 %gpx" % (WIDE_COLUMN, numbers["wide_under12"], LABEL_BAR))
+    if len(judged) < HOME_MIN_NUMBERS:
+        findings.append("HOMEPAGE-BLIND coverage: 这句里只判到 %d 个数（%s），期望 >= %d"
+                        % (len(judged), " ".join(sorted(set(judged))), HOME_MIN_NUMBERS))
+    return findings, judged
+
+
+def _bump(pattern, idx, delta, text):
+    """Move one number inside a matched clause — the planted way to be wrong."""
+    m = re.search(pattern, text)
+    assert m, "a control needs %s… to match the homepage" % pattern[:24]
+    s, e = m.span(idx)
+    val = m.group(idx)
+    new = str(int(val) + delta) if "." not in val else "%.1f" % (float(val) + delta)
+    assert new != val
+    return text[:s] + new + text[e:]
+
+
+def _swap(text, old, new, count=1):
+    assert old in text, "control has nothing to grab: %r is not in the homepage" % old[:40]
+    return text.replace(old, new, count)
+
+
+def _out_of_scope(text, home_line):
+    """Bump the first number that is NOT on the geometry bullet. Returns None if none exists."""
+    lines = text.splitlines(keepends=True)
+    for i, ln in enumerate(lines):
+        if i == home_line:
+            continue
+        m = re.search(r"\d+", ln)
+        if m:
+            s, e = m.span()
+            return "".join(lines[:i]) + ln[:s] + "9" * (e - s) + ln[e:] + "".join(lines[i + 1:])
+    return None
+
+
+def homepage_controls(numbers, text):
+    """Each planted lie must name its own bucket; an out-of-scope edit must stay quiet.
+
+    Run against the real homepage text with the real numbers, so a control that only fires because
+    the pattern was written for a made-up string cannot pass.
+    """
+    m = re.search(HOME_CLAUSE, text)
+    assert m, "controls need the live clause first: HOME_CLAUSE does not match docs/README.md"
+    n = re.search(HOME_WIDE, text)
+    assert n, "controls need the live wide-layout clause"
+    blocks = re.search(HOME_BLOCKS, text)
+    assert blocks, "controls need the live block-count clause"
+    cases = [
+        ("wrong overwide count", _bump(HOME_CLAUSE, 1, 47, text), "HOMEPAGE-BADGE column-"),
+        ("wrong scaled count", _bump(HOME_CLAUSE, 2, 3, text), "HOMEPAGE-BADGE column-"),
+        ("wrong scroller count", _bump(HOME_CLAUSE, 3, 1, text), "HOMEPAGE-BADGE column-"),
+        ("wrong under-bar count", _bump(HOME_CLAUSE, 4, 11, text), "HOMEPAGE-BADGE column-"),
+        ("wrong smallest label", _bump(HOME_CLAUSE, 5, 4.0, text), "HOMEPAGE-BADGE column-"),
+        ("stale restatement", _bump(HOME_CHOICE, 1, 47, text), "HOMEPAGE-BADGE overwide-restated"),
+        ("wrong wide count", _bump(HOME_WIDE, 1, 8, text), "HOMEPAGE-BADGE wide-layout"),
+        ("wrong wide label", _bump(HOME_WIDE, 4, 4.0, text), "HOMEPAGE-BADGE wide-layout"),
+        ("wrong clear claim", _bump(HOME_CLEAR, 1, 11, text), "HOMEPAGE-BADGE wide-clears"),
+        ("clause deleted", _swap(text, m.group(0), ""), "HOMEPAGE-BLIND"),
+        ("wide clause deleted", _swap(text, n.group(0), ""), "HOMEPAGE-BLIND"),
+        ("sentence reworded", _swap(text, blocks.group(0), "全书的 Mermaid 图都过了真解析器"),
+         "HOMEPAGE-BLIND"),
+        ("whole bullet gone", _swap(text, home_line(text) + "\n", ""), "HOMEPAGE-BLIND"),
+    ]
+    bad = []
+    for name, mutated, expect in cases:
+        found, _ = homepage_tally(numbers, mutated)
+        if not any(expect in line for line in found):
+            bad.append("%s: planted %s, gate said %s" % (name, expect, found[:2] or "nothing"))
+    # The scope control: this axis owns one sentence, so a number anywhere else in the file moving
+    # must not be able to redden it — otherwise a green "0 mismatches" is really "0 matches".
+    home_idx = next(i for i, ln in enumerate(text.splitlines()) if HOME_MARK in ln)
+    elsewhere = _out_of_scope(text, home_idx)
+    assert elsewhere is not None, "no out-of-scope number to plant the scope control on"
+    quiet, _ = homepage_tally(numbers, elsewhere)
+    cases.append(("another bullet's number moved", elsewhere, ""))
+    if quiet:
+        bad.append("out-of-scope edit reddened the gate: %s" % quiet[:2])
+    return len(cases), bad
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mermaid-js", help="directory holding node_modules/mermaid, or the bundle itself")
@@ -628,6 +805,11 @@ def main():
                          "default here; pass --column 1120 to reproduce the historic reading.")
     ap.add_argument("--widths", type=int, default=0, metavar="N",
                     help="also print the N widest authored diagrams with their scale vs --column")
+    ap.add_argument("--phone-worst", type=int, default=0, metavar="N",
+                    help="print the N diagrams whose smallest label is painted smallest in the %dpx "
+                         "phone box, worst first. Round 109's work list: the phone leg of "
+                         "check_live_column.py proves the box, this says which diagrams to redraw."
+                         % COLUMN_PHONE)
     ap.add_argument("--font-floor", type=float, default=0.0, metavar="PX",
                     help="judge legibility, not just width: fail any diagram whose label is painted "
                          "smaller than PX in the --column container. 0 keeps the historic width-only "
@@ -710,6 +892,41 @@ def main():
         assert (len([1 for _, v in phone if v < LABEL_BAR])
                 >= len([1 for _, v in lap if v < LABEL_BAR])), \
             "a narrower column cannot flag fewer under-bar diagrams"
+        if args.phone_worst:
+            order = sorted(phone, key=lambda q: q[1])
+            assert len(order) >= args.phone_worst, \
+                "vacuity: only %d diagrams carry a painted label, asked for %d" % (
+                    len(order), args.phone_worst)
+            print("  phone work list, worst %d of %d under %gpx (the label a 342px box paints, and "
+                  "what the same run paints at the two wider boxes):"
+                  % (args.phone_worst, len([1 for _, v in order if v < LABEL_BAR]), LABEL_BAR))
+            for x, v in order[:args.phone_worst]:
+                print("     %-52s #%d natural %5.0fpx -> 342px %4.1fpx  608px %4.1fpx  768px %4.1fpx"
+                      % (x["row"]["page"], x["row"]["i"], x["w"], v, byx[id(x)], x["font"] or 0))
+        # The homepage prints this axis's tallies for the reader, so they have to be the same number.
+        home_text = open(HOMEPAGE, encoding="utf-8").read()
+        numbers = homepage_numbers(rows, widths, problems, scaled, scrolling, laid, args.column)
+        home_findings, judged = homepage_tally(numbers, home_text)
+        assert len(judged) >= HOME_MIN_NUMBERS, \
+            "vacuity: the homepage gate judged %d numbers %s, expected >= %d" % (
+                len(judged), sorted(set(judged)), HOME_MIN_NUMBERS)
+        try:
+            total, dead = homepage_controls(numbers, home_text)
+        except AssertionError as exc:
+            total, dead = 0, ["the controls never ran: %s" % exc]
+        problems.extend(home_findings)
+        for line in dead:
+            problems.append("HOME-CONTROL %s" % line)
+        print("homepage tally: %d numbers judged out of the sentence this axis owns, %d of %d "
+              "planted lies caught (%s)"
+              % (len(judged), total - len(dead), total,
+                 " ".join("%s=%s" % (k, numbers[k]) for k in
+                          ("blocks", "maxw", "overwide", "scaled", "scrolling", "under12",
+                           "minfont", "wide_count", "wide_lo", "wide_hi", "wide_minfont"))))
+    else:
+        print("homepage tally: NOT JUDGED — this run laid the diagrams out in a %dpx column, while "
+              "the sentence on docs/README.md is anchored on the %dpx one. Run without --column to "
+              "judge it." % (args.column, COLUMN))
     # The two extremes by name, so a future round can judge them without re-running anything:
     # "max width 1116px" is only useful if you know which diagram is at 1116 and how close it is.
     ranked = sorted(((x["row"], x["w"], x["h"], x) for x in laid), key=lambda t: -t[1])

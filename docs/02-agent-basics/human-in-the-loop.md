@@ -47,7 +47,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F2EBFD","primaryBorderColor":"#7C3AED","primaryTextColor":"#1F2937","secondaryColor":"#E2D4FB","tertiaryColor":"#FAF7FE","lineColor":"#B793F5","actorBkg":"#F5EFFE","actorBorder":"#7C3AED","actorTextColor":"#1F2937","signalColor":"#A375F2","noteBkgColor":"#E7DCFC","noteBorderColor":"#7C3AED","noteTextColor":"#1F2937","labelBoxBkgColor":"#F2EBFD","labelBoxBorderColor":"#7C3AED"}}}%%
-flowchart LR
+flowchart TB
   B[事前<br/>批准计划]
   B --> C[Agent<br/>执行]
   C --> D{高风险动作?}

@@ -25,7 +25,7 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E7E8EA","primaryBorderColor":"#0F172A","primaryTextColor":"#1F2937","secondaryColor":"#CACCD0","tertiaryColor":"#F5F6F6","lineColor":"#7B7F8A","actorBkg":"#ECECEE","actorBorder":"#0F172A","actorTextColor":"#1F2937","signalColor":"#575D6A","noteBkgColor":"#D4D5D9","noteBorderColor":"#0F172A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E7E8EA","labelBoxBorderColor":"#0F172A"}}}%%
-flowchart LR
+flowchart TB
   A["参数账<br/>分模块求和"] --> B["算力账<br/>每 token 的 MAC"]
   B --> C["时间账<br/>步数 x 每步成本"]
   A --> D["显存账<br/>激活与 KV Cache"]

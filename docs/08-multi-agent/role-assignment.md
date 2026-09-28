@@ -34,7 +34,7 @@ updated: 2026-09-23
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FDEEE7","primaryBorderColor":"#EA580C","primaryTextColor":"#1F2937","secondaryColor":"#FADACA","tertiaryColor":"#FEF8F5","lineColor":"#F3A379","actorBkg":"#FDF2EC","actorBorder":"#EA580C","actorTextColor":"#1F2937","signalColor":"#F08A55","noteBkgColor":"#FBE1D3","noteBorderColor":"#EA580C","noteTextColor":"#1F2937","labelBoxBkgColor":"#FDEEE7","labelBoxBorderColor":"#EA580C"}}}%%
-flowchart LR
+flowchart TB
     P["规划者 Planner<br/>只读工具"] -->|"任务清单"| W["执行者 Worker<br/>全量工具，只做分到的子任务"]
     W -->|"工件"| R["评审者 Reviewer<br/>只读 + 测试工具"]
     R -->|"驳回：附理由"| W

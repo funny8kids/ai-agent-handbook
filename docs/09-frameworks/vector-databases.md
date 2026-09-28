@@ -22,7 +22,7 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart LR
+flowchart TB
   A["原型/单机<br/>Chroma · FAISS"] --> B["中小生产<br/>pgvector · Qdrant"]
   B --> C["亿级分布式<br/>Milvus · 云服务"]
   C -.性能敏感自研.-> D["算法库直嵌<br/>FAISS · usearch"]

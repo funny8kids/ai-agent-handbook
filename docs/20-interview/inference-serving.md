@@ -17,7 +17,7 @@ updated: 2026-09-26
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0F6E7","primaryBorderColor":"#65A30D","primaryTextColor":"#1F2937","secondaryColor":"#DDEBCA","tertiaryColor":"#F9FBF5","lineColor":"#AACC7A","actorBkg":"#F3F8EC","actorBorder":"#65A30D","actorTextColor":"#1F2937","signalColor":"#8FBC4E","noteBkgColor":"#E5EFD6","noteBorderColor":"#65A30D","noteTextColor":"#1F2937"}}}%%
-flowchart LR
+flowchart TB
   A["网关与排队"] --> B["Prefill<br/>算力受限"]
   B --> C["Decode<br/>带宽受限"]
   C --> D["流式回传"]

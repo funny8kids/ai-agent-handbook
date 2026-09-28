@@ -24,7 +24,7 @@ updated: 2026-09-24
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
+flowchart TB
   D[数据管线<br/>清洗/去重/配比] --> S[训练<br/>LoRA / FSDP / DeepSpeed]
   S --> C[Checkpoint + 实验记录<br/>config/commit/数据版本]
   C --> E{离线评估<br/>回归门禁}
@@ -35,7 +35,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F6ED","primaryBorderColor":"#16A34A","primaryTextColor":"#1F2937","secondaryColor":"#CCEBD7","tertiaryColor":"#F6FBF8","lineColor":"#7FCC9B","actorBkg":"#ECF8F1","actorBorder":"#16A34A","actorTextColor":"#1F2937","signalColor":"#5CBF80","noteBkgColor":"#D5EEDE","noteBorderColor":"#16A34A","noteTextColor":"#1F2937","labelBoxBkgColor":"#E8F6ED","labelBoxBorderColor":"#16A34A"}}}%%
-flowchart LR
+flowchart TB
   A[适配器注册<br/>版本/底座/评测分] --> V[推理引擎热加载<br/>vLLM/SGLang 多 LoRA]
   V --> P[线上影子/A-B]
   P -- 指标回退 --> R[一键回滚]

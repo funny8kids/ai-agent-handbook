@@ -54,7 +54,7 @@ updated: 2026-09-22
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TB
   A1[VLM 骨干<br/>RT-2 / OpenVLA] --> A2[离散动作 token<br/>自回归 · 逐维逐步]
   A2 --> A3[低频控制<br/>量化误差 · token 数爆炸]
 ```
@@ -63,7 +63,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TB
   B1[慢系统 VLM<br/>出隐藏意图 5–10Hz] --> B2[快系统动作专家<br/>flow / 扩散 · 几十 M]
   B2 --> B3[连续动作块高频伺服<br/>π0 / GR00T / Helix]
 ```

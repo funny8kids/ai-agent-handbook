@@ -51,7 +51,7 @@ updated: 2026-09-23
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TB
   SW[软件安全层←策略输出<br/>限幅·PFL·SSL·软限位] --> RT[实时控制线程<br/>IK·阻抗<br/>零动态内存]
   RT --> BUS[EtherCAT 总线<br/>DC 同步+看门狗]
   BUS --> MOT[电机/驱动器<br/>力矩限幅]
@@ -96,7 +96,7 @@ flowchart LR
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
-flowchart LR
+flowchart TB
   CAP[采样 state<br/>20ms] --> MON[安全监控<br/>过闸门]
   MON --> DIS[下发总线<br/>0.5–2ms]
   DIS --> ACT[电机响应<br/>5–20ms]
