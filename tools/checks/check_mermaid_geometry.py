@@ -25,6 +25,12 @@ What it measures, in the order the pitfalls were learned:
   height     reported, not judged: a tall diagram only costs scrolling (max measured 1689px),
              while a wide one costs legibility.
 
+What the default run then prints about the OTHER two reader faces (report-only, one derivation each
+— see laptop_reading): the 608px laptop column (round 73) and the 342px box a phone reader is given
+(round 107, measured live at vw=390: `<main>` 358, and GitBook's mermaid wrapper keeps 342 of it for
+the svg). Judging against 768 is the book's certified bar because README quotes that column; the two
+narrower readings exist so a future round cannot mistake "clean at 768" for "readable on a phone".
+
 Two planted counterexamples ride along on every run (one unparsable source, one fan-out that must
 blow past the column) and MUST be caught. Without them "0 超宽、0 失败" would also be what a silent
 no-op prints — see the project's no-silent-zero rule. Those two ride *through* the browser, so they
@@ -70,6 +76,10 @@ COLUMN = 768
 # by `check_svg_legibility.py`'s laptop leg (Playwright on the live URL); this axis keeps the number
 # rather than importing it, because importing would make the two files a cycle.
 COLUMN_LAPTOP = 608
+# Round 107: the phone reader's own box, measured live at vw=390 — `<main>` comes back 358 wide and
+# the diagram sits inside GitBook's mermaid wrapper, whose own padding leaves the svg 342. Not the
+# column minus a guess: 358 was the column and 342 is what the diagram is actually given.
+COLUMN_PHONE = 342
 LABEL_BAR = 12.0                    # px; the bar check_svg_legibility.py certifies SVG labels at
 WINDOW = 1280                       # fixture viewport: the cell has to fit inside it
 SHOT_BUDGET = 20000                # virtual ms the --eyeball screenshot is allowed to paint in
@@ -545,8 +555,12 @@ def judge(rows, cells, column=COLUMN, floor=0.0):
     return problems, widths, heights, controls, laid
 
 
-def laptop_reading(laid, column):
-    """What the same diagrams cost a laptop reader, derived from this run's measured paint.
+def laptop_reading(laid, column, target=COLUMN_LAPTOP, who="laptop"):
+    """What the same diagrams cost a reader in another column, derived from this run's measured paint.
+
+    Called twice by the default run: once for the 608px laptop column (round 73) and once for the
+    342px box a phone reader is given (round 107). Same arithmetic, same report-only status, because
+    in both cases the fix is a content decision about the diagrams, not a ruler's.
 
     Mermaid scales a too-wide diagram uniformly, so a label painted at F px inside a `column` box is
     painted at F * min(1, 608/w) / min(1, column/w) inside a 608 box, where w is the natural width
@@ -563,25 +577,37 @@ def laptop_reading(laid, column):
         if not x["font"] or not x["w"]:
             continue
         s_here = min(1.0, column / x["w"])
-        pairs.append((x, x["font"] * min(1.0, COLUMN_LAPTOP / x["w"]) / s_here))
+        pairs.append((x, x["font"] * min(1.0, target / x["w"]) / s_here))
     if not pairs:
-        print("  laptop reading: no diagram reported a painted font, so nothing to derive")
-        return
+        print("  %s reading: no diagram reported a painted font, so nothing to derive" % who)
+        return pairs
     below = [p for p in pairs if p[1] < LABEL_BAR]
     here = [p for p in pairs if p[0]["font"] < LABEL_BAR]
-    print("laptop reading (the same diagrams in the %dpx column a 1280-window reader gets, derived"
-          " from this run's paint): %d of %d paint their smallest label below %.0fpx, vs %d at %dpx"
-          % (COLUMN_LAPTOP, len(below), len(pairs), LABEL_BAR, len(here), column))
+    print("%s reading (the same diagrams in the %dpx column a %s reader gets, derived from this run's"
+          " paint): %d of %d paint their smallest label below %.0fpx, vs %d at %dpx"
+          % (who, target, who, len(below), len(pairs), LABEL_BAR, len(here), column))
     worst = min(pairs, key=lambda q: q[1])
     print("  worst: %s #%d natural %.0fpx -> smallest label %.1fpx at %dpx, %.1fpx at %dpx"
           % (worst[0]["row"]["page"], worst[0]["row"]["i"], worst[0]["w"], worst[0]["font"], column,
-             worst[1], COLUMN_LAPTOP))
+             worst[1], target))
     print("  not counted as findings: redrawing diagrams for %dpx is a content decision, see round"
-          " 73's log entry (the column axis re-measures %d on the live page every run)"
-          % (COLUMN_LAPTOP, COLUMN_LAPTOP))
-    print("  accuracy of the line above: derived from this run's paint, and checked against a real"
-          " 608px render in round 73 - painted fonts match to 0.1%, the under-bar count to within the"
-          " one diagram sitting 0.006px from the bar, so it is a tally and not a per-diagram judgement")
+          " 73's log entry%s"
+          % (target, " (the column axis re-measures %d on the live page every run)" % target
+             if target == COLUMN_LAPTOP else
+             ". Unlike the 608px line, nothing re-measures this box on the live page each run: it is"
+             " round 107's reading, and the standing gap is a phone leg in check_live_column.py"))
+    if target == COLUMN_LAPTOP:
+        print("  accuracy of the line above: derived from this run's paint, and checked against a real"
+              " 608px render in round 73 - painted fonts match to 0.1%, the under-bar count to within"
+              " the one diagram sitting 0.006px from the bar, so it is a tally and not a per-diagram"
+              " judgement")
+    else:
+        print("  accuracy of the line above: the %dpx box is a live measurement, not the column minus a"
+              " guess -- round 107 read vw=390 and found the reader's column at 358 with the diagram"
+              " box 342 inside it (the wrapper's own padding), and re-checked the derivation against two"
+              " diagrams painted on that live page (what-is-agent#1 and machine-learning-basics#1,"
+              " within 0.1px of this arithmetic). Redrawing a diagram moves both sides together." % target)
+    return pairs
 
 
 def main():
@@ -667,7 +693,19 @@ def main():
              sorted([x["font"] for x in laid if x["font"]] or [0])[len(
                  [x for x in laid if x["font"]]) // 2]))
     if args.column == COLUMN:
-        laptop_reading(laid, args.column)
+        lap = laptop_reading(laid, args.column)
+        phone = laptop_reading(laid, args.column, COLUMN_PHONE, "phone")
+        # The two readings come off one derivation, so the narrower column can only ever cost a
+        # reader more. If a future edit swaps the targets or drops the min(), the phone tally stops
+        # being worse than the laptop's and this dies instead of printing a comfortable number.
+        byx = {id(x): v for x, v in lap}
+        worse = [(x["row"]["page"], x["row"]["i"], v, byx[id(x)]) for x, v in phone
+                 if v > byx[id(x)] + 1e-9]
+        assert not worse, "the %dpx reading painted above the %dpx one: %s" % (
+            COLUMN_PHONE, COLUMN_LAPTOP, worse[:3])
+        assert (len([1 for _, v in phone if v < LABEL_BAR])
+                >= len([1 for _, v in lap if v < LABEL_BAR])), \
+            "a narrower column cannot flag fewer under-bar diagrams"
     # The two extremes by name, so a future round can judge them without re-running anything:
     # "max width 1116px" is only useful if you know which diagram is at 1116 and how close it is.
     ranked = sorted(((x["row"], x["w"], x["h"], x) for x in laid), key=lambda t: -t[1])
