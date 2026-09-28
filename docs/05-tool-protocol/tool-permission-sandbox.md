@@ -2,7 +2,7 @@
 tags: [safety, tooling, engineering]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # 工具权限与沙箱

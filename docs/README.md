@@ -2,7 +2,7 @@
 tags: [index, handbook]
 type: index
 status: published
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # AI Agent 手册 · AI Agent Handbook

@@ -2,7 +2,7 @@
 tags: [framework, basics]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # LangChain：框架用法与选型

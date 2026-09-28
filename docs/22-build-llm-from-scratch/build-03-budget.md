@@ -2,7 +2,7 @@
 tags: [llm, compute-budget, parameters, from-scratch, evaluation]
 type: knowledge
 status: published
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # 参数与算力账：这个模型值多少钱

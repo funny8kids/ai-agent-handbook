@@ -2,7 +2,7 @@
 tags: [infrastructure, rag, memory, advanced]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # 前缀缓存与上下文工程

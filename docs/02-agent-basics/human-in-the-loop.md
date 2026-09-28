@@ -2,7 +2,7 @@
 tags: [agent, basics, safety]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # Human-in-the-loop

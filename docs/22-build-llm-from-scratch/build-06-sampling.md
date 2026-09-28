@@ -2,7 +2,7 @@
 tags: [llm, decoding, sampling, temperature, from-scratch]
 type: knowledge
 status: published
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # 采样与出字：命中率 100% 的那一段，最不会说话

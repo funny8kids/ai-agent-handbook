@@ -2,7 +2,7 @@
 tags: [llm, advanced]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 预训练、微调与指令微调

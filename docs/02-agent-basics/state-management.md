@@ -2,7 +2,7 @@
 tags: [agent, basics, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # Agent 状态管理

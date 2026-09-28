@@ -2,7 +2,7 @@
 tags: [rag, engineering]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 向量数据库

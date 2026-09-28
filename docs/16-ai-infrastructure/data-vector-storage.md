@@ -2,7 +2,7 @@
 tags: [infrastructure, rag, memory]
 type: knowledge
 status: published
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # 数据与检索基础设施

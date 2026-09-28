@@ -2,7 +2,7 @@
 tags: [basics, beginner]
 type: knowledge
 status: published
-updated: 2026-09-25
+updated: 2026-09-29
 ---
 
 # 机器学习基础

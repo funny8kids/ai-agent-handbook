@@ -2,7 +2,7 @@
 tags: [mcp, tooling, resource]
 type: resource
 status: published
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # MCP Servers：收录理由与注意事项

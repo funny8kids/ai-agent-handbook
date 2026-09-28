@@ -2,7 +2,7 @@
 tags: [rag, basics]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # RAG 基础

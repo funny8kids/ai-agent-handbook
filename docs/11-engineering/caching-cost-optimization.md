@@ -2,7 +2,7 @@
 tags: [engineering]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # 缓存与成本优化

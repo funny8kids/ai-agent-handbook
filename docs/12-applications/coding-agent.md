@@ -2,7 +2,7 @@
 tags: [application, agent, advanced]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # 编程 Agent

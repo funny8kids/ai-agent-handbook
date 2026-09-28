@@ -2,7 +2,7 @@
 tags: [application]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # 12 应用案例 · 本章导读

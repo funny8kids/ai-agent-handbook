@@ -2,7 +2,7 @@
 tags: [memory, rag]
 type: index
 status: published
-updated: 2026-09-23
+updated: 2026-09-29
 ---
 
 # 06 记忆与 RAG · 本章导读

@@ -2,7 +2,7 @@
 tags: [agent, basics]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # 感知—规划—行动循环

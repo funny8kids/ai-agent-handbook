@@ -2,7 +2,7 @@
 tags: [interview, infrastructure, cost]
 type: knowledge
 status: published
-updated: 2026-09-26
+updated: 2026-09-29
 ---
 
 # 推理与服务化真题

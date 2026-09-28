@@ -2,7 +2,7 @@
 tags: [frontier, models, agents, 2026]
 type: index
 status: published
-updated: 2026-09-24
+updated: 2026-09-29
 ---
 
 # 18 2026 前沿 · 本章导读

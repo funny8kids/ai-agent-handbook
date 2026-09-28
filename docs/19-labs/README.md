@@ -2,7 +2,7 @@
 tags: [lab, hands-on]
 type: index
 status: published
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # 19 动手实验 · 本章导读
