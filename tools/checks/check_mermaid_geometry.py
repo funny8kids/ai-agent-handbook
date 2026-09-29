@@ -522,6 +522,132 @@ def render(srv, blocks, budget, batch, column=COLUMN):
     return cells
 
 
+# Round 113 (2026-09-29), operator ruling: 「保持现状，只留账」 for the diagrams still wider than the
+# reader's 768px column. Accepted debt is loud but never gates — the same division `check_link_graph`
+# makes between BLOCKED (a debt) and DEAD (the book's disease). Two things keep this from becoming a
+# mute switch: the ruling names diagrams by identity, so a NEW over-wide one reddens the run even if
+# the total count drops, and the homepage sentence still has to print this run's over-wide tally
+# (`homepage_numbers` counts it from the measurement, not from `problems`).
+ACCEPTED_OVERWIDE = frozenset("""
+01-ai-basics/README.md#1
+02-agent-basics/core-components.md#1
+03-llm/README.md#1
+03-llm/multimodal.md#1
+03-llm/token-embedding-context.md#1
+04-prompt-reasoning/graph-of-thoughts.md#1
+04-prompt-reasoning/react.md#1
+05-tool-protocol/function-calling.md#1
+05-tool-protocol/mcp.md#1
+07-planning/error-recovery-retry.md#1
+08-multi-agent/communication-protocol.md#1
+09-frameworks/README.md#1
+09-frameworks/autogen.md#1
+09-frameworks/mcp-servers.md#1
+09-frameworks/openai-agents-sdk.md#1
+10-evaluation-safety/alignment-safety.md#2
+10-evaluation-safety/evaluation-metrics.md#1
+10-evaluation-safety/explainability.md#1
+10-evaluation-safety/prompt-injection.md#1
+10-evaluation-safety/safety-incidents-2026.md#1
+10-evaluation-safety/safety-incidents-2026.md#2
+11-engineering/agent-failure-playbook.md#1
+11-engineering/caching-cost-optimization.md#2
+11-engineering/deployment-scaling.md#1
+11-engineering/error-handling-retry-fallback.md#1
+11-engineering/logging-tracing-monitoring.md#1
+11-engineering/observability-tools.md#2
+11-engineering/tool-registry.md#2
+11-engineering/workflow-orchestration.md#1
+12-applications/research-agent.md#1
+12-applications/voice-agent.md#2
+13-resources/benchmarks/gaia.md#1
+13-resources/papers/react.md#1
+13-resources/projects/README.md#1
+13-resources/projects/autogen.md#1
+13-resources/projects/deepseek-harness.md#1
+13-resources/projects/pi.md#1
+16-ai-infrastructure/inference-economics-deployment.md#1
+16-ai-infrastructure/llm-observability-eval-platform.md#1
+16-ai-infrastructure/model-gateway.md#1
+16-ai-infrastructure/model-gateway.md#2
+17-embodied-ai/data-engine.md#1
+17-embodied-ai/simulation-sim2real.md#2
+17-embodied-ai/vla-models.md#2
+18-frontier-2026/claude-agent-sdk.md#1
+18-frontier-2026/claude-agent-sdk.md#2
+18-frontier-2026/computer-use-2026.md#1
+18-frontier-2026/openai-agents-api.md#2
+18-frontier-2026/protocol-stack-2026.md#1
+18-frontier-2026/system-one-decision-models.md#1
+19-labs/lab4-multi-agent.md#1
+19-labs/lab5-eval-trace.md#1
+""".split())
+
+RULING = "operator ruling 2026-09-29（第 113 轮）：保持现状，只留账"
+
+
+def debt_readings(accepted, laid, column=COLUMN):
+    """The accepted-debt ledger against this run: what it still owes, and what it already paid.
+
+    An entry that stopped being over-wide is reported, not gated — the ledger has to be pruned by a
+    human who decides the diagram is really fixed, and a fixed diagram must never cost a round its
+    green light.
+    """
+    if column != COLUMN:
+        return [], []
+    over = {"%s#%d" % (x["row"]["page"], x["row"]["i"]) for x in laid if x["w"] > column}
+    paid = sorted(ACCEPTED_OVERWIDE - over)
+    return accepted, paid
+
+
+def debt_controls():
+    """Both directions of the accepted-debt split must be able to speak, offline and every run.
+
+    A one-sided control would only ever prove the list mutes: so the same planted width must be
+    accepted under a listed identity and must gate under an identity the ruling never named, and a
+    listed diagram measured under the bar must produce neither.
+    """
+    def cell(w):
+        return {"w": w, "h": 40, "rw": min(w, COLUMN), "sw": w, "fs": 16.0}
+
+    listed = sorted(ACCEPTED_OVERWIDE)[0] if ACCEPTED_OVERWIDE else None
+    if listed is None:
+        # An empty ledger is not the same reading as a paid-off one: it also silences this axis's
+        # whole over-wide branch, so it has to say so instead of crashing or reporting 0 problems.
+        return (["the debt ledger is empty — either every entry was really fixed (then delete the "
+                 "ruling too) or the gate was cleared to force green"], 0)
+    page, _, idx = listed.rpartition("#")
+    rows = [{"page": page, "i": int(idx), "src": ""},
+            {"page": "never/ruled.md", "i": 1, "src": ""},
+            {"page": page, "i": int(idx), "src": ""}]
+    cells = [cell(COLUMN + 100), cell(COLUMN + 100), cell(COLUMN - 100)]
+    problems, _, _, _, _, accepted = judge(rows, cells, COLUMN, 0.0)
+    bad = []
+    checks = 0
+
+    def expect(ok, line):
+        nonlocal checks
+        checks += 1
+        if not ok:
+            bad.append(line)
+
+    expect([a[0] for a in accepted] == [listed],
+           "accepted leg is dead: a listed over-wide diagram was not filed as debt (%r)" % accepted)
+    expect(any(p.startswith("OVERWIDE never/ruled.md#1") for p in problems),
+           "debt list is a mute switch: an over-wide diagram the ruling never named did not gate (%r)"
+           % problems)
+    expect(not [p for p in problems if p.startswith("OVERWIDE") and "never/ruled" not in p],
+           "a listed diagram over-wide was also gated (%r)" % problems)
+    problems2, _, _, _, _, accepted2 = judge(rows[:1], cells[2:], COLUMN, 0.0)
+    expect(not problems2 and not accepted2,
+           "a listed diagram under the bar must say nothing (%r %r)" % (problems2, accepted2))
+    _, paid = debt_readings([], [{"row": rows[0], "w": COLUMN - 100}], COLUMN)
+    expect(listed in paid, "ACCEPTED-FIXED is dead: a listed diagram measured under the bar was not named")
+    expect(all(re.match(r"^[\w./-]+#\d+$", i) for i in ACCEPTED_OVERWIDE),
+           "the debt ledger holds a malformed identity")
+    return bad, checks
+
+
 def judge(rows, cells, column=COLUMN, floor=0.0):
     """FAILED / OVERWIDE / ILLEGIBLE for real pages, plus the two planted controls that must be caught.
 
@@ -529,8 +655,11 @@ def judge(rows, cells, column=COLUMN, floor=0.0):
     label size, so `floor` judges the font size the browser ends up painting (`fs`, measured, not
     computed from the assumed column). With floor=0 the judgement stays width-only, which is what
     the historic 1120px runs did.
+
+    An over-wide diagram named by `ACCEPTED_OVERWIDE` lands in `accepted` instead of `problems`:
+    loud, printed every run, never gating. Everything else about this function is unchanged.
     """
-    problems, widths, heights, controls, laid = [], [], [], [], []
+    problems, widths, heights, controls, laid, accepted = [], [], [], [], [], []
     for row, c in zip(rows, cells):
         w, h = c["w"], c["h"]
         if row["page"] == "CONTROL":
@@ -555,12 +684,17 @@ def judge(rows, cells, column=COLUMN, floor=0.0):
         laid.append({"row": row, "w": w, "h": h, "rw": c.get("rw"), "scale": scale,
                      "font": c.get("fs"), "scrolls": scrolls})
         if w > column:
-            problems.append("OVERWIDE %s#%d: %.0fpx > 正文列宽 %dpx" % (row["page"], row["i"], w, column))
+            ident = "%s#%d" % (row["page"], row["i"])
+            if column == COLUMN and ident in ACCEPTED_OVERWIDE:
+                accepted.append((ident, w))
+            else:
+                problems.append("OVERWIDE %s#%d: %.0fpx > 正文列宽 %dpx"
+                                % (row["page"], row["i"], w, column))
         if floor and c.get("fs") and c["fs"] < floor:
             problems.append("ILLEGIBLE %s#%d: 标签实绘 %.1fpx < %.1fpx（自然 %.0fpx 挤进 %dpx，"
                             "缩放 %.2f%s）" % (row["page"], row["i"], c["fs"], floor, w, column,
                                             round(scale, 2), "，容器横向滚动" if scrolls else ""))
-    return problems, widths, heights, controls, laid
+    return problems, widths, heights, controls, laid, accepted
 
 
 def derived_fonts(laid, column, target):
@@ -657,7 +791,7 @@ def homepage_numbers(rows, widths, problems, scaled, scrolling, laid, column):
     return {
         "blocks": len(rows),
         "maxw": int(round(max(widths))),
-        "overwide": len([p for p in problems if p.startswith("OVERWIDE")]),
+        "overwide": len([x for x in laid if x["w"] > column]),
         "scaled": len(scaled),
         "scrolling": len(scrolling),
         "under12": len([f for f in fonts if f < LABEL_BAR]),
@@ -862,11 +996,25 @@ def main():
         cells = render(srv, rows + planted, args.budget, args.batch, args.column)
     finally:
         srv.close()
-    problems, widths, heights, controls, laid = judge(rows + planted, cells, args.column,
-                                                      args.font_floor)
+    problems, widths, heights, controls, laid, accepted = judge(rows + planted, cells, args.column,
+                                                                args.font_floor)
+    accepted_rows, paid_rows = debt_readings(accepted, laid, args.column)
+    debt_bad, debt_checks = debt_controls()
+    for line in debt_bad:
+        problems.append("DEBT-CONTROL " + line)
     print("rendered=%d/%d authored diagrams  max width=%.0fpx  max height=%.0fpx (column %dpx)"
           % (len(widths), len(rows), max(widths), max(heights), args.column))
     print("planted counterexamples: %s" % ", ".join(controls))
+    if args.column == COLUMN:
+        # The debt stays on the record every run: a count the reader's homepage prints, the widest
+        # still owing, and a named line for anything the ledger has outlived.
+        print("  accepted debt (%s): %d of %d entries over %dpx, loud and not gating; %d new"
+              % (RULING, len(accepted_rows), len(ACCEPTED_OVERWIDE), COLUMN,
+                 len([p for p in problems if p.startswith("OVERWIDE")])))
+        print("  debt controls: %d of %d able to fire (both directions: a listed diagram is debt, "
+              "an unlisted one gates)" % (debt_checks - len(debt_bad), debt_checks))
+        for line in paid_rows:
+            print("  NOTE ACCEPTED-FIXED %s 已经不超宽了，把它从名单里删掉（这条不卡退出码）" % line)
     # The instrument has to answer before the content does: if nothing in the sweep is scaled and
     # nothing scrolls, a "0 ILLEGIBLE" reading would be a silent zero rather than a measurement.
     scaled = [x for x in laid if x["scale"] < 0.985]
