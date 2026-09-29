@@ -2,7 +2,7 @@
 tags: [memory, basics]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-29
 ---
 
 # 记忆类型：短期、长期、情景、语义、程序
