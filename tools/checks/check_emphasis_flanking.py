@@ -91,6 +91,17 @@ DOCS = os.path.join(REPO, "docs")
 SKIP_DIRS = PS.SKIP_DIRS
 
 RUN = re.compile(r"(\*+)")
+# CommonMark-shaped inline code: a backtick RUN opens a span and a run of the SAME length closes it.
+# The shared PS.INLINE_CODE (`` ``.+?`` | `[^`\n]*` ``) carries no length backreference, so a
+# ```` ```mermaid ```` fence desynchronizes it and the NEXT real code span survives as prose --
+# measured on `14-templates/style-guide.md:186`, where the surviving
+# `tools/checks/check_mermaid_palette.py` let `arrival_key` ask for 14 characters the platform never
+# prints (the reader's visible text drops <code> content), which is a permanent false `absent` on any
+# bold whose tail crosses a code span. It also ate 4 authored bold pairs on that page, so the author
+# side never saw them: same blanker, both legs, one pipeline. The outline leg (`_heading_rows`) still
+# uses the old pattern: its readings are anchored on the live page, so switching it is a separate
+# re-anchoring job, handed to the next round rather than half-done here.
+CODE_RUN = re.compile(r"(`{1,})(?:(?!\1).)*?\1")
 INLINE_CODE = PS.INLINE_CODE
 INLINE_MATH = PS.INLINE_MATH
 LINK = PS.LINK
@@ -142,7 +153,7 @@ def paragraphs(text):
             s, keep = "", False
         t = s
         if keep:
-            t = TAG.sub(" ", INLINE_MATH.sub(ATOM, INLINE_CODE.sub(ATOM, LINK.sub(ATOM, s))))
+            t = TAG.sub(" ", INLINE_MATH.sub(ATOM, CODE_RUN.sub(ATOM, LINK.sub(ATOM, s))))
         boundary = (not keep) or (not t.strip()) or BLOCK_START.match(t.lstrip())
         if boundary and buf:
             paras.append((start, " ".join(buf)))
