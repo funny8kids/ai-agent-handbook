@@ -2,7 +2,7 @@
 tags: [claude, agent-sdk, harness, framework]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-30
 ---
 
 # Claude Agent SDK
@@ -88,14 +88,18 @@ SDK 会加载与 Claude Code 相同的项目配置目录（如 `.claude/` 与用
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F0EAFB","primaryBorderColor":"#6D28D9","primaryTextColor":"#1F2937","secondaryColor":"#DFD0F7","tertiaryColor":"#F9F6FD","lineColor":"#AF89EA","actorBkg":"#F3EEFC","actorBorder":"#6D28D9","actorTextColor":"#1F2937","signalColor":"#9969E4","noteBkgColor":"#E5D8F8","noteBorderColor":"#6D28D9","noteTextColor":"#1F2937","labelBoxBkgColor":"#F0EAFB","labelBoxBorderColor":"#6D28D9"}}}%%
 flowchart TB
-  M[主 Agent: 规划与验收] -- 可并行 / 上下文脏活 --> S1[subagent: 检索仓库]
-  M -- 可并行 --> S2[subagent: 跑测试并汇总]
+  subgraph PAR["可并行的两路 subagent"]
+    direction TB
+    S1[subagent: 检索仓库] ~~~ S2[subagent: 跑测试并汇总]
+  end
+  M[主 Agent: 规划与验收] -- 可并行<br/>上下文脏活 --> S1
+  M -- 可并行 --> S2
   S1 --> F[(共享事实文件<br/>唯一事实源)]
   S2 --> F
   F --> M
-  M --> H{Hooks: PostToolUse / Stop}
+  M --> H{Hooks:<br/>PostToolUse / Stop}
   H -- 验收通过 --> D[交付]
-  H -- 子 Agent 数或 token 超预算 --> C[限并发 / 合并任务]
+  H -- 子 Agent 数或<br/>token 超预算 --> C[限并发<br/>合并任务]
   C --> M
 ```
 

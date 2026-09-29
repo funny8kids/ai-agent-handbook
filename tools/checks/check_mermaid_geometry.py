@@ -534,7 +534,6 @@ ACCEPTED_OVERWIDE = frozenset("""
 03-llm/README.md#1
 03-llm/multimodal.md#1
 03-llm/token-embedding-context.md#1
-04-prompt-reasoning/graph-of-thoughts.md#1
 04-prompt-reasoning/react.md#1
 05-tool-protocol/function-calling.md#1
 05-tool-protocol/mcp.md#1
@@ -574,7 +573,6 @@ ACCEPTED_OVERWIDE = frozenset("""
 17-embodied-ai/simulation-sim2real.md#2
 17-embodied-ai/vla-models.md#2
 18-frontier-2026/claude-agent-sdk.md#1
-18-frontier-2026/claude-agent-sdk.md#2
 18-frontier-2026/computer-use-2026.md#1
 18-frontier-2026/openai-agents-api.md#2
 18-frontier-2026/protocol-stack-2026.md#1

@@ -2,7 +2,7 @@
 tags: [prompt, advanced]
 type: knowledge
 status: published
-updated: 2026-09-24
+updated: 2026-09-30
 ---
 
 # Graph of Thoughts
@@ -60,9 +60,10 @@ flowchart TB
   subgraph ToT["树：只分叉"]
     T0[起点] --> T1[分支] --> T2[叶子]
   end
+  ToT ~~~ GoT
 ```
 
-*《图：左边的树一路向下，叶子结论互不相通；右边两条思路汇进同一个聚合节点——「多父合一」正是 GoT 相对 ToT 多出来的那件事》*
+*《图：上边的树一路向下，叶子结论互不相通；下边两条思路汇进同一个聚合节点——「多父合一」正是 GoT 相对 ToT 多出来的那件事》*
 
 ## 直觉解释
 
