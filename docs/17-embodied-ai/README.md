@@ -27,8 +27,8 @@ updated: 2026-09-23
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#F8EEE6","primaryBorderColor":"#B45309","primaryTextColor":"#1F2937","secondaryColor":"#EFD9C9","tertiaryColor":"#FCF8F5","lineColor":"#D6A078","actorBkg":"#F9F1EB","actorBorder":"#B45309","actorTextColor":"#1F2937","signalColor":"#CB8753","noteBkgColor":"#F2E0D3","noteBorderColor":"#B45309","noteTextColor":"#1F2937","labelBoxBkgColor":"#F8EEE6","labelBoxBorderColor":"#B45309"}}}%%
 flowchart TB
   GOAL[自然语言目标] --> SLOW[语义决策 · 慢系统<br/>VLM / VLA 约 5–10Hz]
-  SLOW --> BRIDGE[频率断层补偿<br/>action chunking · 异步重规划 · 残差]
-  BRIDGE --> FAST[实时控制 · 快系统<br/>50Hz–1kHz · WBC / 伺服]
+  SLOW --> BRIDGE[频率断层补偿<br/>action chunking ·<br/>异步重规划 · 残差]
+  BRIDGE --> FAST[实时控制 · 快系统<br/>50Hz–1kHz ·<br/>WBC / 伺服]
   FAST --> MOTOR[电机 → 真实世界]
   MOTOR -- 观测 · 不可回滚 --> SLOW
   MOTOR -. 失败需人工复位 .-> SLOW

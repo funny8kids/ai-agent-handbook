@@ -52,7 +52,7 @@ flowchart TD
     SLEEP --> EXTRACT["预推导：抽取要点与常用结论"]
     EXTRACT --> CONSOL["固化：情景记忆蒸为语义记忆"]
     CONSOL --> REIDX["反思聚合 + 重建检索索引"]
-    REIDX --> STORE[("已固化的记忆与中间结论")]
+    REIDX --> STORE[("已固化的记忆<br/>与中间结论")]
     Q["用户提问到来"] --> HIT["命中预推导，跳过重复计算"]
     STORE --> HIT
     HIT --> ANS["答案：更少测试期 token、更快、更一致"]

@@ -80,7 +80,7 @@ flowchart TB
   IN["输入 topic='MCP'"] --> A["ChatPromptTemplate<br/>填模板→消息列表"]
   A --> B["ChatOpenAI<br/>消息→AIMessage"]
   B --> C["StrOutputParser<br/>AIMessage→纯文本<br/>= 最终回答"]
-  N["Runnable 协议<br/>invoke/stream/batch<br/>同一接口可拼接"] -.- A
+  N["Runnable 协议<br/>invoke/stream/<br/>batch<br/>同一接口可拼接"] -.- A
   N -.- B
   N -.- C
 ```

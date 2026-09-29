@@ -46,7 +46,7 @@ $$
 flowchart TB
   A[任务] --> B["Actor 执行"]
   B --> C["Evaluator 评估"]
-  C -- 失败 --> D["Reflector 写复盘并存入记忆<br/>为何失败 / 怎么改"]
+  C -- 失败 --> D["Reflector 写复盘<br/>并存入记忆<br/>为何失败 / 怎么改"]
   D --> E[带教训重试]
   E --> B
   C -- 成功 --> F[输出]

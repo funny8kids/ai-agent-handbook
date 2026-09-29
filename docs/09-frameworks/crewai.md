@@ -76,7 +76,7 @@ flowchart TD
   K["Crew.kickoff()"] --> P{Process 类型?}
   P -->|sequential| T1["Task1：调研竞品定价<br/>agent=调研员，expected_output=对比表"]
   T1 -->|context 传递| T2["Task2：写决策建议<br/>agent=撰稿人，expected_output=500字建议"]
-  P -->|hierarchical| M["内置 Manager<br/>拆解目标·分派任务·验收质检"]
+  P -->|hierarchical| M["内置 Manager<br/>拆解目标·<br/>分派任务·验收质检"]
   M -->|指派| T1
   M -->|指派| T2
   T2 --> R["最终产出"]
