@@ -786,23 +786,27 @@ def run(workers=6, live=False, only=None):
         strongs = served_strongs(served)
         prose = prose_of(served)
         states = [bold_state(b, tail, strongs, prose) for _ln, b, tail in bolded[rel(path)]]
-        lost = [(ln, b) for (ln, b, _t), s in zip(bolded[rel(path)], states) if s == "lost"]
+        pairs = list(zip(bolded[rel(path)], states))
+        lost = [(ln, b) for (ln, b, _t), s in pairs if s == "lost"]
+        gone = [(ln, b) for (ln, b, _t), s in pairs if s == "absent"]
         return (rel(path), len(visible_markers(served)), lost,
-                (states.count("absent"), states.count("atom")), None)
+                (gone, states.count("atom")), None)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         got = list(pool.map(probe, pages))
-    bad, err, lost, absent, atoms = [], [], [], 0, 0
+    bad, err, lost, absent, atoms = [], [], [], [], 0
     for r, n, l, u, e in got:
         if e:
             err.append((r, e))
         else:
-            absent += u[0]
+            if u[0]:
+                absent.append((r, u[0]))
             atoms += u[1]
             if n != pred.get(r, 0):
                 bad.append((r, pred.get(r, 0), n))
             if l:
                 lost.append((r, l))
+    named = sum(len(l) for _r, l in absent)
     print("live leg: pages=%d%s fetch-failures=%d prediction-mismatch=%d served_markers=%d "
           "bold_pages_lost=%d bold_spans_lost=%d (of %d authored pairs) "
           "words_not_in_served_page=%d bold_spans_atom_only=%d"
@@ -810,7 +814,22 @@ def run(workers=6, live=False, only=None):
              if only else "",
              len(err), len(bad), sum(n for _r, n, _l, _u, _e in got if n is not None),
              len(lost), sum(len(l) for _r, l in lost),
-             sum(len(v) for v in bolded.values()), absent, atoms))
+             sum(len(v) for v in bolded.values()), named, atoms))
+    for r, l in sorted(absent, key=lambda x: -len(x[1]))[:12]:
+        print("   BOLD-ABSENT %-45s sentence not on the served page (%d spans) — the survival "
+              "axis's MISS, not evidence about bold" % (r, len(l)))
+        for ln, b in l[:3]:
+            print("      L%-5d %s" % (ln, repr(b)[:70]))
+    # `absent` is the one bucket this axis must not judge, and until now it was a bare integer: a
+    # non-zero reading named no page and no line, so it could neither be acted on nor told apart
+    # from a copy that is simply one revision behind. The count is now derived from the list printed
+    # under it, so it cannot outlive its own evidence.
+    assert named == sum(len(l) for _r, l in absent), "the tally detached from its named rows"
+    if named:
+        assert absent, "words_not_in_served_page is non-zero but no page was named"
+        assert len(absent) <= named, "more pages than spans"
+    else:
+        assert not absent, "%d spans counted absent but the tally says none" % len(absent)
     for r, l in sorted(lost, key=lambda x: -len(x[1]))[:12]:
         print("   BOLD-LOST %-52s markers eaten, bold never produced (%d spans)" % (r, len(l)))
         for ln, b in l[:3]:
