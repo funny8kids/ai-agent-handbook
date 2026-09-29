@@ -45,12 +45,18 @@ $$
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FCE8ED","primaryBorderColor":"#E11D48","primaryTextColor":"#1F2937","secondaryColor":"#F8CDD7","tertiaryColor":"#FEF6F8","lineColor":"#EF839A","actorBkg":"#FDEDF0","actorBorder":"#E11D48","actorTextColor":"#1F2937","signalColor":"#EA617F","noteBkgColor":"#FAD6DE","noteBorderColor":"#E11D48","noteTextColor":"#1F2937","labelBoxBkgColor":"#FCE8ED","labelBoxBorderColor":"#E11D48"}}}%%
-flowchart LR
-  S["Signature<br/>输入/输出字段"] --> F["程序 f_p<br/>Module 组合<br/>ChainOfThought/ReAct"]
-  MOD["Module：执行结构"] --> F
+flowchart TB
+  subgraph IN1["定义"]
+    direction TB
+    S["Signature<br/>输入/输出字段"] ~~~ MOD["Module：执行结构"]
+  end
+  subgraph IN2["依据"]
+    direction TB
+    D["评估集 D"] ~~~ M["指标 m<br/>exact_match/F1<br/>/LLM 评分"]
+  end
+  IN1 --> F["程序 f_p<br/>Module 组合<br/>ChainOfThought/ReAct"]
   F --> O["Optimizer（MIPROv2）<br/>贝叶斯搜索<br/>指令 × few-shot"]
-  D["评估集 D"] --> O
-  M["指标 m<br/>exact_match/F1<br/>/LLM 评分"] --> O
+  IN2 --> O
   O -->|argmax 指标| P["编译产物 p*<br/>自动搜出的最优提示"]
   P -->|替换人工措辞| F
   O -->|低分方案淘汰| X["丢弃"]

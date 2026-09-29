@@ -951,6 +951,18 @@ def main():
                   % (x["row"]["page"], x["row"]["i"], x["font"], x["w"], x["rw"]))
     for p in problems[:30]:
         print("  -", p)
+    if len(problems) > 30:
+        # A capped list must not be able to hide a whole finding class. Round 110 hit this: 54 of the
+        # 56 problems were OVERWIDE lines, so the two homepage findings never reached the printout,
+        # and "13 of 14 planted lies caught" had no named reason next to it.
+        hidden = problems[30:]
+        kinds = {}
+        for p in hidden:
+            kinds[p.split(" ")[0]] = kinds.get(p.split(" ")[0], 0) + 1
+        print("  - … %d more not printed: %s" % (len(hidden), ", ".join(
+            "%s x%d" % (k, v) for k, v in sorted(kinds.items()))))
+        for p in [q for q in hidden if not q.startswith("OVERWIDE")]:
+            print("  -", p)
     print("problems=%d" % len(problems))
     return 1 if problems else 0
 

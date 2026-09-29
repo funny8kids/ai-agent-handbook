@@ -19,7 +19,7 @@ updated: 2026-09-23
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"primaryColor":"#FBE9F1","primaryBorderColor":"#DB2777","primaryTextColor":"#1F2937","secondaryColor":"#F7CFE1","tertiaryColor":"#FEF6FA","lineColor":"#EB88B4","actorBkg":"#FDF0F5","actorBorder":"#DB2777","actorTextColor":"#1F2937","signalColor":"#E5619C","noteBkgColor":"#F9DCE9","noteBorderColor":"#DB2777","noteTextColor":"#1F2937","labelBoxBkgColor":"#FBE9F1","labelBoxBorderColor":"#DB2777"}}}%%
-flowchart LR
+flowchart TB
     A[prompt 累积轨迹] --> B[LLM 生成下一步]
     B -->|Final Answer| E[返回答案]
     B -->|Action| C[执行工具]
