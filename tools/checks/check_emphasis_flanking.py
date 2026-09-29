@@ -102,6 +102,12 @@ RUN = re.compile(r"(\*+)")
 # uses the old pattern: its readings are anchored on the live page, so switching it is a separate
 # re-anchoring job, handed to the next round rather than half-done here.
 CODE_RUN = re.compile(r"(`{1,})(?:(?!\1).)*?\1")
+# What `TAG` is NOT: PS.TAG matches GitBook's liquid `{% hint %}` blocks, so an HTML tag written in
+# prose survived the blanker as its own NAME. Measured on `README.md:120`: the author-side key
+# 「…药丸底rect先画连线后画」 matched the reader's prose for exactly 28 characters and broke at the "r",
+# because a browser parses `<rect>` as an element and its name is never a text node. A tag whose name
+# starts with a letter is what an HTML parser accepts, so `x < 2px` and `a > b` stay prose.
+HTML_TAG = re.compile(r"</?[A-Za-z][^<>]*>")
 INLINE_CODE = PS.INLINE_CODE
 INLINE_MATH = PS.INLINE_MATH
 LINK = PS.LINK
@@ -153,7 +159,8 @@ def paragraphs(text):
             s, keep = "", False
         t = s
         if keep:
-            t = TAG.sub(" ", INLINE_MATH.sub(ATOM, CODE_RUN.sub(ATOM, LINK.sub(ATOM, s))))
+            t = TAG.sub(" ", HTML_TAG.sub("", INLINE_MATH.sub(ATOM,
+                           CODE_RUN.sub(ATOM, LINK.sub(ATOM, s)))))
         boundary = (not keep) or (not t.strip()) or BLOCK_START.match(t.lstrip())
         if boundary and buf:
             paras.append((start, " ".join(buf)))
