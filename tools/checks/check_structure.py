@@ -166,6 +166,49 @@ def outside_fences(text):
     return "\n".join(l if keep else "" for l, keep in zip(lines, mask)), balanced
 
 
+CODE_RUN_RE = re.compile(r"`+")
+
+
+def pair_inline_code(line):
+    """CommonMark-shaped inline code for one line: (accepted span contents, leftover openers).
+
+    A run of k backticks opens a span and ONLY a run of exactly k closes it; while a span is open a
+    run of another length is its content. So a paragraph with an odd run count does not merely look
+    wrong -- every pairing after the stray delimiter shifts by one, which turns the following prose
+    into code and drops the bold the author wrote there.
+    """
+    spans, pending = [], None
+    pos = 0
+    for m in CODE_RUN_RE.finditer(line):
+        k = len(m.group(0))
+        if pending is None:
+            pending = (k, m.end())
+        elif k == pending[0]:
+            spans.append(line[pending[1]:m.start()])
+            pending = None
+        pos = m.end()
+    return spans, pending
+
+
+def code_parity(rel, lines, problems):
+    """Flag a line only when BOTH halves of the mis-pairing are present: an opener that never
+    closes, and a span that swallowed a `**` marker. The corpus writes `` `**` `` and
+    `` `**…**` `` on purpose to teach the marker, and those lines pair evenly -- content alone
+    cannot be the rule, or the seven legitimate teaching spans would read as defects."""
+    for i, line in enumerate(lines, 1):
+        if "`" not in line or "**" not in line:
+            continue
+        spans, pending = pair_inline_code(line)
+        if pending and any("**" in s for s in spans):
+            swallowed = [s for s in spans if "**" in s][0]
+            problems.append(
+                "CODEPARITY %s:body-line %d has an unterminated inline-code delimiter, so every "
+                "code span after it shifts by one: the reader gets %r as monospace with a literal "
+                "** in it, and the bold the author wrote there never renders: %r"
+                % (rel, i, swallowed[:48], line.strip()[:60]))
+    return len(problems)
+
+
 def scan(rel, text, counts=None):
     """Problems for one page. `rel` is docs-relative, forward slashes.
 
@@ -215,6 +258,7 @@ def scan(rel, text, counts=None):
                             "backslash cannot escape the delimiter, so the span closes early and "
                             "the delimiters it strands become an empty formula that swallows the "
                             "text between them: %r" % (rel, i, line.strip()[:60]))
+    code_parity(rel, body.split("\n"), problems)
     tables, rows = table_arity(rel, body.split("\n"), problems)
     orphans = table_orphans(rel, body.split("\n"), problems)
     if counts is not None:
@@ -430,10 +474,29 @@ echo hi
         assert len(hits) == 1, \
             "control: deleting a shipped table header gave %d orphan findings, expected exactly 1" \
             % len(hits)
+    # CODEPARITY controls: the shipped homepage defect and the writing it must NOT flag.
+    def parity(text):
+        return [p for p in scan("x/y.md", text) if p.startswith("CODEPARITY")]
+
+    fm1 = "---\ntags: [t]\ntype: index\nstatus: published\nupdated: 2026-09-29\n---\n\n# T\n\n"
+    stray = fm1 + "等号只钉在 `problems=0` 上）`。**`knowledge` 一个键同时压着三档，判据只能硬判**，" \
+                  "量到了；`--selftest` 10 条控制项验证\n"
+    assert len(parity(stray)) == 1, \
+        "control: a stray inline-code delimiter that shifts every later pairing gave %d findings, " \
+        "expected exactly 1 (this is the shape the homepage shipped)" % len(parity(stray))
+    taught = fm1 + "旧写法 `的**「一条判据…」这件事本身没有对平轴**。` 里开场的 `**` 前是汉字；" \
+                  "示例 `` `**…** `` 也照样是教材\n"
+    assert parity(taught) == [], \
+        "control: the corpus's legitimate teaching spans were flagged (%s) — the rule would be " \
+        "grading the book's own examples as defects" % parity(taught)[:2]
+    repaired = stray.replace("上）`。**", "上）。**")
+    assert parity(repaired) == [], \
+        "control: the shipped fix did not quiet its own rule (%s)" % parity(repaired)[:1]
     print("controls: in-fence heading ignored / real second H1, missing key, unclosed fence caught"
           " / TOC-reprinted marker and escaped backtick flagged, in-fence copies of both accepted"
           " / executable fences flagged in 5 languages and 6 data tags accepted"
-          " / nested 4-backtick example walked without closing early")
+          " / nested 4-backtick example walked without closing early"
+          " / a stray code delimiter caught, teaching spans and the repaired line accepted")
 
 
 def main():
