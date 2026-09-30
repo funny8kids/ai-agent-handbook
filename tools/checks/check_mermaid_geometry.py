@@ -968,15 +968,16 @@ def main():
     assert len(rows) >= 200, "vacuity: extractor only found %d blocks" % len(rows)
 
     if args.selftest:
+        # Both control helpers return (failure lines, checks) — same shape, so the arithmetic below
+        # cannot read a list as a count (which is exactly how this handler first crashed).
         ink_bad, ink_checks = ink_controls()
         debt_bad, debt_checks = debt_controls()
-        ns = lambda v: v if isinstance(v, int) else len(v)
-        for line in (debt_bad if not isinstance(debt_bad, int) else []):
+        for line in ink_bad + debt_bad:
             print("CONTROL-FAILED: %s" % line)
         print("controls: ink %d of %d, debt %d of %d, %d failed"
-              % (ink_checks - ns(ink_bad), ink_checks,
-                 debt_checks - ns(debt_bad), debt_checks,
-                 ns(ink_bad) + ns(debt_bad)))
+              % (ink_checks - len(ink_bad), ink_checks,
+                 debt_checks - len(debt_bad), debt_checks,
+                 len(ink_bad) + len(debt_bad)))
         sys.exit(1 if (ink_bad or debt_bad) else 0)
     if args.eyeball:
         rel = os.path.normpath(os.path.join(DOCS, args.eyeball.replace("\\", "/")))
@@ -1256,8 +1257,9 @@ def eyeball_verdict(path):
 
 
 def ink_controls():
-    """(bad, checks) for the ink guard: two arms that must pass, three that must not, and the real
-    render the old byte rule ate. A missing real artifact is reported, never counted as ok."""
+    """(failure lines, checks) for the ink guard, same shape as debt_controls(): two arms that must
+    pass by content, four that must refuse, and the two narrow-on-wide arms the byte rule got wrong.
+    A missing real artifact is reported, never counted as ok."""
     tmp = tempfile.mkdtemp(prefix="mmdink")
     inked = lambda x, y: (31, 41, 55) if 100 <= x < 260 and 80 <= y < 240 else (255, 255, 255)
     shape = os.path.join(tmp, "shape.png")
@@ -1322,9 +1324,8 @@ def ink_controls():
             print("the arm the old byte rule ate: %s bytes (<= 20000) yet %s" % (size, line))
     else:
         print("  NOTE round-120 narrow render is not on disk (%s) - that arm did not run" % narrow)
-    for entry in lines:
-        print(entry)
-    return bad, checks
+    assert bad == len(lines), "ink control counter and its failure list disagree (%d vs %d)" % (bad, len(lines))
+    return lines, checks
 
 
 def eyeball(js_path, blocks, budget):
@@ -1332,9 +1333,11 @@ def eyeball(js_path, blocks, budget):
     if not js_path:
         print("SKIP: no mermaid bundle (see --mermaid-js)")
         return 2
-    bad, checks = ink_controls()
-    print("ink controls %d of %d able to fire" % (checks - bad, checks))
-    if bad:
+    ink_fail, checks = ink_controls()
+    for entry in ink_fail:
+        print(entry)
+    print("ink controls %d of %d able to fire" % (checks - len(ink_fail), checks))
+    if ink_fail:
         return 1
     out = os.path.join(tempfile.gettempdir(), "mmd58_eyeball.png")
     if os.path.isfile(out):

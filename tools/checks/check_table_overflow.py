@@ -277,8 +277,16 @@ PROBE = """
               cls: String(t.className).slice(0, 90)};
     });
     var m = document.querySelector('main');
+    // Whether the platform's rules actually arrived. A <link> that the CDN refused still sits in
+    // the DOM, but its `.sheet` is null — and then every cell computes to overflow-wrap:normal
+    // while the table markup is intact. That is a copy this run could not judge, not a book whose
+    // long tokens now paint over their neighbours, so the reading has to be taken here.
+    var ls = [].slice.call(document.querySelectorAll('link[rel=stylesheet]'));
+    var dead = ls.filter(function (l) { return !l.sheet; })
+                 .map(function (l) { return String(l.href).slice(0, 56); });
     return {main: m ? Math.round(m.getBoundingClientRect().width) : null,
             vw: innerWidth, cells: rows.length, rows: rows, tables: tin,
+            css: {links: ls.length, dead: dead.slice(0, 3)},
             style: (cells[0] ? cells[0].getAttribute('style') || '' : '').slice(0, 120)};
   }
   function control(tables) {
@@ -346,6 +354,38 @@ def check_control(rep, rel):
     return norm["spillR"]
 
 
+def css_verdict(rep):
+    """(kind, line, breaking) for one answered copy, kind in {'gap', 'problem', None}.
+
+    Proven by .tmp-projects/r122_css_dead_control.py on 2026-09-30, which renders the same copy of
+    04-prompt-reasoning/self-refine.md twice: with its stylesheets intact it lays out at <main>=768
+    and every cell computes overflow-wrap:anywhere + word-break:break-word; with one stylesheet
+    href pointed at a dead port it lays out at <main>=1439 and every cell computes normal/normal —
+    while the page still reports links=4, dead=[]. So a stylesheet that never arrives is visible
+    here as the column it took with it, and the <link> detector is blind: evidence in the print,
+    never a branch. That also explains the two aborts this round, which named two different pages.
+
+      gap      not the reader's column and nothing breaks: never measured the way a reader sees it,
+               so it cannot convict the book — and must not abort the pages under it
+      problem  the reader's column and nothing breaks: a real finding, reported for the whole sweep
+      None     the book's own reading
+    """
+    wrap = sorted({(r["ow"], r["wb"]) for r in rep["rows"]})
+    css = rep.get("css") or {}
+    main = rep.get("main")
+    breaking = any(ow in ("anywhere", "break-word") or wb == "break-word" for ow, wb in wrap)
+    if main != COLUMN_LIVE and not breaking:
+        return "gap", ("cells compute %s at <main>=%s rather than the %dpx reader column "
+                       "(%s stylesheet(s) reported, %s unread) — never measured the way a reader "
+                       "sees it, so no statement about its cells"
+                       % (wrap, main, COLUMN_LIVE, css.get("links"), len(css.get("dead") or []))), breaking
+    if not breaking:
+        return "problem", "every cell computes %s at the %dpx column with %s stylesheet(s) reported" % (
+            wrap, main, css.get("links")), breaking
+    return None, "", breaking
+
+
+
 def account(cand_n, answered, measured, served_short, spills, floors, problems, gaps, quiet=False):
     """Content findings and coverage gaps in separate buckets — either fails the run, but only
     one of them is a statement about the book."""
@@ -395,6 +435,43 @@ def candidates_selftest():
     assert len(all_picked) == len(pages), "--pages all must still visit every table page"
     print("  candidates: %d arms ok (formula pages survive a --pages 1 budget, plain pages do not "
           "join, $-pairs are the only cell math)" % 6)
+    return 0
+
+
+def wrap_selftest():
+    """The word-breaking sentinel's three arms, offline. Before 2026-09-30 all three paths raised
+    one AssertionError that named the whole book from a single page and aborted the sweep, so the
+    pages under it went unjudged — that is the shape these arms have to tell apart."""
+    def row(ow, wb="normal"):
+        return {"ow": ow, "wb": wb}
+    clean = {"main": 768, "rows": [row("anywhere", "break-word")], "css": {"links": 4, "dead": []}}
+    unjudged = {"main": 1439, "rows": [row("normal")], "css": {"links": 4, "dead": []}}
+    gone = {"main": 768, "rows": [row("normal"), row("normal", "normal")],
+            "css": {"links": 4, "dead": []}}
+    assert css_verdict(clean) == (None, "", True), (
+        "the book's own reading must not be reported: %r" % (css_verdict(clean), ))
+    kind, detail, breaking = css_verdict(unjudged)
+    assert (kind, breaking) == ("gap", False), (
+        "a copy that never reached the reader's column must be a gap, not a book verdict: %r"
+        % ((kind, breaking), ))
+    assert "1439" in detail and "never measured" in detail, (
+        "the gap must name the column it missed: %r" % detail)
+    kind2, detail2, _ = css_verdict(gone)
+    assert kind2 == "problem", (
+        "the reader's column, rules reported, nothing breaking must stay a content finding: %r" % kind2)
+    assert "at the 768px column with 4 stylesheet(s) reported" in detail2, (
+        "the finding must say the column was the reader's own: %r" % detail2)
+    # ...and each arm must land in the bucket whose counter the reader sees
+    gap_line = "COPY-COLUMN x.md: %s" % detail
+    off_line = "WRAP-OFF x.md: %s" % detail2
+    assert account(8, 7, 1893, [], [], [], [], [gap_line], quiet=True) == 1, (
+        "a copy judged outside the reader's column must not exit 0")
+    assert account(8, 8, 2872, [], [], [], [off_line], [], quiet=True) == 1, (
+        "a real wrap-off must not exit 0")
+    print("  word-breaking sentinel: 3 arms ok (the book's own reading silent, a copy outside the "
+          "reader's column is a gap that the sweep survives, that column with nothing breaking is "
+          "a finding)")
+
     return 0
 
 
@@ -461,6 +538,9 @@ def main():
 
     if args.selftest:
         rc = candidates_selftest()
+        if rc:
+            return rc
+        rc = wrap_selftest()
         return rc if rc else account_selftest()
 
     count = "all" if args.pages == "all" else int(args.pages)
@@ -528,19 +608,25 @@ def main():
             # 1500 (round 101). The guard therefore reads the page's own reported window.
             confirm_window(COPY_VIEWPORT, rep.get("vw"), "copy of %s" % rel,
                            need=COPY_CAP_BINDS_AT)
+            kind, detail, breaking = css_verdict(rep)
+            if kind == "gap":
+                # Round 94's rule again: "never measured" and "measured clean" may not share a
+                # verdict — and an assert inside the sweep is a silent ruler for every page under
+                # it, which is how this guard cost 8 and 14 pages of readings today.
+                gaps.append("COPY-COLUMN %s: %s" % (rel, detail))
+                continue
             if rep.get("main") != COLUMN_LIVE:
-                # Reported rather than asserted: one page rendering at another column is a finding
-                # about that page, while aborting the run would hide every page after it.
+                # The column moved while the platform's rules are intact: that IS a finding about
+                # the page, reported rather than asserted so the rest of the sweep still answers.
                 problems.append("COLUMN %s measured <main>=%s at vw=%d, not the %dpx under test"
                                 % (rel, rep.get("main"), rep.get("vw"), COLUMN_LIVE))
             assert "clamp(" in rep.get("style", ""), \
                 "%s: cells no longer carry the clamp() min-width the axis documents: %r" % (rel, rep.get("style"))
             broken = [r for r in rep["rows"] if max(r["spillR"], r["spillL"]) > SPILL_TOL]
             bust = [t for t in rep["tables"] if t["w"] > COLUMN_LIVE + SPILL_TOL]
-            wrap = sorted({(r["ow"], r["wb"]) for r in rep["rows"]})
-            assert any(ow in ("anywhere", "break-word") or wb == "break-word" for ow, wb in wrap), \
-                "%s: the platform stopped breaking long words inside cells (%s) — every long token " \
-                "in the book now paints over its neighbour" % (rel, wrap)
+            if kind == "problem":
+                problems.append("WRAP-OFF %s: %s — every long token here paints over its neighbour"
+                                % (rel, detail))
             measured += rep["cells"]
             answered += 1
             # Served-vs-authored, printed before any bar is set on it: a page that answers with two
@@ -550,7 +636,14 @@ def main():
             cell_rows.append((rel, rep["cells"], authored))
             spills += [dict(r, page=rel) for r in broken]
             floors += bust
-            ctl = "" if args.no_control else " | control spills %dpx with breaking off" % check_control(rep, rel)
+            if args.no_control:
+                ctl = ""
+            elif not breaking:
+                # Its platform arm asserts a 0 spill, which a page that stopped breaking cannot meet;
+                # running it there would abort the sweep over a finding WRAP-OFF already printed.
+                ctl = " | control skipped (nothing breaks on this page)"
+            else:
+                ctl = " | control spills %dpx with breaking off" % check_control(rep, rel)
             print("  %-52s vw=%-5s main=%-4s cells=%-4d/%-4d tok=%-3d tables=%-2s worst-ink=%-4d spill=%d bust=%d%s"
                   % (rel, rep.get("vw"), rep.get("main"), rep["cells"], authored, toklen,
                      len(rep["tables"]),
