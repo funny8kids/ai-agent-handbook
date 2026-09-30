@@ -327,13 +327,46 @@ def expect_of(text):
     }
 
 
+INDEX_ATTEMPTS = 6
+INDEX_BACKOFF = 3
+
+
+class IndexUnreachable(Exception):
+    """The published index could not be read after the whole retry budget.
+
+    Named, and carrying its own attempt count, because `url_index()` is what five live axes resolve
+    their page URLs from: when it fails they must report "this leg never saw the site", not quietly
+    judge zero pages. `URLError` and `WireError` both reach `OSError`, so one except clause covers
+    the SSL resets and the short reads with the same budget.
+    """
+
+    def __init__(self, attempts, reasons):
+        Exception.__init__(self, "the site index never arrived after %d attempt(s) — %s"
+                           % (attempts, "; ".join(reasons)))
+        self.attempts = attempts
+
+
+def llms_text(attempts=INDEX_ATTEMPTS, backoff=INDEX_BACKOFF, sleep=None):
+    if sleep is None:
+        import time
+        sleep = time.sleep
+    reasons = []
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(wire.request(LLMS, {"User-Agent": "python-urllib"}),
+                                        timeout=30) as resp:
+                return wire.decode(getattr(resp, "headers", None), resp.read(), LLMS).decode(
+                    "utf-8", "replace")
+        except (wire.WireError, OSError) as exc:
+            reasons.append("attempt %d: %s" % (attempt, repr(exc)[:110]))
+            if attempt < attempts:
+                sleep(backoff * attempt)      # attempts must be seconds apart, not one request thrice
+    raise IndexUnreachable(attempts, reasons)
+
+
 def url_index():
-    with urllib.request.urlopen(wire.request(LLMS, {"User-Agent": "python-urllib"}),
-                                timeout=30) as resp:
-        text = wire.decode(getattr(resp, "headers", None), resp.read(), LLMS).decode(
-            "utf-8", "replace")
     by_title = {}
-    for title, url in re.findall(r"\[([^\]]+)\]\((https://[^)\s]+\.md)\)", text):
+    for title, url in re.findall(r"\[([^\]]+)\]\((https://[^)\s]+\.md)\)", llms_text()):
         by_title.setdefault(norm(title.strip()), []).append(url.strip())
     return {k: v[0][:-3] for k, v in by_title.items() if len(v) == 1}
 
