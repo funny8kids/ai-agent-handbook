@@ -538,7 +538,6 @@ ACCEPTED_OVERWIDE = frozenset("""
 05-tool-protocol/function-calling.md#1
 05-tool-protocol/mcp.md#1
 07-planning/error-recovery-retry.md#1
-08-multi-agent/communication-protocol.md#1
 09-frameworks/README.md#1
 09-frameworks/autogen.md#1
 09-frameworks/mcp-servers.md#1
