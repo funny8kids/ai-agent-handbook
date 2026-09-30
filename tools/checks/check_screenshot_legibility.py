@@ -297,17 +297,36 @@ ZOOM_READ = r"""
 """
 
 
-def read_page(pg, url):
-    pg.goto(url, wait_until="domcontentloaded", timeout=45000)
-    try:
-        pg.wait_for_load_state("networkidle", timeout=8000)      # a hint, not a gate (round 74)
-    except Exception:
-        pass
-    pg.wait_for_timeout(2500)
-    pg.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")   # lazy images need a scroll
-    pg.wait_for_timeout(2000)
-    pg.evaluate("() => window.scrollTo(0, 0)")
-    pg.wait_for_timeout(600)
+def read_page(pg, url, tries=3):
+    """Navigate one reader page, retrying the WHOLE load-and-settle sequence.
+
+    A refused or half-closed connection (`net::ERR_CONNECTION_CLOSED`) is retried rather than
+    raised, because a partial load is not a clean read either: the probe would then report boxes
+    that never arrived as if they were the platform's doing. Round 122 measured this leg dying at
+    its first navigation on the same page twice in a row, and the crash took every page's finding
+    with it -- so exhaustion is a coverage gap for the caller to file, never a verdict.
+    """
+    last = None
+    for attempt in range(1, tries + 1):
+        try:
+            pg.goto(url, wait_until="domcontentloaded", timeout=45000)
+            try:
+                pg.wait_for_load_state("networkidle", timeout=8000)      # a hint, not a gate (round 74)
+            except Exception:
+                pass
+            pg.wait_for_timeout(2500)
+            pg.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")   # lazy images need a scroll
+            pg.wait_for_timeout(2000)
+            pg.evaluate("() => window.scrollTo(0, 0)")
+            pg.wait_for_timeout(600)
+            return attempt
+        except Exception as exc:
+            last = (attempt, repr(exc)[:120])
+            try:
+                pg.wait_for_timeout(2500)      # a dead target raises here too; the caller re-contexts
+            except Exception:
+                break
+    raise RuntimeError("page never loaded after %d attempt(s): %s" % (last[0], last[1]))
 
 
 def live_leg(eyeball, zoom, dprs=(1, 2), limit=None):
@@ -404,6 +423,17 @@ def live_leg(eyeball, zoom, dprs=(1, 2), limit=None):
                     print("  [%d/%d] %-44s dpr%d main=%d %d/%d figures, %d wide"
                           % (n, len(pages), page, dpr, rep["main"], len(rep["rows"]),
                              rep["dom"], len(big)))
+                except AssertionError:
+                    # A broken premise (the column no longer pins what this axis assumes) is NOT a
+                    # coverage gap: it means the ruler needs re-reading, and swallowing it here would
+                    # let the axis report a clean-ish run built on a premise it never verified.
+                    raise
+                except Exception as exc:
+                    stalls.append("%s dpr%d: the reader page never answered (%s) - coverage gap, not "
+                                  "a clean read and not a finding about its figures"
+                                  % (page, dpr, repr(exc)[:110]))
+                    print("  [%d/%d] %-44s dpr%d BLIND - page never answered, other pages still read"
+                          % (n, len(pages), page, dpr))
                 finally:
                     ctx.close()
         br.close()

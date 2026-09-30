@@ -9,6 +9,10 @@ updated: 2026-09-30
 
 本页记录手册的结构调整与重要内容更新。
 
+## 2026-09-30（第 123 次）截图可读性那条官方读法第一次跑通：导航失败整趟重试三次，盲页只进覆盖率桶
+
+第 122 轮欠的账是这条腿自己：两次串行运行都停在 `05-tool-protocol/mcp.md` 的首趟 `pg.goto`（`net::ERR_CONNECTION_CLOSED`），而且一崩就把前面已读到页的结论一起丢掉，所以 `--live --zoom` 那个读数根本拿不到。现在 `read_page` 把「导航＋等网络＋滚动触发懒加载」当成一趟可重试的整体（半份页面不算干净读数），耗尽后由 `live_leg` 记进这条轴原有的覆盖率桶并单独印一行 `BLIND`，而「列宽不再钉住图」那类 `AssertionError` 照旧逃逸——前提破了要重读尺子，不许伪装成没量到。三条控制臂各埋各跑：盲页必须落进覆盖率且整轮非零、给图强行注入 400px 样式后 assert 仍然响、假页面必须在三次之后给出预算消息。书的读数第一次真闭：`figures=8 told-and-verified=8 problems=0 cap=18 coverage=0`，8 张位图全部经真实读者页验到「点开可读原尺寸」，第 122 轮那条 8 张 UNVERIFIED 随本轮结清；正文一字未动。留下的账：目录腿 `_heading_rows` 仍是那把没有等长回指的旧行内代码尺子（本轮全站量过：221 页、3144 个标题、117 个带反引号，新旧两把尺子的取跨度与扁平化键都是 0 分歧——相等是今天的读数，还没有判据盯着），以及 `LA.url_index()` 取站点索引那条腿没走 `wire_decode` 的重试接缝。
+
 ## 2026-09-30（第 122 次）表格轴那句「平台不再断词」先量清了自己：副本没进到读者的 768 列就不许判书
 
 本轮离线电池第一次红在 `04-prompt-reasoning/self-refine.md`，十几分钟后复跑红在 `22-build-llm-from-scratch/spec.md`——两次都不是同一页，而 assert 一响它后面的读数全丢（一次少 8 页、一次少 14 页）。机制用 `.tmp-projects/r122_css_dead_control.py` 把同一页的副本渲两遍量清：样式表照旧时 `<main>=768`、每格 `overflow-wrap:anywhere + word-break:break-word`；把一条 stylesheet 指到没人监听的端口后 `<main>=1439`、每格变成 `normal/normal`。也就是说断词是跟着列宽一起来的，而页面自己上报 `links=4, dead=[]`——所以我先写的「看 `<link>.sheet` 到没到」那把新尺子是瞎的，只留作证据、不再当判据。现在 `<main>` 不在 768 且格子里不断词＝`COPY-COLUMN`，进覆盖率桶（整轮照样非零，但不再吞掉后面的页）；在 768 列、规则齐备而仍不断词＝`WRAP-OFF`，那才是内容判据；三条臂各埋离线控制，`--selftest` 里逐条印出来。书的读数一字未动：`pages=18/18 cells=3630 content-problems=0 coverage-gaps=0`，第 121 轮那条墨覆盖判据也随本轮一起把控制返回值统一成「失败行＋检查数」。留下的账：`--skip live` 里截图默认腿仍是 8 张 UNVERIFIED（跑 `--live --zoom` 才闭），目录腿 `_heading_rows` 的旧行内代码尺子和 `absent` 桶的 attempt 打印照旧。
