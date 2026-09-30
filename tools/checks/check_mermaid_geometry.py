@@ -46,6 +46,8 @@ Usage:
     python tools/checks/check_mermaid_geometry.py --mermaid-js <dir-with-node_modules>
     python tools/checks/check_mermaid_geometry.py --eyeball 04-prompt-reasoning/react.md
         -> writes a PNG of that page's diagrams for a real rendered look
+    python tools/checks/check_mermaid_geometry.py --selftest
+        -> runs this axis's planted control arms (ink guard + accepted-debt ledger) and exits
     python tools/checks/check_mermaid_geometry.py --engine-selftest
         -> proves the engine preflight refuses a browser that hands back no DOM
 """
@@ -57,11 +59,13 @@ import json
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.normpath(os.path.join(HERE, "..", "..", "docs"))
@@ -947,6 +951,9 @@ def main():
                          "verdict. The reader's body text is 16px; round 62 measures what a diagram "
                          "label actually costs them.")
     ap.add_argument("--eyeball", metavar="PAGE", help="render one page's diagrams to a PNG and exit")
+    ap.add_argument("--selftest", action="store_true",
+                    help="run this axis's planted control arms (eyeball ink guard + accepted-debt "
+                         "ledger) and exit; `run_battery.py --selftests` discovers it by this flag")
     ap.add_argument("--engine-selftest", action="store_true",
                     help="check only that the launcher's engine preflight has teeth: it accepts a "
                          "browser that renders and refuses one that exits 0 without a DOM")
@@ -960,6 +967,17 @@ def main():
           % (len(rows), len({r["page"] for r in rows})))
     assert len(rows) >= 200, "vacuity: extractor only found %d blocks" % len(rows)
 
+    if args.selftest:
+        ink_bad, ink_checks = ink_controls()
+        debt_bad, debt_checks = debt_controls()
+        ns = lambda v: v if isinstance(v, int) else len(v)
+        for line in (debt_bad if not isinstance(debt_bad, int) else []):
+            print("CONTROL-FAILED: %s" % line)
+        print("controls: ink %d of %d, debt %d of %d, %d failed"
+              % (ink_checks - ns(ink_bad), ink_checks,
+                 debt_checks - ns(debt_bad), debt_checks,
+                 ns(ink_bad) + ns(debt_bad)))
+        sys.exit(1 if (ink_bad or debt_bad) else 0)
     if args.eyeball:
         rel = os.path.normpath(os.path.join(DOCS, args.eyeball.replace("\\", "/")))
         src = open(rel, encoding="utf-8").read()
@@ -1112,11 +1130,212 @@ def main():
     return 1 if problems else 0
 
 
+# Round 120's named debt, fixed in round 121: `--eyeball` used to verdict its own PNG by
+# `os.path.getsize() > 20000`. Size is neither necessary nor sufficient for "the reader would see a
+# diagram" — `.tmp-projects/r120_comm.png` is a clean 1280x900 render of the stacked star /
+# point-to-point diagram and weighs 15,442 bytes, so the axis exited 1 with no reason line, while a
+# mostly-empty wide canvas would have passed. The quantity the guard means is ink coverage.
+PNG_SIG = b"\x89PNG\r\n\x1a\n"
+INK_DELTA = 30            # a pixel is ink when it differs from the page's own background by more than this
+INK_MIN_FRACTION = 0.0003  # pinned by the controls below, which print every arm's measured fraction
+INK_MAX_SAMPLED = 400000  # the loop is O(pixels); a diagram paints thousands of px, so thinning is safe
+
+
+def _png_rows(data):
+    """(width, height, channels, rows) for a non-interlaced 8-bit PNG; anything else raises.
+
+    Refusing is part of the contract: a half-read file reporting "almost no ink" would file a broken
+    engine as a blank diagram, which is the same blind spot the byte threshold had.
+    """
+    if not data.startswith(PNG_SIG):
+        raise ValueError("not a PNG")
+    pos, idat, ihdr = 8, [], None
+    while pos + 12 <= len(data):
+        ln = struct.unpack(">I", data[pos:pos + 4])[0]
+        kind = data[pos + 4:pos + 8]
+        if ln + 12 > len(data) - pos:
+            raise ValueError("truncated %s chunk" % kind.decode("ascii", "replace"))
+        if kind == b"IHDR":
+            ihdr = data[pos + 8:pos + 8 + ln]
+        elif kind == b"IDAT":
+            idat.append(data[pos + 8:pos + 8 + ln])
+        elif kind == b"IEND":
+            break
+        pos += 12 + ln
+    if not ihdr or not idat:
+        raise ValueError("no IHDR/IDAT")
+    width, height, depth, ctype, _comp, _filt, interlace = struct.unpack(">IIBBBBB", ihdr[:13])
+    if depth != 8 or interlace != 0 or ctype not in (0, 2, 6):
+        raise ValueError("unsupported PNG (depth=%d color=%d interlace=%d)" % (depth, ctype, interlace))
+    channels = {0: 1, 2: 3, 6: 4}[ctype]
+    raw = zlib.decompress(b"".join(idat))
+    stride = width * channels
+    if len(raw) != (stride + 1) * height:
+        raise ValueError("decoded %d bytes, need %d" % (len(raw), (stride + 1) * height))
+    rows, prev = [], bytearray(stride)
+    for y in range(height):
+        base = y * (stride + 1)
+        ft = raw[base]
+        line = bytearray(raw[base + 1:base + 1 + stride])
+        if ft == 1:
+            for x in range(channels, stride):
+                line[x] = (line[x] + line[x - channels]) & 0xFF
+        elif ft == 2:
+            for x in range(stride):
+                line[x] = (line[x] + prev[x]) & 0xFF
+        elif ft == 3:
+            for x in range(stride):
+                a = line[x - channels] if x >= channels else 0
+                line[x] = (line[x] + ((a + prev[x]) >> 1)) & 0xFF
+        elif ft == 4:
+            for x in range(stride):
+                a = line[x - channels] if x >= channels else 0
+                b, c = prev[x], (prev[x - channels] if x >= channels else 0)
+                p = a + b - c
+                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                line[x] = (line[x] + (a if (pa <= pb and pa <= pc) else (b if pb <= pc else c))) & 0xFF
+        elif ft != 0:
+            raise ValueError("bad filter type %d on row %d" % (ft, y))
+        rows.append(bytes(line))
+        prev = line
+    return width, height, channels, rows
+
+
+def ink_fraction(path):
+    """Share of sampled pixels differing from the page's top-left pixel (its own background).
+
+    Background-relative, not "non-white", so a diagram painted on a tinted canvas cannot measure zero
+    and get a correct render refused.
+    """
+    with open(path, "rb") as fh:
+        width, height, channels, rows = _png_rows(fh.read())
+    bg = rows[0][:channels]
+    step = max(1, int((width * height) / INK_MAX_SAMPLED) + 1) if width * height > INK_MAX_SAMPLED else 1
+    ink = seen = 0
+    for y in range(0, height, step):
+        row = rows[y]
+        for x in range(0, width, step):
+            o = x * channels
+            seen += 1
+            if any(abs(row[o + i] - bg[i]) > INK_DELTA for i in range(channels)):
+                ink += 1
+    if not seen:
+        raise ValueError("no pixels sampled (%dx%d step %d)" % (width, height, step))
+    return ink / seen, seen
+
+
+def _write_png(path, width, height, paint):
+    """Minimal 8-bit RGB encoder (filter 0) so the planted controls are real PNG bytes, not mocks."""
+    rows = bytearray()
+    for y in range(height):
+        rows.append(0)
+        for x in range(width):
+            rows.extend(paint(x, y))
+
+    def chunk(kind, body):
+        return (struct.pack(">I", len(body)) + kind + body
+                + struct.pack(">I", zlib.crc32(kind + body) & 0xFFFFFFFF))
+
+    with open(path, "wb") as fh:
+        fh.write(PNG_SIG)
+        fh.write(chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)))
+        fh.write(chunk(b"IDAT", zlib.compress(bytes(rows), 6)))
+        fh.write(chunk(b"IEND", b""))
+
+
+def eyeball_verdict(path):
+    """(ok, printed reason) — ink decides, the byte size is reported but never judged."""
+    if not os.path.isfile(path):
+        return False, "no PNG written"
+    try:
+        frac, seen = ink_fraction(path)
+    except (ValueError, OSError) as exc:
+        return False, "PNG unreadable (%s), so no ink verdict" % exc
+    return frac >= INK_MIN_FRACTION, "ink=%.4f%% of %d sampled px (bar %.4f%%)" % (
+        100 * frac, seen, 100 * INK_MIN_FRACTION)
+
+
+def ink_controls():
+    """(bad, checks) for the ink guard: two arms that must pass, three that must not, and the real
+    render the old byte rule ate. A missing real artifact is reported, never counted as ok."""
+    tmp = tempfile.mkdtemp(prefix="mmdink")
+    inked = lambda x, y: (31, 41, 55) if 100 <= x < 260 and 80 <= y < 240 else (255, 255, 255)
+    shape = os.path.join(tmp, "shape.png")
+    _write_png(shape, 640, 480, inked)
+    tinted = os.path.join(tmp, "tinted.png")
+    _write_png(tinted, 640, 480, lambda x, y: (31, 41, 55) if 100 <= x < 260 and 80 <= y < 240
+               else (240, 244, 248))
+    blank = os.path.join(tmp, "blank.png")
+    _write_png(blank, 640, 480, lambda x, y: (255, 255, 255))
+    dot = os.path.join(tmp, "dot.png")
+    _write_png(dot, 640, 480, lambda x, y: (0, 0, 0) if (x, y) == (10, 10) else (255, 255, 255))
+    cut = os.path.join(tmp, "cut.png")
+    with open(shape, "rb") as fh:
+        half = fh.read()[:1200]
+    with open(cut, "wb") as fh:
+        fh.write(half)
+    arms = [("painted block on white must pass", shape, True, None),
+            ("painted block on a tinted canvas must pass", tinted, True, None),
+            ("all-white page must be refused", blank, False, None),
+            ("one stray pixel must be refused", dot, False, None),
+            ("a truncated PNG must refuse, not report blank", cut, False, "unreadable"),
+            # The screenshot engine on this machine is known to exit 0 without writing the file,
+            # so "no file at all" has to be a refusal rather than a reading.
+            ("an engine that wrote no PNG must be refused", os.path.join(tmp, "never-written.png"),
+             False, "no PNG written")]
+    bad, checks, lines = 0, 0, []
+    for name, path, want, needle in arms:
+        ok, line = eyeball_verdict(path)
+        checks += 1
+        if ok != want or (needle and needle not in line):
+            bad += 1
+            lines.append("  CONTROL FAILED %s: got ok=%s (%s)" % (name, ok, line))
+    frac_blank, _ = ink_fraction(blank)
+    frac_dot, _ = ink_fraction(dot)
+    frac_shape, _ = ink_fraction(shape)
+    frac_tinted, _ = ink_fraction(tinted)
+    print("ink bar %.4f%% sits between the refused arms (blank %.4f%%, dot %.4f%%) and the painted "
+          "arms (white %.4f%%, tinted %.4f%%)"
+          % (100 * INK_MIN_FRACTION, 100 * frac_blank, 100 * frac_dot, 100 * frac_shape, 100 * frac_tinted))
+    # A large canvas holding a small diagram is the case the byte rule got wrong in both directions,
+    # and this arm regenerates it so the proof does not depend on any round's leftover file.
+    wide_empty = os.path.join(tmp, "wide-empty.png")
+    _write_png(wide_empty, 1280, 900, lambda x, y: (31, 41, 55) if 100 <= x < 260 and 80 <= y < 240
+               else (255, 255, 255))
+    size = os.path.getsize(wide_empty)
+    ok, line = eyeball_verdict(wide_empty)
+    checks += 1
+    if not ok or size > 20000:
+        bad += 1
+        lines.append("  CONTROL FAILED generated narrow-on-wide arm: ok=%s size=%d (%s)" % (ok, size, line))
+    else:
+        print("generated arm the byte rule would refuse: %d bytes (<= 20000) yet %s" % (size, line))
+    narrow = os.path.join(HERE, "..", "..", ".tmp-projects", "r120_comm.png")
+    if os.path.isfile(narrow):
+        size = os.path.getsize(narrow)
+        ok, line = eyeball_verdict(narrow)
+        checks += 1
+        if not ok or size > 20000:
+            bad += 1
+            lines.append("  CONTROL FAILED narrow real render: ok=%s size=%d (%s)" % (ok, size, line))
+        else:
+            print("the arm the old byte rule ate: %s bytes (<= 20000) yet %s" % (size, line))
+    else:
+        print("  NOTE round-120 narrow render is not on disk (%s) - that arm did not run" % narrow)
+    for entry in lines:
+        print(entry)
+    return bad, checks
+
+
 def eyeball(js_path, blocks, budget):
     """Real rendered PNG of one page's diagrams — the 目检 artifact, reproducible on demand."""
     if not js_path:
         print("SKIP: no mermaid bundle (see --mermaid-js)")
         return 2
+    bad, checks = ink_controls()
+    print("ink controls %d of %d able to fire" % (checks - bad, checks))
+    if bad:
+        return 1
     out = os.path.join(tempfile.gettempdir(), "mmd58_eyeball.png")
     if os.path.isfile(out):
         os.remove(out)
@@ -1127,13 +1346,17 @@ def eyeball(js_path, blocks, budget):
         srv.close()
     failed = [(b["i"], c["fail"]) for b, c in zip(blocks, cells) if c["w"] is None]
     size = os.path.getsize(out) if os.path.isfile(out) else -1
-    print("eyeball PNG: %s (%s bytes, %d diagrams, source=%s)"
-          % (out, size, len(blocks), " ".join(b["page"] for b in blocks)[:60]))
+    ok, line = eyeball_verdict(out) if size > 0 else (False, "no PNG written (%d bytes)" % size)
+    print("eyeball PNG: %s (%s bytes, %d diagrams, %s; source=%s)"
+          % (out, size, len(blocks), line, " ".join(b["page"] for b in blocks)[:60]))
     for i, msg in failed:
         print("  render failed #%d: %s" % (i, msg))
     if failed:
         return 1
-    return 0 if size > 20000 else 1
+    if not ok:
+        print("EYEBALL-NO-INK: %s — the engine painted no diagram a reader could see" % line)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
