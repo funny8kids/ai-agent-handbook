@@ -2,7 +2,7 @@
 tags: [multi-agent]
 type: knowledge
 status: published
-updated: 2026-09-22
+updated: 2026-09-30
 ---
 
 # 多 Agent 协作
